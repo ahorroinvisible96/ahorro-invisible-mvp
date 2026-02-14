@@ -52,7 +52,7 @@ export default function DashboardLayout({
   };
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-screen">
       {/* Sidebar */}
       <aside className="w-64 bg-ahorro-700 text-light flex flex-col">
         {/* Logo */}
@@ -155,7 +155,7 @@ export default function DashboardLayout({
       </aside>
       
       {/* Main content */}
-      <main className="flex-1 overflow-auto bg-background">
+      <main className="flex-1 overflow-auto bg-background" style={{ backgroundImage: 'linear-gradient(#F5F5F0 1px, transparent 1px), linear-gradient(90deg, #F5F5F0 1px, #F5F5F0 1px)', backgroundSize: '20px 20px', backgroundPosition: '0 0' }}>
         {children}
       </main>
     </div>

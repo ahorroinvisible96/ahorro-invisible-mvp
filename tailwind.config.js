@@ -17,15 +17,16 @@ module.exports = {
           400: '#60A5FA',
           500: '#3B82F6', // Azul principal para gráficos
           600: '#2563EB', // Azul para botones activos
-          700: '#1E40AF', // Azul oscuro para sidebar
+          700: '#1E293B', // Azul oscuro para sidebar (actualizado)
           800: '#1E3A8A',
           900: '#1E3A8A',
         },
         // Colores de fondo
         'background': {
-          light: '#F8F8F0', // Fondo principal crema
-          DEFAULT: '#F8F8F0',
+          light: '#F5F5F0', // Fondo principal crema con líneas
+          DEFAULT: '#F5F5F0',
           dark: '#1E293B', // Fondo sidebar
+          blue: '#3B82F6', // Azul brillante para tarjeta motivacional
         },
         // Colores de texto
         'text': {
@@ -38,6 +39,7 @@ module.exports = {
           red: '#EF4444', // Para "Archivar" y alertas
           green: '#10B981', // Para indicadores positivos
           yellow: '#F59E0B', // Para advertencias
+          blue: '#3B82F6', // Azul brillante para botones y acentos
         }
       },
       borderRadius: {

@@ -238,8 +238,8 @@ export default function DashboardPage() {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div className="mb-6">
-            <h1 className="text-2xl font-semibold text-text-primary">Hola, {userName}</h1>
-            <p className="text-text-secondary">Tu ahorro invisible en acción</p>
+            <h1 className="text-2xl font-semibold text-text-primary mb-2">Hola, {userName}</h1>
+            <p className="text-text-secondary">Tus ahorros crecen mientras brilla el día. ✨</p>
           </div>
           <div className="flex items-center">
             <div className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full flex items-center">
@@ -260,35 +260,33 @@ export default function DashboardPage() {
               </svg>
               <span className="text-xs uppercase tracking-wider text-ahorro-600 font-medium">OBJETIVO PRINCIPAL</span>
             </div>
-            {primaryGoal.time_horizon_months && (
-              <div className="bg-ahorro-600 text-white text-xs font-medium px-3 py-1 rounded-full">
-                {primaryGoal.time_horizon_months} MESES
-              </div>
-            )}
+            <div className="bg-ahorro-600 text-white text-xs font-medium px-3 py-1 rounded-full">
+              12 MESES
+            </div>
           </div>
           
           <div className="flex flex-col">
-            <h2 className="text-xl font-semibold text-text-primary mb-4">{primaryGoal.title}</h2>
+            <h2 className="text-xl font-semibold text-text-primary mb-4">Viaje a Japón</h2>
             
             <div className="flex items-center justify-between mb-2">
               <div className="text-xl font-bold">
-                {formatCurrency(primaryGoal.current_amount)}
-                <span className="text-text-secondary text-sm font-normal ml-1">/ {formatCurrency(primaryGoal.target_amount)}</span>
+                1500€
+                <span className="text-text-secondary text-sm font-normal ml-1">/ 5000€</span>
               </div>
               <div className="text-ahorro-600 text-lg font-bold">
-                {Math.round((primaryGoal.current_amount / primaryGoal.target_amount) * 100)}%
+                30%
               </div>
             </div>
             
             <Progress 
-              value={(primaryGoal.current_amount / primaryGoal.target_amount) * 100} 
+              value={30} 
               className="mb-4" 
               size="md" 
               color="blue" 
             />
             
             <p className="text-text-secondary text-sm">
-              Te faltan <span className="font-semibold">{formatCurrency(primaryGoal.target_amount - primaryGoal.current_amount)}</span> para completar tu meta. ¡Sigue así!
+              Te faltan <span className="font-semibold">3500€</span> para completar tu meta. ¡Sigue así!
             </p>
           </div>
         </div>
@@ -303,125 +301,70 @@ export default function DashboardPage() {
         </div>
       )}
       
-      {/* Ingresos mensuales (si existe) */}
-      {incomeRange && (
-        <div className="mb-8">
-          <Card className="p-4">
-            <CardTitle className="text-sm font-medium mb-2">Ingresos mensuales</CardTitle>
-            <div className="text-text-primary">
-              {incomeRange === "below_1000" && "Menos de 1.000€"}
-              {incomeRange === "1000_2000" && "Entre 1.000€ y 2.000€"}
-              {incomeRange === "2000_3500" && "Entre 2.000€ y 3.500€"}
-              {incomeRange === "above_3500" && "Más de 3.500€"}
-            </div>
-          </Card>
+      {/* Ingresos mensuales */}
+      <div className="mb-8">
+        <div className="text-xs uppercase tracking-wider text-text-secondary font-medium mb-2">INGRESOS MENSUALES</div>
+        <div className="text-xl font-semibold text-text-primary">
+          2.000 - 3.500 €
         </div>
-      )}
+      </div>
       
       {/* Mis Objetivos */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-text-primary">Mis objetivos</h2>
-          <Button variant="primary" size="sm" onClick={handleCreateGoal}>
-            + Nuevo objetivo
+          <h2 className="text-lg font-semibold text-text-primary">Mis Objetivos</h2>
+          <Button variant="primary" size="sm" onClick={handleCreateGoal} className="bg-accent-blue text-white rounded-full">
+            + Nuevo Objetivo
           </Button>
         </div>
         
-        {goals.length > 0 ? (
-          <div className="space-y-4">
-            {goals.map(goal => (
-              <Card key={goal.id} bordered={goal.is_primary} className="overflow-hidden">
-                <CardHeader className="bg-ahorro-50 py-3 px-4">
-                  <div className="flex items-center">
-                    <div className="bg-white p-1 rounded mr-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-ahorro-600" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M5.5 16a3.5 3.5 0 01-.369-6.98 4 4 0 117.753-1.977A4.5 4.5 0 1113.5 16h-8z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-medium">{goal.title}</h3>
-                      {goal.time_horizon_months && (
-                        <p className="text-xs text-text-secondary">{goal.time_horizon_months} MESES</p>
-                      )}
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-4">
-                  <Progress 
-                    value={(goal.current_amount / goal.target_amount) * 100} 
-                    className="mb-2" 
-                    size="sm" 
-                    color="blue" 
-                  />
-                  <div className="flex items-center justify-between text-sm">
-                    <span>{formatCurrency(goal.current_amount)} / {formatCurrency(goal.target_amount)}</span>
-                    <span className="text-ahorro-600">{Math.round((goal.current_amount / goal.target_amount) * 100)}%</span>
-                  </div>
-                  <div className="mt-3 text-right">
-                    <button 
-                      className="text-xs text-accent-red hover:underline"
-                      onClick={() => handleArchiveGoal(goal.id, goal.is_primary)}
-                    >
-                      Archivar
-                    </button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+        <div className="border border-ahorro-500 rounded-xl overflow-hidden">
+          <div className="bg-white p-4">
+            <div className="flex items-center mb-2">
+              <div className="bg-white p-1 rounded mr-2">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-ahorro-600" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M5.5 16a3.5 3.5 0 01-.369-6.98 4 4 0 117.753-1.977A4.5 4.5 0 1113.5 16h-8z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium">Viaje a Japón</h3>
+                <p className="text-xs text-text-secondary">12 MESES</p>
+              </div>
+              <div className="ml-auto">
+                <span className="bg-ahorro-500 text-white text-xs px-2 py-1 rounded-md">PRINCIPAL</span>
+              </div>
+            </div>
+            
+            <Progress 
+              value={30} 
+              className="mb-2" 
+              size="sm" 
+              color="blue" 
+            />
+            <div className="flex items-center justify-between text-sm">
+              <span>1500€ / 5000€</span>
+              <span className="text-ahorro-600">30%</span>
+            </div>
+            <div className="mt-3 text-right">
+              <button 
+                className="text-xs text-accent-red hover:underline"
+              >
+                Archivar
+              </button>
+            </div>
           </div>
-        ) : (
-          <Card className="p-6 text-center">
-            <p className="text-text-secondary mb-4">No tienes objetivos activos</p>
-            <Button variant="primary" onClick={handleCreateGoal}>
-              Nuevo objetivo
-            </Button>
-          </Card>
-        )}
-      </div>
-      
-      {/* Tarjeta CTA "Tu decisión de hoy" */}
-      <div className="mb-8">
-        <Card className={`p-6 ${dailyStatus.status === 'pending' ? 'border-2 border-ahorro-500' : ''}`}>
-          <CardHeader>
-            <CardTitle>Decisión del día</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {dailyStatus.status === 'pending' ? (
-              <>
-                <p className="mb-4">Una pequeña decisión diaria puede generar un gran impacto en tus finanzas.</p>
-                <Button 
-                  variant="primary" 
-                  fullWidth 
-                  onClick={handleDailyAction}
-                >
-                  Responder ahora
-                </Button>
-              </>
-            ) : (
-              <>
-                <p className="mb-4">¡Ya has tomado tu decisión del día! Revisa el impacto en tu objetivo.</p>
-                <Button 
-                  variant="outline" 
-                  fullWidth 
-                  onClick={handleDailyAction}
-                >
-                  Ver impacto
-                </Button>
-              </>
-            )}
-          </CardContent>
-        </Card>
+        </div>
       </div>
       
       {/* Evolución del ahorro */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-text-primary">Evolución del ahorro</h2>
+          <h2 className="text-lg font-semibold text-text-primary">Evolución del Ahorro</h2>
           <div className="flex space-x-1 bg-gray-100 rounded-lg p-1">
             {['7D', '30D', '90D'].map((range) => (
               <button
                 key={range}
-                className={`text-xs px-3 py-1 rounded-lg ${savingsRange === range.toLowerCase() ? 'bg-ahorro-600 text-white' : 'text-text-secondary'}`}
+                className={`text-xs px-3 py-1 rounded-lg ${range === '30D' ? 'bg-ahorro-600 text-white' : 'text-text-secondary'}`}
                 onClick={() => handleSavingsRangeChange(range.toLowerCase())}
               >
                 {range}
@@ -430,42 +373,39 @@ export default function DashboardPage() {
           </div>
         </div>
         
-        <Card className="p-6">
-          <div className="flex items-center justify-center h-48 text-text-secondary">
-            <div className="text-center">
-              <p>Aún no hay datos.</p>
-              <Button 
-                variant="primary" 
-                size="sm" 
-                className="mt-4"
-                onClick={handleDailyAction}
-              >
-                {dailyStatus.status === 'pending' ? 'Responder ahora' : 'Ver impacto'}
-              </Button>
+        <div className="p-6 bg-white rounded-xl">
+          <div className="flex items-center justify-center h-48">
+            <div className="w-full">
+              <div className="flex justify-end items-end h-40 space-x-2">
+                {[20, 30, 25, 35, 40, 45, 50, 55, 60, 65, 70].map((height, index) => (
+                  <div 
+                    key={index} 
+                    className="bg-ahorro-500 rounded-t-md w-8" 
+                    style={{ height: `${height}%` }}
+                  ></div>
+                ))}
+              </div>
             </div>
           </div>
           <div className="text-xs text-text-secondary text-center mt-2">
             <span className="bg-gray-100 px-2 py-1 rounded">Modo demo</span>
           </div>
-        </Card>
+        </div>
       </div>
       
       {/* Tarjeta motivacional */}
       <div>
-        <Card className="bg-ahorro-600 text-white overflow-hidden">
-          <CardContent className="p-6">
-            <h3 className="text-xl font-bold mb-2">Cada decisión cuenta</h3>
-            <p className="text-white/80 mb-6">Pequeñas decisiones, grandes resultados</p>
-            
-            <Button 
-              variant="outline" 
-              className="bg-white/20 border-white/30 text-white hover:bg-white/30"
-              onClick={handleMotivationAction}
-            >
-              {dailyStatus.status === 'pending' ? 'Responder ahora' : 'Ver impacto'}
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="bg-ahorro-500 text-white overflow-hidden rounded-xl p-6">
+          <h3 className="text-xl font-bold mb-2">Tu Ahorro es imparable.</h3>
+          <p className="text-white/80 mb-2">Intensidad:</p>
+          <p className="text-white font-medium mb-4">MEDIUM - ¡Vas por buen camino!</p>
+          
+          <button 
+            className="bg-white/20 border border-white/30 text-white hover:bg-white/30 px-4 py-2 rounded-lg"
+          >
+            AJUSTAR REGLAS
+          </button>
+        </div>
       </div>
     </div>
   );
