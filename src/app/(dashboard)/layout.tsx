@@ -54,7 +54,7 @@ export default function DashboardLayout({
   return (
     <div className="flex h-screen bg-background">
       {/* Sidebar */}
-      <aside className="w-64 bg-ahorro-700 text-text-light flex flex-col">
+      <aside className="w-64 bg-ahorro-700 text-light flex flex-col">
         {/* Logo */}
         <div className="p-4 flex items-center gap-2">
           <div className="w-8 h-8 rounded-md bg-ahorro-500 flex items-center justify-center text-white font-bold">
@@ -68,7 +68,7 @@ export default function DashboardLayout({
         
         {/* Menu */}
         <div className="px-3 py-6">
-          <div className="text-xs font-medium uppercase tracking-wider text-text-light/60 mb-3 px-3">
+          <div className="text-xs font-medium uppercase tracking-wider text-light/60 mb-3 px-3">
             MENU PRINCIPAL
           </div>
           
@@ -78,7 +78,7 @@ export default function DashboardLayout({
               className={`flex items-center px-3 py-2 rounded-lg ${
                 isActive('/dashboard') || pathname === '/'
                   ? 'bg-ahorro-600 text-white' 
-                  : 'text-text-light/80 hover:bg-ahorro-600/50 hover:text-white'
+                  : 'text-light/80 hover:bg-ahorro-600/50 hover:text-white'
               }`}
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor">
@@ -92,7 +92,7 @@ export default function DashboardLayout({
               className={`flex items-center px-3 py-2 rounded-lg ${
                 isActive('/profile')
                   ? 'bg-ahorro-600 text-white' 
-                  : 'text-text-light/80 hover:bg-ahorro-600/50 hover:text-white'
+                  : 'text-light/80 hover:bg-ahorro-600/50 hover:text-white'
               }`}
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor">
@@ -106,7 +106,7 @@ export default function DashboardLayout({
               className={`flex items-center px-3 py-2 rounded-lg ${
                 isActive('/history')
                   ? 'bg-ahorro-600 text-white' 
-                  : 'text-text-light/80 hover:bg-ahorro-600/50 hover:text-white'
+                  : 'text-light/80 hover:bg-ahorro-600/50 hover:text-white'
               }`}
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor">
@@ -120,7 +120,7 @@ export default function DashboardLayout({
               className={`flex items-center px-3 py-2 rounded-lg ${
                 isActive('/settings')
                   ? 'bg-ahorro-600 text-white' 
-                  : 'text-text-light/80 hover:bg-ahorro-600/50 hover:text-white'
+                  : 'text-light/80 hover:bg-ahorro-600/50 hover:text-white'
               }`}
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor">
@@ -144,7 +144,7 @@ export default function DashboardLayout({
           
           <button 
             onClick={handleLogout}
-            className="w-full p-4 text-left text-sm text-text-light/70 hover:bg-ahorro-600/30 flex items-center"
+            className="w-full p-4 text-left text-sm text-light/70 hover:bg-ahorro-600/30 flex items-center"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V7.414l-5-5H3zm7 5a1 1 0 10-2 0v4a1 1 0 102 0V8zm-1 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
