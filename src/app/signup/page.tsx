@@ -1,61 +1,84 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { analytics } from "@/services/analytics";
 
 export default function SignupPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-
+  
+  useEffect(() => {
+    // Establecer el nombre de la pantalla para analytics
+    analytics.setScreen('signup');
+    
+    try {
+      // Verificar si ya está autenticado
+      const isAuthenticated = localStorage.getItem("isAuthenticated");
+      if (isAuthenticated === "true") {
+        // Verificar si ya completó el onboarding
+        const hasCompletedOnboarding = localStorage.getItem("hasCompletedOnboarding");
+        if (hasCompletedOnboarding === "true") {
+          router.replace("/dashboard");
+        } else {
+          router.replace("/onboarding");
+        }
+      }
+    } catch (err) {
+      console.error("Error al verificar autenticación:", err);
+    }
+    
+    // Registrar evento de inicio de signup
+    analytics.signupStarted();
+  }, [router]);
+  
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setIsLoading(true);
-
-    // Validación básica
-    if (!email || !name || !password) {
-      setError("Por favor completa todos los campos");
-      setIsLoading(false);
+    
+    // Validaciones
+    if (!email) {
+      setError("Revisa el email.");
+      analytics.signupError("VALIDATION_ERROR", "Revisa el email.", "email");
       return;
     }
-
-    if (password.length < 6) {
-      setError("La contraseña debe tener al menos 6 caracteres");
-      setIsLoading(false);
+    
+    if (!name) {
+      setError("Escribe tu nombre.");
+      analytics.signupError("VALIDATION_ERROR", "Escribe tu nombre.", "name");
       return;
     }
-
+    
+    if (!password || password.length < 8) {
+      setError("Usa al menos 8 caracteres.");
+      analytics.signupError("VALIDATION_ERROR", "Usa al menos 8 caracteres.", "password");
+      return;
+    }
+    
     try {
-      // Evento de analytics: signup_started
-      console.log("Analytics: signup_started");
-
-      // Simular creación de usuario (en un entorno real, esto sería una llamada a API)
-      setTimeout(() => {
-        // Guardar datos en localStorage (simulación)
-        localStorage.setItem("isAuthenticated", "true");
-        localStorage.setItem("userEmail", email);
-        localStorage.setItem("userName", name);
-        
-        // Evento de analytics: signup_success
-        console.log("Analytics: signup_success");
-        
-        // Redirigir al onboarding
-        router.push("/onboarding/1");
-      }, 1000);
+      // Guardar datos del usuario en localStorage
+      localStorage.setItem("userName", name);
+      localStorage.setItem("userEmail", email);
+      localStorage.setItem("isAuthenticated", "true");
+      
+      // Registrar evento de signup exitoso
+      analytics.signupSuccess();
+      
+      // Redirigir al onboarding
+      router.push("/onboarding");
     } catch (err) {
-      // Evento de analytics: signup_error
-      console.log("Analytics: signup_error");
-      setError("Error al crear la cuenta. Por favor intenta de nuevo.");
-      setIsLoading(false);
+      console.error("Error al registrar usuario:", err);
+      setError("No se pudo crear la cuenta. Intenta de nuevo.");
+      
+      // Registrar evento de error
+      analytics.signupError("LOCAL_STORAGE_ERROR", String(err));
     }
   };
-
+  
   return (
     <div className="min-h-screen w-full flex bg-background">
       {/* Panel izquierdo */}
@@ -71,10 +94,10 @@ export default function SignupPage() {
             </div>
           </div>
           
-          <h1 className="text-4xl font-bold mb-4">Transforma tus pequeños gastos en grandes ahorros</h1>
+          <h1 className="text-4xl font-bold mb-4">Ahorro que no duele</h1>
           <p className="text-lg text-white/80">
             Crea una cuenta y descubre cómo nuestro sistema de ahorro invisible
-            te ayuda a alcanzar tus metas financieras sin esfuerzo.
+            te ayuda a alcanzar tus metas financieras sin sentir el esfuerzo.
           </p>
         </div>
         
@@ -97,24 +120,15 @@ export default function SignupPage() {
           </div>
           
           <h2 className="text-2xl font-semibold text-text-primary mb-2">Crea tu cuenta</h2>
-          <p className="text-text-secondary mb-8">Comienza tu viaje hacia el ahorro inteligente</p>
+          <p className="text-text-secondary mb-8">Comienza a ahorrar sin darte cuenta</p>
           
           {error && <div className="mb-6 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">{error}</div>}
           
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-text-primary mb-1.5">Nombre</label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full rounded-xl border border-gray-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ahorro-500 focus:border-ahorro-500"
-                placeholder="Tu nombre"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-text-primary mb-1.5">Email</label>
+              <label className="block text-sm font-medium text-text-primary mb-1.5">
+                Email
+              </label>
               <input
                 type="email"
                 value={email}
@@ -125,7 +139,22 @@ export default function SignupPage() {
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-text-primary mb-1.5">Contraseña</label>
+              <label className="block text-sm font-medium text-text-primary mb-1.5">
+                Nombre
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full rounded-xl border border-gray-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ahorro-500 focus:border-ahorro-500"
+                placeholder="Tu nombre"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-text-primary mb-1.5">
+                Contraseña
+              </label>
               <input
                 type="password"
                 value={password}
@@ -133,7 +162,6 @@ export default function SignupPage() {
                 className="w-full rounded-xl border border-gray-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ahorro-500 focus:border-ahorro-500"
                 placeholder="••••••••"
               />
-              <p className="text-xs text-text-secondary mt-1">Mínimo 6 caracteres</p>
             </div>
             
             <Button
@@ -141,9 +169,8 @@ export default function SignupPage() {
               variant="primary"
               size="lg"
               fullWidth
-              disabled={isLoading}
             >
-              {isLoading ? "Creando cuenta..." : "Crear cuenta"}
+              Crear cuenta
             </Button>
           </form>
           

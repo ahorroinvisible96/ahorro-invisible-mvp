@@ -2,14 +2,18 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { analytics } from "@/services/analytics";
 
 export default function SettingsPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
-
+  
   useEffect(() => {
+    // Establecer el nombre de la pantalla para analytics
+    analytics.setScreen('settings');
+    
     // Verificar autenticación
     const isAuthenticated = localStorage.getItem("isAuthenticated");
     if (isAuthenticated !== "true") {
@@ -20,116 +24,103 @@ export default function SettingsPage() {
     // Verificar onboarding
     const hasCompletedOnboarding = localStorage.getItem("hasCompletedOnboarding");
     if (hasCompletedOnboarding !== "true") {
-      router.replace("/onboarding/1");
+      router.replace("/onboarding");
       return;
     }
     
-    setIsLoading(false);
+    // Registrar evento de visualización de ajustes
+    analytics.settingsViewed();
     
-    // Evento de analytics: settings_viewed
-    console.log("Analytics: settings_viewed");
+    setIsLoading(false);
   }, [router]);
-
-  const handleLogout = () => {
-    try {
-      // Eliminar datos de autenticación
-      localStorage.removeItem("isAuthenticated");
-      
-      // Redirigir a signup
-      router.replace("/signup");
-    } catch (err) {
-      console.error("Error al cerrar sesión:", err);
-    }
-  };
-
+  
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-ahorro-600"></div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-ahorro-500"></div>
       </div>
     );
   }
-
+  
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-3xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-2xl font-semibold text-text-primary">Ajustes</h1>
-            <p className="text-text-secondary">Configura tu experiencia</p>
+    <div className="p-6 bg-background">
+      <div className="mb-6">
+        <h1 className="text-2xl font-semibold text-text-primary mb-2">Ajustes</h1>
+        <p className="text-text-secondary">Configura tu experiencia.</p>
+      </div>
+      
+      <div className="space-y-4">
+        {/* Sección de Privacidad */}
+        <Card className="p-6">
+          <h2 className="text-lg font-medium text-text-primary mb-4">Privacidad</h2>
+          
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-text-primary font-medium">Política de Privacidad</p>
+                <p className="text-sm text-text-secondary">Revisa nuestra política de privacidad</p>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => window.alert("Disponible próximamente")}
+              >
+                Ver
+              </Button>
+            </div>
           </div>
-          <Button 
-            variant="outline" 
-            onClick={() => router.push("/dashboard")}
-          >
-            Volver
-          </Button>
-        </div>
+        </Card>
         
-        <div className="space-y-6">
-          <Card className="overflow-hidden">
-            <CardContent className="p-6">
-              <h2 className="text-lg font-medium text-text-primary mb-4">Legal y Privacidad</h2>
-              
-              <div className="space-y-4">
-                <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                  <span className="text-text-primary">Términos de servicio</span>
-                  <Button variant="ghost" size="sm">Ver</Button>
-                </div>
-                
-                <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                  <span className="text-text-primary">Política de privacidad</span>
-                  <Button variant="ghost" size="sm">Ver</Button>
-                </div>
-                
-                <div className="flex justify-between items-center py-2">
-                  <span className="text-text-primary">Aviso legal</span>
-                  <Button variant="ghost" size="sm">Ver</Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        {/* Sección de Términos */}
+        <Card className="p-6">
+          <h2 className="text-lg font-medium text-text-primary mb-4">Términos</h2>
           
-          <Card className="overflow-hidden">
-            <CardContent className="p-6">
-              <h2 className="text-lg font-medium text-text-primary mb-4">Cuenta</h2>
-              
-              <div className="space-y-4">
-                <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                  <div>
-                    <span className="text-text-primary block">Editar perfil</span>
-                    <span className="text-text-secondary text-sm">Cambia tu nombre y foto</span>
-                  </div>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => router.push("/profile")}
-                  >
-                    Editar
-                  </Button>
-                </div>
-                
-                <div className="flex justify-between items-center py-2">
-                  <div>
-                    <span className="text-text-primary block">Cerrar sesión</span>
-                    <span className="text-text-secondary text-sm">Salir de tu cuenta</span>
-                  </div>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={handleLogout}
-                  >
-                    Salir
-                  </Button>
-                </div>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-text-primary font-medium">Términos de Servicio</p>
+                <p className="text-sm text-text-secondary">Revisa nuestros términos de servicio</p>
               </div>
-            </CardContent>
-          </Card>
-          
-          <div className="text-center text-text-secondary text-sm">
-            <p>Versión 1.0.0</p>
-            <p className="mt-1">© 2026 Ahorro Invisible. Todos los derechos reservados.</p>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => window.alert("Disponible próximamente")}
+              >
+                Ver
+              </Button>
+            </div>
           </div>
+        </Card>
+        
+        {/* Sección de Cuenta */}
+        <Card className="p-6">
+          <h2 className="text-lg font-medium text-text-primary mb-4">Cuenta</h2>
+          
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-text-primary font-medium">Cerrar sesión</p>
+                <p className="text-sm text-text-secondary">Salir de tu cuenta</p>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  analytics.logoutClicked('sidebar');
+                  localStorage.removeItem("isAuthenticated");
+                  analytics.logoutSuccess();
+                  router.replace("/signup");
+                }}
+              >
+                Cerrar sesión
+              </Button>
+            </div>
+          </div>
+        </Card>
+        
+        {/* Versión de la aplicación */}
+        <div className="text-center text-xs text-text-secondary mt-8">
+          <p>Ahorro Invisible MVP v1.0.0</p>
         </div>
       </div>
     </div>

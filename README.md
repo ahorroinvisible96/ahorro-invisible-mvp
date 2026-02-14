@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Ahorro Invisible MVP
 
-## Getting Started
+Este es el MVP de Ahorro Invisible, una aplicación que ayuda a los usuarios a crear hábitos de ahorro a través de decisiones diarias simples.
 
-First, run the development server:
+## Descripción
+
+Ahorro Invisible es una aplicación que permite a los usuarios:
+
+- Crear objetivos de ahorro personalizados
+- Tomar una decisión diaria simple que genera un impacto en sus ahorros
+- Visualizar el progreso hacia sus objetivos
+- Registrar acciones extra de ahorro
+- Ver un historial de sus decisiones y ahorros
+
+## Características principales
+
+- **Onboarding**: Proceso de 3 preguntas para personalizar la experiencia
+- **Creación de objetivos**: Definición de metas de ahorro con montos y plazos
+- **Dashboard**: Visualización del progreso y acceso a funcionalidades principales
+- **Pregunta diaria**: Una decisión simple cada día con impacto en el ahorro
+- **Impacto/Progreso**: Visualización del impacto de cada decisión
+- **Acción extra**: Registro de ahorros adicionales
+- **Historial**: Registro cronológico de decisiones y acciones
+- **Perfil y Ajustes**: Gestión de cuenta y configuraciones
+
+## Tecnologías
+
+- Next.js 14 con App Router
+- React 19
+- Tailwind CSS
+- LocalStorage para persistencia (simulación de backend)
+- Analytics integrado
+
+## Instalación
 
 ```bash
+# Instalar dependencias
+npm install
+
+# Ejecutar en modo desarrollo
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+# Construir para producción
+npm run build
+
+# Iniciar versión de producción
+npm start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Estructura del proyecto
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `/src/app`: Páginas y componentes de la aplicación
+- `/src/components`: Componentes reutilizables
+- `/src/services`: Servicios como analytics
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Notas importantes
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Este MVP utiliza localStorage para simular la persistencia de datos
+- Los eventos de analytics se registran en la consola
+- La aplicación sigue estrictamente los requisitos definidos en el Sync Pack

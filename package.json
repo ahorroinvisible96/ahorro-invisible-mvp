@@ -1,7 +1,8 @@
 {
   "name": "ahorro-invisible-mvp",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
+  "description": "MVP de Ahorro Invisible - Aplicación para crear hábitos de ahorro",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

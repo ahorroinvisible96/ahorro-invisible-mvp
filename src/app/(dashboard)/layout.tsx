@@ -2,7 +2,8 @@
 
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
+import Link from 'next/link';
+import { analytics } from '@/services/analytics';
 
 export default function DashboardLayout({
   children,
@@ -17,7 +18,7 @@ export default function DashboardLayout({
     // Verificar autenticación
     const isAuthenticated = localStorage.getItem("isAuthenticated");
     if (isAuthenticated !== "true") {
-      router.replace("/login");
+      router.replace("/signup");
       return;
     }
     
@@ -41,8 +42,10 @@ export default function DashboardLayout({
 
   const handleLogout = () => {
     try {
+      analytics.logoutClicked('sidebar');
       localStorage.removeItem("isAuthenticated");
-      router.replace("/login");
+      analytics.logoutSuccess();
+      router.replace("/signup");
     } catch (err) {
       console.error("Error al cerrar sesión:", err);
     }
@@ -70,10 +73,10 @@ export default function DashboardLayout({
           </div>
           
           <nav className="space-y-1">
-            <a 
-              href="/home" 
+            <Link 
+              href="/dashboard" 
               className={`flex items-center px-3 py-2 rounded-lg ${
-                isActive('/home') 
+                isActive('/dashboard') || pathname === '/'
                   ? 'bg-ahorro-600 text-white' 
                   : 'text-text-light/80 hover:bg-ahorro-600/50 hover:text-white'
               }`}
@@ -82,37 +85,49 @@ export default function DashboardLayout({
                 <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
               </svg>
               Dashboard
-            </a>
+            </Link>
             
-            <a 
-              href="#" 
-              className="flex items-center px-3 py-2 rounded-lg text-text-light/80 hover:bg-ahorro-600/50 hover:text-white"
+            <Link 
+              href="/profile" 
+              className={`flex items-center px-3 py-2 rounded-lg ${
+                isActive('/profile')
+                  ? 'bg-ahorro-600 text-white' 
+                  : 'text-text-light/80 hover:bg-ahorro-600/50 hover:text-white'
+              }`}
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
               </svg>
               Perfil
-            </a>
+            </Link>
             
-            <a 
-              href="#" 
-              className="flex items-center px-3 py-2 rounded-lg text-text-light/80 hover:bg-ahorro-600/50 hover:text-white"
+            <Link 
+              href="/history" 
+              className={`flex items-center px-3 py-2 rounded-lg ${
+                isActive('/history')
+                  ? 'bg-ahorro-600 text-white' 
+                  : 'text-text-light/80 hover:bg-ahorro-600/50 hover:text-white'
+              }`}
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
               </svg>
               Historial
-            </a>
+            </Link>
             
-            <a 
-              href="#" 
-              className="flex items-center px-3 py-2 rounded-lg text-text-light/80 hover:bg-ahorro-600/50 hover:text-white"
+            <Link 
+              href="/settings" 
+              className={`flex items-center px-3 py-2 rounded-lg ${
+                isActive('/settings')
+                  ? 'bg-ahorro-600 text-white' 
+                  : 'text-text-light/80 hover:bg-ahorro-600/50 hover:text-white'
+              }`}
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
               </svg>
               Ajustes
-            </a>
+            </Link>
           </nav>
         </div>
         

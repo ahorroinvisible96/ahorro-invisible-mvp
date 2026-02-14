@@ -2,20 +2,35 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { analytics } from "@/services/analytics";
+
+interface Goal {
+  id: string;
+  title: string;
+  target_amount: number;
+  current_amount: number;
+  time_horizon_months: number | null;
+  is_primary: boolean;
+  archived: boolean;
+  created_at: string;
+  updated_at: string;
+}
 
 export default function ExtraSavingPage() {
   const router = useRouter();
-  const [goals, setGoals] = useState<any[]>([]);
-  const [selectedGoal, setSelectedGoal] = useState<string | null>(null);
-  const [amount, setAmount] = useState("");
-  const [note, setNote] = useState("");
+  const [goals, setGoals] = useState<Goal[]>([]);
+  const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
+  const [amount, setAmount] = useState<number>(0);
+  const [note, setNote] = useState<string>("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
+  
   useEffect(() => {
+    // Establecer el nombre de la pantalla para analytics
+    analytics.setScreen('extra_saving');
+    
     // Verificar autenticación
     const isAuthenticated = localStorage.getItem("isAuthenticated");
     if (isAuthenticated !== "true") {
@@ -26,198 +41,211 @@ export default function ExtraSavingPage() {
     // Verificar onboarding
     const hasCompletedOnboarding = localStorage.getItem("hasCompletedOnboarding");
     if (hasCompletedOnboarding !== "true") {
-      router.replace("/onboarding/1");
+      router.replace("/onboarding");
       return;
     }
     
     // Cargar datos
+    loadData();
+    
+    // Registrar evento de inicio de acción extra
+    analytics.extraSavingStarted('impact');
+  }, [router]);
+  
+  const loadData = async () => {
     try {
-      // Objetivos
-      const storedGoals = JSON.parse(localStorage.getItem("goals") || "[]");
-      const activeGoals = storedGoals.filter((goal: any) => !goal.archived);
-      setGoals(activeGoals);
+      setIsLoading(true);
       
-      // Si no hay objetivos, redirigir a crear objetivo
-      if (activeGoals.length === 0) {
+      // Cargar objetivos
+      const storedGoals = localStorage.getItem("goals");
+      if (!storedGoals || JSON.parse(storedGoals).filter((g: Goal) => !g.archived).length === 0) {
+        // Redirigir a crear objetivo si no hay objetivos activos
+        console.log("EVENT: system_redirect", { destination: "create_goal" });
         router.replace("/goals/new");
         return;
       }
       
+      const parsedGoals = JSON.parse(storedGoals);
+      const activeGoals = parsedGoals.filter((goal: Goal) => !goal.archived);
+      setGoals(activeGoals);
+      
       // Seleccionar objetivo principal por defecto
-      const primaryGoal = activeGoals.find((goal: any) => goal.is_primary);
-      setSelectedGoal(primaryGoal ? primaryGoal.id : activeGoals[0].id);
+      const primaryGoal = activeGoals.find((goal: Goal) => goal.is_primary);
+      if (primaryGoal) {
+        setSelectedGoalId(primaryGoal.id);
+      } else if (activeGoals.length > 0) {
+        setSelectedGoalId(activeGoals[0].id);
+      }
       
-      setIsLoading(false);
-      
-      // Evento de analytics: extra_saving_started
-      console.log("Analytics: extra_saving_started");
-    } catch (err) {
-      console.error("Error al cargar datos:", err);
+    } catch (error) {
+      console.error("Error al cargar datos:", error);
+      setError("No se pudieron cargar los objetivos. Intenta de nuevo.");
+    } finally {
       setIsLoading(false);
     }
-  }, [router]);
-
+  };
+  
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     
-    // Validación
-    if (!selectedGoal) {
-      setError("Debes seleccionar un objetivo");
+    // Validaciones
+    if (!selectedGoalId) {
+      setError("Selecciona un objetivo");
       return;
     }
     
-    const amountValue = parseFloat(amount);
-    if (isNaN(amountValue) || amountValue <= 0) {
-      setError("La cantidad debe ser un número mayor que cero");
+    if (!amount || amount <= 0) {
+      setError("Ingresa una cantidad válida");
       return;
     }
-    
-    setIsSubmitting(true);
     
     try {
-      // Crear nueva acción extra de ahorro
-      const extraSaving = {
-        id: `extra_${Date.now()}`,
-        date: new Date().toISOString(),
-        amount: amountValue,
-        goal_id: selectedGoal,
-        note: note.trim() || "Ahorro extra",
-        type: "extra_saving"
+      // Generar ID único para la acción extra
+      const extraSavingId = `extra_${Date.now()}`;
+      const today = new Date().toISOString().split('T')[0];
+      
+      // Crear objeto de acción extra
+      const newExtraSaving = {
+        id: extraSavingId,
+        date: today,
+        goal_id: selectedGoalId,
+        amount,
+        note: note.trim() || null,
+        created_at: new Date().toISOString()
       };
       
       // Guardar en localStorage
-      const extraSavings = JSON.parse(localStorage.getItem("extraSavings") || "[]");
-      extraSavings.unshift(extraSaving);
+      const storedExtraSavings = localStorage.getItem("extraSavings");
+      const extraSavings = storedExtraSavings ? JSON.parse(storedExtraSavings) : [];
+      extraSavings.unshift(newExtraSaving);
       localStorage.setItem("extraSavings", JSON.stringify(extraSavings));
       
-      // Actualizar el objetivo con la cantidad
-      const goals = JSON.parse(localStorage.getItem("goals") || "[]");
-      const updatedGoals = goals.map((goal: any) => {
-        if (goal.id === selectedGoal) {
-          return {
-            ...goal,
-            current_amount: goal.current_amount + amountValue,
-            updated_at: new Date().toISOString()
-          };
-        }
-        return goal;
-      });
-      localStorage.setItem("goals", JSON.stringify(updatedGoals));
+      // Actualizar el objetivo
+      const storedGoals = localStorage.getItem("goals");
+      if (storedGoals) {
+        const goals = JSON.parse(storedGoals);
+        const updatedGoals = goals.map((goal: Goal) => {
+          if (goal.id === selectedGoalId) {
+            return {
+              ...goal,
+              current_amount: goal.current_amount + amount,
+              updated_at: new Date().toISOString()
+            };
+          }
+          return goal;
+        });
+        
+        localStorage.setItem("goals", JSON.stringify(updatedGoals));
+      }
       
-      // Evento de analytics: extra_saving_submitted
-      console.log("Analytics: extra_saving_submitted");
+      // Registrar evento de acción extra enviada
+      analytics.extraSavingSubmitted(
+        today,
+        selectedGoalId,
+        amount,
+        note.length
+      );
       
       // Redirigir al dashboard
       router.push("/dashboard");
-    } catch (err) {
-      console.error("Error al guardar ahorro extra:", err);
-      setError("No se pudo guardar el ahorro extra. Intenta de nuevo.");
-      setIsSubmitting(false);
       
-      // Evento de analytics: extra_saving_error
-      console.log("Analytics: extra_saving_error");
+    } catch (error) {
+      console.error("Error al guardar acción extra:", error);
+      setError("No se pudo guardar. Intenta de nuevo.");
+      
+      // Registrar evento de error
+      analytics.extraSavingError(
+        new Date().toISOString().split('T')[0],
+        selectedGoalId || '',
+        "LOCAL_STORAGE_ERROR",
+        String(error)
+      );
     }
   };
-
+  
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-ahorro-600"></div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-ahorro-500"></div>
       </div>
     );
   }
-
+  
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+    <main className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="flex items-center gap-2 mb-8">
-          <div className="w-8 h-8 rounded-md bg-ahorro-700 flex items-center justify-center text-white font-bold">
-            AI
-          </div>
-          <div className="font-semibold">
-            <div>Ahorro</div>
-            <div className="text-xs text-ahorro-700/80">INVISIBLE</div>
-          </div>
+        <div className="mb-6">
+          <h1 className="text-2xl font-semibold text-text-primary mb-2">Acción extra</h1>
+          <p className="text-text-secondary">Registra un ahorro adicional para impulsar tu objetivo.</p>
         </div>
-        
-        <h1 className="text-2xl font-semibold text-text-primary mb-2">Acción extra de ahorro</h1>
-        <p className="text-text-secondary mb-6">Registra un ahorro adicional para avanzar más rápido</p>
-        
-        {error && <div className="mb-6 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">{error}</div>}
-        
-        <Card className="mb-6">
-          <CardContent className="p-6">
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div>
-                <label className="block text-sm font-medium text-text-primary mb-1.5">
-                  Cantidad (€)*
-                </label>
+          
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
+          
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label className="block text-sm font-medium text-text-primary mb-1.5">
+                Cantidad
+              </label>
+              <div className="flex items-center">
+                <span className="text-text-secondary text-lg mr-2">€</span>
                 <input
                   type="number"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  className="w-full rounded-xl border border-gray-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ahorro-500 focus:border-ahorro-500"
-                  placeholder="Ej: 50"
                   min="0.01"
                   step="0.01"
-                  required
+                  value={amount || ""}
+                  onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
+                  className="w-full rounded-xl border border-gray-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ahorro-500 focus:border-ahorro-500"
+                  placeholder="0.00"
                 />
               </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-text-primary mb-1.5">
-                  Objetivo*
-                </label>
-                <select
-                  value={selectedGoal || ""}
-                  onChange={(e) => setSelectedGoal(e.target.value)}
-                  className="w-full rounded-xl border border-gray-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ahorro-500 focus:border-ahorro-500"
-                  required
-                >
-                  {goals.map((goal) => (
-                    <option key={goal.id} value={goal.id}>
-                      {goal.title} ({goal.is_primary ? "Principal" : "Secundario"})
-                    </option>
-                  ))}
-                </select>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-text-primary mb-1.5">
-                  Nota (opcional)
-                </label>
-                <input
-                  type="text"
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                  className="w-full rounded-xl border border-gray-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ahorro-500 focus:border-ahorro-500"
-                  placeholder="Ej: Ahorro de la semana"
-                />
-              </div>
-              
-              <div className="flex justify-between pt-4">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => router.back()}
-                  disabled={isSubmitting}
-                >
-                  Cancelar
-                </Button>
-                
-                <Button 
-                  type="submit" 
-                  variant="primary"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? "Guardando..." : "Guardar ahorro"}
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-text-primary mb-1.5">
+                Objetivo
+              </label>
+              <select
+                value={selectedGoalId || ""}
+                onChange={(e) => setSelectedGoalId(e.target.value)}
+                className="w-full rounded-xl border border-gray-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ahorro-500 focus:border-ahorro-500"
+              >
+                <option value="" disabled>Selecciona un objetivo</option>
+                {goals.map((goal) => (
+                  <option key={goal.id} value={goal.id}>
+                    {goal.title} {goal.is_primary ? "(Principal)" : ""}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-text-primary mb-1.5">
+                Nota (opcional)
+              </label>
+              <textarea
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                className="w-full rounded-xl border border-gray-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ahorro-500 focus:border-ahorro-500"
+                placeholder="Ej: No pedí café fuera"
+                rows={3}
+              />
+            </div>
+            
+            <Button
+              type="submit"
+              variant="primary"
+              fullWidth
+              disabled={!selectedGoalId || !amount || amount <= 0}
+            >
+              Guardar
+            </Button>
+          </form>
       </div>
-    </div>
+    </main>
   );
 }

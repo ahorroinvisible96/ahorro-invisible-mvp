@@ -2,19 +2,26 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { analytics } from "@/services/analytics";
 
 export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
-  const [savingGoal, setSavingGoal] = useState(100);
-  const [savingFrequency, setSavingFrequency] = useState("diario");
   const [userName, setUserName] = useState("");
   
+  // Respuestas de onboarding
+  const [incomeRange, setIncomeRange] = useState("");
+  const [moneyFeeling, setMoneyFeeling] = useState("");
+  const [goalType, setGoalType] = useState("");
+  
   useEffect(() => {
+    // Establecer el nombre de la pantalla para analytics
+    analytics.setScreen(`onboarding_step_${step}` as any);
+    
     // Verificar autenticación
     const isAuthenticated = localStorage.getItem("isAuthenticated");
     if (isAuthenticated !== "true") {
-      router.replace("/login");
+      router.replace("/signup");
       return;
     }
     
@@ -27,127 +34,211 @@ export default function OnboardingPage() {
     // Verificar si ya completó el onboarding
     const hasCompletedOnboarding = localStorage.getItem("hasCompletedOnboarding");
     if (hasCompletedOnboarding === "true") {
-      router.replace("/home");
+      router.replace("/dashboard");
     }
-  }, [router]);
+    
+    // Registrar evento de visualización
+    analytics.onboardingStepViewed(step);
+  }, [router, step]);
+  
+  const handleNext = () => {
+    // Validar que haya seleccionado una opción
+    if (step === 1 && !incomeRange) {
+      return;
+    } else if (step === 2 && !moneyFeeling) {
+      return;
+    } else if (step === 3 && !goalType) {
+      return;
+    }
+    
+    // Guardar respuesta actual
+    if (step === 1) {
+      localStorage.setItem("onboarding_income_range", incomeRange);
+      analytics.onboardingQuestionAnswered(1, "onb_income_range", incomeRange);
+    } else if (step === 2) {
+      localStorage.setItem("onboarding_money_feeling", moneyFeeling);
+      analytics.onboardingQuestionAnswered(2, "onb_money_feeling", moneyFeeling);
+    } else if (step === 3) {
+      localStorage.setItem("onboarding_goal_type", goalType);
+      analytics.onboardingQuestionAnswered(3, "onb_goal_type", goalType);
+    }
+    
+    // Avanzar al siguiente paso o completar
+    if (step < 3) {
+      setStep(step + 1);
+    } else {
+      handleComplete();
+    }
+  };
+  
+  const handleBack = () => {
+    if (step > 1) {
+      setStep(step - 1);
+    }
+  };
   
   const handleComplete = () => {
     try {
-      // Guardar preferencias de ahorro
-      localStorage.setItem("savingGoal", savingGoal.toString());
-      localStorage.setItem("savingFrequency", savingFrequency);
+      // Marcar onboarding como completado
       localStorage.setItem("hasCompletedOnboarding", "true");
       
-      // Inicializar datos de ahorro
-      const userData = {
-        savingGoal,
-        savingFrequency,
-        currentSaving: 0,
-        startDate: new Date().toISOString(),
-        lastUpdated: new Date().toISOString()
+      // Inicializar datos básicos
+      const onboardingData = {
+        incomeRange,
+        moneyFeeling,
+        goalType,
+        completedAt: new Date().toISOString()
       };
-      localStorage.setItem("userData", JSON.stringify(userData));
-      localStorage.setItem("extraSavings", JSON.stringify([]));
+      
+      localStorage.setItem("onboardingData", JSON.stringify(onboardingData));
       localStorage.setItem("dailyDecisions", JSON.stringify([]));
       
-      // Redirigir al dashboard
-      router.push("/home");
+      // Registrar evento de onboarding completado
+      analytics.onboardingCompleted();
+      
+      // Redirigir a crear objetivo
+      router.push("/goals/new");
     } catch (err) {
       console.error("Error al guardar datos:", err);
     }
   };
   
   return (
-    <main className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-6">
+    <main className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+      <div className="w-full max-w-md bg-white rounded-xl shadow-card p-6">
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-gray-500">Paso {step} de 2</span>
-            <span className="text-sm text-gray-500">{step * 50}%</span>
+            <span className="text-sm text-text-secondary">Paso {step} de 3</span>
+            <span className="text-sm text-text-secondary">{Math.round((step / 3) * 100)}%</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div 
-              className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
-              style={{ width: `${step * 50}%` }}
+              className="bg-ahorro-600 h-2 rounded-full transition-all duration-300" 
+              style={{ width: `${(step / 3) * 100}%` }}
             ></div>
           </div>
         </div>
         
-        {step === 1 ? (
+        {/* Título general */}
+        <h1 className="text-xl font-semibold text-text-primary mb-1">
+          Un minuto y empezamos
+        </h1>
+        <p className="text-text-secondary text-sm mb-6">
+          Solo 3 preguntas para ajustar tu experiencia.
+        </p>
+        
+        {/* Paso 1: Rango de ingresos */}
+        {step === 1 && (
           <>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              ¡Bienvenido{userName ? `, ${userName}` : ''}!
-            </h1>
-            <p className="text-gray-600 mb-6">
-              Vamos a configurar tu meta de ahorro para ayudarte a ahorrar sin esfuerzo.
-            </p>
-            
             <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                ¿Cuánto quieres ahorrar?
-              </label>
-              <div className="flex items-center">
-                <span className="text-gray-500 text-lg mr-2">€</span>
-                <input
-                  type="number"
-                  min="10"
-                  value={savingGoal}
-                  onChange={(e) => setSavingGoal(parseInt(e.target.value) || 0)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-lg"
-                />
+              <h2 className="text-lg font-medium text-text-primary mb-3">
+                ¿En qué rango están tus ingresos mensuales?
+              </h2>
+              
+              <div className="space-y-2">
+                {[
+                  { value: "below_1000", label: "Menos de 1.000€" },
+                  { value: "1000_2000", label: "Entre 1.000€ y 2.000€" },
+                  { value: "2000_3500", label: "Entre 2.000€ y 3.500€" },
+                  { value: "above_3500", label: "Más de 3.500€" }
+                ].map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => setIncomeRange(option.value)}
+                    className={`w-full py-3 px-4 rounded-lg border text-left ${incomeRange === option.value
+                      ? "border-ahorro-600 bg-ahorro-50 text-ahorro-700"
+                      : "border-gray-200 text-text-primary hover:bg-gray-50"
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
               </div>
-            </div>
-            
-            <button
-              onClick={() => setStep(2)}
-              className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition"
-            >
-              Continuar
-            </button>
-          </>
-        ) : (
-          <>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              Frecuencia de ahorro
-            </h1>
-            <p className="text-gray-600 mb-6">
-              ¿Con qué frecuencia quieres que te ayudemos a ahorrar?
-            </p>
-            
-            <div className="space-y-3 mb-6">
-              {["diario", "semanal", "mensual"].map((frequency) => (
-                <button
-                  key={frequency}
-                  onClick={() => setSavingFrequency(frequency)}
-                  className={`w-full py-3 px-4 rounded-lg border ${
-                    savingFrequency === frequency
-                      ? "border-blue-600 bg-blue-50 text-blue-700"
-                      : "border-gray-300 text-gray-700"
-                  }`}
-                >
-                  {frequency === "diario" && "Diario"}
-                  {frequency === "semanal" && "Semanal"}
-                  {frequency === "mensual" && "Mensual"}
-                </button>
-              ))}
-            </div>
-            
-            <div className="flex space-x-3">
-              <button
-                onClick={() => setStep(1)}
-                className="w-1/3 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
-              >
-                Atrás
-              </button>
-              <button
-                onClick={handleComplete}
-                className="w-2/3 bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition"
-              >
-                Completar
-              </button>
             </div>
           </>
         )}
+        
+        {/* Paso 2: Relación con el dinero */}
+        {step === 2 && (
+          <>
+            <div className="mb-6">
+              <h2 className="text-lg font-medium text-text-primary mb-3">
+                ¿Cómo describirías tu relación con el dinero?
+              </h2>
+              
+              <div className="space-y-2">
+                {[
+                  { value: "reactive", label: "Reactiva: gasto sin pensar mucho" },
+                  { value: "avoidant", label: "Evitativa: prefiero no mirar mis finanzas" },
+                  { value: "anxious", label: "Ansiosa: me preocupo constantemente" },
+                  { value: "planning", label: "Planificadora: intento organizarme" }
+                ].map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => setMoneyFeeling(option.value)}
+                    className={`w-full py-3 px-4 rounded-lg border text-left ${moneyFeeling === option.value
+                      ? "border-ahorro-600 bg-ahorro-50 text-ahorro-700"
+                      : "border-gray-200 text-text-primary hover:bg-gray-50"
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+        
+        {/* Paso 3: Tipo de objetivo */}
+        {step === 3 && (
+          <>
+            <div className="mb-6">
+              <h2 className="text-lg font-medium text-text-primary mb-3">
+                ¿Qué tipo de objetivo te gustaría alcanzar primero?
+              </h2>
+              
+              <div className="space-y-2">
+                {[
+                  { value: "travel", label: "Viaje" },
+                  { value: "emergency", label: "Fondo de emergencia" },
+                  { value: "purchase", label: "Compra importante" },
+                  { value: "freedom", label: "Libertad financiera" }
+                ].map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => setGoalType(option.value)}
+                    className={`w-full py-3 px-4 rounded-lg border text-left ${goalType === option.value
+                      ? "border-ahorro-600 bg-ahorro-50 text-ahorro-700"
+                      : "border-gray-200 text-text-primary hover:bg-gray-50"
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+        
+        {/* Botones de navegación */}
+        <div className="flex space-x-3">
+          {step > 1 && (
+            <button
+              onClick={handleBack}
+              className="w-1/3 py-3 border border-gray-300 rounded-lg text-text-primary hover:bg-gray-50 transition"
+            >
+              Atrás
+            </button>
+          )}
+          
+          <button
+            onClick={handleNext}
+            disabled={step === 1 && !incomeRange || step === 2 && !moneyFeeling || step === 3 && !goalType}
+            className={`${step > 1 ? 'w-2/3' : 'w-full'} bg-ahorro-600 text-white py-3 rounded-lg font-medium hover:bg-ahorro-700 transition disabled:opacity-50 disabled:cursor-not-allowed`}
+          >
+            {step < 3 ? "Siguiente" : "Empezar"}
+          </button>
+        </div>
       </div>
     </main>
   );
