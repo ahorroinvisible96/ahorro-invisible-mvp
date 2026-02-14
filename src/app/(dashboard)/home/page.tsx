@@ -3,6 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowUpIcon, ArrowDownIcon } from '@heroicons/react/24/solid';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 
 export default function HomePage() {
   const router = useRouter();
@@ -10,6 +13,8 @@ export default function HomePage() {
   const [userName, setUserName] = useState('');
   const [savingsProgress, setSavingsProgress] = useState(0);
   const [recentDecisions, setRecentDecisions] = useState<any[]>([]);
+  const [activeTimeframe, setActiveTimeframe] = useState('1M');
+  const [goalName, setGoalName] = useState('Viaje a Japón');
   
   useEffect(() => {
     // Verificar autenticación
@@ -103,95 +108,173 @@ export default function HomePage() {
   
   if (!userData) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-ahorro-500"></div>
       </div>
     );
   }
   
+  // Datos para el gráfico de barras (simulados)
+  const barChartData = [
+    { month: 'Ene', value: 20 },
+    { month: 'Feb', value: 35 },
+    { month: 'Mar', value: 25 },
+    { month: 'Abr', value: 40 },
+    { month: 'May', value: 30 },
+    { month: 'Jun', value: 45 },
+    { month: 'Jul', value: 55 },
+    { month: 'Ago', value: 50 },
+    { month: 'Sep', value: 60 },
+    { month: 'Oct', value: 70 },
+    { month: 'Nov', value: 65 },
+    { month: 'Dic', value: 75 },
+  ];
+  
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      <div className="bg-blue-600 text-white p-6">
-        <h1 className="text-xl font-semibold">Hola, {userName}</h1>
-        <p className="text-sm opacity-90">Resumen de tu ahorro invisible</p>
-      </div>
-      
-      {/* Tarjeta principal */}
-      <div className="px-4 -mt-6">
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-medium text-gray-700">Tu progreso</h2>
-            <span className="text-sm text-gray-500">Meta: {formatCurrency(userData.savingGoal)}</span>
+    <div className="p-6 bg-background">
+      {/* Header */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-semibold text-text-primary">Hola, {userName}</h1>
+            <p className="text-text-secondary mt-1">Tus ahorros crecen mientras brilla el día. ✨</p>
           </div>
-          
-          <div className="mb-2 flex justify-between text-sm">
-            <span className="font-medium">{formatCurrency(userData.currentSaving)}</span>
-            <span>{savingsProgress.toFixed(0)}%</span>
+          <div className="flex items-center">
+            <div className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full flex items-center mr-3">
+              <span className="w-2 h-2 bg-green-500 rounded-full mr-1"></span>
+              <span>SISTEMA ACTIVO</span>
+            </div>
           </div>
-          
-          <div className="w-full bg-gray-200 rounded-full h-2.5 mb-6">
-            <div 
-              className="bg-blue-600 h-2.5 rounded-full" 
-              style={{ width: `${Math.min(savingsProgress, 100)}%` }}
-            ></div>
-          </div>
-          
-          <button
-            onClick={handleAddSaving}
-            className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition"
-          >
-            Añadir ahorro de 5€
-          </button>
         </div>
       </div>
       
-      {/* Actividad reciente */}
-      <div className="px-4 mt-6">
-        <h2 className="text-lg font-medium text-gray-700 mb-3">Actividad reciente</h2>
+      {/* Objetivo Principal */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-ahorro-600 mr-2" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zM12 2a1 1 0 01.967.744L14.146 7.2 17.5 9.134a1 1 0 010 1.732l-3.354 1.935-1.18 4.455a1 1 0 01-1.933 0L9.854 12.8 6.5 10.866a1 1 0 010-1.732l3.354-1.935 1.18-4.455A1 1 0 0112 2z" clipRule="evenodd" />
+            </svg>
+            <span className="text-xs uppercase tracking-wider text-ahorro-600 font-medium">OBJETIVO PRINCIPAL</span>
+          </div>
+          <div className="bg-ahorro-600 text-white text-xs font-medium px-3 py-1 rounded-full">
+            12 MESES
+          </div>
+        </div>
         
-        {recentDecisions.length > 0 ? (
-          <div className="bg-white rounded-xl shadow-lg divide-y">
-            {recentDecisions.map((decision) => (
-              <div key={decision.id} className="p-4 flex items-center">
-                <div className={`rounded-full p-2 mr-3 ${
-                  decision.type === 'saving' ? 'bg-green-100' : 'bg-red-100'
-                }`}>
-                  {decision.type === 'saving' ? (
-                    <ArrowUpIcon className="h-5 w-5 text-green-600" />
-                  ) : (
-                    <ArrowDownIcon className="h-5 w-5 text-red-600" />
-                  )}
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-700">{decision.description}</p>
-                  <p className="text-xs text-gray-500">
-                    {new Date(decision.date).toLocaleDateString()}
-                  </p>
-                </div>
-                <span className={`font-medium ${
-                  decision.type === 'saving' ? 'text-green-600' : 'text-red-600'
-                }`}>
-                  {decision.type === 'saving' ? '+' : '-'}{formatCurrency(decision.amount)}
-                </span>
+        <div className="flex flex-col">
+          <h2 className="text-2xl font-semibold text-text-primary mb-4">{goalName}</h2>
+          
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-2xl font-bold">
+              {formatCurrency(userData.currentSaving)}
+              <span className="text-text-secondary text-sm font-normal ml-1">/ {formatCurrency(userData.savingGoal)}</span>
+            </div>
+            <div className="text-ahorro-600 text-xl font-bold">
+              {savingsProgress.toFixed(0)}%
+            </div>
+          </div>
+          
+          <Progress 
+            value={savingsProgress} 
+            className="mb-4" 
+            size="md" 
+            color="blue" 
+          />
+          
+          <p className="text-text-secondary text-sm">
+            Te faltan <span className="font-semibold">{formatCurrency(userData.savingGoal - userData.currentSaving)}</span> para completar tu meta. ¡Sigue así!
+          </p>
+        </div>
+      </div>
+      
+      {/* Mis Objetivos */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold text-text-primary">Mis Objetivos</h2>
+          <Button variant="primary" size="sm">
+            + Nuevo Objetivo
+          </Button>
+        </div>
+        
+        <Card bordered highlight className="overflow-hidden">
+          <CardHeader className="bg-ahorro-50 py-3 px-4">
+            <div className="flex items-center">
+              <div className="bg-white p-1 rounded mr-2">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-ahorro-600" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M5.5 16a3.5 3.5 0 01-.369-6.98 4 4 0 117.753-1.977A4.5 4.5 0 1113.5 16h-8z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium">{goalName}</h3>
+                <p className="text-xs text-text-secondary">12 MESES</p>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="p-4">
+            <Progress 
+              value={savingsProgress} 
+              className="mb-2" 
+              size="sm" 
+              color="blue" 
+            />
+            <div className="flex items-center justify-between text-sm">
+              <span>{formatCurrency(userData.currentSaving)} / {formatCurrency(userData.savingGoal)}</span>
+              <span className="text-ahorro-600">{savingsProgress.toFixed(0)}%</span>
+            </div>
+            <div className="mt-3 text-right">
+              <button className="text-xs text-accent-red hover:underline">Archivar</button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+      
+      {/* Evolución del Ahorro */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold text-text-primary">Evolución del Ahorro</h2>
+          <div className="flex space-x-1 bg-gray-100 rounded-lg p-1">
+            {['1D', '1S', '1M', '3M', '6M', '1A'].map((timeframe) => (
+              <button
+                key={timeframe}
+                className={`text-xs px-3 py-1 rounded-lg ${activeTimeframe === timeframe ? 'bg-ahorro-600 text-white' : 'text-text-secondary'}`}
+                onClick={() => setActiveTimeframe(timeframe)}
+              >
+                {timeframe}
+              </button>
+            ))}
+          </div>
+        </div>
+        
+        <Card className="p-4">
+          <div className="h-48 flex items-end justify-between">
+            {barChartData.map((bar, index) => (
+              <div key={index} className="flex flex-col items-center">
+                <div 
+                  className="w-6 bg-ahorro-500 rounded-t-sm" 
+                  style={{ height: `${bar.value * 2}px` }}
+                ></div>
+                <span className="text-xs text-text-secondary mt-2">{bar.month}</span>
               </div>
             ))}
           </div>
-        ) : (
-          <div className="bg-white rounded-xl shadow-lg p-6 text-center">
-            <p className="text-gray-500">No hay actividad reciente</p>
-          </div>
-        )}
+        </Card>
       </div>
       
-      {/* Consejos de ahorro */}
-      <div className="px-4 mt-6">
-        <h2 className="text-lg font-medium text-gray-700 mb-3">Consejos de ahorro</h2>
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h3 className="font-medium text-gray-800 mb-2">Ahorra en tus compras diarias</h3>
-          <p className="text-gray-600 text-sm">
-            Compara precios antes de comprar y aprovecha las ofertas para ahorrar más sin esfuerzo.
-          </p>
-        </div>
+      {/* Tarjeta de Ahorro */}
+      <div>
+        <Card className="bg-ahorro-600 text-white overflow-hidden">
+          <CardContent className="p-6">
+            <h3 className="text-2xl font-bold mb-2">Tu Ahorro es Imparable.</h3>
+            <p className="text-white/80 mb-6">Intensidad:</p>
+            <div className="mb-1 font-medium">MEDIUM</div>
+            <p className="text-sm text-white/80 mb-6">¡Vas por buen camino!</p>
+            
+            <Button variant="outline" className="bg-white/20 border-white/30 text-white hover:bg-white/30">
+              AJUSTAR REGLAS
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
