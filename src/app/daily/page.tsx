@@ -284,7 +284,7 @@ export default function DailyQuestionPage() {
           )}
           
           {dailyQuestion && (
-            <>
+            <Card className="p-6">
               <div className="mb-6">
                 <h2 className="text-lg font-medium text-text-primary mb-4">
                   {dailyQuestion.text}
@@ -336,9 +336,8 @@ export default function DailyQuestionPage() {
               <p className="text-xs text-text-secondary text-center mt-4">
                 Estimación educativa. No es asesoramiento financiero.
               </p>
-            </>
+            </Card>
           )}
-        </Card>
       </div>
     </main>
   );
