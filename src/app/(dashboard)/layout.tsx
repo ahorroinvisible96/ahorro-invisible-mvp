@@ -54,7 +54,7 @@ export default function DashboardLayout({
   return (
     <div className="flex h-screen">
       {/* Sidebar */}
-      <aside className="w-64 flex flex-col" style={{ backgroundColor: '#1E293B', color: '#FFFFFF' }}>
+      <aside className="w-64 flex flex-col" style={{ backgroundColor: '#FFFFF2', color: '#FFFFFF' }}>
         {/* Logo */}
         <div className="p-4 flex items-center gap-2">
           <div className="w-8 h-8 rounded-md bg-ahorro-500 flex items-center justify-center text-white font-bold">
