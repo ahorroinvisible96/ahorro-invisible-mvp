@@ -62,24 +62,34 @@ type ScreenName =
 class Analytics {
   private globalProps: GlobalProps = {
     platform: 'web',
-    app_version: '1.0.0',
-    device_locale: navigator.language,
-    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+    app_version: '1.1.0',
+    device_locale: 'es-ES', // Valor por defecto para SSR
+    timezone: 'Europe/Madrid' // Valor por defecto para SSR
   };
 
   constructor() {
-    // Generar session_id al iniciar
-    this.globalProps.session_id = `session_${Date.now()}`;
-    
-    // Intentar obtener user_id si está autenticado
-    try {
-      const userEmail = localStorage.getItem("userEmail");
-      if (userEmail) {
-        // Usar email como user_id simplificado para el MVP
-        this.globalProps.user_id = userEmail;
+    // Solo ejecutar código del lado del cliente
+    if (typeof window !== 'undefined') {
+      // Generar session_id al iniciar
+      this.globalProps.session_id = `session_${Date.now()}`;
+      
+      // Actualizar propiedades del navegador solo en cliente
+      this.globalProps.device_locale = navigator.language || 'es-ES';
+      this.globalProps.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Madrid';
+      
+      // Intentar obtener user_id si está autenticado
+      try {
+        const userEmail = localStorage.getItem("userEmail");
+        if (userEmail) {
+          // Usar email como user_id simplificado para el MVP
+          this.globalProps.user_id = userEmail;
+        }
+      } catch (error) {
+        // Ignorar error de localStorage en SSR
       }
-    } catch (err) {
-      console.error("Error al obtener user_id:", err);
+    } else {
+      // Valores por defecto para SSR
+      this.globalProps.session_id = 'session_server';
     }
   }
 
