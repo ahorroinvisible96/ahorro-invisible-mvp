@@ -6,10 +6,15 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   env: {
     APP_NAME: 'Ahorro Invisible',
-    APP_VERSION: '1.0.0',
+    APP_VERSION: '1.1.0',
   },
   images: {
-    domains: ['localhost'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'localhost',
+      },
+    ],
   },
 };
 
