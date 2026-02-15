@@ -226,20 +226,20 @@ export default function DashboardPage() {
   
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F5F5F0' }}>
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-ahorro-500"></div>
       </div>
     );
   }
   
   return (
-    <div className="p-6 bg-background">
+    <div className="p-6" style={{ backgroundColor: '#F5F5F0' }}>
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div className="mb-6">
-            <h1 className="text-2xl font-semibold text-text-primary mb-2">Hola, {userName}</h1>
-            <p className="text-text-secondary">Tus ahorros crecen mientras brilla el día. ✨</p>
+            <h1 className="text-2xl font-semibold mb-2" style={{ color: '#1F2937' }}>Hola, {userName}</h1>
+            <p style={{ color: '#6B7280' }}>Tus ahorros crecen mientras brilla el día. ✨</p>
           </div>
           <div className="flex items-center">
             <div className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full flex items-center">

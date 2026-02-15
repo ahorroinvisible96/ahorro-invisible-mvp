@@ -54,7 +54,7 @@ export default function DashboardLayout({
   return (
     <div className="flex h-screen">
       {/* Sidebar */}
-      <aside className="w-64 bg-ahorro-700 text-light flex flex-col">
+      <aside className="w-64 flex flex-col" style={{ backgroundColor: '#1E293B', color: '#FFFFFF' }}>
         {/* Logo */}
         <div className="p-4 flex items-center gap-2">
           <div className="w-8 h-8 rounded-md bg-ahorro-500 flex items-center justify-center text-white font-bold">
@@ -155,7 +155,7 @@ export default function DashboardLayout({
       </aside>
       
       {/* Main content */}
-      <main className="flex-1 overflow-auto bg-background" style={{ backgroundImage: 'linear-gradient(#F5F5F0 1px, transparent 1px), linear-gradient(90deg, #F5F5F0 1px, #F5F5F0 1px)', backgroundSize: '20px 20px', backgroundPosition: '0 0' }}>
+      <main className="flex-1 overflow-auto" style={{ backgroundColor: '#F5F5F0', backgroundImage: 'linear-gradient(#F5F5F0 1px, transparent 1px), linear-gradient(90deg, #F5F5F0 1px, #F5F5F0 1px)', backgroundSize: '20px 20px', backgroundPosition: '0 0', color: '#1F2937' }}>
         {children}
       </main>
     </div>
