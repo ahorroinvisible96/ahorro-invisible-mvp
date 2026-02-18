@@ -226,14 +226,14 @@ export default function DashboardPage() {
   
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F5F5F0' }}>
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-ahorro-500"></div>
       </div>
     );
   }
   
   return (
-    <div className="p-6 bg-background">
+    <div className="p-6" style={{ backgroundColor: '#F5F5F0' }}>
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between">
@@ -255,12 +255,12 @@ export default function DashboardPage() {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-ahorro-500" viewBox="0 0 20 20" fill="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" style={{ color: '#2F63FF' }}>
                 <path fillRule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zM12 2a1 1 0 01.967.744L14.146 7.2 17.5 9.134a1 1 0 010 1.732l-3.354 1.935-1.18 4.455a1 1 0 01-1.933 0L9.854 12.8 6.5 10.866a1 1 0 010-1.732l3.354-1.935 1.18-4.455A1 1 0 0112 2z" clipRule="evenodd" />
               </svg>
-              <span className="text-xs uppercase tracking-wider text-ahorro-500 font-medium">OBJETIVO PRINCIPAL</span>
+              <span className="text-xs uppercase tracking-wider font-medium" style={{ color: '#2F63FF' }}>OBJETIVO PRINCIPAL</span>
             </div>
-            <div className="bg-ahorro-500 text-white text-xs font-medium px-4 py-1.5 rounded-full">
+            <div className="text-white text-xs font-medium px-4 py-1.5 rounded-full" style={{ backgroundColor: '#2F63FF' }}>
               12 MESES
             </div>
           </div>
@@ -273,13 +273,13 @@ export default function DashboardPage() {
                 1500€
                 <span className="text-gray-500 text-sm font-normal ml-1">/ 5000€</span>
               </div>
-              <div className="text-ahorro-500 text-xl font-bold">
+              <div className="text-xl font-bold" style={{ color: '#2F63FF' }}>
                 30%
               </div>
             </div>
             
             <div className="w-full bg-gray-100 rounded-full h-2.5 mb-4">
-              <div className="bg-ahorro-500 h-2.5 rounded-full" style={{ width: '30%' }}></div>
+              <div className="h-2.5 rounded-full" style={{ width: '30%', backgroundColor: '#2F63FF' }}></div>
             </div>
             
             <p className="text-gray-500 text-sm">
@@ -310,16 +310,16 @@ export default function DashboardPage() {
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-gray-800">Mis Objetivos</h2>
-          <Button variant="primary" size="sm" onClick={handleCreateGoal} className="bg-ahorro-500 text-white rounded-full px-4 py-2 text-sm font-medium">
+          <button onClick={handleCreateGoal} className="text-white rounded-full px-4 py-2 text-sm font-medium" style={{ backgroundColor: '#2F63FF' }}>
             + Nuevo Objetivo
-          </Button>
+          </button>
         </div>
         
         <div className="border border-blue-100 rounded-xl overflow-hidden">
           <div className="bg-white p-4">
             <div className="flex items-center mb-3">
               <div className="bg-blue-50 p-2 rounded-lg mr-3">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-ahorro-500" viewBox="0 0 20 20" fill="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" style={{ color: '#2F63FF' }}>
                   <path d="M5.5 16a3.5 3.5 0 01-.369-6.98 4 4 0 117.753-1.977A4.5 4.5 0 1113.5 16h-8z" />
                 </svg>
               </div>
@@ -328,17 +328,17 @@ export default function DashboardPage() {
                 <p className="text-xs text-gray-500">12 MESES</p>
               </div>
               <div className="ml-auto">
-                <span className="bg-ahorro-500 text-white text-xs px-3 py-1 rounded-md font-medium">PRINCIPAL</span>
+                <span className="text-white text-xs px-3 py-1 rounded-md font-medium" style={{ backgroundColor: '#2F63FF' }}>PRINCIPAL</span>
               </div>
             </div>
             
             <div className="w-full bg-gray-100 rounded-full h-2 mb-2">
-              <div className="bg-ahorro-500 h-2 rounded-full" style={{ width: '30%' }}></div>
+              <div className="h-2 rounded-full" style={{ width: '30%', backgroundColor: '#2F63FF' }}></div>
             </div>
             
             <div className="flex items-center justify-between text-sm">
               <span className="text-gray-600">1500€ / 5000€</span>
-              <span className="text-ahorro-500 font-medium">30%</span>
+              <span className="font-medium" style={{ color: '#2F63FF' }}>30%</span>
             </div>
             
             <div className="mt-3 text-right">
@@ -360,7 +360,8 @@ export default function DashboardPage() {
             {['7D', '30D', '90D'].map((range) => (
               <button
                 key={range}
-                className={`text-xs px-3 py-1 rounded-lg ${range === '30D' ? 'bg-ahorro-500 text-white' : 'text-gray-600'}`}
+                className={`text-xs px-3 py-1 rounded-lg ${range === '30D' ? 'text-white' : 'text-gray-600'}`}
+                  style={range === '30D' ? { backgroundColor: '#2F63FF' } : {}}
                 onClick={() => handleSavingsRangeChange(range.toLowerCase())}
               >
                 {range}
@@ -376,8 +377,8 @@ export default function DashboardPage() {
                 {[20, 30, 25, 35, 40, 45, 50, 55, 60, 65, 70].map((height, index) => (
                   <div 
                     key={index} 
-                    className="bg-ahorro-500 rounded-t-md w-6" 
-                    style={{ height: `${height}%` }}
+                    className="rounded-t-md w-6" 
+                    style={{ height: `${height}%`, backgroundColor: '#2F63FF' }}
                   ></div>
                 ))}
               </div>
@@ -391,7 +392,7 @@ export default function DashboardPage() {
       
       {/* Tarjeta motivacional */}
       <div>
-        <div className="bg-ahorro-500 text-white overflow-hidden rounded-xl p-6">
+        <div className="text-white overflow-hidden rounded-xl p-6" style={{ backgroundColor: '#2F63FF' }}>
           <h3 className="text-xl font-bold mb-2">Tu Ahorro es<br/>imparable.</h3>
           <p className="text-white/80 mb-1">Intensidad:</p>
           <p className="text-white font-medium mb-6">MEDIUM - ¡Vas por<br/>buen camino!</p>

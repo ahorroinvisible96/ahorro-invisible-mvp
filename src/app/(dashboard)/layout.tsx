@@ -101,11 +101,11 @@ export default function DashboardLayout({
   return (
     <div className="flex h-screen">
       {/* Sidebar */}
-      <aside className="w-64 flex flex-col bg-ahorro-700 text-white">
+      <aside className="w-64 flex flex-col text-white" style={{ backgroundColor: '#0B1E3B' }}>
         {/* Logo */}
         <div className="px-6 pt-6 pb-5">
           <div className="flex items-center gap-3">
-            <div className="h-11 w-11 rounded-xl bg-ahorro-500 flex items-center justify-center shadow-[0_10px_30px_rgba(47,99,255,0.35)]">
+            <div className="h-11 w-11 rounded-xl flex items-center justify-center shadow-[0_10px_30px_rgba(47,99,255,0.35)]" style={{ backgroundColor: '#2F63FF' }}>
               <SparkIcon className="h-6 w-6 text-white" />
             </div>
             <div className="leading-tight">
@@ -138,9 +138,10 @@ export default function DashboardLayout({
                   className={[
                     "group relative flex items-center gap-3 rounded-xl px-4 py-3 transition",
                     active
-                      ? "bg-ahorro-500 shadow-[0_14px_30px_rgba(47,99,255,0.28)]"
+                      ? "shadow-[0_14px_30px_rgba(47,99,255,0.28)]"
                       : "text-white/85 hover:bg-white/5 hover:text-white",
                   ].join(" ")}
+                  style={active ? { backgroundColor: '#2F63FF' } : {}}
                 >
                   <span
                     className={[
@@ -189,7 +190,7 @@ export default function DashboardLayout({
       </aside>
       
       {/* Main content */}
-      <main className="flex-1 overflow-auto bg-background text-text-primary" style={{ backgroundImage: 'linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px)', backgroundSize: '20px 20px', backgroundPosition: '0 0' }}>
+      <main className="flex-1 overflow-auto text-gray-800" style={{ backgroundColor: '#F5F5F0', backgroundImage: 'linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px)', backgroundSize: '20px 20px', backgroundPosition: '0 0' }}>
         {children}
       </main>
     </div>
