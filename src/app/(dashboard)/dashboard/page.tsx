@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { analytics } from '@/services/analytics';
+import styles from './Dashboard.module.css';
 
 interface Goal {
   id: string;
@@ -242,9 +243,9 @@ export default function DashboardPage() {
             <p className="text-gray-500">Tus ahorros crecen mientras brilla el día. ✨</p>
           </div>
           <div className="flex items-center">
-            <div className="bg-green-50 text-green-600 text-xs px-3 py-1.5 rounded-full flex items-center gap-2 border border-green-200 shadow-sm">
-              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-              <span className="tracking-wider font-semibold">SISTEMA ACTIVO</span>
+            <div className={styles.badgeActivo}>
+              <span className={styles.badgeDot}></span>
+              <span className="tracking-wider">SISTEMA ACTIVO</span>
             </div>
           </div>
         </div>
@@ -255,17 +256,17 @@ export default function DashboardPage() {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" style={{ color: '#2F63FF' }}>
+              <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${styles.textAzul}`} viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zM12 2a1 1 0 01.967.744L14.146 7.2 17.5 9.134a1 1 0 010 1.732l-3.354 1.935-1.18 4.455a1 1 0 01-1.933 0L9.854 12.8 6.5 10.866a1 1 0 010-1.732l3.354-1.935 1.18-4.455A1 1 0 0112 2z" clipRule="evenodd" />
               </svg>
-              <span className="text-xs uppercase tracking-wider font-medium" style={{ color: '#2F63FF' }}>OBJETIVO PRINCIPAL</span>
+              <span className={`text-xs uppercase tracking-wider font-medium ${styles.textAzul}`}>OBJETIVO PRINCIPAL</span>
             </div>
-            <div className="text-white text-xs font-medium px-4 py-1.5 rounded-full" style={{ backgroundColor: '#2F63FF' }}>
+            <div className={`text-xs font-medium ${styles.pillAzul}`}>
               12 MESES
             </div>
           </div>
           
-          <div className="flex flex-col">
+          <div className={`flex flex-col ${styles.objetivoPrincipal}`}>
             <h2 className="text-2xl font-semibold text-gray-800 mb-4">Viaje a Japón</h2>
             
             <div className="flex items-center justify-between mb-2">
@@ -273,13 +274,13 @@ export default function DashboardPage() {
                 1500€
                 <span className="text-gray-500 text-sm font-normal ml-1">/ 5000€</span>
               </div>
-              <div className="text-xl font-bold" style={{ color: '#2F63FF' }}>
+              <div className={`text-xl font-bold ${styles.textAzul}`}>
                 30%
               </div>
             </div>
             
-            <div className="w-full bg-gray-100 rounded-full h-2.5 mb-4">
-              <div className="h-2.5 rounded-full" style={{ width: '30%', backgroundColor: '#2F63FF' }}></div>
+            <div className={`${styles.progresoBarraWrap} mb-4`}>
+              <div className={styles.progresoBarraFill} style={{ width: '30%' }}></div>
             </div>
             
             <p className="text-gray-500 text-sm">
@@ -310,16 +311,16 @@ export default function DashboardPage() {
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-gray-800">Mis Objetivos</h2>
-          <button onClick={handleCreateGoal} className="text-white rounded-full px-4 py-2 text-sm font-medium" style={{ backgroundColor: '#2F63FF' }}>
+          <button onClick={handleCreateGoal} className={`${styles.botonPrimario} text-sm`}>
             + Nuevo Objetivo
           </button>
         </div>
         
-        <div className="border border-blue-200 rounded-xl overflow-hidden shadow-sm">
+        <div className={`${styles.cardObjetivos} ${styles.cardHover}`}>
           <div className="bg-white p-4">
             <div className="flex items-center mb-3">
               <div className="bg-blue-50 p-2 rounded-lg mr-3">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" style={{ color: '#2F63FF' }}>
+                <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${styles.textAzul}`} viewBox="0 0 20 20" fill="currentColor">
                   <path d="M5.5 16a3.5 3.5 0 01-.369-6.98 4 4 0 117.753-1.977A4.5 4.5 0 1113.5 16h-8z" />
                 </svg>
               </div>
@@ -328,17 +329,17 @@ export default function DashboardPage() {
                 <p className="text-xs text-gray-500">12 MESES</p>
               </div>
               <div className="ml-auto">
-                <span className="text-white text-xs px-3 py-1 rounded-md font-medium" style={{ backgroundColor: '#2F63FF' }}>PRINCIPAL</span>
+                <span className={`${styles.pillAzul} text-xs font-medium`}>PRINCIPAL</span>
               </div>
             </div>
             
-            <div className="w-full bg-gray-100 rounded-full h-2 mb-2">
-              <div className="h-2 rounded-full" style={{ width: '30%', backgroundColor: '#2F63FF' }}></div>
+            <div className={`${styles.progresoBarraWrap} mb-2`}>
+              <div className={styles.progresoBarraFill} style={{ width: '30%' }}></div>
             </div>
             
             <div className="flex items-center justify-between text-sm">
               <span className="text-gray-600">1500€ / 5000€</span>
-              <span className="font-medium" style={{ color: '#2F63FF' }}>30%</span>
+              <span className={`font-medium ${styles.textAzul}`}>30%</span>
             </div>
             
             <div className="mt-3 text-right">
@@ -372,15 +373,15 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="p-6 bg-white rounded-2xl shadow-sm border border-gray-100">
+          <div className={styles.cardEvolucion}>
             <div className="flex items-center justify-center h-48">
               <div className="w-full">
                 <div className="flex justify-center items-end h-40 space-x-2">
                   {[20, 30, 25, 35, 40, 45, 50, 55, 60, 65, 70].map((height, index) => (
                     <div
                       key={index}
-                      className="rounded-t-md w-6"
-                      style={{ height: `${height}%`, backgroundColor: '#2F63FF' }}
+                      className={`rounded-t-md w-6 ${styles.barraAzul}`}
+                      style={{ height: `${height}%` }}
                     ></div>
                   ))}
                 </div>
@@ -394,13 +395,13 @@ export default function DashboardPage() {
 
         {/* Tarjeta motivacional */}
         <div className="lg:col-span-4">
-          <div className="text-white overflow-hidden rounded-2xl p-6 shadow-[0_14px_30px_rgba(47,99,255,0.35)]" style={{ backgroundColor: '#2F63FF' }}>
+          <div className={styles.tarjetaMotivacionalGradiente}>
             <h3 className="text-2xl font-bold mb-2 leading-tight">Tu Ahorro es<br/>imparable.</h3>
             <p className="text-white/80 mb-1">Intensidad:</p>
             <p className="text-white font-medium mb-6 leading-snug">MEDIUM - ¡Vas por<br/>buen camino!</p>
 
             <button
-              className="bg-white/20 border border-white/30 text-white hover:bg-white/30 px-6 py-2.5 rounded-lg uppercase text-sm font-medium tracking-wide"
+              className={`${styles.botonPrimario} bg-white/20 border border-white/30 text-white hover:bg-white/30 px-6 py-2.5 rounded-lg uppercase text-sm font-medium tracking-wide`}
             >
               Ajustar<br/>Reglas
             </button>

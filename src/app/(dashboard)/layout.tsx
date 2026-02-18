@@ -4,6 +4,8 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { analytics } from '@/services/analytics';
+import styles from './Sidebar.module.css';
+import mainStyles from './MainContent.module.css';
 
 // Iconos SVG
 const SparkIcon = ({ className }: { className?: string }) => (
@@ -39,10 +41,7 @@ const GearIcon = ({ className }: { className?: string }) => (
 
 const LogoutIcon = ({ className }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className}>
-    <path fillRule="evenodd" d="M7.5 3.75A1.5 1.5 0 006 5.25v13.5a1.5 1.5 0 001.5 1.5h6a1.5 1.5 0 001.5-1.5V15a.75.75 0 011.5 0v3.75a3 3 0 01-3 3h-6a3 3 0 01-3-3V5.25a3 3 0 013-3h6a3 3 0 013 3V9a.75.75 0 01-1.5 0V5.25a1.5 1.5 0 00-1.5-1.5h-6z" clipRule="evenodd" />
-    <path fillRule="evenodd" d="M15.75 9a.75.75 0 01.75-.75h5.25a.75.75 0 010 1.5H16.5a.75.75 0 01-.75-.75z" clipRule="evenodd" />
-    <path fillRule="evenodd" d="M20.663 9.75a.75.75 0 010 1.06l-3 3a.75.75 0 01-1.06-1.06l3-3a.75.75 0 011.06 0z" clipRule="evenodd" />
-    <path fillRule="evenodd" d="M16.5 14.25a.75.75 0 01.75-.75h3.75a.75.75 0 010 1.5H17.25a.75.75 0 01-.75-.75z" clipRule="evenodd" />
+    <path fillRule="evenodd" d="M7.5 3.75A1.5 1.5 0 006 5.25v13.5a1.5 1.5 0 001.5 1.5h6a1.5 1.5 0 001.5-1.5V15a.75.75 0 011.5 0v3.75a3 3 0 01-3 3h-6a3 3 0 01-3-3V5.25a3 3 0 013-3h6a3 3 0 013 3V9A.75.75 0 0115 9V5.25a1.5 1.5 0 00-1.5-1.5h-6zm10.72 4.72a.75.75 0 011.06 0l3 3a.75.75 0 010 1.06l-3 3a.75.75 0 11-1.06-1.06l1.72-1.72H9a.75.75 0 010-1.5h10.94l-1.72-1.72a.75.75 0 010-1.06z" clipRule="evenodd" />
   </svg>
 );
 
@@ -101,23 +100,23 @@ export default function DashboardLayout({
   return (
     <div className="flex h-screen">
       {/* Sidebar */}
-      <aside className="w-64 flex flex-col text-white" style={{ backgroundColor: '#0B1E3B', width: '256px' }}>
+      <aside className={styles.sidebarContainer} style={{ backgroundColor: '#0B1E3B' }}>
         {/* Logo */}
-        <div className="px-6 pt-6 pb-5">
+        <div className={styles.logoContainer}>
           <div className="flex items-center gap-3">
-            <div className="h-11 w-11 rounded-xl flex items-center justify-center shadow-[0_10px_30px_rgba(47,99,255,0.35)]" style={{ backgroundColor: '#2F63FF' }}>
+            <div className={styles.logoIcon} style={{ backgroundColor: '#2F63FF' }}>
               <SparkIcon className="h-6 w-6 text-white" />
             </div>
             <div className="leading-tight">
-              <div className="text-lg font-semibold">Ahorro</div>
-              <div className="text-xs tracking-[0.18em] opacity-80 -mt-0.5">INVISIBLE</div>
+              <div className={styles.logoText}>Ahorro</div>
+              <div className={styles.logoSubtext}>INVISIBLE</div>
             </div>
           </div>
         </div>
         
         {/* Menu */}
         <div className="px-3 py-6">
-          <div className="text-xs font-medium uppercase tracking-wider text-white/60 mb-3 px-3">
+          <div className={styles.menuHeader}>
             MENU PRINCIPAL
           </div>
           
@@ -127,32 +126,26 @@ export default function DashboardLayout({
               { href: "/profile", label: "Perfil", icon: UserIcon },
               { href: "/history", label: "Historial", icon: ClockIcon },
               { href: "/settings", label: "Ajustes", icon: GearIcon },
-            ].map((item) => {
-              const active = isActive(item.href) || (item.href === "/dashboard" && pathname === "/");
-              const Icon = item.icon;
-
+            ].map(({ href, label, icon: Icon }) => {
+              const active = isActive(href) || (href === '/dashboard' && pathname === '/');
+              
               return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={[
-                    "group relative flex items-center gap-3 rounded-xl px-4 py-3 transition",
-                    active
-                      ? "shadow-[0_14px_30px_rgba(47,99,255,0.28)]"
-                      : "text-white/85 hover:bg-white/5 hover:text-white",
-                  ].join(" ")}
-                  style={active ? { backgroundColor: '#2F63FF' } : {}}
+                <Link 
+                  key={href}
+                  href={href} 
+                  className={`group flex items-center gap-3 px-3 py-2 rounded-lg transition-all ${
+                    active ? styles.menuItemActive : styles.menuItem
+                  }`}
                 >
                   <span
-                    className={[
-                      "grid place-items-center h-9 w-9 rounded-xl transition",
-                      active ? "bg-white/10" : "bg-white/0 group-hover:bg-white/5",
-                    ].join(" ")}
+                    className={`grid place-items-center h-9 w-9 rounded-xl transition ${
+                      active ? styles.menuIconActive : ''
+                    }`}
                   >
                     <Icon className="h-5 w-5" />
                   </span>
 
-                  <span className="text-[15px] font-medium whitespace-nowrap overflow-hidden text-ellipsis">{item.label}</span>
+                  <span className={styles.menuLabel}>{label}</span>
 
                   {active && (
                     <span className="ml-auto opacity-90">
@@ -166,31 +159,28 @@ export default function DashboardLayout({
         </div>
         
         {/* User info - bottom */}
-        <div className="mt-auto px-4 pb-5">
-          <div className="mt-6 rounded-2xl bg-white/5 px-4 py-4 flex items-center gap-3">
-            <div className="h-11 w-11 rounded-2xl bg-white/10 flex items-center justify-center font-semibold">
+        <div className={styles.userSection}>
+          <div className="p-4 flex items-center">
+            <div className={styles.userAvatar}>
               {userName.charAt(0).toUpperCase()}
             </div>
-            <div className="min-w-0">
-              <div className="text-sm font-semibold truncate">{userName}</div>
-              <div className="text-xs text-white/60 truncate">{userName}</div>
+            <div className="ml-3">
+              <p className={styles.userName}>{userName}</p>
             </div>
           </div>
-
+          
           <button 
             onClick={handleLogout}
-            className="mt-3 w-full rounded-xl bg-white/5 hover:bg-white/10 transition px-4 py-3 text-left text-sm flex items-center gap-3"
+            className={styles.logoutButton}
           >
-            <span className="grid place-items-center h-9 w-9 rounded-xl bg-white/5">
-              <LogoutIcon className="h-5 w-5" />
-            </span>
-            <span>Cerrar Sesión</span>
+            <LogoutIcon className="h-5 w-5 mr-2 inline-block" />
+            Cerrar Sesión
           </button>
         </div>
       </aside>
       
       {/* Main content */}
-      <main className="flex-1 overflow-auto text-gray-800" style={{ backgroundColor: '#F5F5F0', backgroundImage: 'linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px)', backgroundSize: '20px 20px', backgroundPosition: '0 0' }}>
+      <main className={mainStyles.mainContainer} style={{ backgroundImage: 'linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px)', backgroundSize: '20px 20px', backgroundPosition: '0 0' }}>
         {children}
       </main>
     </div>

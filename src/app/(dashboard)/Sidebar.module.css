@@ -1,0 +1,120 @@
+/* Sidebar.module.css - Estilos para el sidebar y navegación */
+
+.sidebarContainer {
+  background: linear-gradient(90deg, #0B1E3B 0%, #1a2f4a 100%);
+  width: 256px;
+  height: 100vh;
+  color: #FFFFFF;
+}
+
+.logoContainer {
+  padding: 24px;
+}
+
+.logoIcon {
+  background: #2F63FF;
+  box-shadow: 0 10px 30px rgba(47, 99, 255, 0.35);
+  border-radius: 12px;
+  height: 44px;
+  width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logoText {
+  font-weight: 600;
+}
+
+.logoSubtext {
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  opacity: 0.8;
+  margin-top: -2px;
+}
+
+.menuHeader {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 0 12px;
+  margin-bottom: 12px;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-bottom: 2px;
+  color: rgba(255, 255, 255, 0.8);
+  transition: all 0.2s;
+}
+
+.menuItem:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #FFFFFF;
+}
+
+.menuItemActive {
+  background: #2F63FF;
+  color: #FFFFFF;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.menuIcon {
+  display: grid;
+  place-items: center;
+  height: 36px;
+  width: 36px;
+  border-radius: 8px;
+  margin-right: 12px;
+}
+
+.menuIconActive {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.menuLabel {
+  font-size: 15px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.userSection {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 16px;
+  margin-top: auto;
+}
+
+.userAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #2F63FF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+}
+
+.userName {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.logoutButton {
+  width: 100%;
+  text-align: left;
+  padding: 16px;
+  color: rgba(255, 255, 255, 0.7);
+  transition: all 0.2s;
+}
+
+.logoutButton:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
