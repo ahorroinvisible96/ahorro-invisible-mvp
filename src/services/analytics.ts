@@ -404,6 +404,11 @@ class Analytics {
     this.track('settings_viewed', { source: 'sidebar' });
   }
 
+  // Actualización de ajustes
+  settingsUpdated(changedFields?: string[]) {
+    this.track('settings_updated', { changed_fields: changedFields || [] });
+  }
+
   // Reinicio de onboarding
   onboardingReset() {
     this.track('onboarding_reset');
