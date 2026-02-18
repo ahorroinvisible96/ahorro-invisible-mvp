@@ -54,7 +54,7 @@ export default function DashboardLayout({
   return (
     <div className="flex h-screen">
       {/* Sidebar */}
-      <aside className="w-64 flex flex-col bg-blue-900 text-white">
+      <aside className="w-64 flex flex-col bg-ahorro-700 text-white">
         {/* Logo */}
         <div className="p-4 flex items-center gap-2">
           <div className="w-8 h-8 rounded-md bg-ahorro-500 flex items-center justify-center text-white font-bold">
@@ -78,7 +78,7 @@ export default function DashboardLayout({
               className={`flex items-center px-3 py-2 rounded-lg ${
                 isActive('/dashboard') || pathname === '/'
                   ? 'bg-ahorro-600 text-white' 
-                  : 'text-white/80 hover:bg-blue-800 hover:text-white'
+                  : 'text-white/80 hover:bg-ahorro-600 hover:text-white'
               }`}
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor">
@@ -92,7 +92,7 @@ export default function DashboardLayout({
               className={`flex items-center px-3 py-2 rounded-lg ${
                 isActive('/profile')
                   ? 'bg-ahorro-600 text-white' 
-                  : 'text-white/80 hover:bg-blue-800 hover:text-white'
+                  : 'text-white/80 hover:bg-ahorro-600 hover:text-white'
               }`}
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor">
@@ -106,7 +106,7 @@ export default function DashboardLayout({
               className={`flex items-center px-3 py-2 rounded-lg ${
                 isActive('/history')
                   ? 'bg-ahorro-600 text-white' 
-                  : 'text-white/80 hover:bg-blue-800 hover:text-white'
+                  : 'text-white/80 hover:bg-ahorro-600 hover:text-white'
               }`}
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor">
@@ -120,7 +120,7 @@ export default function DashboardLayout({
               className={`flex items-center px-3 py-2 rounded-lg ${
                 isActive('/settings')
                   ? 'bg-ahorro-600 text-white' 
-                  : 'text-white/80 hover:bg-blue-800 hover:text-white'
+                  : 'text-white/80 hover:bg-ahorro-600 hover:text-white'
               }`}
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor">
@@ -144,7 +144,7 @@ export default function DashboardLayout({
           
           <button 
             onClick={handleLogout}
-            className="w-full p-4 text-left text-sm text-white/70 hover:bg-blue-800 flex items-center"
+            className="w-full p-4 text-left text-sm text-white/70 hover:bg-ahorro-600 flex items-center"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V7.414l-5-5H3zm7 5a1 1 0 10-2 0v4a1 1 0 102 0V8zm-1 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
@@ -155,7 +155,7 @@ export default function DashboardLayout({
       </aside>
       
       {/* Main content */}
-      <main className="flex-1 overflow-auto" style={{ backgroundColor: '#F5F5F0', backgroundImage: 'linear-gradient(#F5F5F0 1px, transparent 1px), linear-gradient(90deg, #F5F5F0 1px, #F5F5F0 1px)', backgroundSize: '20px 20px', backgroundPosition: '0 0', color: '#1F2937' }}>
+      <main className="flex-1 overflow-auto bg-background text-text-primary" style={{ backgroundImage: 'linear-gradient(#F5F5F0 1px, transparent 1px), linear-gradient(90deg, #F5F5F0 1px, #F5F5F0 1px)', backgroundSize: '20px 20px', backgroundPosition: '0 0' }}>
         {children}
       </main>
     </div>

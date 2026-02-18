@@ -226,20 +226,20 @@ export default function DashboardPage() {
   
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F5F5F0' }}>
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-ahorro-500"></div>
       </div>
     );
   }
   
   return (
-    <div className="p-6" style={{ backgroundColor: '#F5F5F0' }}>
+    <div className="p-6 bg-background">
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div className="mb-6">
-            <h1 className="text-2xl font-semibold mb-2" style={{ color: '#1F2937' }}>Hola, {userName}</h1>
-            <p style={{ color: '#6B7280' }}>Tus ahorros crecen mientras brilla el día. ✨</p>
+            <h1 className="text-2xl font-semibold mb-2 text-text-primary">Hola, {userName}</h1>
+            <p className="text-text-secondary">Tus ahorros crecen mientras brilla el día. ✨</p>
           </div>
           <div className="flex items-center">
             <div className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full flex items-center">
@@ -266,12 +266,12 @@ export default function DashboardPage() {
           </div>
           
           <div className="flex flex-col">
-            <h2 className="text-xl font-semibold text-text-primary mb-4">Viaje a Japón</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Viaje a Japón</h2>
             
             <div className="flex items-center justify-between mb-2">
               <div className="text-xl font-bold">
                 1500€
-                <span className="text-text-secondary text-sm font-normal ml-1">/ 5000€</span>
+                <span className="text-gray-600 text-sm font-normal ml-1">/ 5000€</span>
               </div>
               <div className="text-ahorro-600 text-lg font-bold">
                 30%
@@ -285,7 +285,7 @@ export default function DashboardPage() {
               color="blue" 
             />
             
-            <p className="text-text-secondary text-sm">
+            <p className="text-gray-600 text-sm">
               Te faltan <span className="font-semibold">3500€</span> para completar tu meta. ¡Sigue así!
             </p>
           </div>
@@ -293,7 +293,7 @@ export default function DashboardPage() {
       ) : (
         <div className="mb-8">
           <Card className="p-6 text-center">
-            <p className="text-text-secondary mb-4">No tienes ningún objetivo configurado.</p>
+            <p className="text-gray-600 mb-4">No tienes ningún objetivo configurado.</p>
             <Button variant="primary" onClick={handleCreateGoal}>
               Crear objetivo
             </Button>
@@ -303,8 +303,8 @@ export default function DashboardPage() {
       
       {/* Ingresos mensuales */}
       <div className="mb-8">
-        <div className="text-xs uppercase tracking-wider text-text-secondary font-medium mb-2">INGRESOS MENSUALES</div>
-        <div className="text-xl font-semibold text-text-primary">
+        <div className="text-xs uppercase tracking-wider text-gray-600 font-medium mb-2">INGRESOS MENSUALES</div>
+        <div className="text-xl font-semibold text-gray-900">
           2.000 - 3.500 €
         </div>
       </div>
@@ -312,7 +312,7 @@ export default function DashboardPage() {
       {/* Mis Objetivos */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-text-primary">Mis Objetivos</h2>
+          <h2 className="text-lg font-semibold text-gray-900">Mis Objetivos</h2>
           <Button variant="primary" size="sm" onClick={handleCreateGoal} className="bg-accent-blue text-white rounded-full">
             + Nuevo Objetivo
           </Button>
@@ -359,12 +359,12 @@ export default function DashboardPage() {
       {/* Evolución del ahorro */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-text-primary">Evolución del Ahorro</h2>
+          <h2 className="text-lg font-semibold text-gray-900">Evolución del Ahorro</h2>
           <div className="flex space-x-1 bg-gray-100 rounded-lg p-1">
             {['7D', '30D', '90D'].map((range) => (
               <button
                 key={range}
-                className={`text-xs px-3 py-1 rounded-lg ${range === '30D' ? 'bg-ahorro-600 text-white' : 'text-text-secondary'}`}
+                className={`text-xs px-3 py-1 rounded-lg ${range === '30D' ? 'bg-ahorro-600 text-white' : 'text-gray-600'}`}
                 onClick={() => handleSavingsRangeChange(range.toLowerCase())}
               >
                 {range}
@@ -387,7 +387,7 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
-          <div className="text-xs text-text-secondary text-center mt-2">
+          <div className="text-xs text-gray-600 text-center mt-2">
             <span className="bg-gray-100 px-2 py-1 rounded">Modo demo</span>
           </div>
         </div>
