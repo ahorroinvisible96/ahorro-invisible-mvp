@@ -43,7 +43,7 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   children?: React.ReactNode;
 }
 
-export interface CardHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface CardHeaderProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> {
   title?: React.ReactNode;
   subtitle?: React.ReactNode;
   action?: React.ReactNode;
@@ -107,7 +107,7 @@ export const CardFooter: React.FC<CardFooterProps> = ({
 };
 
 // Componente Card principal
-export const Card = React.forwardRef<HTMLDivElement, CardProps>(
+const BaseCard = React.forwardRef<HTMLDivElement, CardProps>(
   (
     {
       variant = 'default',
@@ -147,7 +147,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
   }
 );
 
-Card.displayName = 'Card';
+BaseCard.displayName = 'Card';
 
 // Definir tipo para el componente Card con subcomponentes
 interface CardComponent extends React.ForwardRefExoticComponent<CardProps & React.RefAttributes<HTMLDivElement>> {
@@ -157,9 +157,10 @@ interface CardComponent extends React.ForwardRefExoticComponent<CardProps & Reac
 }
 
 // Asignar los subcomponentes a Card y exportar
-const CardWithComponents = Card as CardComponent;
+const CardWithComponents = BaseCard as CardComponent;
 CardWithComponents.Header = CardHeader;
 CardWithComponents.Content = CardContent;
 CardWithComponents.Footer = CardFooter;
 
+export { CardWithComponents as Card };
 export default CardWithComponents;
