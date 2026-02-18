@@ -220,8 +220,9 @@ export default function ProfilePage() {
                   Una vez eliminada, toda tu información será borrada permanentemente.
                 </p>
                 <Button
-                  variant="danger"
+                  variant="outline"
                   size="md"
+                  className="text-red-600 border-red-600 hover:bg-red-50"
                 >
                   Eliminar Cuenta
                 </Button>
