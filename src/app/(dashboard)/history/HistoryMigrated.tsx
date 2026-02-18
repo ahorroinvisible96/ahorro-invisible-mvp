@@ -55,7 +55,7 @@ export default function HistoryPage() {
       }
       
       // Registrar evento de visualización
-      analytics.historyViewed();
+      analytics.historyViewed('sidebar');
       
     } catch (error) {
       console.error("Error al cargar decisiones:", error);
