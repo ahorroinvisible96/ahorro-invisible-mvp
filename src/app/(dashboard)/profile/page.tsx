@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { AppLayout } from '@/components/layout';
+import { AppLayout, Section } from '@/components/layout';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -83,7 +83,7 @@ export default function ProfilePage() {
       title="Mi Perfil"
       subtitle="Gestiona tu información personal"
     >
-      <AppLayout.Section title="Información Personal">
+      <Section title="Información Personal">
         <Card variant="default" size="md">
           <Card.Content>
             <div className="space-y-6">
@@ -126,9 +126,9 @@ export default function ProfilePage() {
             </div>
           </Card.Content>
         </Card>
-      </AppLayout.Section>
+      </Section>
       
-      <AppLayout.Section title="Preferencias">
+      <Section title="Preferencias">
         <Card variant="default" size="md">
           <Card.Content>
             <div className="space-y-6">
@@ -195,9 +195,9 @@ export default function ProfilePage() {
             </div>
           </Card.Content>
         </Card>
-      </AppLayout.Section>
+      </Section>
       
-      <AppLayout.Section title="Cuenta">
+      <Section title="Cuenta">
         <Card variant="default" size="md">
           <Card.Content>
             <div className="space-y-6">
@@ -230,7 +230,7 @@ export default function ProfilePage() {
             </div>
           </Card.Content>
         </Card>
-      </AppLayout.Section>
+      </Section>
     </AppLayout>
   );
 }
