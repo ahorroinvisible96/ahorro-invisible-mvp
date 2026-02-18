@@ -1,5 +1,5 @@
 import { BUILD_VERSION } from '@/build-version';
-// Build version: 2026-02-18T21:46:20.592Z
+// Build version: 2026-02-18T21:59:41.808Z
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
