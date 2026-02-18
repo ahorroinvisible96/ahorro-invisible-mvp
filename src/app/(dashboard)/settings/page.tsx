@@ -263,8 +263,9 @@ export default function SettingsPage() {
                   Esta acción eliminará permanentemente todos tus datos de la aplicación.
                 </p>
                 <Button
-                  variant="danger"
+                  variant="outline"
                   size="md"
+                  className="text-red-600 border-red-600 hover:bg-red-50"
                 >
                   Eliminar Todos los Datos
                 </Button>

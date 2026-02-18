@@ -404,6 +404,11 @@ class Analytics {
     this.track('settings_viewed', { source: 'sidebar' });
   }
 
+  // Reinicio de onboarding
+  onboardingReset() {
+    this.track('onboarding_reset');
+  }
+
   // EVENTOS DE WIDGETS
 
   // Visualización de widget de objetivo principal

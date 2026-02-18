@@ -58,7 +58,7 @@ export default function ProfilePage() {
       localStorage.setItem("userName", userName);
       
       // Registrar evento
-      analytics.profileUpdated();
+      analytics.profileUpdated(['userName']);
       
       // Mostrar mensaje de éxito (simulado)
       alert("Perfil actualizado correctamente");
