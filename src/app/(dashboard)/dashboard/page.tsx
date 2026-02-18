@@ -242,9 +242,9 @@ export default function DashboardPage() {
             <p className="text-gray-500">Tus ahorros crecen mientras brilla el día. ✨</p>
           </div>
           <div className="flex items-center">
-            <div className="bg-green-50 text-green-600 text-xs px-3 py-1 rounded-full flex items-center gap-1.5 border border-green-200">
-              <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
-              <span className="tracking-wider font-medium">SISTEMA ACTIVO</span>
+            <div className="bg-green-50 text-green-600 text-xs px-3 py-1.5 rounded-full flex items-center gap-2 border border-green-200 shadow-sm">
+              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+              <span className="tracking-wider font-semibold">SISTEMA ACTIVO</span>
             </div>
           </div>
         </div>
@@ -315,7 +315,7 @@ export default function DashboardPage() {
           </button>
         </div>
         
-        <div className="border border-blue-100 rounded-xl overflow-hidden">
+        <div className="border border-blue-200 rounded-xl overflow-hidden shadow-sm">
           <div className="bg-white p-4">
             <div className="flex items-center mb-3">
               <div className="bg-blue-50 p-2 rounded-lg mr-3">
@@ -372,10 +372,10 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="p-6 bg-white rounded-xl shadow-sm border border-gray-100">
+          <div className="p-6 bg-white rounded-2xl shadow-sm border border-gray-100">
             <div className="flex items-center justify-center h-48">
               <div className="w-full">
-                <div className="flex justify-center items-end h-40 space-x-3">
+                <div className="flex justify-center items-end h-40 space-x-2">
                   {[20, 30, 25, 35, 40, 45, 50, 55, 60, 65, 70].map((height, index) => (
                     <div
                       key={index}
@@ -394,7 +394,7 @@ export default function DashboardPage() {
 
         {/* Tarjeta motivacional */}
         <div className="lg:col-span-4">
-          <div className="text-white overflow-hidden rounded-2xl p-6 shadow-[0_10px_30px_rgba(47,99,255,0.35)]" style={{ backgroundColor: '#2F63FF' }}>
+          <div className="text-white overflow-hidden rounded-2xl p-6 shadow-[0_14px_30px_rgba(47,99,255,0.35)]" style={{ backgroundColor: '#2F63FF' }}>
             <h3 className="text-2xl font-bold mb-2 leading-tight">Tu Ahorro es<br/>imparable.</h3>
             <p className="text-white/80 mb-1">Intensidad:</p>
             <p className="text-white font-medium mb-6 leading-snug">MEDIUM - ¡Vas por<br/>buen camino!</p>
