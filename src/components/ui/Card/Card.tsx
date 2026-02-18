@@ -43,6 +43,70 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   children?: React.ReactNode;
 }
 
+export interface CardHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
+  title?: React.ReactNode;
+  subtitle?: React.ReactNode;
+  action?: React.ReactNode;
+}
+
+export interface CardContentProps extends React.HTMLAttributes<HTMLDivElement> {}
+
+export interface CardFooterProps extends React.HTMLAttributes<HTMLDivElement> {}
+
+// Componente CardHeader
+export const CardHeader: React.FC<CardHeaderProps> = ({
+  title,
+  subtitle,
+  action,
+  className = '',
+  children,
+  ...props
+}) => {
+  const headerClasses = [styles.header, className].filter(Boolean).join(' ');
+
+  return (
+    <div className={headerClasses} {...props}>
+      <div>
+        {title && <h3 className={styles.title}>{title}</h3>}
+        {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
+        {children}
+      </div>
+      {action && <div>{action}</div>}
+    </div>
+  );
+};
+
+// Componente CardContent
+export const CardContent: React.FC<CardContentProps> = ({
+  className = '',
+  children,
+  ...props
+}) => {
+  const contentClasses = [styles.content, className].filter(Boolean).join(' ');
+
+  return (
+    <div className={contentClasses} {...props}>
+      {children}
+    </div>
+  );
+};
+
+// Componente CardFooter
+export const CardFooter: React.FC<CardFooterProps> = ({
+  className = '',
+  children,
+  ...props
+}) => {
+  const footerClasses = [styles.footer, className].filter(Boolean).join(' ');
+
+  return (
+    <div className={footerClasses} {...props}>
+      {children}
+    </div>
+  );
+};
+
+// Componente Card principal
 export const Card = React.forwardRef<HTMLDivElement, CardProps>(
   (
     {
@@ -85,68 +149,17 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
 
 Card.displayName = 'Card';
 
-export interface CardHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
-  title?: React.ReactNode;
-  subtitle?: React.ReactNode;
-  action?: React.ReactNode;
+// Definir tipo para el componente Card con subcomponentes
+interface CardComponent extends React.ForwardRefExoticComponent<CardProps & React.RefAttributes<HTMLDivElement>> {
+  Header: React.FC<CardHeaderProps>;
+  Content: React.FC<CardContentProps>;
+  Footer: React.FC<CardFooterProps>;
 }
 
-export const CardHeader = ({
-  title,
-  subtitle,
-  action,
-  className = '',
-  children,
-  ...props
-}: CardHeaderProps) => {
-  const headerClasses = [styles.header, className].filter(Boolean).join(' ');
+// Asignar los subcomponentes a Card y exportar
+const CardWithComponents = Card as CardComponent;
+CardWithComponents.Header = CardHeader;
+CardWithComponents.Content = CardContent;
+CardWithComponents.Footer = CardFooter;
 
-  return (
-    <div className={headerClasses} {...props}>
-      <div>
-        {title && <h3 className={styles.title}>{title}</h3>}
-        {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
-        {children}
-      </div>
-      {action && <div>{action}</div>}
-    </div>
-  );
-};
-
-export interface CardContentProps extends React.HTMLAttributes<HTMLDivElement> {}
-
-export const CardContent = ({
-  className = '',
-  children,
-  ...props
-}: CardContentProps) => {
-  const contentClasses = [styles.content, className].filter(Boolean).join(' ');
-
-  return (
-    <div className={contentClasses} {...props}>
-      {children}
-    </div>
-  );
-};
-
-export interface CardFooterProps extends React.HTMLAttributes<HTMLDivElement> {}
-
-export const CardFooter = ({
-  className = '',
-  children,
-  ...props
-}: CardFooterProps) => {
-  const footerClasses = [styles.footer, className].filter(Boolean).join(' ');
-
-  return (
-    <div className={footerClasses} {...props}>
-      {children}
-    </div>
-  );
-};
-
-export default Object.assign(Card, {
-  Header: CardHeader,
-  Content: CardContent,
-  Footer: CardFooter
-});
+export default CardWithComponents;
