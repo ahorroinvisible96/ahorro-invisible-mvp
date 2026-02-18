@@ -1,5 +1,4 @@
-import { BUILD_VERSION } from '@/build-version';
-// Build version: 2026-02-18T21:59:41.808Z
+// Archivo layout.tsx limpiado para despliegue
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
