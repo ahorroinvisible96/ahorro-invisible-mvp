@@ -1,0 +1,110 @@
+/* 
+ * Estilos para el componente Card
+ * Basado en la imagen de referencia del dashboard
+ */
+
+.card {
+  background-color: var(--color-background-card);
+  border-radius: var(--card-border-radius);
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
+  transition: box-shadow var(--transition-normal) var(--transition-ease),
+              transform var(--transition-normal) var(--transition-ease);
+}
+
+/* Variantes */
+.default {
+  border: var(--border-width-thin) solid var(--color-border-light);
+}
+
+.primary {
+  border: var(--border-width-thin) solid var(--color-border-blue);
+}
+
+.success {
+  border: var(--border-width-thin) solid var(--color-border-green);
+}
+
+.highlight {
+  border-left: var(--border-width-thicker) solid var(--color-primary-500);
+}
+
+.interactive:hover {
+  box-shadow: var(--card-hover-shadow);
+  transform: translateY(-2px);
+}
+
+/* Tamaños */
+.sm {
+  padding: var(--spacing-4);
+}
+
+.md {
+  padding: var(--spacing-6);
+}
+
+.lg {
+  padding: var(--spacing-8);
+}
+
+/* Componentes internos */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-4);
+}
+
+.title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-top: var(--spacing-1);
+  margin-bottom: 0;
+}
+
+.content {
+  color: var(--color-text-primary);
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: var(--spacing-4);
+  padding-top: var(--spacing-4);
+  border-top: var(--border-width-thin) solid var(--color-border-light);
+}
+
+/* Variantes de estilo */
+.rounded2xl {
+  border-radius: var(--border-radius-2xl);
+}
+
+.shadow-md {
+  box-shadow: var(--shadow-md);
+}
+
+.shadow-blue {
+  box-shadow: var(--shadow-blue-md);
+}
+
+.gradient {
+  background: var(--gradient-primary);
+  color: var(--color-text-inverted);
+  border: none;
+}
+
+.noPadding {
+  padding: 0;
+}
+
+.fullWidth {
+  width: 100%;
+}

@@ -1,0 +1,50 @@
+/* 
+ * Sistema de tokens de colores para Ahorro Invisible
+ * Basado en la imagen de referencia del dashboard
+ */
+
+:root {
+  /* Colores primarios */
+  --color-primary-50: #eef4ff;
+  --color-primary-100: #e0eaff;
+  --color-primary-200: #c7d7fe;
+  --color-primary-300: #a5bcfd;
+  --color-primary-400: #819dfc;
+  --color-primary-500: #2F63FF; /* Color principal azul */
+  --color-primary-600: #2B57F2;
+  --color-primary-700: #1E40AF;
+  --color-primary-800: #1e3a8a;
+  --color-primary-900: #172554;
+  --color-primary-950: #0f172a;
+
+  /* Colores de fondo */
+  --color-background-main: #F5F5F0; /* Fondo principal crema */
+  --color-background-sidebar: #0B1E3B; /* Fondo sidebar azul oscuro */
+  --color-background-card: #FFFFFF; /* Fondo de tarjetas */
+  --color-background-badge: #f0fdf4; /* Fondo de badge sistema activo */
+
+  /* Colores de texto */
+  --color-text-primary: #1F2937; /* Texto principal */
+  --color-text-secondary: #6B7280; /* Texto secundario */
+  --color-text-tertiary: #9CA3AF; /* Texto terciario */
+  --color-text-inverted: #FFFFFF; /* Texto sobre fondos oscuros */
+  --color-text-success: #16a34a; /* Texto verde éxito */
+  --color-text-danger: #ef4444; /* Texto rojo error/peligro */
+
+  /* Colores de estado */
+  --color-success-50: #f0fdf4;
+  --color-success-500: #22c55e; /* Verde para badge activo */
+  --color-success-600: #16a34a;
+  --color-danger-500: #ef4444; /* Rojo para errores/alertas */
+  --color-warning-500: #f59e0b; /* Amarillo para advertencias */
+
+  /* Colores de borde */
+  --color-border-light: #f3f4f6; /* Bordes claros */
+  --color-border-blue: #dbeafe; /* Bordes azules claros */
+  --color-border-green: #bbf7d0; /* Bordes verdes claros */
+
+  /* Gradientes */
+  --gradient-primary: linear-gradient(135deg, #2F63FF 0%, #2B57F2 50%, #1E40AF 100%);
+  --gradient-sidebar: linear-gradient(90deg, #0B1E3B 0%, #1a2f4a 100%);
+  --gradient-bar: linear-gradient(180deg, #60A5FA 0%, #2F63FF 100%);
+}

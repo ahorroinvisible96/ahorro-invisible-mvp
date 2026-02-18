@@ -1,0 +1,128 @@
+/* 
+ * Estilos para el componente Button
+ * Basado en la imagen de referencia del dashboard
+ */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--button-border-radius);
+  transition: all var(--transition-fast) var(--transition-ease);
+  cursor: pointer;
+  text-align: center;
+  white-space: nowrap;
+  outline: none;
+  border: none;
+}
+
+/* Variantes */
+.primary {
+  background-color: var(--color-primary-500);
+  color: var(--color-text-inverted);
+}
+
+.primary:hover {
+  background-color: var(--color-primary-600);
+  box-shadow: var(--button-hover-shadow);
+}
+
+.secondary {
+  background-color: var(--color-background-card);
+  color: var(--color-primary-500);
+  border: var(--border-width-thin) solid var(--color-primary-500);
+}
+
+.secondary:hover {
+  background-color: var(--color-primary-50);
+}
+
+.outline {
+  background-color: transparent;
+  color: var(--color-primary-500);
+  border: var(--border-width-thin) solid currentColor;
+}
+
+.outline:hover {
+  background-color: var(--color-primary-50);
+}
+
+.ghost {
+  background-color: transparent;
+  color: var(--color-primary-500);
+}
+
+.ghost:hover {
+  background-color: var(--color-primary-50);
+}
+
+.danger {
+  background-color: var(--color-danger-500);
+  color: var(--color-text-inverted);
+}
+
+.danger:hover {
+  filter: brightness(0.9);
+}
+
+/* Tamaños */
+.sm {
+  font-size: var(--font-size-xs);
+  padding: 0.375rem 0.75rem;
+  height: 2rem;
+}
+
+.md {
+  font-size: var(--font-size-sm);
+  padding: 0.5rem 1rem;
+  height: 2.5rem;
+}
+
+.lg {
+  font-size: var(--font-size-base);
+  padding: 0.625rem 1.25rem;
+  height: 3rem;
+}
+
+/* Estados */
+.disabled,
+.disabled:hover {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Botón con icono */
+.withIcon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.iconOnly {
+  padding: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+}
+
+.iconOnly.sm {
+  width: 2rem;
+  height: 2rem;
+}
+
+.iconOnly.lg {
+  width: 3rem;
+  height: 3rem;
+}
+
+/* Botón full width */
+.fullWidth {
+  width: 100%;
+}
+
+/* Animación */
+.button:active {
+  transform: translateY(1px);
+}

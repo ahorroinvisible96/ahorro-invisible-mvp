@@ -2,8 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button, Card, Badge, Progress } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 import { analytics } from '@/services/analytics';
+import styles from './Dashboard.module.css';
 
 interface Goal {
   id: string;
@@ -224,14 +227,14 @@ export default function DashboardPage() {
   
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--color-background-main)' }}>
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F5F5F0' }}>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-ahorro-500"></div>
       </div>
     );
   }
   
   return (
-    <div className="p-6" style={{ backgroundColor: 'var(--color-background-main)' }}>
+    <div className="p-6" style={{ backgroundColor: '#F5F5F0' }}>
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between">
@@ -240,17 +243,10 @@ export default function DashboardPage() {
             <p className="text-gray-500">Tus ahorros crecen mientras brilla el día. ✨</p>
           </div>
           <div className="flex items-center">
-            <Badge 
-              variant="success" 
-              size="md" 
-              shape="pill" 
-              withDot 
-              pulse 
-              uppercase 
-              bold
-            >
-              SISTEMA ACTIVO
-            </Badge>
+            <div className={styles.badgeActivo}>
+              <span className={styles.badgeDot}></span>
+              <span className="tracking-wider">SISTEMA ACTIVO</span>
+            </div>
           </div>
         </div>
       </div>
@@ -260,57 +256,53 @@ export default function DashboardPage() {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary-500" viewBox="0 0 20 20" fill="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${styles.textAzul}`} viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zM12 2a1 1 0 01.967.744L14.146 7.2 17.5 9.134a1 1 0 010 1.732l-3.354 1.935-1.18 4.455a1 1 0 01-1.933 0L9.854 12.8 6.5 10.866a1 1 0 010-1.732l3.354-1.935 1.18-4.455A1 1 0 0112 2z" clipRule="evenodd" />
               </svg>
-              <Badge variant="primary" size="sm" uppercase>OBJETIVO PRINCIPAL</Badge>
+              <span className={`text-xs uppercase tracking-wider font-medium ${styles.textAzul}`}>OBJETIVO PRINCIPAL</span>
             </div>
-            <Badge variant="solid" size="md">12 MESES</Badge>
+            <div className={`text-xs font-medium ${styles.pillAzul}`}>
+              12 MESES
+            </div>
           </div>
           
-          <Card variant="highlight" size="md">
-            <Card.Content>
-              <h2 className="text-2xl font-semibold text-gray-800 mb-4">Viaje a Japón</h2>
-              
-              <div className="flex items-center justify-between mb-2">
-                <div className="text-2xl font-bold">
-                  1500€
-                  <span className="text-gray-500 text-sm font-normal ml-1">/ 5000€</span>
-                </div>
-                <div className="text-xl font-bold text-primary-500">
-                  30%
-                </div>
+          <div className={`flex flex-col ${styles.objetivoPrincipal}`}>
+            <h2 className="text-2xl font-semibold text-gray-800 mb-4">Viaje a Japón</h2>
+            
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-2xl font-bold">
+                1500€
+                <span className="text-gray-500 text-sm font-normal ml-1">/ 5000€</span>
               </div>
-              
-              <Progress 
-                value={30} 
-                variant="gradient" 
-                size="md"
-              />
-              
-              <p className="text-gray-500 text-sm mt-4">
-                Te faltan <span className="font-semibold">3500€</span> para completar tu meta. ¡Sigue así!
-              </p>
-            </Card.Content>
-          </Card>
+              <div className={`text-xl font-bold ${styles.textAzul}`}>
+                30%
+              </div>
+            </div>
+            
+            <div className={`${styles.progresoBarraWrap} mb-4`}>
+              <div className={styles.progresoBarraFill} style={{ width: '30%' }}></div>
+            </div>
+            
+            <p className="text-gray-500 text-sm">
+              Te faltan <span className="font-semibold">3500€</span> para completar tu meta. ¡Sigue así!
+            </p>
+          </div>
         </div>
       ) : (
         <div className="mb-8">
-          <Card size="md">
-            <Card.Content className="text-center">
-              <p className="text-gray-600 mb-4">No tienes ningún objetivo configurado.</p>
-              <Button variant="primary" size="md" onClick={handleCreateGoal}>
-                Crear objetivo
-              </Button>
-            </Card.Content>
+          <Card className="p-6 text-center">
+            <p className="text-gray-600 mb-4">No tienes ningún objetivo configurado.</p>
+            <Button variant="primary" onClick={handleCreateGoal}>
+              Crear objetivo
+            </Button>
           </Card>
         </div>
       )}
       
       {/* Ingresos mensuales */}
       <div className="mb-8">
-        <Badge variant="default" size="sm" uppercase>INGRESOS MENSUALES</Badge>
-        <div className="text-xl font-semibold text-gray-800 mt-2">
+        <div className="text-xs uppercase tracking-wider text-gray-500 font-medium mb-2">INGRESOS MENSUALES</div>
+        <div className="text-xl font-semibold text-gray-800">
           2.000 - 3.500 €
         </div>
       </div>
@@ -319,20 +311,16 @@ export default function DashboardPage() {
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-gray-800">Mis Objetivos</h2>
-          <Button 
-            variant="primary" 
-            size="md" 
-            onClick={handleCreateGoal}
-          >
+          <button onClick={handleCreateGoal} className={`${styles.botonPrimario} text-sm`}>
             + Nuevo Objetivo
-          </Button>
+          </button>
         </div>
         
-        <Card variant="primary" size="md" interactive>
-          <Card.Content>
+        <div className={`${styles.cardObjetivos} ${styles.cardHover}`}>
+          <div className="bg-white p-4">
             <div className="flex items-center mb-3">
               <div className="bg-blue-50 p-2 rounded-lg mr-3">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary-500" viewBox="0 0 20 20" fill="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${styles.textAzul}`} viewBox="0 0 20 20" fill="currentColor">
                   <path d="M5.5 16a3.5 3.5 0 01-.369-6.98 4 4 0 117.753-1.977A4.5 4.5 0 1113.5 16h-8z" />
                 </svg>
               </div>
@@ -341,33 +329,28 @@ export default function DashboardPage() {
                 <p className="text-xs text-gray-500">12 MESES</p>
               </div>
               <div className="ml-auto">
-                <Badge variant="solid" size="sm">PRINCIPAL</Badge>
+                <span className={`${styles.pillAzul} text-xs font-medium`}>PRINCIPAL</span>
               </div>
             </div>
             
-            <Progress 
-              value={30} 
-              variant="primary" 
-              size="sm"
-            />
+            <div className={`${styles.progresoBarraWrap} mb-2`}>
+              <div className={styles.progresoBarraFill} style={{ width: '30%' }}></div>
+            </div>
             
-            <div className="flex items-center justify-between text-sm mt-2">
+            <div className="flex items-center justify-between text-sm">
               <span className="text-gray-600">1500€ / 5000€</span>
-              <span className="font-medium text-primary-500">30%</span>
+              <span className={`font-medium ${styles.textAzul}`}>30%</span>
             </div>
             
             <div className="mt-3 text-right">
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => handleArchiveGoal(primaryGoal?.id || '', true)}
-                className="text-red-500"
+              <button 
+                className="text-xs text-red-500 hover:underline font-medium"
               >
                 Archivar
-              </Button>
+              </button>
             </div>
-          </Card.Content>
-        </Card>
+          </div>
+        </div>
       </div>
       
       {/* Evolución + Tarjeta motivacional en grid */}
@@ -381,7 +364,7 @@ export default function DashboardPage() {
                 <button
                   key={range}
                   className={`text-xs px-3 py-1 rounded-lg ${range === '30D' ? 'text-white' : 'text-gray-600'}`}
-                  style={range === '30D' ? { backgroundColor: 'var(--color-primary-500)' } : {}}
+                  style={range === '30D' ? { backgroundColor: '#2F63FF' } : {}}
                   onClick={() => handleSavingsRangeChange(range.toLowerCase())}
                 >
                   {range}
@@ -390,49 +373,39 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <Card variant="default" size="md" rounded2xl>
-            <Card.Content>
-              <div className="flex items-center justify-center h-48">
-                <div className="w-full">
-                  <div className="flex justify-center items-end h-40 space-x-2">
-                    {[20, 30, 25, 35, 40, 45, 50, 55, 60, 65, 70].map((height, index) => (
-                      <div
-                        key={index}
-                        className="rounded-t-md w-6"
-                        style={{ 
-                          height: `${height}%`, 
-                          background: 'var(--gradient-bar)'
-                        }}
-                      ></div>
-                    ))}
-                  </div>
+          <div className={styles.cardEvolucion}>
+            <div className="flex items-center justify-center h-48">
+              <div className="w-full">
+                <div className="flex justify-center items-end h-40 space-x-2">
+                  {[20, 30, 25, 35, 40, 45, 50, 55, 60, 65, 70].map((height, index) => (
+                    <div
+                      key={index}
+                      className={`rounded-t-md w-6 ${styles.barraAzul}`}
+                      style={{ height: `${height}%` }}
+                    ></div>
+                  ))}
                 </div>
               </div>
-              <div className="text-xs text-gray-500 text-center mt-2">
-                <Badge variant="default" size="sm">Modo demo</Badge>
-              </div>
-            </Card.Content>
-          </Card>
+            </div>
+            <div className="text-xs text-gray-500 text-center mt-2">
+              <span className="bg-gray-100 px-2 py-1 rounded">Modo demo</span>
+            </div>
+          </div>
         </div>
 
         {/* Tarjeta motivacional */}
         <div className="lg:col-span-4">
-          <Card variant="gradient" size="md" rounded2xl shadowBlue>
-            <Card.Content>
-              <h3 className="text-2xl font-bold mb-2 leading-tight">Tu Ahorro es<br/>imparable.</h3>
-              <p className="text-white/80 mb-1">Intensidad:</p>
-              <p className="text-white font-medium mb-6 leading-snug">MEDIUM - ¡Vas por<br/>buen camino!</p>
+          <div className={styles.tarjetaMotivacionalGradiente}>
+            <h3 className="text-2xl font-bold mb-2 leading-tight">Tu Ahorro es<br/>imparable.</h3>
+            <p className="text-white/80 mb-1">Intensidad:</p>
+            <p className="text-white font-medium mb-6 leading-snug">MEDIUM - ¡Vas por<br/>buen camino!</p>
 
-              <Button
-                variant="outline"
-                size="md"
-                className="bg-white/20 border border-white/30 text-white hover:bg-white/30 uppercase tracking-wide"
-                onClick={handleMotivationAction}
-              >
-                Ajustar<br/>Reglas
-              </Button>
-            </Card.Content>
-          </Card>
+            <button
+              className={`${styles.botonPrimario} bg-white/20 border border-white/30 text-white hover:bg-white/30 px-6 py-2.5 rounded-lg uppercase text-sm font-medium tracking-wide`}
+            >
+              Ajustar<br/>Reglas
+            </button>
+          </div>
         </div>
       </div>
     </div>

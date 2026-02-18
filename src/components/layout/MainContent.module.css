@@ -1,0 +1,102 @@
+/* 
+ * Estilos para el componente MainContent
+ * Basado en la imagen de referencia del dashboard
+ */
+
+.mainContent {
+  margin-left: var(--sidebar-width);
+  min-height: 100vh;
+  background-color: var(--color-background-main);
+  position: relative;
+  flex: 1;
+}
+
+.withPattern {
+  background-image: 
+    linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+  background-position: 0 0;
+}
+
+.container {
+  max-width: var(--app-max-width);
+  margin: 0 auto;
+  padding: var(--spacing-6);
+}
+
+.header {
+  margin-bottom: var(--spacing-8);
+}
+
+.headerTitle {
+  font-size: var(--header-title);
+  font-weight: var(--header-weight);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-2);
+}
+
+.headerSubtitle {
+  color: var(--color-text-secondary);
+}
+
+.section {
+  margin-bottom: var(--spacing-8);
+}
+
+.sectionTitle {
+  font-size: var(--section-title);
+  font-weight: var(--section-weight);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-4);
+}
+
+.grid {
+  display: grid;
+  gap: var(--grid-gap);
+}
+
+.grid1 {
+  grid-template-columns: 1fr;
+}
+
+.grid2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.grid3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.grid4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.grid12 {
+  grid-template-columns: repeat(12, 1fr);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .grid3, .grid4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .grid12 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .mainContent {
+    margin-left: 0;
+  }
+  
+  .grid2, .grid3, .grid4 {
+    grid-template-columns: 1fr;
+  }
+  
+  .container {
+    padding: var(--spacing-4);
+  }
+}

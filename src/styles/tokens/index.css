@@ -1,0 +1,54 @@
+/* 
+ * Archivo principal de tokens para Ahorro Invisible
+ * Importa todos los tokens del sistema de diseño
+ */
+
+@import './colors.css';
+@import './typography.css';
+@import './spacing.css';
+@import './effects.css';
+
+/* Estilos base adicionales */
+:root {
+  /* Configuración global */
+  --app-max-width: 1280px;
+  --app-padding: var(--spacing-6);
+  
+  /* Z-index */
+  --z-index-dropdown: 10;
+  --z-index-sticky: 20;
+  --z-index-fixed: 30;
+  --z-index-modal-backdrop: 40;
+  --z-index-modal: 50;
+  --z-index-popover: 60;
+  --z-index-tooltip: 70;
+}
+
+/* Estilos de reset básicos */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-primary);
+  background-color: var(--color-background-main);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Utilidades básicas */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}

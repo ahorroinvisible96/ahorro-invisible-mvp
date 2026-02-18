@@ -1,0 +1,53 @@
+/* 
+ * Sistema de tokens de efectos (sombras, bordes) para Ahorro Invisible
+ * Basado en la imagen de referencia del dashboard
+ */
+
+:root {
+  /* Sombras */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+  
+  /* Sombras específicas */
+  --shadow-blue-sm: 0 1px 2px rgba(47, 99, 255, 0.1);
+  --shadow-blue-md: 0 4px 12px rgba(47, 99, 255, 0.15);
+  --shadow-blue-lg: 0 14px 30px rgba(47, 99, 255, 0.35);
+  
+  /* Bordes */
+  --border-width-none: 0px;
+  --border-width-thin: 1px;
+  --border-width-thick: 2px;
+  --border-width-thicker: 3px;
+  
+  /* Radios de borde */
+  --border-radius-none: 0;
+  --border-radius-sm: 0.125rem;  /* 2px */
+  --border-radius-md: 0.25rem;   /* 4px */
+  --border-radius-lg: 0.5rem;    /* 8px */
+  --border-radius-xl: 0.75rem;   /* 12px - Cards */
+  --border-radius-2xl: 1rem;     /* 16px - Cards destacadas */
+  --border-radius-3xl: 1.5rem;   /* 24px */
+  --border-radius-full: 9999px;  /* Badges, botones circulares */
+  
+  /* Efectos específicos */
+  --card-border-radius: var(--border-radius-xl);
+  --card-shadow: var(--shadow-sm);
+  --card-hover-shadow: var(--shadow-md);
+  
+  --badge-border-radius: var(--border-radius-full);
+  --badge-border-width: var(--border-width-thin);
+  
+  --button-border-radius: var(--border-radius-full);
+  --button-shadow: var(--shadow-sm);
+  --button-hover-shadow: var(--shadow-blue-md);
+  
+  /* Transiciones */
+  --transition-fast: 150ms;
+  --transition-normal: 300ms;
+  --transition-slow: 500ms;
+  --transition-ease: cubic-bezier(0.4, 0, 0.2, 1);
+}

@@ -1,0 +1,140 @@
+/* 
+ * Estilos para el componente Badge
+ * Basado en la imagen de referencia del dashboard
+ */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--badge-border-radius);
+  font-size: var(--badge-text);
+  font-weight: var(--badge-weight);
+  letter-spacing: var(--badge-spacing);
+  white-space: nowrap;
+  transition: all var(--transition-fast) var(--transition-ease);
+}
+
+/* Variantes */
+.default {
+  background-color: var(--color-background-card);
+  color: var(--color-text-secondary);
+  border: var(--border-width-thin) solid var(--color-border-light);
+}
+
+.primary {
+  background-color: var(--color-primary-50);
+  color: var(--color-primary-600);
+  border: var(--border-width-thin) solid var(--color-primary-100);
+}
+
+.success {
+  background-color: var(--color-success-50);
+  color: var(--color-success-600);
+  border: var(--border-width-thin) solid var(--color-border-green);
+}
+
+.danger {
+  background-color: #fee2e2;
+  color: var(--color-danger-500);
+  border: var(--border-width-thin) solid #fecaca;
+}
+
+.warning {
+  background-color: #fef3c7;
+  color: var(--color-warning-500);
+  border: var(--border-width-thin) solid #fde68a;
+}
+
+.solid {
+  background-color: var(--color-primary-500);
+  color: var(--color-text-inverted);
+  border: none;
+}
+
+/* Tamaños */
+.sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.625rem;
+}
+
+.md {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+}
+
+.lg {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+}
+
+/* Badge con icono */
+.withIcon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.withDot {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+}
+
+.success .dot {
+  background-color: var(--color-success-500);
+}
+
+.primary .dot {
+  background-color: var(--color-primary-500);
+}
+
+.danger .dot {
+  background-color: var(--color-danger-500);
+}
+
+.warning .dot {
+  background-color: var(--color-warning-500);
+}
+
+.default .dot {
+  background-color: var(--color-text-secondary);
+}
+
+/* Animación de pulso para el dot */
+.pulse .dot {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Variantes de forma */
+.rounded {
+  border-radius: var(--border-radius-md);
+}
+
+.pill {
+  border-radius: var(--border-radius-full);
+}
+
+/* Variantes de estilo */
+.uppercase {
+  text-transform: uppercase;
+}
+
+.bold {
+  font-weight: var(--font-weight-bold);
+}

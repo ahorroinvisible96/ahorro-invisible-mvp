@@ -1,0 +1,94 @@
+/* 
+ * Estilos para el componente ThemeToggle
+ */
+
+.themeToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all var(--transition-fast) var(--transition-ease);
+  color: var(--color-text-secondary);
+  background-color: transparent;
+  border: none;
+}
+
+.themeToggle:hover {
+  background-color: var(--color-background-hover);
+  color: var(--color-text-primary);
+}
+
+.themeToggle:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-primary-500);
+}
+
+.icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+/* Animación de transición */
+.iconTransition {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.iconHidden {
+  position: absolute;
+  opacity: 0;
+  transform: scale(0.5);
+}
+
+.iconVisible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Estilos para el menú desplegable */
+.dropdown {
+  position: relative;
+}
+
+.dropdownMenu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.5rem;
+  width: 12rem;
+  background-color: var(--color-background-card);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-border-light);
+  z-index: var(--z-index-dropdown);
+  overflow: hidden;
+}
+
+.dropdownItem {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: background-color var(--transition-fast) var(--transition-ease);
+  color: var(--color-text-primary);
+}
+
+.dropdownItem:hover {
+  background-color: var(--color-background-hover);
+}
+
+.dropdownItemActive {
+  background-color: var(--color-primary-50);
+  color: var(--color-primary-600);
+}
+
+.dropdownItemIcon {
+  margin-right: 0.75rem;
+  width: 1rem;
+  height: 1rem;
+}
+
+.dropdownItemText {
+  font-size: var(--font-size-sm);
+}

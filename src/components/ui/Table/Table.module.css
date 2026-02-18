@@ -1,0 +1,180 @@
+/* 
+ * Estilos para el componente Table
+ */
+
+.tableContainer {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--color-border-light);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: var(--font-size-sm);
+}
+
+.tableStriped tbody tr:nth-child(odd) {
+  background-color: var(--color-background-hover);
+}
+
+.tableHoverable tbody tr:hover {
+  background-color: var(--color-background-hover);
+}
+
+.tableBordered th,
+.tableBordered td {
+  border: 1px solid var(--color-border-light);
+}
+
+.tableCompact th,
+.tableCompact td {
+  padding: 0.5rem;
+}
+
+.tableNormal th,
+.tableNormal td {
+  padding: 0.75rem 1rem;
+}
+
+.tableLarge th,
+.tableLarge td {
+  padding: 1rem 1.5rem;
+}
+
+.thead {
+  background-color: var(--color-background-hover);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.th {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
+
+.thSortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.thSortable:hover {
+  background-color: var(--color-background-hover);
+}
+
+.sortIcon {
+  display: inline-block;
+  margin-left: 0.25rem;
+  transition: transform var(--transition-fast) var(--transition-ease);
+}
+
+.sortIconAsc {
+  transform: rotate(180deg);
+}
+
+.tbody {
+  background-color: var(--color-background-card);
+}
+
+.tr {
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.tr:last-child {
+  border-bottom: none;
+}
+
+.td {
+  color: var(--color-text-primary);
+}
+
+.tdAlignLeft {
+  text-align: left;
+}
+
+.tdAlignCenter {
+  text-align: center;
+}
+
+.tdAlignRight {
+  text-align: right;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background-color: var(--color-background-card);
+  border-top: 1px solid var(--color-border-light);
+}
+
+.paginationInfo {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.paginationControls {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.paginationButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--border-radius-md);
+  background-color: transparent;
+  border: 1px solid var(--color-border-light);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast) var(--transition-ease);
+}
+
+.paginationButton:hover {
+  background-color: var(--color-background-hover);
+}
+
+.paginationButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.paginationButtonActive {
+  background-color: var(--color-primary-500);
+  color: var(--color-text-inverted);
+  border-color: var(--color-primary-500);
+}
+
+.paginationButtonActive:hover {
+  background-color: var(--color-primary-600);
+}
+
+.empty {
+  padding: 3rem 1rem;
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+.emptyIcon {
+  margin-bottom: 1rem;
+  color: var(--color-text-tertiary);
+}
+
+.emptyTitle {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
+  margin-bottom: 0.5rem;
+  color: var(--color-text-primary);
+}
+
+.emptyDescription {
+  font-size: var(--font-size-sm);
+  max-width: 20rem;
+  margin: 0 auto;
+}

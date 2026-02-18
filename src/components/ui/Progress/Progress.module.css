@@ -1,0 +1,118 @@
+/* 
+ * Estilos para el componente Progress
+ * Basado en la imagen de referencia del dashboard
+ */
+
+.progressContainer {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background-color: var(--color-border-light);
+  transition: all var(--transition-normal) var(--transition-ease);
+}
+
+/* Variantes */
+.default {
+  background-color: var(--color-border-light);
+}
+
+.primary .progressBar {
+  background-color: var(--color-primary-500);
+}
+
+.success .progressBar {
+  background-color: var(--color-success-500);
+}
+
+.danger .progressBar {
+  background-color: var(--color-danger-500);
+}
+
+.warning .progressBar {
+  background-color: var(--color-warning-500);
+}
+
+/* Tamaños */
+.xs {
+  height: 0.25rem;
+  border-radius: var(--border-radius-full);
+}
+
+.sm {
+  height: 0.375rem;
+  border-radius: var(--border-radius-full);
+}
+
+.md {
+  height: 0.5rem;
+  border-radius: var(--border-radius-full);
+}
+
+.lg {
+  height: 0.75rem;
+  border-radius: var(--border-radius-full);
+}
+
+.xl {
+  height: 1rem;
+  border-radius: var(--border-radius-full);
+}
+
+/* Barra de progreso */
+.progressBar {
+  height: 100%;
+  border-radius: inherit;
+  transition: width var(--transition-normal) var(--transition-ease);
+}
+
+/* Variantes de estilo */
+.gradient .progressBar {
+  background: var(--gradient-bar);
+}
+
+.striped .progressBar {
+  background-image: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.15) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.15) 50%,
+    rgba(255, 255, 255, 0.15) 75%,
+    transparent 75%,
+    transparent
+  );
+  background-size: 1rem 1rem;
+}
+
+.animated .progressBar {
+  animation: progress-bar-stripes 1s linear infinite;
+}
+
+@keyframes progress-bar-stripes {
+  0% {
+    background-position: 1rem 0;
+  }
+  100% {
+    background-position: 0 0;
+  }
+}
+
+/* Indicador de valor */
+.withLabel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+
+.value {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary-500);
+}

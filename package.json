@@ -5,9 +5,15 @@
   "description": "MVP de Ahorro Invisible - Aplicación para crear hábitos de ahorro",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node scripts/clear-cache.js && next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "vercel-build": "node scripts/clear-cache.js && next build",
+    "vercel-deploy": "node scripts/deploy-vercel.js",
+    "deploy": "node scripts/deploy-vercel.js",
+    "deploy:prod": "vercel --prod",
+    "force-update": "node scripts/force-update-vercel.js",
+    "deploy:force": "node scripts/force-update-vercel.js && vercel --prod --force"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
