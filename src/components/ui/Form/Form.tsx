@@ -423,13 +423,17 @@ export const FormInputGroup: React.FC<FormInputGroupProps> = ({
   // Clonar el hijo para añadir clases adicionales
   const childrenWithProps = React.Children.map(children, (child) => {
     if (React.isValidElement(child)) {
-      return React.cloneElement(child, {
-        className: `
-          ${child.props.className || ''}
-          ${styles.inputGroupInput}
-          ${!addonLeft ? styles.inputGroupInputLeft : ''}
-          ${!addonRight ? styles.inputGroupInputRight : ''}
-        `.trim()
+      const el = child as React.ReactElement<{ className?: string }>;
+      const prevClass = el.props?.className ?? '';
+      const nextClass = [
+        prevClass,
+        styles.inputGroupInput,
+        !addonLeft ? styles.inputGroupInputLeft : '',
+        !addonRight ? styles.inputGroupInputRight : ''
+      ].filter(Boolean).join(' ');
+
+      return React.cloneElement(el, {
+        className: nextClass
       });
     }
     return child;
