@@ -101,7 +101,7 @@ export default function DashboardLayout({
   return (
     <div className="flex h-screen">
       {/* Sidebar */}
-      <aside className="w-64 flex flex-col text-white" style={{ backgroundColor: '#0B1E3B' }}>
+      <aside className="w-64 flex flex-col text-white" style={{ backgroundColor: '#0B1E3B', width: '256px' }}>
         {/* Logo */}
         <div className="px-6 pt-6 pb-5">
           <div className="flex items-center gap-3">
@@ -152,7 +152,7 @@ export default function DashboardLayout({
                     <Icon className="h-5 w-5" />
                   </span>
 
-                  <span className="text-[15px] font-medium">{item.label}</span>
+                  <span className="text-[15px] font-medium whitespace-nowrap overflow-hidden text-ellipsis">{item.label}</span>
 
                   {active && (
                     <span className="ml-auto opacity-90">
