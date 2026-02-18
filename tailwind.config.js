@@ -15,9 +15,9 @@ module.exports = {
           200: '#BFDBFE',
           300: '#93C5FD',
           400: '#60A5FA',
-          500: '#3B82F6', // Azul principal para gráficos
-          600: '#2563EB', // Azul para botones activos
-          700: '#1E293B', // Azul oscuro para sidebar (actualizado)
+          500: '#2F63FF', // Azul principal para gráficos y botones
+          600: '#2B57F2', // Azul para botones activos
+          700: '#0B1E3B', // Azul oscuro para sidebar
           800: '#1E3A8A',
           900: '#1E3A8A',
         },
@@ -25,8 +25,8 @@ module.exports = {
         'background': {
           light: '#F5F5F0', // Fondo principal crema con líneas
           DEFAULT: '#F5F5F0',
-          dark: '#1E293B', // Fondo sidebar
-          blue: '#3B82F6', // Azul brillante para tarjeta motivacional
+          dark: '#0B1E3B', // Fondo sidebar
+          blue: '#2F63FF', // Azul brillante para tarjeta motivacional
         },
         // Colores de texto
         'text': {
@@ -39,7 +39,7 @@ module.exports = {
           red: '#EF4444', // Para "Archivar" y alertas
           green: '#10B981', // Para indicadores positivos
           yellow: '#F59E0B', // Para advertencias
-          blue: '#3B82F6', // Azul brillante para botones y acentos
+          blue: '#2F63FF', // Azul brillante para botones y acentos
         }
       },
       borderRadius: {
