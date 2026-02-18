@@ -352,56 +352,59 @@ export default function DashboardPage() {
         </div>
       </div>
       
-      {/* Evolución del ahorro */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-800">Evolución del Ahorro</h2>
-          <div className="flex space-x-1 bg-gray-100 rounded-lg p-1">
-            {['7D', '30D', '90D'].map((range) => (
-              <button
-                key={range}
-                className={`text-xs px-3 py-1 rounded-lg ${range === '30D' ? 'text-white' : 'text-gray-600'}`}
+      {/* Evolución + Tarjeta motivacional en grid */}
+      <div className="mb-8 grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Evolución del ahorro */}
+        <div className="lg:col-span-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-gray-800">Evolución del Ahorro</h2>
+            <div className="flex space-x-1 bg-gray-100 rounded-lg p-1">
+              {['7D', '30D', '90D'].map((range) => (
+                <button
+                  key={range}
+                  className={`text-xs px-3 py-1 rounded-lg ${range === '30D' ? 'text-white' : 'text-gray-600'}`}
                   style={range === '30D' ? { backgroundColor: '#2F63FF' } : {}}
-                onClick={() => handleSavingsRangeChange(range.toLowerCase())}
-              >
-                {range}
-              </button>
-            ))}
-          </div>
-        </div>
-        
-        <div className="p-6 bg-white rounded-xl">
-          <div className="flex items-center justify-center h-48">
-            <div className="w-full">
-              <div className="flex justify-center items-end h-40 space-x-3">
-                {[20, 30, 25, 35, 40, 45, 50, 55, 60, 65, 70].map((height, index) => (
-                  <div 
-                    key={index} 
-                    className="rounded-t-md w-6" 
-                    style={{ height: `${height}%`, backgroundColor: '#2F63FF' }}
-                  ></div>
-                ))}
-              </div>
+                  onClick={() => handleSavingsRangeChange(range.toLowerCase())}
+                >
+                  {range}
+                </button>
+              ))}
             </div>
           </div>
-          <div className="text-xs text-gray-500 text-center mt-2">
-            <span className="bg-gray-100 px-2 py-1 rounded">Modo demo</span>
+
+          <div className="p-6 bg-white rounded-xl shadow-sm border border-gray-100">
+            <div className="flex items-center justify-center h-48">
+              <div className="w-full">
+                <div className="flex justify-center items-end h-40 space-x-3">
+                  {[20, 30, 25, 35, 40, 45, 50, 55, 60, 65, 70].map((height, index) => (
+                    <div
+                      key={index}
+                      className="rounded-t-md w-6"
+                      style={{ height: `${height}%`, backgroundColor: '#2F63FF' }}
+                    ></div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="text-xs text-gray-500 text-center mt-2">
+              <span className="bg-gray-100 px-2 py-1 rounded">Modo demo</span>
+            </div>
           </div>
         </div>
-      </div>
-      
-      {/* Tarjeta motivacional */}
-      <div>
-        <div className="text-white overflow-hidden rounded-xl p-6" style={{ backgroundColor: '#2F63FF' }}>
-          <h3 className="text-xl font-bold mb-2">Tu Ahorro es<br/>imparable.</h3>
-          <p className="text-white/80 mb-1">Intensidad:</p>
-          <p className="text-white font-medium mb-6">MEDIUM - ¡Vas por<br/>buen camino!</p>
-          
-          <button 
-            className="bg-white/20 border border-white/30 text-white hover:bg-white/30 px-6 py-2.5 rounded-lg uppercase text-sm font-medium tracking-wide"
-          >
-            Ajustar<br/>Reglas
-          </button>
+
+        {/* Tarjeta motivacional */}
+        <div className="lg:col-span-4">
+          <div className="text-white overflow-hidden rounded-2xl p-6 shadow-[0_10px_30px_rgba(47,99,255,0.35)]" style={{ backgroundColor: '#2F63FF' }}>
+            <h3 className="text-2xl font-bold mb-2 leading-tight">Tu Ahorro es<br/>imparable.</h3>
+            <p className="text-white/80 mb-1">Intensidad:</p>
+            <p className="text-white font-medium mb-6 leading-snug">MEDIUM - ¡Vas por<br/>buen camino!</p>
+
+            <button
+              className="bg-white/20 border border-white/30 text-white hover:bg-white/30 px-6 py-2.5 rounded-lg uppercase text-sm font-medium tracking-wide"
+            >
+              Ajustar<br/>Reglas
+            </button>
+          </div>
         </div>
       </div>
     </div>
