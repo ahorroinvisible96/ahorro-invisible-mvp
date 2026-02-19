@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/Card/Card";
 import { Button } from "@/components/ui/Button/Button";
 import { Progress } from "@/components/ui/Progress/Progress";
+import { OptionButton } from "@/components/ui/OptionButton";
 import { analytics } from "@/services/analytics";
 
 export default function OnboardingPage() {
@@ -107,9 +108,9 @@ export default function OnboardingPage() {
   };
   
   return (
-    <main className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="flex items-center gap-2 mb-8">
+    <main className="min-h-screen bg-background flex flex-col items-center justify-center p-0">
+      <div className="w-full">
+        <div className="flex items-center gap-2 mb-8 px-4">
           <div className="w-8 h-8 rounded-md bg-black flex items-center justify-center text-white font-bold">
             A
           </div>
@@ -119,7 +120,7 @@ export default function OnboardingPage() {
           </div>
         </div>
         
-        <Card variant="default" size="md">
+        <Card variant="default" size="md" className="rounded-none md:rounded-xl">
           <Card.Content>
             <div className="mb-6">
               <div className="flex items-center justify-between mb-2">
@@ -157,16 +158,13 @@ export default function OnboardingPage() {
                       { value: "2000_3500", label: "Entre 2.000€ y 3.500€" },
                       { value: "above_3500", label: "Más de 3.500€" }
                     ].map((option) => (
-                      <button
+                      <OptionButton
                         key={option.value}
+                        value={option.value}
+                        label={option.label}
+                        selected={incomeRange === option.value}
                         onClick={() => setIncomeRange(option.value)}
-                        className={`w-full py-3 px-4 rounded-lg border text-left ${incomeRange === option.value
-                          ? "border-primary-600 bg-primary-50 text-primary-700"
-                          : "border-gray-200 text-text-primary hover:bg-gray-50"
-                        }`}
-                      >
-                        {option.label}
-                      </button>
+                      />
                     ))}
                   </div>
                 </div>
@@ -188,16 +186,13 @@ export default function OnboardingPage() {
                       { value: "anxious", label: "Ansiosa: me preocupo constantemente" },
                       { value: "planning", label: "Planificadora: intento organizarme" }
                     ].map((option) => (
-                      <button
+                      <OptionButton
                         key={option.value}
+                        value={option.value}
+                        label={option.label}
+                        selected={moneyFeeling === option.value}
                         onClick={() => setMoneyFeeling(option.value)}
-                        className={`w-full py-3 px-4 rounded-lg border text-left ${moneyFeeling === option.value
-                          ? "border-primary-600 bg-primary-50 text-primary-700"
-                          : "border-gray-200 text-text-primary hover:bg-gray-50"
-                        }`}
-                      >
-                        {option.label}
-                      </button>
+                      />
                     ))}
                   </div>
                 </div>
@@ -219,16 +214,13 @@ export default function OnboardingPage() {
                       { value: "purchase", label: "Compra importante" },
                       { value: "freedom", label: "Libertad financiera" }
                     ].map((option) => (
-                      <button
+                      <OptionButton
                         key={option.value}
+                        value={option.value}
+                        label={option.label}
+                        selected={goalType === option.value}
                         onClick={() => setGoalType(option.value)}
-                        className={`w-full py-3 px-4 rounded-lg border text-left ${goalType === option.value
-                          ? "border-primary-600 bg-primary-50 text-primary-700"
-                          : "border-gray-200 text-text-primary hover:bg-gray-50"
-                        }`}
-                      >
-                        {option.label}
-                      </button>
+                      />
                     ))}
                   </div>
                 </div>

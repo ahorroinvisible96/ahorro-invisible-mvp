@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button/Button";
 import { Card } from "@/components/ui/Card/Card";
+import { FormInput } from "@/components/ui/FormInput";
 import { analytics } from "@/services/analytics";
 
 export default function SignupPage() {
@@ -81,7 +82,7 @@ export default function SignupPage() {
   };
   
   return (
-    <div className="min-h-screen w-full flex bg-background">
+    <div className="min-h-screen w-full flex bg-background p-0">
       {/* Panel izquierdo */}
       <div className="hidden md:flex md:w-1/2 bg-ahorro-700 text-white p-8 flex-col justify-between">
         <div>
@@ -107,9 +108,9 @@ export default function SignupPage() {
       </div>
       
       {/* Panel derecho - formulario */}
-      <div className="w-full md:w-1/2 flex items-center justify-center p-6">
-        <div className="w-full max-w-md">
-          <div className="md:hidden flex items-center gap-2 mb-8">
+      <div className="w-full md:w-1/2 flex items-center justify-center p-0">
+        <div className="w-full">
+          <div className="md:hidden flex items-center gap-2 mb-8 px-4">
             <div className="w-8 h-8 rounded-md bg-black flex items-center justify-center text-white font-bold">
               A
             </div>
@@ -119,7 +120,7 @@ export default function SignupPage() {
             </div>
           </div>
           
-          <Card variant="default" size="md">
+          <Card variant="default" size="md" className="rounded-none md:rounded-xl">
             <Card.Content>
               <h2 className="text-2xl font-semibold text-text-primary mb-2">Crea tu cuenta</h2>
               <p className="text-text-secondary mb-8">Comienza a ahorrar sin darte cuenta</p>
@@ -127,44 +128,29 @@ export default function SignupPage() {
               {error && <div className="mb-6 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">{error}</div>}
               
               <form onSubmit={handleSubmit} className="space-y-5">
-                <div>
-                  <label className="block text-sm font-medium text-text-primary mb-1.5">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full rounded-xl border border-gray-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                    placeholder="tu@email.com"
-                  />
-                </div>
+                <FormInput
+                  label="Email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="tu@email.com"
+                />
                 
-                <div>
-                  <label className="block text-sm font-medium text-text-primary mb-1.5">
-                    Nombre
-                  </label>
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full rounded-xl border border-gray-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                    placeholder="Tu nombre"
-                  />
-                </div>
+                <FormInput
+                  label="Nombre"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Tu nombre"
+                />
                 
-                <div>
-                  <label className="block text-sm font-medium text-text-primary mb-1.5">
-                    Contraseña
-                  </label>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full rounded-xl border border-gray-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                    placeholder="••••••••"
-                  />
-                </div>
+                <FormInput
+                  label="Contraseña"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                />
                 
                 <Button
                   type="submit"
