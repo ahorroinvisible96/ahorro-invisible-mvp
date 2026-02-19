@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowUpIcon, ArrowDownIcon } from '@heroicons/react/24/solid';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
+import { Card } from '@/components/ui/Card/Card';
+import { Button } from '@/components/ui/Button/Button';
+import { Progress } from '@/components/ui/Progress/Progress';
 
 export default function HomePage() {
   const router = useRouter();
@@ -197,8 +197,8 @@ export default function HomePage() {
           </Button>
         </div>
         
-        <Card bordered highlight className="overflow-hidden">
-          <CardHeader className="bg-ahorro-50 py-3 px-4">
+        <Card variant="default" size="md" className="overflow-hidden">
+          <Card.Content className="bg-ahorro-50 py-3 px-4">
             <div className="flex items-center">
               <div className="bg-white p-1 rounded mr-2">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-ahorro-600" viewBox="0 0 20 20" fill="currentColor">
@@ -210,8 +210,8 @@ export default function HomePage() {
                 <p className="text-xs text-text-secondary">12 MESES</p>
               </div>
             </div>
-          </CardHeader>
-          <CardContent className="p-4">
+          </Card.Content>
+          <Card.Content className="p-4">
             <Progress 
               value={savingsProgress} 
               className="mb-2" 
@@ -225,7 +225,7 @@ export default function HomePage() {
             <div className="mt-3 text-right">
               <button className="text-xs text-accent-red hover:underline">Archivar</button>
             </div>
-          </CardContent>
+          </Card.Content>
         </Card>
       </div>
       
@@ -246,7 +246,7 @@ export default function HomePage() {
           </div>
         </div>
         
-        <Card className="p-4">
+        <Card variant="default" size="md" className="p-4">
           <div className="h-48 flex items-end justify-between">
             {barChartData.map((bar, index) => (
               <div key={index} className="flex flex-col items-center">
@@ -263,8 +263,8 @@ export default function HomePage() {
       
       {/* Tarjeta de Ahorro */}
       <div>
-        <Card className="bg-ahorro-600 text-white overflow-hidden">
-          <CardContent className="p-6">
+        <Card variant="default" size="md" className="bg-ahorro-600 text-white overflow-hidden">
+          <Card.Content className="p-6">
             <h3 className="text-2xl font-bold mb-2">Tu Ahorro es Imparable.</h3>
             <p className="text-white/80 mb-6">Intensidad:</p>
             <div className="mb-1 font-medium">MEDIUM</div>
@@ -273,7 +273,7 @@ export default function HomePage() {
             <Button variant="outline" className="bg-white/20 border-white/30 text-white hover:bg-white/30">
               AJUSTAR REGLAS
             </Button>
-          </CardContent>
+          </Card.Content>
         </Card>
       </div>
     </div>
