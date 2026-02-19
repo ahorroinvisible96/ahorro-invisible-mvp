@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { Card } from "@/components/ui/Card/Card";
+import { Button } from "@/components/ui/Button/Button";
+import { Progress } from "@/components/ui/Progress/Progress";
 import { analytics } from "@/services/analytics";
 
 export default function OnboardingPage() {
@@ -105,140 +108,158 @@ export default function OnboardingPage() {
   
   return (
     <main className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-xl shadow-card p-6">
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-text-secondary">Paso {step} de 3</span>
-            <span className="text-sm text-text-secondary">{Math.round((step / 3) * 100)}%</span>
+      <div className="w-full max-w-md">
+        <div className="flex items-center gap-2 mb-8">
+          <div className="w-8 h-8 rounded-md bg-black flex items-center justify-center text-white font-bold">
+            A
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div 
-              className="bg-ahorro-600 h-2 rounded-full transition-all duration-300" 
-              style={{ width: `${(step / 3) * 100}%` }}
-            ></div>
+          <div className="font-semibold">
+            <div>Ahorro</div>
+            <div className="text-lg text-indigo-400">Invisible</div>
           </div>
         </div>
         
-        {/* Título general */}
-        <h1 className="text-xl font-semibold text-text-primary mb-1">
-          Un minuto y empezamos
-        </h1>
-        <p className="text-text-secondary text-sm mb-6">
-          Solo 3 preguntas para ajustar tu experiencia.
-        </p>
-        
-        {/* Paso 1: Rango de ingresos */}
-        {step === 1 && (
-          <>
+        <Card variant="default" size="md">
+          <Card.Content>
             <div className="mb-6">
-              <h2 className="text-lg font-medium text-text-primary mb-3">
-                ¿En qué rango están tus ingresos mensuales?
-              </h2>
-              
-              <div className="space-y-2">
-                {[
-                  { value: "below_1000", label: "Menos de 1.000€" },
-                  { value: "1000_2000", label: "Entre 1.000€ y 2.000€" },
-                  { value: "2000_3500", label: "Entre 2.000€ y 3.500€" },
-                  { value: "above_3500", label: "Más de 3.500€" }
-                ].map((option) => (
-                  <button
-                    key={option.value}
-                    onClick={() => setIncomeRange(option.value)}
-                    className={`w-full py-3 px-4 rounded-lg border text-left ${incomeRange === option.value
-                      ? "border-ahorro-600 bg-ahorro-50 text-ahorro-700"
-                      : "border-gray-200 text-text-primary hover:bg-gray-50"
-                    }`}
-                  >
-                    {option.label}
-                  </button>
-                ))}
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-text-secondary">Paso {step} de 3</span>
+                <span className="text-sm text-text-secondary">{Math.round((step / 3) * 100)}%</span>
               </div>
+              <Progress 
+                value={(step / 3) * 100} 
+                className="mb-4" 
+                size="sm" 
+                color="blue" 
+              />
             </div>
-          </>
-        )}
-        
-        {/* Paso 2: Relación con el dinero */}
-        {step === 2 && (
-          <>
-            <div className="mb-6">
-              <h2 className="text-lg font-medium text-text-primary mb-3">
-                ¿Cómo describirías tu relación con el dinero?
-              </h2>
+            
+            {/* Título general */}
+            <h1 className="text-xl font-semibold text-text-primary mb-1">
+              Un minuto y empezamos
+            </h1>
+            <p className="text-text-secondary text-sm mb-6">
+              Solo 3 preguntas para ajustar tu experiencia.
+            </p>
+            
+            {/* Paso 1: Rango de ingresos */}
+            {step === 1 && (
+              <>
+                <div className="mb-6">
+                  <h2 className="text-lg font-medium text-text-primary mb-3">
+                    ¿En qué rango están tus ingresos mensuales?
+                  </h2>
+                  
+                  <div className="space-y-2">
+                    {[
+                      { value: "below_1000", label: "Menos de 1.000€" },
+                      { value: "1000_2000", label: "Entre 1.000€ y 2.000€" },
+                      { value: "2000_3500", label: "Entre 2.000€ y 3.500€" },
+                      { value: "above_3500", label: "Más de 3.500€" }
+                    ].map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => setIncomeRange(option.value)}
+                        className={`w-full py-3 px-4 rounded-lg border text-left ${incomeRange === option.value
+                          ? "border-primary-600 bg-primary-50 text-primary-700"
+                          : "border-gray-200 text-text-primary hover:bg-gray-50"
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+            
+            {/* Paso 2: Relación con el dinero */}
+            {step === 2 && (
+              <>
+                <div className="mb-6">
+                  <h2 className="text-lg font-medium text-text-primary mb-3">
+                    ¿Cómo describirías tu relación con el dinero?
+                  </h2>
+                  
+                  <div className="space-y-2">
+                    {[
+                      { value: "reactive", label: "Reactiva: gasto sin pensar mucho" },
+                      { value: "avoidant", label: "Evitativa: prefiero no mirar mis finanzas" },
+                      { value: "anxious", label: "Ansiosa: me preocupo constantemente" },
+                      { value: "planning", label: "Planificadora: intento organizarme" }
+                    ].map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => setMoneyFeeling(option.value)}
+                        className={`w-full py-3 px-4 rounded-lg border text-left ${moneyFeeling === option.value
+                          ? "border-primary-600 bg-primary-50 text-primary-700"
+                          : "border-gray-200 text-text-primary hover:bg-gray-50"
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+            
+            {/* Paso 3: Tipo de objetivo */}
+            {step === 3 && (
+              <>
+                <div className="mb-6">
+                  <h2 className="text-lg font-medium text-text-primary mb-3">
+                    ¿Qué tipo de objetivo te gustaría alcanzar primero?
+                  </h2>
+                  
+                  <div className="space-y-2">
+                    {[
+                      { value: "travel", label: "Viaje" },
+                      { value: "emergency", label: "Fondo de emergencia" },
+                      { value: "purchase", label: "Compra importante" },
+                      { value: "freedom", label: "Libertad financiera" }
+                    ].map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => setGoalType(option.value)}
+                        className={`w-full py-3 px-4 rounded-lg border text-left ${goalType === option.value
+                          ? "border-primary-600 bg-primary-50 text-primary-700"
+                          : "border-gray-200 text-text-primary hover:bg-gray-50"
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+            
+            {/* Botones de navegación */}
+            <div className="flex space-x-3">
+              {step > 1 && (
+                <Button
+                  onClick={handleBack}
+                  variant="outline"
+                  size="md"
+                  className="w-1/3"
+                >
+                  Atrás
+                </Button>
+              )}
               
-              <div className="space-y-2">
-                {[
-                  { value: "reactive", label: "Reactiva: gasto sin pensar mucho" },
-                  { value: "avoidant", label: "Evitativa: prefiero no mirar mis finanzas" },
-                  { value: "anxious", label: "Ansiosa: me preocupo constantemente" },
-                  { value: "planning", label: "Planificadora: intento organizarme" }
-                ].map((option) => (
-                  <button
-                    key={option.value}
-                    onClick={() => setMoneyFeeling(option.value)}
-                    className={`w-full py-3 px-4 rounded-lg border text-left ${moneyFeeling === option.value
-                      ? "border-ahorro-600 bg-ahorro-50 text-ahorro-700"
-                      : "border-gray-200 text-text-primary hover:bg-gray-50"
-                    }`}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
+              <Button
+                onClick={handleNext}
+                variant="primary"
+                size="md"
+                className={step > 1 ? 'w-2/3' : 'w-full'}
+                disabled={step === 1 && !incomeRange || step === 2 && !moneyFeeling || step === 3 && !goalType}
+              >
+                {step < 3 ? "Siguiente" : "Empezar"}
+              </Button>
             </div>
-          </>
-        )}
-        
-        {/* Paso 3: Tipo de objetivo */}
-        {step === 3 && (
-          <>
-            <div className="mb-6">
-              <h2 className="text-lg font-medium text-text-primary mb-3">
-                ¿Qué tipo de objetivo te gustaría alcanzar primero?
-              </h2>
-              
-              <div className="space-y-2">
-                {[
-                  { value: "travel", label: "Viaje" },
-                  { value: "emergency", label: "Fondo de emergencia" },
-                  { value: "purchase", label: "Compra importante" },
-                  { value: "freedom", label: "Libertad financiera" }
-                ].map((option) => (
-                  <button
-                    key={option.value}
-                    onClick={() => setGoalType(option.value)}
-                    className={`w-full py-3 px-4 rounded-lg border text-left ${goalType === option.value
-                      ? "border-ahorro-600 bg-ahorro-50 text-ahorro-700"
-                      : "border-gray-200 text-text-primary hover:bg-gray-50"
-                    }`}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </>
-        )}
-        
-        {/* Botones de navegación */}
-        <div className="flex space-x-3">
-          {step > 1 && (
-            <button
-              onClick={handleBack}
-              className="w-1/3 py-3 border border-gray-300 rounded-lg text-text-primary hover:bg-gray-50 transition"
-            >
-              Atrás
-            </button>
-          )}
-          
-          <button
-            onClick={handleNext}
-            disabled={step === 1 && !incomeRange || step === 2 && !moneyFeeling || step === 3 && !goalType}
-            className={`${step > 1 ? 'w-2/3' : 'w-full'} bg-ahorro-600 text-white py-3 rounded-lg font-medium hover:bg-ahorro-700 transition disabled:opacity-50 disabled:cursor-not-allowed`}
-          >
-            {step < 3 ? "Siguiente" : "Empezar"}
-          </button>
-        </div>
+          </Card.Content>
+        </Card>
       </div>
     </main>
   );

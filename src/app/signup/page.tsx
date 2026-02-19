@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button/Button";
+import { Card } from "@/components/ui/Card/Card";
 import { analytics } from "@/services/analytics";
 
 export default function SignupPage() {
@@ -85,19 +86,18 @@ export default function SignupPage() {
       <div className="hidden md:flex md:w-1/2 bg-ahorro-700 text-white p-8 flex-col justify-between">
         <div>
           <div className="flex items-center gap-2 mb-12">
-            <div className="w-10 h-10 rounded-md bg-ahorro-500 flex items-center justify-center text-white font-bold">
-              AI
+            <div className="w-10 h-10 rounded-md bg-black flex items-center justify-center text-white font-bold">
+              A
             </div>
             <div className="font-semibold">
               <div className="text-lg">Ahorro</div>
-              <div className="text-xs opacity-80">INVISIBLE</div>
+              <div className="text-lg text-indigo-400">Invisible</div>
             </div>
           </div>
           
-          <h1 className="text-4xl font-bold mb-4">Ahorro que no duele</h1>
+          <h1 className="text-4xl font-bold mb-4">Tu dinero crece sin que te des cuenta.</h1>
           <p className="text-lg text-white/80">
-            Crea una cuenta y descubre cómo nuestro sistema de ahorro invisible
-            te ayuda a alcanzar tus metas financieras sin sentir el esfuerzo.
+            La app de ahorro para la Generación Z.
           </p>
         </div>
         
@@ -110,74 +110,77 @@ export default function SignupPage() {
       <div className="w-full md:w-1/2 flex items-center justify-center p-6">
         <div className="w-full max-w-md">
           <div className="md:hidden flex items-center gap-2 mb-8">
-            <div className="w-8 h-8 rounded-md bg-ahorro-700 flex items-center justify-center text-white font-bold">
-              AI
+            <div className="w-8 h-8 rounded-md bg-black flex items-center justify-center text-white font-bold">
+              A
             </div>
             <div className="font-semibold">
               <div>Ahorro</div>
-              <div className="text-xs text-ahorro-700/80">INVISIBLE</div>
+              <div className="text-lg text-indigo-400">Invisible</div>
             </div>
           </div>
           
-          <h2 className="text-2xl font-semibold text-text-primary mb-2">Crea tu cuenta</h2>
-          <p className="text-text-secondary mb-8">Comienza a ahorrar sin darte cuenta</p>
-          
-          {error && <div className="mb-6 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">{error}</div>}
-          
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="block text-sm font-medium text-text-primary mb-1.5">
-                Email
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-xl border border-gray-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ahorro-500 focus:border-ahorro-500"
-                placeholder="tu@email.com"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-text-primary mb-1.5">
-                Nombre
-              </label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full rounded-xl border border-gray-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ahorro-500 focus:border-ahorro-500"
-                placeholder="Tu nombre"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-text-primary mb-1.5">
-                Contraseña
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-xl border border-gray-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ahorro-500 focus:border-ahorro-500"
-                placeholder="••••••••"
-              />
-            </div>
-            
-            <Button
-              type="submit"
-              variant="primary"
-              size="lg"
-              fullWidth
-            >
-              Crear cuenta
-            </Button>
-          </form>
-          
-          <div className="text-xs text-text-secondary mt-8 text-center">
-            Al registrarte aceptas nuestros <a href="#" className="text-ahorro-600 hover:underline">Términos de servicio</a> y
-            <a href="#" className="text-ahorro-600 hover:underline"> Política de privacidad</a>
-          </div>
+          <Card variant="default" size="md">
+            <Card.Content>
+              <h2 className="text-2xl font-semibold text-text-primary mb-2">Crea tu cuenta</h2>
+              <p className="text-text-secondary mb-8">Comienza a ahorrar sin darte cuenta</p>
+              
+              {error && <div className="mb-6 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">{error}</div>}
+              
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div>
+                  <label className="block text-sm font-medium text-text-primary mb-1.5">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full rounded-xl border border-gray-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    placeholder="tu@email.com"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-text-primary mb-1.5">
+                    Nombre
+                  </label>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full rounded-xl border border-gray-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    placeholder="Tu nombre"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-text-primary mb-1.5">
+                    Contraseña
+                  </label>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full rounded-xl border border-gray-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    placeholder="••••••••"
+                  />
+                </div>
+                
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="lg"
+                >
+                  Crear cuenta
+                </Button>
+              </form>
+              
+              <div className="text-xs text-text-secondary mt-8 text-center">
+                Al registrarte aceptas nuestros <a href="#" className="text-primary-600 hover:underline">Términos de servicio</a> y
+                <a href="#" className="text-primary-600 hover:underline"> Política de privacidad</a>
+              </div>
+            </Card.Content>
+          </Card>
         </div>
       </div>
     </div>
