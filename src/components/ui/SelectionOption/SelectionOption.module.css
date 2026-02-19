@@ -1,0 +1,32 @@
+.option {
+  display: block;
+  width: 100%;
+  padding: 1rem;
+  text-align: left;
+  border-radius: 0.75rem;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  margin-bottom: 0.5rem;
+}
+
+.option:hover:not(.selected) {
+  background-color: var(--color-gray-50);
+  border-color: var(--color-gray-300);
+}
+
+.selected {
+  background-color: var(--color-primary-50);
+  border-color: var(--color-primary-500);
+  color: var(--color-primary-700);
+  box-shadow: 0 0 0 1px var(--color-primary-500);
+}
+
+.option:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-primary-200);
+}
