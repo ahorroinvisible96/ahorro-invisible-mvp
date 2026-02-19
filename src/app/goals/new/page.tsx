@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button/Button";
+import { Card } from "@/components/ui/Card/Card";
+import { FormInput } from "@/components/ui/FormInput";
 
 export default function CreateGoalPage() {
   const router = useRouter();
@@ -103,77 +105,80 @@ export default function CreateGoalPage() {
   };
   
   return (
-    <main className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-xl shadow-card p-6">
-        <h1 className="text-2xl font-semibold text-text-primary mb-2">
-          Crea tu primer objetivo
-        </h1>
-        <p className="text-text-secondary mb-6">
-          Será tu punto de referencia diario.
-        </p>
-        
-        {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
-            {error}
+    <main className="min-h-screen bg-background flex flex-col items-center justify-center p-0">
+      <div className="w-full">
+        <div className="flex items-center gap-2 mb-8 px-4">
+          <div className="w-8 h-8 rounded-md bg-black flex items-center justify-center text-white font-bold">
+            A
           </div>
-        )}
-        
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label className="block text-sm font-medium text-text-primary mb-1.5">
-              Nombre del objetivo
-            </label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full rounded-xl border border-gray-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ahorro-500 focus:border-ahorro-500"
-              placeholder="Viaje, emergencia, formación..."
-            />
+          <div className="font-semibold">
+            <div>Ahorro</div>
+            <div className="text-lg text-indigo-400">Invisible</div>
           </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-text-primary mb-1.5">
-              Cantidad objetivo
-            </label>
-            <div className="flex items-center">
-              <span className="text-text-secondary text-lg mr-2">€</span>
-              <input
+        </div>
+        
+        <Card variant="default" size="md" className="rounded-none md:rounded-xl">
+          <Card.Content>
+            <h1 className="text-2xl font-semibold text-text-primary mb-2">
+              Crea tu primer objetivo
+            </h1>
+            <p className="text-text-secondary mb-6">
+              Será tu punto de referencia diario.
+            </p>
+            
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
+            
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <FormInput
+                label="Nombre del objetivo"
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Viaje, emergencia, formación..."
+              />
+              
+              <div>
+                <label className="block text-sm font-medium text-text-primary mb-1.5">
+                  Cantidad objetivo
+                </label>
+                <div className="flex items-center">
+                  <span className="text-text-secondary text-lg mr-2">€</span>
+                  <input
+                    type="number"
+                    min="1"
+                    value={targetAmount}
+                    onChange={(e) => setTargetAmount(parseInt(e.target.value) || 0)}
+                    className="w-full rounded-xl border border-gray-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  />
+                </div>
+              </div>
+              
+              <FormInput
+                label="Horizonte (meses) (opcional)"
                 type="number"
                 min="1"
-                value={targetAmount}
-                onChange={(e) => setTargetAmount(parseInt(e.target.value) || 0)}
-                className="w-full rounded-xl border border-gray-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ahorro-500 focus:border-ahorro-500"
+                value={timeHorizonMonths || ""}
+                onChange={(e) => {
+                  const value = e.target.value ? parseInt(e.target.value) : null;
+                  setTimeHorizonMonths(value);
+                }}
+                placeholder="12"
               />
-            </div>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-text-primary mb-1.5">
-              Horizonte (meses) <span className="text-text-secondary">(opcional)</span>
-            </label>
-            <input
-              type="number"
-              min="1"
-              value={timeHorizonMonths || ""}
-              onChange={(e) => {
-                const value = e.target.value ? parseInt(e.target.value) : null;
-                setTimeHorizonMonths(value);
-              }}
-              className="w-full rounded-xl border border-gray-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ahorro-500 focus:border-ahorro-500"
-              placeholder="12"
-            />
-          </div>
-          
-          <Button
-            type="submit"
-            variant="primary"
-            size="lg"
-            fullWidth
-          >
-            Guardar objetivo
-          </Button>
-        </form>
+              
+              <Button
+                type="submit"
+                variant="primary"
+                size="lg"
+              >
+                Guardar objetivo
+              </Button>
+            </form>
+          </Card.Content>
+        </Card>
       </div>
     </main>
   );

@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AppLayout, Section } from '@/components/layout';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
+import { Card } from '@/components/ui/Card/Card';
+import { Button } from '@/components/ui/Button/Button';
+import { Badge } from '@/components/ui/Badge/Badge';
+import { FormInput } from '@/components/ui/FormInput';
 import { analytics } from '@/services/analytics';
 
 export default function ProfilePage() {
@@ -87,32 +88,23 @@ export default function ProfilePage() {
         <Card variant="default" size="md">
           <Card.Content>
             <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nombre
-                </label>
-                <input
-                  type="text"
-                  value={userName}
-                  onChange={(e) => setUserName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                />
-              </div>
+              <FormInput
+                label="Nombre"
+                type="text"
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+              />
               
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  value={email}
-                  disabled
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50"
-                />
-                <p className="mt-1 text-xs text-gray-500">
-                  El email no se puede modificar
-                </p>
-              </div>
+              <FormInput
+                label="Email"
+                type="email"
+                value={email}
+                disabled
+                containerClassName="mb-1"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                El email no se puede modificar
+              </p>
               
               <div className="flex justify-end">
                 <Button
