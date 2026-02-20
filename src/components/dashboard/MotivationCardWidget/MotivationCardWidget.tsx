@@ -27,7 +27,7 @@ export function MotivationCardWidget({
   const { headline, sub } = COPY[intensity];
 
   return (
-    <div className={styles.card} style={{ borderRadius: 16, padding: 24 }}>
+    <div className={styles.card}>
       <div className={styles.label}>Motivación del sistema</div>
       <div className={styles.intensityBadge}>
         {INTENSITY_LABEL[intensity]}

@@ -20,7 +20,7 @@ export function GoalCardWidget({
   const isCompleted = goal.currentAmount >= goal.targetAmount;
 
   useEffect(() => {
-    analytics.goalPrimaryWidgetViewed();
+    analytics.goalCardViewed(goal.id, goal.isPrimary, pct);
   }, [goal.id]);
 
   const handleArchive = (e: React.MouseEvent) => {
@@ -74,7 +74,7 @@ export function GoalCardWidget({
         </div>
 
         {!isCompleted && (
-          <p className="text-xs text-gray-500 mb-2">
+          <p className={styles.remaining}>
             Faltan <strong>{formatEUR(remaining)}</strong> · {goal.horizonMonths} meses
           </p>
         )}

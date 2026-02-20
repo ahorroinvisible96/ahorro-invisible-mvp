@@ -154,8 +154,8 @@
 .logoutButton {
   width: 100%;
   text-align: left;
-  padding: var(--spacing-4);
-  color: rgba(255, 255, 255, 0.7);
+  padding: var(--spacing-2) var(--spacing-3);
+  color: rgba(255, 255, 255, 0.55);
   display: flex;
   align-items: center;
   gap: var(--spacing-2);
@@ -163,7 +163,8 @@
   background: transparent;
   cursor: pointer;
   transition: all var(--transition-fast) var(--transition-ease);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
+  border-radius: var(--border-radius-lg);
 }
 
 .logoutButton:hover {

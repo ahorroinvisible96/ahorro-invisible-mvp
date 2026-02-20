@@ -6,6 +6,7 @@ import {
   buildSummary,
   storeUpdateIncome,
   storeCreateGoal,
+  storeUpdateGoal,
   storeArchiveGoal,
   storeSetPrimaryGoal,
   storeSubmitDecision,
@@ -19,6 +20,8 @@ type CreateGoalInput = {
   isPrimary: boolean;
 };
 
+type UpdateGoalInput = Partial<Pick<CreateGoalInput, 'title' | 'targetAmount' | 'currentAmount' | 'horizonMonths' | 'isPrimary'>>;
+
 type UseDashboardSummaryReturn = {
   summary: DashboardSummary | null;
   loading: boolean;
@@ -28,6 +31,7 @@ type UseDashboardSummaryReturn = {
   refresh: () => void;
   updateIncome: (range: IncomeRange) => void;
   createGoal: (data: CreateGoalInput) => void;
+  updateGoal: (goalId: string, patch: UpdateGoalInput) => void;
   archiveGoal: (goalId: string) => void;
   setPrimaryGoal: (goalId: string) => void;
   submitDecision: (questionId: string, answerKey: string, goalId: string) => void;
@@ -61,6 +65,10 @@ export function useDashboardSummary(): UseDashboardSummaryReturn {
     setSummary(storeCreateGoal(data, range));
   }, [range]);
 
+  const updateGoal = useCallback((goalId: string, patch: UpdateGoalInput) => {
+    setSummary(storeUpdateGoal(goalId, patch, range));
+  }, [range]);
+
   const archiveGoal = useCallback((goalId: string) => {
     setSummary(storeArchiveGoal(goalId, range));
   }, [range]);
@@ -82,6 +90,7 @@ export function useDashboardSummary(): UseDashboardSummaryReturn {
     refresh,
     updateIncome,
     createGoal,
+    updateGoal,
     archiveGoal,
     setPrimaryGoal,
     submitDecision,

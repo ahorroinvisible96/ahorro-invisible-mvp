@@ -12,8 +12,8 @@ export function HeaderStatusBarWidget({
   onOpenNotifications,
 }: HeaderStatusBarProps): React.ReactElement {
   useEffect(() => {
-    analytics.dashboardViewed('pending', 0, false, false);
-  }, [systemActive]);
+    analytics.setScreen('dashboard');
+  }, []);
 
   return (
     <div className={styles.header}>

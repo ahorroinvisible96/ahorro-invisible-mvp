@@ -27,6 +27,7 @@ export function IncomeRangeWidget({
     setMinVal(incomeRange ? String(incomeRange.min) : '');
     setMaxVal(incomeRange ? String(incomeRange.max) : '');
     setFormError('');
+    analytics.incomeEditOpened();
     setOpen(true);
   }
 
@@ -47,7 +48,7 @@ export function IncomeRangeWidget({
     }
     const range: IncomeRange = { min, max, currency: 'EUR' };
     onSaveIncomeRange(range);
-    analytics.settingsUpdated(['income_range']);
+    analytics.incomeUpdated(min, max);
     setOpen(false);
   }
 

@@ -92,6 +92,19 @@
   font-size: 22px;
 }
 
+.completedCta {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.completedCtaText {
+  font-size: 13px;
+  color: #15803d;
+  font-weight: 500;
+}
+
 .skeletonBar {
   height: 12px;
   border-radius: 6px;

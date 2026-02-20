@@ -426,6 +426,31 @@ class Analytics {
     this.track('income_range_viewed');
   }
 
+  // Modal de edición de ingresos abierto
+  incomeEditOpened() {
+    this.track('income_edit_opened', { screen_name: 'dashboard' });
+  }
+
+  // Ingresos actualizados
+  incomeUpdated(min: number, max: number) {
+    this.track('income_updated', { min, max, screen_name: 'dashboard' });
+  }
+
+  // Error al actualizar ingresos
+  incomeUpdateError(reason: string) {
+    this.track('income_update_error', { reason, screen_name: 'dashboard' });
+  }
+
+  // Visualización de tarjeta de objetivo
+  goalCardViewed(goalId: string, isPrimary: boolean, pct: number) {
+    this.track('goal_card_viewed', {
+      goal_id: goalId,
+      is_primary: isPrimary,
+      progress_pct: pct,
+      screen_name: 'dashboard',
+    });
+  }
+
   // Visualización de widget de objetivos
   goalsWidgetViewed() {
     this.track('goals_widget_viewed');

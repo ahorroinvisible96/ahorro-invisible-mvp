@@ -105,6 +105,7 @@ export default function DashboardPage() {
           <SavingsEvolutionWidget
             evolution={summary.savingsEvolution}
             onChangeRange={changeRange}
+            onGoToDailyQuestion={() => router.push('/daily')}
           />
 
           <GoalsSectionWidget

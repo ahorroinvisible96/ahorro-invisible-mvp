@@ -12,7 +12,8 @@ const RANGES: Range[] = ['7d', '30d', '90d'];
 export function SavingsEvolutionWidget({
   evolution,
   onChangeRange,
-}: SavingsEvolutionWidgetProps): React.ReactElement {
+  onGoToDailyQuestion,
+}: SavingsEvolutionWidgetProps & { onGoToDailyQuestion?: () => void }): React.ReactElement {
   const { range, mode, points } = evolution;
 
   useEffect(() => {
@@ -54,7 +55,14 @@ export function SavingsEvolutionWidget({
         <div className={styles.totalLabel}>Acumulado en {range}</div>
 
         {points.length === 0 ? (
-          <div className={styles.emptyState}>Sin datos para este período</div>
+          <div className={styles.emptyState}>
+            <p>Aún no hay datos para este período.</p>
+            {onGoToDailyQuestion && (
+              <button className={styles.emptyCtaBtn} onClick={onGoToDailyQuestion}>
+                Responder ahora →
+              </button>
+            )}
+          </div>
         ) : (
           <div className={styles.chartArea}>
             {points.map((point: { date: string; value: number }, i: number) => {

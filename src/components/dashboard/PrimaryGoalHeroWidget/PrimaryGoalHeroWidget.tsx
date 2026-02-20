@@ -80,10 +80,17 @@ export function PrimaryGoalHeroWidget({
           />
         </div>
 
-        {!d.isCompleted && (
+        {!d.isCompleted ? (
           <p className={styles.remainingText}>
             Te faltan <strong>{formatEUR(d.remainingAmount)}</strong>. ¡Sigue así!
           </p>
+        ) : (
+          <div className={styles.completedCta}>
+            <p className={styles.completedCtaText}>¡Meta alcanzada! ¿Cuál es tu próximo objetivo?</p>
+            <Button variant="primary" size="sm" onClick={onCreateGoal}>
+              Crear nueva meta
+            </Button>
+          </div>
         )}
       </Card.Content>
     </Card>

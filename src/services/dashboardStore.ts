@@ -273,6 +273,43 @@ export function storeSetPrimaryGoal(
   return buildSummary(currentRange);
 }
 
+export function storeUpdateGoal(
+  goalId: string,
+  patch: Partial<Pick<Goal, 'title' | 'targetAmount' | 'currentAmount' | 'horizonMonths' | 'isPrimary'>>,
+  currentRange: '7d' | '30d' | '90d' = '30d',
+): DashboardSummary {
+  const state = loadStore();
+  const now = new Date().toISOString();
+  const goal = state.goals.find((g) => g.id === goalId);
+  if (!goal) return buildSummary(currentRange);
+
+  if (patch.isPrimary === true) {
+    state.goals = state.goals.map((g) => ({ ...g, isPrimary: false, updatedAt: now }));
+  }
+  Object.assign(goal, patch, { updatedAt: now });
+  persistStore(state);
+  return buildSummary(currentRange);
+}
+
+export function storeGetDailyForDate(date: string): { status: 'pending' | 'completed'; decisionId: string | null } {
+  const state = loadStore();
+  const found = state.decisions.find((d) => d.date === date) ?? null;
+  return {
+    status: found ? 'completed' : 'pending',
+    decisionId: found?.id ?? null,
+  };
+}
+
+export function storeListActiveGoals(): Goal[] {
+  const state = loadStore();
+  return state.goals.filter((g) => !g.archived);
+}
+
+export function storeListArchivedGoals(): Goal[] {
+  const state = loadStore();
+  return state.goals.filter((g) => g.archived);
+}
+
 export function storeSubmitDecision(
   questionId: string,
   answerKey: string,
