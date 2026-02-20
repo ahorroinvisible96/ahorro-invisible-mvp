@@ -1,2 +1,2 @@
 export { MotivationCardWidget } from './MotivationCardWidget';
-export type { MotivationCardWidgetProps, MotivationCtaClickedPayload } from './MotivationCardWidget.types';
+export type { MotivationCardWidgetProps, MotivationIntensity } from './MotivationCardWidget.types';

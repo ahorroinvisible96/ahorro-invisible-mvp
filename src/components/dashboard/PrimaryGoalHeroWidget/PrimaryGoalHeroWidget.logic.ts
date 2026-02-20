@@ -1,25 +1,30 @@
-import type { Goal, GoalProgress } from '@/types/Goal';
+import type { Goal } from '@/types/Dashboard';
+import type { GoalDisplayData } from './PrimaryGoalHeroWidget.types';
 
-export function clamp(value: number, min: number, max: number): number {
-  return Math.min(Math.max(value, min), max);
+export function computeProgressRatio(goal: Goal): number {
+  if (goal.targetAmount <= 0) return 0;
+  return Math.min(goal.currentAmount / goal.targetAmount, 1);
 }
 
-export function computeGoalProgress(goal: Goal): GoalProgress {
-  const ratio = goal.target_amount > 0
-    ? clamp(goal.current_amount / goal.target_amount, 0, 1)
-    : 0;
+export function computePctRounded(goal: Goal): number {
+  return Math.round(computeProgressRatio(goal) * 100);
+}
 
+export function computeRemainingAmount(goal: Goal): number {
+  return Math.max(goal.targetAmount - goal.currentAmount, 0);
+}
+
+export function computeGoalDisplayData(goal: Goal): GoalDisplayData {
+  const ratio = computeProgressRatio(goal);
   return {
-    goal_id: goal.id,
-    progress_ratio: ratio,
-    progress_percent: Math.round(ratio * 100),
-    remaining_amount: Math.max(goal.target_amount - goal.current_amount, 0),
-    current_amount: goal.current_amount,
-    target_amount: goal.target_amount,
+    progressRatio: ratio,
+    progressPct: Math.round(ratio * 100),
+    remainingAmount: computeRemainingAmount(goal),
+    isCompleted: goal.currentAmount >= goal.targetAmount,
   };
 }
 
-export function formatCurrency(amount: number): string {
+export function formatEUR(amount: number): string {
   return new Intl.NumberFormat('es-ES', {
     style: 'currency',
     currency: 'EUR',

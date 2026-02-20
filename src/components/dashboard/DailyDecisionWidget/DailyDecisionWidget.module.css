@@ -1,0 +1,68 @@
+.widget {
+  position: relative;
+}
+
+.statusRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dotPending {
+  background: #f59e0b;
+  animation: pulse 1.8s ease-in-out infinite;
+}
+
+.dotCompleted {
+  background: #22c55e;
+}
+
+.dotError {
+  background: #ef4444;
+}
+
+.dotDisabled {
+  background: #d1d5db;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.85); }
+}
+
+.headline {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-primary, #111827);
+  margin-bottom: 6px;
+}
+
+.sub {
+  font-size: 13px;
+  color: var(--color-text-secondary, #6b7280);
+  margin-bottom: 16px;
+}
+
+.ctaRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.disabledCard {
+  opacity: 0.6;
+}
+
+.errorNote {
+  font-size: 12px;
+  color: #ef4444;
+  margin-top: 8px;
+}

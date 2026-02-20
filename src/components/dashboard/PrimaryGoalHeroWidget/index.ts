@@ -1,3 +1,3 @@
 export { PrimaryGoalHeroWidget } from './PrimaryGoalHeroWidget';
-export type { PrimaryGoalHeroWidgetProps, PrimaryGoalHeroData } from './PrimaryGoalHeroWidget.types';
-export { computeGoalProgress, formatCurrency } from './PrimaryGoalHeroWidget.logic';
+export { computeGoalDisplayData, formatEUR } from './PrimaryGoalHeroWidget.logic';
+export type { PrimaryGoalHeroProps, GoalDisplayData } from './PrimaryGoalHeroWidget.types';

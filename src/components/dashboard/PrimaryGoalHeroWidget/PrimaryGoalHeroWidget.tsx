@@ -1,115 +1,90 @@
 "use client";
 
-import React from 'react';
-import { Card } from '@/components/ui/Card/Card';
-import { Button } from '@/components/ui/Button/Button';
-import { Badge } from '@/components/ui/Badge/Badge';
-import { Progress } from '@/components/ui/Progress/Progress';
-import { formatCurrency } from './PrimaryGoalHeroWidget.logic';
-import type { PrimaryGoalHeroWidgetProps } from './PrimaryGoalHeroWidget.types';
-
-function SkeletonState(): React.ReactElement {
-  return (
-    <Card variant="default" size="md" rounded2xl>
-      <Card.Content>
-        <div className="animate-pulse space-y-4">
-          <div className="h-3 w-32 bg-gray-200 rounded" />
-          <div className="h-6 w-48 bg-gray-200 rounded" />
-          <div className="h-3 w-full bg-gray-200 rounded" />
-          <div className="h-3 w-24 bg-gray-200 rounded" />
-        </div>
-      </Card.Content>
-    </Card>
-  );
-}
+import React, { useEffect } from 'react';
+import { Card, Button, Progress } from '@/components/ui';
+import { analytics } from '@/services/analytics';
+import { computeGoalDisplayData, formatEUR } from './PrimaryGoalHeroWidget.logic';
+import type { PrimaryGoalHeroProps } from './PrimaryGoalHeroWidget.types';
+import styles from './PrimaryGoalHeroWidget.module.css';
 
 function EmptyState({ onCreateGoal }: { onCreateGoal: () => void }): React.ReactElement {
   return (
     <Card variant="default" size="md" rounded2xl>
       <Card.Content>
-        <p className="text-sm text-gray-500 mb-4">Aún no tienes un objetivo principal.</p>
-        <Button variant="primary" size="sm" onClick={onCreateGoal}>
-          Crear objetivo
-        </Button>
-      </Card.Content>
-    </Card>
-  );
-}
-
-function ErrorState({ onRetry }: { onRetry: () => void }): React.ReactElement {
-  return (
-    <Card variant="default" size="md" rounded2xl>
-      <Card.Content>
-        <p className="text-sm text-gray-500 mb-4">No se pudo cargar el objetivo.</p>
-        <Button variant="outline" size="sm" onClick={onRetry}>
-          Reintentar
-        </Button>
+        <div className={styles.emptyState}>
+          <div className={styles.emptyIcon}>🎯</div>
+          <p className="text-sm font-medium text-gray-700">Sin objetivo principal</p>
+          <p className="text-xs text-gray-500">Define un objetivo para empezar a ahorrar.</p>
+          <Button variant="primary" size="sm" onClick={onCreateGoal}>
+            Crear objetivo
+          </Button>
+        </div>
       </Card.Content>
     </Card>
   );
 }
 
 export function PrimaryGoalHeroWidget({
-  state,
-  onRetry,
+  goal,
   onCreateGoal,
-}: PrimaryGoalHeroWidgetProps): React.ReactElement {
-  if (state.status === 'loading') {
-    return <SkeletonState />;
-  }
+  onOpenGoal,
+}: PrimaryGoalHeroProps): React.ReactElement {
+  useEffect(() => {
+    analytics.goalPrimaryWidgetViewed();
+  }, [goal]);
 
-  if (state.status === 'error') {
-    return <ErrorState onRetry={onRetry} />;
-  }
+  if (!goal) return <EmptyState onCreateGoal={onCreateGoal} />;
 
-  if (state.status === 'empty' || state.data === null) {
-    return <EmptyState onCreateGoal={onCreateGoal} />;
-  }
-
-  const { goal, progress, systemActive } = state.data;
+  const d = computeGoalDisplayData(goal);
 
   return (
-    <Card variant="default" size="md" rounded2xl>
+    <Card
+      variant="default"
+      size="md"
+      rounded2xl
+      interactive={!d.isCompleted}
+      className={styles.hero}
+      onClick={!d.isCompleted ? () => onOpenGoal(goal.id) : undefined}
+    >
       <Card.Content>
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-xs uppercase tracking-wider font-medium text-gray-500">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
             Objetivo principal
           </span>
-          {systemActive && (
-            <Badge variant="success" size="sm" withDot>
-              Sistema activo
-            </Badge>
+          <span className={styles.horizonChip}>
+            {goal.horizonMonths} MESES
+          </span>
+        </div>
+
+        <div className={styles.titleRow}>
+          <h2 className="text-xl font-semibold text-gray-900 flex-1">{goal.title}</h2>
+          {d.isCompleted && (
+            <div className={styles.completedBadge}>
+              <span>✓</span> Completado
+            </div>
           )}
         </div>
 
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">{goal.title}</h2>
-
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-2xl font-bold text-gray-900">
-            {formatCurrency(progress.current_amount)}
-            <span className="text-sm font-normal text-gray-500 ml-1">
-              / {formatCurrency(progress.target_amount)}
-            </span>
-          </span>
-          <span className="text-lg font-bold text-blue-600">
-            {progress.progress_percent}%
-          </span>
+        <div className={styles.amounts}>
+          <span className={styles.currentAmount}>{formatEUR(goal.currentAmount)}</span>
+          <span className={styles.targetAmount}>/ {formatEUR(goal.targetAmount)}</span>
+          <span className={styles.pctLabel}>{d.progressPct}%</span>
         </div>
 
-        <Progress
-          value={progress.progress_percent}
-          size="md"
-          variant="primary"
-          className="mb-3"
-        />
+        <div className={styles.progressRow}>
+          <Progress
+            value={d.progressPct}
+            max={100}
+            size="md"
+            variant={d.isCompleted ? 'success' : 'primary'}
+          />
+        </div>
 
-        <p className="text-sm text-gray-500">
-          Te faltan{' '}
-          <span className="font-semibold text-gray-700">
-            {formatCurrency(progress.remaining_amount)}
-          </span>
-          . Sigue así.
-        </p>
+        {!d.isCompleted && (
+          <p className={styles.remainingText}>
+            Te faltan <strong>{formatEUR(d.remainingAmount)}</strong>. ¡Sigue así!
+          </p>
+        )}
       </Card.Content>
     </Card>
   );

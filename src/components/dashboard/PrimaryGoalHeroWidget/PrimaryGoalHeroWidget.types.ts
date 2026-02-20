@@ -1,14 +1,14 @@
-import type { Goal, GoalProgress } from '@/types/Goal';
-import type { WidgetState } from '@/types/WidgetState';
+import type { Goal } from '@/types/Dashboard';
 
-export interface PrimaryGoalHeroWidgetProps {
-  state: WidgetState<PrimaryGoalHeroData>;
-  onRetry: () => void;
+export type PrimaryGoalHeroProps = {
+  goal: Goal | null;
   onCreateGoal: () => void;
-}
+  onOpenGoal: (goalId: string) => void;
+};
 
-export interface PrimaryGoalHeroData {
-  goal: Goal;
-  progress: GoalProgress;
-  systemActive: boolean;
-}
+export type GoalDisplayData = {
+  progressRatio: number;
+  progressPct: number;
+  remainingAmount: number;
+  isCompleted: boolean;
+};

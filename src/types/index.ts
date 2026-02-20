@@ -14,11 +14,12 @@ export type {
 } from './DailyQuestion';
 export type { DecisionImpact, DailyDecision, DailyDecisionCreateResponse } from './Impact';
 export type {
-  SavingsRange,
-  SavingsMode,
-  SavingsDataPoint,
-  SavingsEvolutionData,
-  DashboardSummaryResponse,
+  DailyStatus as DashboardDailyStatus,
+  Goal as DashboardGoal,
+  DailySummary,
+  SavingsEvolutionPoint,
+  SavingsEvolution,
+  DashboardSummary,
 } from './Dashboard';
 export type { WidgetStatus, WidgetState } from './WidgetState';
 export { widgetLoading, widgetError, widgetEmpty, widgetActive, widgetCompleted } from './WidgetState';
