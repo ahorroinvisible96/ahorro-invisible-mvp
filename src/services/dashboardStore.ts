@@ -157,6 +157,22 @@ export function buildSummary(range: '7d' | '30d' | '90d' = '30d'): DashboardSumm
   const todayDecision = state.decisions.find((d) => d.date === today) ?? null;
   const evolutionPoints = buildEvolutionPoints(state.decisions, range);
 
+  // Velocidad media de ahorro (últimos 30 días)
+  const cutoff30 = new Date(Date.now() - 30 * 86_400_000).toISOString().split('T')[0];
+  const recent30 = state.decisions.filter((d) => d.date >= cutoff30);
+  const avgMonthlySavings = recent30.reduce((s, d) => s + d.deltaAmount, 0);
+
+  // Tiempo estimado restante para el objetivo principal
+  let estimatedMonthsRemaining: number | null = null;
+  if (primaryGoal && !primaryGoal.archived && primaryGoal.currentAmount < primaryGoal.targetAmount) {
+    const remaining = primaryGoal.targetAmount - primaryGoal.currentAmount;
+    if (avgMonthlySavings > 0) {
+      estimatedMonthsRemaining = Math.ceil(remaining / avgMonthlySavings);
+    } else {
+      estimatedMonthsRemaining = primaryGoal.horizonMonths;
+    }
+  }
+
   return {
     userName: state.userName,
     systemActive: true,
@@ -174,6 +190,8 @@ export function buildSummary(range: '7d' | '30d' | '90d' = '30d'): DashboardSumm
       points: evolutionPoints,
     },
     intensity: computeIntensity(state.decisions),
+    avgMonthlySavings,
+    estimatedMonthsRemaining,
   };
 }
 
@@ -267,6 +285,28 @@ export function storeUpdateGoal(
   Object.assign(goal, patch, { updatedAt: now });
   persistStore(state);
   return buildSummary(currentRange);
+}
+
+export function storeUpdateUserName(
+  userName: string,
+  currentRange: '7d' | '30d' | '90d' = '30d',
+): DashboardSummary {
+  const state = loadStore();
+  state.userName = userName.trim() || state.userName;
+  persistStore(state);
+  return buildSummary(currentRange);
+}
+
+export function storeResetAllData(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch { /* fallthrough */ }
+}
+
+export function storeExportData(): string {
+  const state = loadStore();
+  return JSON.stringify(state, null, 2);
 }
 
 export function storeGetDailyForDate(date: string): { status: 'pending' | 'completed'; decisionId: string | null } {

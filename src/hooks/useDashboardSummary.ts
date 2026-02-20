@@ -5,6 +5,7 @@ import type { DashboardSummary, IncomeRange } from '@/types/Dashboard';
 import {
   buildSummary,
   storeUpdateIncome,
+  storeUpdateUserName,
   storeCreateGoal,
   storeUpdateGoal,
   storeArchiveGoal,
@@ -29,6 +30,7 @@ type UseDashboardSummaryReturn = {
   range: '7d' | '30d' | '90d';
   changeRange: (r: '7d' | '30d' | '90d') => void;
   refresh: () => void;
+  updateUserName: (name: string) => void;
   updateIncome: (range: IncomeRange) => void;
   createGoal: (data: CreateGoalInput) => void;
   updateGoal: (goalId: string, patch: UpdateGoalInput) => void;
@@ -55,6 +57,10 @@ export function useDashboardSummary(): UseDashboardSummaryReturn {
 
   const refresh = useCallback(() => {
     setSummary(buildSummary(range));
+  }, [range]);
+
+  const updateUserName = useCallback((name: string) => {
+    setSummary(storeUpdateUserName(name, range));
   }, [range]);
 
   const updateIncome = useCallback((incomeRange: IncomeRange) => {
@@ -88,6 +94,7 @@ export function useDashboardSummary(): UseDashboardSummaryReturn {
     range,
     changeRange,
     refresh,
+    updateUserName,
     updateIncome,
     createGoal,
     updateGoal,

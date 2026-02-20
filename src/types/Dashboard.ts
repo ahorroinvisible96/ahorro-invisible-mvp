@@ -54,4 +54,6 @@ export type DashboardSummary = {
     points: SavingsEvolutionPoint[];
   };
   intensity: 'low' | 'medium' | 'high' | 'unknown';
+  avgMonthlySavings: number;
+  estimatedMonthsRemaining: number | null;
 };

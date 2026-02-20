@@ -43,5 +43,7 @@ export function getMockDashboardSummary(range: '7d' | '30d' | '90d' = '30d'): Da
     daily: { date: today, status: 'pending', decisionId: null },
     savingsEvolution: { range, mode: 'demo', points },
     intensity: 'medium',
+    avgMonthlySavings: 50,
+    estimatedMonthsRemaining: 87,
   };
 }

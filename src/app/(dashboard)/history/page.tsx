@@ -6,8 +6,24 @@ import { AppLayout } from '@/components/layout';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { analytics } from '@/services/analytics';
-import { DAILY_QUESTIONS } from '@/services/dashboardStore';
+import { DAILY_QUESTIONS, DAILY_DECISION_RULES } from '@/services/dashboardStore';
 import type { DailyDecision, Goal } from '@/types/Dashboard';
+
+const RANGE_OPTIONS = [
+  { label: 'Todo', value: 'all' },
+  { label: '7 días', value: '7d' },
+  { label: '30 días', value: '30d' },
+  { label: '90 días', value: '90d' },
+] as const;
+
+type RangeOption = 'all' | '7d' | '30d' | '90d';
+
+function getCategoryForDecision(questionId: string, answerKey: string): string {
+  return DAILY_DECISION_RULES.find(r => r.questionId === questionId && r.answerKey === answerKey)?.category ?? 'otro';
+}
+
+const CUTOFF_DAYS: Record<string, number> = { '7d': 7, '30d': 30, '90d': 90 };
+
 
 function formatDate(dateString: string): string {
   return new Intl.DateTimeFormat('es-ES', { day: '2-digit', month: 'long', year: 'numeric' }).format(new Date(dateString));
@@ -32,6 +48,8 @@ export default function HistoryPage() {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filterGoalId, setFilterGoalId] = useState<string>('all');
+  const [filterRange, setFilterRange] = useState<RangeOption>('all');
+  const [filterCategory, setFilterCategory] = useState<string>('all');
 
   useEffect(() => {
     analytics.setScreen('history');
@@ -60,10 +78,24 @@ export default function HistoryPage() {
     return m;
   }, [goals]);
 
-  const filtered = useMemo(() =>
-    filterGoalId === 'all' ? decisions : decisions.filter((d) => d.goalId === filterGoalId),
-    [decisions, filterGoalId],
-  );
+  const categories = useMemo(() => {
+    const cats = new Set(decisions.map(d => getCategoryForDecision(d.questionId, d.answerKey)));
+    return Array.from(cats);
+  }, [decisions]);
+
+  const filtered = useMemo(() => {
+    let result = decisions;
+    if (filterGoalId !== 'all') result = result.filter(d => d.goalId === filterGoalId);
+    if (filterRange !== 'all') {
+      const days = CUTOFF_DAYS[filterRange];
+      const cutoff = new Date(Date.now() - days * 86_400_000).toISOString().split('T')[0];
+      result = result.filter(d => d.date >= cutoff);
+    }
+    if (filterCategory !== 'all') {
+      result = result.filter(d => getCategoryForDecision(d.questionId, d.answerKey) === filterCategory);
+    }
+    return result;
+  }, [decisions, filterGoalId, filterRange, filterCategory]);
 
   const totalSaved = useMemo(() => filtered.reduce((s, d) => s + d.deltaAmount, 0), [filtered]);
 
@@ -81,27 +113,39 @@ export default function HistoryPage() {
     <AppLayout title="Historial" subtitle="Todas tus decisiones de ahorro">
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-        {/* Filtro por objetivo */}
-        {goals.length > 1 && (
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: 13, color: '#6b7280', fontWeight: 600 }}>Objetivo:</span>
-            <button
-              onClick={() => setFilterGoalId('all')}
-              style={{ fontSize: 12, padding: '4px 12px', borderRadius: 20, border: '1.5px solid', borderColor: filterGoalId === 'all' ? '#2563eb' : '#e5e7eb', background: filterGoalId === 'all' ? '#eff6ff' : 'transparent', color: filterGoalId === 'all' ? '#1d4ed8' : '#6b7280', cursor: 'pointer', fontWeight: 600 }}
-            >
-              Todos
-            </button>
-            {goals.map((g) => (
-              <button
-                key={g.id}
-                onClick={() => setFilterGoalId(g.id)}
-                style={{ fontSize: 12, padding: '4px 12px', borderRadius: 20, border: '1.5px solid', borderColor: filterGoalId === g.id ? '#2563eb' : '#e5e7eb', background: filterGoalId === g.id ? '#eff6ff' : 'transparent', color: filterGoalId === g.id ? '#1d4ed8' : '#6b7280', cursor: 'pointer', fontWeight: 500 }}
-              >
-                {g.title}
+        {/* Filtros */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, background: '#fff', borderRadius: 14, padding: '14px 16px', boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
+          {/* Rango temporal */}
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+            <span style={{ fontSize: 12, color: '#9ca3af', fontWeight: 600, minWidth: 60 }}>Periodo:</span>
+            {RANGE_OPTIONS.map(opt => (
+              <button key={opt.value} onClick={() => setFilterRange(opt.value as RangeOption)}
+                style={{ fontSize: 12, padding: '4px 10px', borderRadius: 20, border: '1.5px solid', borderColor: filterRange === opt.value ? '#2563eb' : '#e5e7eb', background: filterRange === opt.value ? '#eff6ff' : 'transparent', color: filterRange === opt.value ? '#1d4ed8' : '#6b7280', cursor: 'pointer', fontWeight: filterRange === opt.value ? 700 : 400 }}>
+                {opt.label}
               </button>
             ))}
           </div>
-        )}
+          {/* Objetivo */}
+          {goals.length > 1 && (
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+              <span style={{ fontSize: 12, color: '#9ca3af', fontWeight: 600, minWidth: 60 }}>Objetivo:</span>
+              <button onClick={() => setFilterGoalId('all')} style={{ fontSize: 12, padding: '4px 10px', borderRadius: 20, border: '1.5px solid', borderColor: filterGoalId === 'all' ? '#2563eb' : '#e5e7eb', background: filterGoalId === 'all' ? '#eff6ff' : 'transparent', color: filterGoalId === 'all' ? '#1d4ed8' : '#6b7280', cursor: 'pointer', fontWeight: filterGoalId === 'all' ? 700 : 400 }}>Todos</button>
+              {goals.map(g => (
+                <button key={g.id} onClick={() => setFilterGoalId(g.id)} style={{ fontSize: 12, padding: '4px 10px', borderRadius: 20, border: '1.5px solid', borderColor: filterGoalId === g.id ? '#2563eb' : '#e5e7eb', background: filterGoalId === g.id ? '#eff6ff' : 'transparent', color: filterGoalId === g.id ? '#1d4ed8' : '#6b7280', cursor: 'pointer', fontWeight: filterGoalId === g.id ? 700 : 400 }}>{g.title}</button>
+              ))}
+            </div>
+          )}
+          {/* Categoría */}
+          {categories.length > 1 && (
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+              <span style={{ fontSize: 12, color: '#9ca3af', fontWeight: 600, minWidth: 60 }}>Categoría:</span>
+              <button onClick={() => setFilterCategory('all')} style={{ fontSize: 12, padding: '4px 10px', borderRadius: 20, border: '1.5px solid', borderColor: filterCategory === 'all' ? '#2563eb' : '#e5e7eb', background: filterCategory === 'all' ? '#eff6ff' : 'transparent', color: filterCategory === 'all' ? '#1d4ed8' : '#6b7280', cursor: 'pointer', fontWeight: filterCategory === 'all' ? 700 : 400 }}>Todas</button>
+              {categories.map(cat => (
+                <button key={cat} onClick={() => setFilterCategory(cat)} style={{ fontSize: 12, padding: '4px 10px', borderRadius: 20, border: '1.5px solid', borderColor: filterCategory === cat ? '#2563eb' : '#e5e7eb', background: filterCategory === cat ? '#eff6ff' : 'transparent', color: filterCategory === cat ? '#1d4ed8' : '#6b7280', cursor: 'pointer', fontWeight: filterCategory === cat ? 700 : 400 }}>{cat}</button>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Resumen total */}
         {filtered.length > 0 && (

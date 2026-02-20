@@ -26,6 +26,7 @@ function EmptyState({ onCreateGoal }: { onCreateGoal: () => void }): React.React
 
 export function PrimaryGoalHeroWidget({
   goal,
+  estimatedMonthsRemaining,
   onCreateGoal,
   onOpenGoal,
 }: PrimaryGoalHeroProps): React.ReactElement {
@@ -82,7 +83,11 @@ export function PrimaryGoalHeroWidget({
 
         {!d.isCompleted ? (
           <p className={styles.remainingText}>
-            Te faltan <strong>{formatEUR(d.remainingAmount)}</strong>. ¡Sigue así!
+            Te faltan <strong>{formatEUR(d.remainingAmount)}</strong>.
+            {estimatedMonthsRemaining != null && (
+              <> ETA: <strong>{estimatedMonthsRemaining} mes{estimatedMonthsRemaining !== 1 ? 'es' : ''}</strong>.</>
+            )}
+            {' '}¡Sigue así!
           </p>
         ) : (
           <div className={styles.completedCta}>

@@ -2,278 +2,171 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { AppLayout } from '@/components/layout';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
 import { analytics } from '@/services/analytics';
+import { buildSummary, storeResetAllData, storeExportData, storeUpdateIncome } from '@/services/dashboardStore';
+import type { IncomeRange } from '@/types/Dashboard';
+
+const INCOME_OPTIONS: { label: string; range: IncomeRange }[] = [
+  { label: 'Menos de 1.000€', range: { min: 0, max: 1000, currency: 'EUR' } },
+  { label: '1.000€ – 1.500€', range: { min: 1000, max: 1500, currency: 'EUR' } },
+  { label: '1.500€ – 2.500€', range: { min: 1500, max: 2500, currency: 'EUR' } },
+  { label: '2.500€ – 4.000€', range: { min: 2500, max: 4000, currency: 'EUR' } },
+  { label: '4.000€ – 6.000€', range: { min: 4000, max: 6000, currency: 'EUR' } },
+  { label: 'Más de 6.000€',   range: { min: 6000, max: 12000, currency: 'EUR' } },
+];
 
 export default function SettingsPage() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(true);
-  const [incomeRange, setIncomeRange] = useState('');
-  const [savingsGoal, setSavingsGoal] = useState('10');
-  const [savingsFrequency, setSavingsFrequency] = useState('weekly');
-  
+  const [loading, setLoading] = useState(true);
+  const [selectedIncome, setSelectedIncome] = useState('');
+  const [savedMsg, setSavedMsg] = useState('');
+
   useEffect(() => {
-    // Establecer el nombre de la pantalla para analytics
     analytics.setScreen('settings');
-    
-    // Verificar autenticación
-    const isAuthenticated = localStorage.getItem("isAuthenticated");
-    if (isAuthenticated !== "true") {
-      router.replace("/signup");
-      return;
+    const isAuth = localStorage.getItem('isAuthenticated');
+    if (isAuth !== 'true') { router.replace('/signup'); return; }
+    analytics.settingsViewed();
+    const summary = buildSummary('30d');
+    if (summary.incomeRange) {
+      const match = INCOME_OPTIONS.find(o => o.range.min === summary.incomeRange!.min);
+      setSelectedIncome(match?.label ?? '');
     }
-    
-    // Cargar datos
-    loadSettings();
+    setLoading(false);
   }, [router]);
-  
-  const loadSettings = () => {
-    try {
-      setIsLoading(true);
-      
-      // Cargar rango de ingresos
-      const storedIncomeRange = localStorage.getItem("onboarding_income_range");
-      if (storedIncomeRange) {
-        setIncomeRange(storedIncomeRange);
-      }
-      
-      // Cargar objetivo de ahorro (simulado)
-      const storedSavingsGoal = localStorage.getItem("savings_goal");
-      if (storedSavingsGoal) {
-        setSavingsGoal(storedSavingsGoal);
-      }
-      
-      // Cargar frecuencia de ahorro (simulado)
-      const storedSavingsFrequency = localStorage.getItem("savings_frequency");
-      if (storedSavingsFrequency) {
-        setSavingsFrequency(storedSavingsFrequency);
-      }
-      
-      // Registrar evento de visualización
-      analytics.settingsViewed();
-      
-    } catch (error) {
-      console.error("Error al cargar configuración:", error);
-    } finally {
-      setIsLoading(false);
-    }
+
+  const showMsg = (msg: string) => { setSavedMsg(msg); setTimeout(() => setSavedMsg(''), 3000); };
+
+  const handleSaveIncome = () => {
+    const opt = INCOME_OPTIONS.find(o => o.label === selectedIncome);
+    if (!opt) return;
+    storeUpdateIncome(opt.range);
+    analytics.settingsUpdated();
+    showMsg('✓ Rango de ingresos actualizado');
   };
-  
-  const handleSaveSettings = () => {
-    try {
-      // Guardar objetivo de ahorro
-      localStorage.setItem("savings_goal", savingsGoal);
-      
-      // Guardar frecuencia de ahorro
-      localStorage.setItem("savings_frequency", savingsFrequency);
-      
-      // Registrar evento
-      analytics.settingsUpdated();
-      
-      // Mostrar mensaje de éxito (simulado)
-      alert("Configuración guardada correctamente");
-      
-    } catch (error) {
-      console.error("Error al guardar configuración:", error);
-    }
+
+  const handleExport = () => {
+    const data = storeExportData();
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ahorro-invisible-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showMsg('✓ Datos exportados');
   };
-  
+
   const handleResetOnboarding = () => {
-    try {
-      // Eliminar datos de onboarding
-      localStorage.removeItem("hasCompletedOnboarding");
-      localStorage.removeItem("onboarding_income_range");
-      
-      // Registrar evento
-      analytics.onboardingReset();
-      
-      // Redirigir a onboarding
-      router.replace("/onboarding");
-      
-    } catch (error) {
-      console.error("Error al reiniciar onboarding:", error);
-    }
+    analytics.onboardingReset();
+    localStorage.removeItem('hasCompletedOnboarding');
+    localStorage.removeItem('onboarding_income_range');
+    router.replace('/onboarding');
   };
-  
-  if (isLoading) {
-    return (
-      <AppLayout>
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
-        </div>
-      </AppLayout>
-    );
+
+  const handleResetAll = () => {
+    if (!window.confirm('⚠️ Esto borrará TODOS tus objetivos, decisiones y datos. Esta acción no se puede deshacer. ¿Continuar?')) return;
+    storeResetAllData();
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('hasCompletedOnboarding');
+    router.replace('/signup');
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('hasCompletedOnboarding');
+    router.replace('/signup');
+  };
+
+  if (loading) {
+    return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f9fafb' }}><span style={{ color: '#9ca3af' }}>Cargando...</span></div>;
   }
-  
+
+  const card: React.CSSProperties = { background: '#fff', borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 6px rgba(0,0,0,0.06)', marginBottom: 16 };
+  const sectionTitle: React.CSSProperties = { fontSize: 15, fontWeight: 700, color: '#111827', marginBottom: 14 };
+  const rowStyle: React.CSSProperties = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid #f3f4f6' };
+
   return (
-    <AppLayout
-      title="Configuración"
-      subtitle="Personaliza tu experiencia de ahorro"
-    >
-      <div className="space-y-8">
-        <Card variant="default" size="md">
-          <Card.Header title="Configuración de Ahorro" />
-          <Card.Content>
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Rango de Ingresos
-                </label>
-                <select
-                  value={incomeRange}
-                  onChange={(e) => setIncomeRange(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                >
-                  <option value="0-1000">Menos de 1.000€</option>
-                  <option value="1000-2000">1.000€ - 2.000€</option>
-                  <option value="2000-3500">2.000€ - 3.500€</option>
-                  <option value="3500-5000">3.500€ - 5.000€</option>
-                  <option value="5000+">Más de 5.000€</option>
-                </select>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Objetivo de Ahorro (%)
-                </label>
-                <input
-                  type="range"
-                  min="5"
-                  max="50"
-                  step="5"
-                  value={savingsGoal}
-                  onChange={(e) => setSavingsGoal(e.target.value)}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                />
-                <div className="flex justify-between mt-2">
-                  <span className="text-xs text-gray-500">5%</span>
-                  <span className="text-sm font-medium text-primary-500">{savingsGoal}%</span>
-                  <span className="text-xs text-gray-500">50%</span>
-                </div>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Frecuencia de Ahorro
-                </label>
-                <div className="flex space-x-4">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      value="daily"
-                      checked={savingsFrequency === 'daily'}
-                      onChange={() => setSavingsFrequency('daily')}
-                      className="h-4 w-4 text-primary-500 border-gray-300"
-                    />
-                    <span className="ml-2 text-sm text-gray-700">Diario</span>
-                  </label>
-                  
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      value="weekly"
-                      checked={savingsFrequency === 'weekly'}
-                      onChange={() => setSavingsFrequency('weekly')}
-                      className="h-4 w-4 text-primary-500 border-gray-300"
-                    />
-                    <span className="ml-2 text-sm text-gray-700">Semanal</span>
-                  </label>
-                  
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      value="monthly"
-                      checked={savingsFrequency === 'monthly'}
-                      onChange={() => setSavingsFrequency('monthly')}
-                      className="h-4 w-4 text-primary-500 border-gray-300"
-                    />
-                    <span className="ml-2 text-sm text-gray-700">Mensual</span>
-                  </label>
-                </div>
-              </div>
-              
-              <div className="flex justify-end">
-                <Button
-                  variant="primary"
-                  size="md"
-                  onClick={handleSaveSettings}
-                >
-                  Guardar Configuración
-                </Button>
-              </div>
+    <div style={{ minHeight: '100vh', background: '#f9fafb', padding: '24px 16px' }}>
+      <div style={{ maxWidth: 560, margin: '0 auto' }}>
+        <button onClick={() => router.push('/dashboard')} style={{ background: 'none', border: 'none', color: '#6b7280', fontSize: 13, cursor: 'pointer', padding: 0, marginBottom: 20 }}>← Dashboard</button>
+        <h1 style={{ fontSize: 22, fontWeight: 800, color: '#111827', marginBottom: 24 }}>Configuración</h1>
+
+        {savedMsg && (
+          <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, padding: '10px 16px', marginBottom: 16, fontSize: 13, color: '#166534', fontWeight: 600 }}>{savedMsg}</div>
+        )}
+
+        {/* Rango de ingresos */}
+        <div style={card}>
+          <h2 style={sectionTitle}>Rango de ingresos</h2>
+          <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 14 }}>Ajusta el impacto de tus decisiones según tu nivel de ingresos.</p>
+          <select
+            value={selectedIncome}
+            onChange={e => setSelectedIncome(e.target.value)}
+            style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #e5e7eb', borderRadius: 10, fontSize: 14, color: '#111827', background: '#fff', marginBottom: 14, cursor: 'pointer', outline: 'none' }}
+          >
+            <option value="">Sin especificar</option>
+            {INCOME_OPTIONS.map(o => <option key={o.label} value={o.label}>{o.label}</option>)}
+          </select>
+          <button onClick={handleSaveIncome} disabled={!selectedIncome} style={{ padding: '10px 20px', background: selectedIncome ? '#2563eb' : '#e5e7eb', color: selectedIncome ? '#fff' : '#9ca3af', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: selectedIncome ? 'pointer' : 'not-allowed' }}>
+            Guardar
+          </button>
+        </div>
+
+        {/* Notificaciones */}
+        <div style={card}>
+          <h2 style={sectionTitle}>Notificaciones</h2>
+          <div style={rowStyle}>
+            <div>
+              <p style={{ fontSize: 14, fontWeight: 500, color: '#374151', margin: 0 }}>Recordatorio diario</p>
+              <p style={{ fontSize: 12, color: '#9ca3af', margin: '2px 0 0' }}>Para no olvidar tu decisión del día</p>
             </div>
-          </Card.Content>
-        </Card>
-        
-        <Card variant="default" size="md">
-          <Card.Header title="Notificaciones" />
-          <Card.Content>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-medium text-gray-700">Recordatorios diarios</h3>
-                  <p className="text-xs text-gray-500">Recibe un recordatorio para tomar tu decisión diaria</p>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" className="sr-only peer" defaultChecked />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-500"></div>
-                </label>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-medium text-gray-700">Resumen semanal</h3>
-                  <p className="text-xs text-gray-500">Recibe un resumen de tu progreso cada semana</p>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" className="sr-only peer" defaultChecked />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-500"></div>
-                </label>
-              </div>
+            <span style={{ fontSize: 12, color: '#9ca3af' }}>Próximamente</span>
+          </div>
+          <div style={{ ...rowStyle, borderBottom: 'none' }}>
+            <div>
+              <p style={{ fontSize: 14, fontWeight: 500, color: '#374151', margin: 0 }}>Resumen semanal</p>
+              <p style={{ fontSize: 12, color: '#9ca3af', margin: '2px 0 0' }}>Progreso de la semana</p>
             </div>
-          </Card.Content>
-        </Card>
-        
-        <Card variant="default" size="md">
-          <Card.Header title="Datos y Privacidad" />
-          <Card.Content>
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-sm font-medium text-gray-700 mb-1">Datos de la aplicación</h3>
-                <p className="text-sm text-gray-500 mb-4">
-                  Puedes reiniciar tu proceso de onboarding si deseas cambiar tus preferencias iniciales.
-                </p>
-                <Button
-                  variant="outline"
-                  size="md"
-                  onClick={handleResetOnboarding}
-                >
-                  Reiniciar Onboarding
-                </Button>
-              </div>
-              
-              <div className="pt-4 border-t border-gray-200">
-                <h3 className="text-sm font-medium text-red-600 mb-2">
-                  Eliminar todos los datos
-                </h3>
-                <p className="text-sm text-gray-500 mb-4">
-                  Esta acción eliminará permanentemente todos tus datos de la aplicación.
-                </p>
-                <Button
-                  variant="outline"
-                  size="md"
-                  className="text-red-600 border-red-600 hover:bg-red-50"
-                >
-                  Eliminar Todos los Datos
-                </Button>
-              </div>
+            <span style={{ fontSize: 12, color: '#9ca3af' }}>Próximamente</span>
+          </div>
+        </div>
+
+        {/* Datos */}
+        <div style={card}>
+          <h2 style={sectionTitle}>Mis datos</h2>
+          <div style={rowStyle}>
+            <div>
+              <p style={{ fontSize: 14, fontWeight: 500, color: '#374151', margin: 0 }}>Exportar datos</p>
+              <p style={{ fontSize: 12, color: '#9ca3af', margin: '2px 0 0' }}>Descarga un JSON con todos tus datos</p>
             </div>
-          </Card.Content>
-        </Card>
+            <button onClick={handleExport} style={{ padding: '7px 14px', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8, fontSize: 13, cursor: 'pointer', color: '#374151', fontWeight: 500 }}>Exportar</button>
+          </div>
+          <div style={{ ...rowStyle, borderBottom: 'none' }}>
+            <div>
+              <p style={{ fontSize: 14, fontWeight: 500, color: '#374151', margin: 0 }}>Reiniciar onboarding</p>
+              <p style={{ fontSize: 12, color: '#9ca3af', margin: '2px 0 0' }}>Vuelve al proceso de configuración inicial</p>
+            </div>
+            <button onClick={handleResetOnboarding} style={{ padding: '7px 14px', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8, fontSize: 13, cursor: 'pointer', color: '#374151', fontWeight: 500 }}>Reiniciar</button>
+          </div>
+        </div>
+
+        {/* Sesión */}
+        <div style={card}>
+          <h2 style={sectionTitle}>Sesión</h2>
+          <button onClick={handleLogout} style={{ width: '100%', padding: '12px 0', background: 'transparent', border: '1.5px solid #e5e7eb', borderRadius: 10, fontSize: 14, cursor: 'pointer', color: '#374151', fontWeight: 500, marginBottom: 10 }}>
+            Cerrar sesión
+          </button>
+        </div>
+
+        {/* Zona peligro */}
+        <div style={{ ...card, border: '1.5px solid #fecaca' }}>
+          <h2 style={{ ...sectionTitle, color: '#dc2626' }}>Zona de peligro</h2>
+          <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 14 }}>Esta acción borrará <strong>todos</strong> tus datos permanentemente: objetivos, historial y configuración.</p>
+          <button onClick={handleResetAll} style={{ padding: '10px 20px', background: 'transparent', border: '1.5px solid #dc2626', borderRadius: 10, fontSize: 14, cursor: 'pointer', color: '#dc2626', fontWeight: 600 }}>
+            Borrar todos los datos
+          </button>
+        </div>
       </div>
-    </AppLayout>
+    </div>
   );
 }

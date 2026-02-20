@@ -260,6 +260,7 @@ export default function DashboardPage() {
 
           <PrimaryGoalHeroWidget
             goal={summary.primaryGoal}
+            estimatedMonthsRemaining={summary.estimatedMonthsRemaining}
             onCreateGoal={handleCreateGoal}
             onOpenGoal={(id) => router.push(`/goals/${id}`)}
           />
