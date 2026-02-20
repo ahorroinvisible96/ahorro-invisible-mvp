@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
 import { analytics } from "@/services/analytics";
 
 export default function OnboardingStepPage() {
@@ -102,13 +102,9 @@ export default function OnboardingStepPage() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-center">
-            Paso {step} de 3
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <Card className="w-full max-w-md" rounded2xl>
+        <Card.Header title={`Paso ${step} de 3`} className="text-center" />
+        <Card.Content className="space-y-4">
           {step === 1 && (
             <div>
               <h2 className="text-xl font-semibold mb-4">¿Cómo te llamas?</h2>
@@ -184,7 +180,7 @@ export default function OnboardingStepPage() {
               {step === 3 ? "Comenzar" : "Siguiente"}
             </Button>
           </div>
-        </CardContent>
+        </Card.Content>
       </Card>
     </div>
   );
