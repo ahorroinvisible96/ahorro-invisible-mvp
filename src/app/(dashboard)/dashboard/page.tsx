@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
+import type { Goal } from '@/types/Dashboard';
 import { useRouter } from 'next/navigation';
 import { analytics } from '@/services/analytics';
 import { useDashboardSummary } from '@/hooks/useDashboardSummary';
@@ -13,6 +14,64 @@ import { GoalsSectionWidget } from '@/components/dashboard/GoalsSectionWidget';
 import { GoalCardWidget } from '@/components/dashboard/GoalCardWidget';
 import { IncomeRangeWidget } from '@/components/dashboard/IncomeRangeWidget';
 import styles from './Dashboard.module.css';
+
+function EditGoalModal({
+  goal,
+  onSave,
+  onClose,
+}: {
+  goal: Goal;
+  onSave: (patch: { title: string; targetAmount: number; horizonMonths: number }) => void;
+  onClose: () => void;
+}): React.ReactElement {
+  const [title, setTitle] = useState(goal.title);
+  const [targetAmount, setTargetAmount] = useState(String(goal.targetAmount));
+  const [horizonMonths, setHorizonMonths] = useState(String(goal.horizonMonths));
+  const [formError, setFormError] = useState('');
+
+  function handleSave() {
+    setFormError('');
+    if (!title.trim()) { setFormError('Escribe un nombre para el objetivo.'); return; }
+    const amount = Number(targetAmount);
+    if (!targetAmount || isNaN(amount) || amount <= 0) { setFormError('Introduce una cantidad válida.'); return; }
+    const months = Number(horizonMonths);
+    if (!horizonMonths || isNaN(months) || months < 1) { setFormError('El horizonte debe ser al menos 1 mes.'); return; }
+    onSave({ title: title.trim(), targetAmount: amount, horizonMonths: months });
+  }
+
+  return (
+    <div className={styles.modalOverlay} onClick={onClose}>
+      <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.modalHeader}>
+          <h2 className={styles.modalTitle}>Editar objetivo</h2>
+          <button className={styles.modalClose} onClick={onClose} aria-label="Cerrar">✕</button>
+        </div>
+
+        {formError && <p className={styles.modalError}>{formError}</p>}
+
+        <div className={styles.modalField}>
+          <label className={styles.modalLabel}>Nombre del objetivo</label>
+          <input className={styles.modalInput} type="text" value={title} onChange={(e) => setTitle(e.target.value)} />
+        </div>
+
+        <div className={styles.modalField}>
+          <label className={styles.modalLabel}>Meta (€)</label>
+          <input className={styles.modalInput} type="number" min="1" value={targetAmount} onChange={(e) => setTargetAmount(e.target.value)} />
+        </div>
+
+        <div className={styles.modalField}>
+          <label className={styles.modalLabel}>Horizonte (meses)</label>
+          <input className={styles.modalInput} type="number" min="1" value={horizonMonths} onChange={(e) => setHorizonMonths(e.target.value)} />
+        </div>
+
+        <div className={styles.modalActions}>
+          <button className={styles.modalCancelBtn} onClick={onClose}>Cancelar</button>
+          <button className={styles.modalSaveBtn} onClick={handleSave}>Guardar cambios</button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function CreateGoalModal({
   onSave,
@@ -94,6 +153,7 @@ function CreateGoalModal({
 export default function DashboardPage() {
   const router = useRouter();
   const [showCreateGoal, setShowCreateGoal] = useState(false);
+  const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
   const {
     summary,
     loading,
@@ -101,6 +161,7 @@ export default function DashboardPage() {
     changeRange,
     updateIncome,
     createGoal,
+    updateGoal,
     archiveGoal,
     setPrimaryGoal,
     submitDecision,
@@ -156,12 +217,30 @@ export default function DashboardPage() {
     setShowCreateGoal(false);
   };
 
+  const handleEditGoal = (goalId: string) => {
+    const goal = activeGoals.find((g) => g.id === goalId) ?? null;
+    setEditingGoal(goal);
+  };
+
+  const handleSaveEditGoal = (patch: { title: string; targetAmount: number; horizonMonths: number }) => {
+    if (!editingGoal) return;
+    updateGoal(editingGoal.id, patch);
+    setEditingGoal(null);
+  };
+
   return (
     <div className={styles.page}>
       {showCreateGoal && (
         <CreateGoalModal
           onSave={handleSaveGoal}
           onClose={() => setShowCreateGoal(false)}
+        />
+      )}
+      {editingGoal && (
+        <EditGoalModal
+          goal={editingGoal}
+          onSave={handleSaveEditGoal}
+          onClose={() => setEditingGoal(null)}
         />
       )}
 
@@ -213,6 +292,7 @@ export default function DashboardPage() {
                 onOpenGoal={(id) => router.push(`/goals/${id}`)}
                 onArchiveGoal={archiveGoal}
                 onSetPrimary={setPrimaryGoal}
+                onEditGoal={handleEditGoal}
               />
             ))}
             {activeGoals.length === 0 && (

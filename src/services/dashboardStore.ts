@@ -288,6 +288,17 @@ export function storeListArchivedGoals(): Goal[] {
   return state.goals.filter((g) => g.archived);
 }
 
+// ─── Multiplicador de impacto por rango de ingresos ──────────────────────────
+function incomeMultiplier(incomeRange: IncomeRange | null): number {
+  if (!incomeRange) return 1.0;
+  const mid = (incomeRange.min + incomeRange.max) / 2;
+  if (mid < 1500) return 0.80;
+  if (mid < 2500) return 0.90;
+  if (mid < 4000) return 1.00;
+  if (mid < 6000) return 1.15;
+  return 1.30;
+}
+
 export function storeSubmitDecision(
   questionId: string,
   answerKey: string,
@@ -309,6 +320,11 @@ export function storeSubmitDecision(
     return buildSummary(currentRange);
   }
 
+  const multiplier = incomeMultiplier(state.incomeRange);
+  const effectiveDelta = Math.round(rule.immediateDelta * multiplier * 100) / 100;
+  const effectiveMonthly = Math.round(rule.monthlyProjection * multiplier * 100) / 100;
+  const effectiveYearly = Math.round(rule.yearlyProjection * multiplier * 100) / 100;
+
   const now = new Date().toISOString();
   state.decisions.push({
     id: `dec_${Date.now()}`,
@@ -316,13 +332,15 @@ export function storeSubmitDecision(
     questionId,
     answerKey,
     goalId,
-    deltaAmount: rule.immediateDelta,
+    deltaAmount: effectiveDelta,
+    monthlyProjection: effectiveMonthly,
+    yearlyProjection: effectiveYearly,
     createdAt: now,
   });
 
   const goal = state.goals.find((g) => g.id === goalId);
   if (goal) {
-    goal.currentAmount += rule.immediateDelta;
+    goal.currentAmount += effectiveDelta;
     goal.updatedAt = now;
   }
 

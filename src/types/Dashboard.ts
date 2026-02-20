@@ -31,6 +31,8 @@ export type DailyDecision = {
   answerKey: string;
   goalId: string;
   deltaAmount: number;
+  monthlyProjection: number;
+  yearlyProjection: number;
   createdAt: string;
 };
 
