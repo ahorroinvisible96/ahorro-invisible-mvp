@@ -1,4 +1,4 @@
-export type DailyStatus = 'pending' | 'completed';
+export type IncomeRange = { min: number; max: number; currency: 'EUR' };
 
 export type Goal = {
   id: string;
@@ -8,12 +8,30 @@ export type Goal = {
   horizonMonths: number;
   isPrimary: boolean;
   archived: boolean;
+  createdAt: string;
+  updatedAt: string;
 };
 
-export type DailySummary = {
+export type DailyStatus = 'pending' | 'completed';
+
+export type DailyDecisionRule = {
+  questionId: string;
+  answerKey: string;
+  immediateDelta: number;
+  monthlyProjection: number;
+  yearlyProjection: number;
+  category: string;
+  impactType: 'real' | 'avoided' | 'optimization';
+};
+
+export type DailyDecision = {
+  id: string;
   date: string;
-  status: DailyStatus;
-  decisionId: string | null;
+  questionId: string;
+  answerKey: string;
+  goalId: string;
+  deltaAmount: number;
+  createdAt: string;
 };
 
 export type SavingsEvolutionPoint = {
@@ -21,18 +39,17 @@ export type SavingsEvolutionPoint = {
   value: number;
 };
 
-export type SavingsEvolution = {
-  range: '7d' | '30d' | '90d';
-  mode: 'demo' | 'live';
-  points: SavingsEvolutionPoint[];
-};
-
 export type DashboardSummary = {
   userName: string;
   systemActive: boolean;
-  incomeRange: string | null;
-  primaryGoal: Goal | null;
+  incomeRange: IncomeRange | null;
   goals: Goal[];
-  daily: DailySummary;
-  savingsEvolution: SavingsEvolution;
+  primaryGoal: Goal | null;
+  daily: { date: string; status: DailyStatus; decisionId: string | null };
+  savingsEvolution: {
+    range: '7d' | '30d' | '90d';
+    mode: 'demo' | 'live';
+    points: SavingsEvolutionPoint[];
+  };
+  intensity: 'low' | 'medium' | 'high' | 'unknown';
 };

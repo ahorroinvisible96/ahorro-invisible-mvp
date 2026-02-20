@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { analytics } from '@/services/analytics';
 import { useDashboardSummary } from '@/hooks/useDashboardSummary';
@@ -11,23 +12,54 @@ import { MotivationCardWidget } from '@/components/dashboard/MotivationCardWidge
 import { GoalsSectionWidget } from '@/components/dashboard/GoalsSectionWidget';
 import { GoalCardWidget } from '@/components/dashboard/GoalCardWidget';
 import { IncomeRangeWidget } from '@/components/dashboard/IncomeRangeWidget';
+import styles from './Dashboard.module.css';
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { summary, loading, error, changeRange, refresh } = useDashboardSummary();
+  const {
+    summary,
+    loading,
+    error,
+    changeRange,
+    updateIncome,
+    archiveGoal,
+    setPrimaryGoal,
+    submitDecision,
+  } = useDashboardSummary();
+
+  useEffect(() => {
+    analytics.setScreen('dashboard');
+    if (typeof window !== 'undefined') {
+      const isAuth = localStorage.getItem('isAuthenticated');
+      if (isAuth !== 'true') { router.replace('/signup'); return; }
+      const hasOnboarding = localStorage.getItem('hasCompletedOnboarding');
+      if (hasOnboarding !== 'true') { router.replace('/onboarding'); return; }
+    }
+  }, [router]);
+
+  useEffect(() => {
+    if (!summary) return;
+    const activeGoals = summary.goals.filter((g) => !g.archived);
+    analytics.dashboardViewed(
+      summary.daily.status,
+      activeGoals.length,
+      !!summary.primaryGoal,
+      !!summary.incomeRange,
+    );
+  }, [summary?.daily.status]);
 
   if (loading || !summary) {
     return (
-      <div className="p-6 flex items-center justify-center min-h-screen">
-        <div className="animate-pulse text-gray-400 text-sm">Cargando dashboard...</div>
+      <div className={styles.loadingScreen}>
+        <span className={styles.loadingText}>Cargando dashboard...</span>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="p-6 flex items-center justify-center min-h-screen">
-        <div className="text-red-500 text-sm">{error}</div>
+      <div className={styles.loadingScreen}>
+        <span className={styles.errorText}>{error}</span>
       </div>
     );
   }
@@ -39,78 +71,73 @@ export default function DashboardPage() {
     router.push('/goals/new');
   };
 
-  const handleArchiveGoal = async (goalId: string) => {
-    analytics.goalArchived(goalId, false);
-    refresh();
-  };
-
   return (
-    <div className="p-6" style={{ backgroundColor: 'var(--color-background-main)' }}>
-
-      {/* Header */}
+    <div className={styles.page}>
       <HeaderStatusBarWidget
         userName={summary.userName}
         systemActive={summary.systemActive}
         onOpenProfile={() => router.push('/profile')}
       />
 
-      {/* Grid principal */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-        {/* Columna izquierda — 8 cols */}
-        <div className="lg:col-span-8 flex flex-col gap-6">
-
-          {/* Rango de ingresos */}
+      <div className={styles.grid}>
+        {/* Columna izquierda */}
+        <div className={styles.mainCol}>
           <IncomeRangeWidget
             incomeRange={summary.incomeRange}
-            onEditIncomeRange={() => router.push('/settings')}
+            onSaveIncomeRange={updateIncome}
           />
 
-          {/* Objetivo principal */}
           <PrimaryGoalHeroWidget
             goal={summary.primaryGoal}
             onCreateGoal={handleCreateGoal}
             onOpenGoal={(id) => router.push(`/goals/${id}`)}
           />
 
-          {/* Decisión diaria */}
           <DailyDecisionWidget
             daily={summary.daily}
             primaryGoal={summary.primaryGoal}
-            onGoToDailyQuestion={() => router.push('/daily')}
+            allGoals={summary.goals}
+            onSubmitDecision={submitDecision}
             onGoToImpact={(id) => router.push(`/impact/${id}`)}
             onCreateGoal={handleCreateGoal}
           />
 
-          {/* Evolución del ahorro */}
           <SavingsEvolutionWidget
             evolution={summary.savingsEvolution}
             onChangeRange={changeRange}
           />
 
-          {/* Sección objetivos */}
           <GoalsSectionWidget
             goalsCount={activeGoals.length}
             onCreateGoal={handleCreateGoal}
           />
 
-          <div className="flex flex-col gap-4">
+          <div className={styles.goalsList}>
             {activeGoals.map((goal) => (
               <GoalCardWidget
                 key={goal.id}
                 goal={goal}
                 onOpenGoal={(id) => router.push(`/goals/${id}`)}
-                onArchiveGoal={handleArchiveGoal}
+                onArchiveGoal={archiveGoal}
+                onSetPrimary={setPrimaryGoal}
               />
             ))}
+            {activeGoals.length === 0 && (
+              <p className={styles.emptyGoals}>
+                No tienes objetivos activos.{' '}
+                <button className={styles.emptyGoalsLink} onClick={handleCreateGoal}>
+                  Crear uno →
+                </button>
+              </p>
+            )}
           </div>
         </div>
 
-        {/* Columna derecha — 4 cols */}
-        <div className="lg:col-span-4">
+        {/* Columna derecha */}
+        <div className={styles.sideCol}>
           <MotivationCardWidget
-            intensity="medium"
-            onAdjustRules={() => router.push('/settings')}
+            intensity={summary.intensity}
+            onAdjustRules={() => router.push('/ajustes')}
           />
         </div>
       </div>

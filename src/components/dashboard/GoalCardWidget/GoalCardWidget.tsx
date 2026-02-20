@@ -11,6 +11,7 @@ export function GoalCardWidget({
   goal,
   onOpenGoal,
   onArchiveGoal,
+  onSetPrimary,
   onEditGoal,
 }: GoalCardWidgetProps): React.ReactElement {
   const [archiving, setArchiving] = useState(false);
@@ -22,15 +23,17 @@ export function GoalCardWidget({
     analytics.goalPrimaryWidgetViewed();
   }, [goal.id]);
 
-  const handleArchive = async (e: React.MouseEvent) => {
+  const handleArchive = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (!window.confirm(`¿Archivar "${goal.title}"?`)) return;
     setArchiving(true);
-    try {
-      await onArchiveGoal(goal.id);
-      analytics.goalArchived(goal.id, goal.isPrimary);
-    } catch {
-      setArchiving(false);
-    }
+    analytics.goalArchived(goal.id, goal.isPrimary);
+    onArchiveGoal(goal.id);
+  };
+
+  const handleSetPrimary = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onSetPrimary(goal.id);
   };
 
   return (
@@ -77,11 +80,13 @@ export function GoalCardWidget({
         )}
 
         <div className={styles.actions}>
+          {!goal.isPrimary && (
+            <button className={styles.primaryBtn} onClick={handleSetPrimary}>
+              Hacer principal
+            </button>
+          )}
           {onEditGoal && (
-            <button
-              className="text-xs text-blue-600 font-medium bg-transparent border-none cursor-pointer"
-              onClick={(e) => { e.stopPropagation(); onEditGoal(goal.id); }}
-            >
+            <button className={styles.editBtn} onClick={(e) => { e.stopPropagation(); onEditGoal(goal.id); }}>
               Editar
             </button>
           )}

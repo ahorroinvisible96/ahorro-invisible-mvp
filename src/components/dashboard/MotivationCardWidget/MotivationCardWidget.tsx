@@ -21,7 +21,7 @@ export function MotivationCardWidget({
   onAdjustRules,
 }: MotivationCardWidgetProps): React.ReactElement {
   useEffect(() => {
-    analytics.motivationCtaClicked('pending', 'daily_question');
+    analytics.dashboardMotivationCardViewed();
   }, [intensity]);
 
   const { headline, sub } = COPY[intensity];
@@ -37,7 +37,7 @@ export function MotivationCardWidget({
       <button
         className={styles.adjustBtn}
         onClick={() => {
-          analytics.motivationCtaClicked('pending', 'daily_question');
+          analytics.motivationCtaClicked('pending', 'impact');
           onAdjustRules();
         }}
       >

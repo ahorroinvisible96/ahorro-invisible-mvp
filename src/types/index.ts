@@ -12,13 +12,13 @@ export type {
   DailyDecisionCreateRequest,
   DailyStatus,
 } from './DailyQuestion';
-export type { DecisionImpact, DailyDecision, DailyDecisionCreateResponse } from './Impact';
+export type { DecisionImpact, DailyDecision as ImpactDailyDecision, DailyDecisionCreateResponse } from './Impact';
 export type {
-  DailyStatus as DashboardDailyStatus,
+  IncomeRange,
   Goal as DashboardGoal,
-  DailySummary,
+  DailyDecisionRule,
+  DailyDecision,
   SavingsEvolutionPoint,
-  SavingsEvolution,
   DashboardSummary,
 } from './Dashboard';
 export type { WidgetStatus, WidgetState } from './WidgetState';

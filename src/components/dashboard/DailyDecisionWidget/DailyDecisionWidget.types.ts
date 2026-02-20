@@ -1,15 +1,12 @@
-import type { Goal, DailySummary } from '@/types/Dashboard';
+import type { Goal } from '@/types/Dashboard';
 
 export type DailyDecisionWidgetProps = {
-  daily: DailySummary;
+  daily: { date: string; status: 'pending' | 'completed'; decisionId: string | null };
   primaryGoal: Goal | null;
-  onGoToDailyQuestion: () => void;
+  allGoals: Goal[];
+  onSubmitDecision: (questionId: string, answerKey: string, goalId: string) => void;
   onGoToImpact: (decisionId: string) => void;
   onCreateGoal: () => void;
 };
 
-export type DailyWidgetState =
-  | 'disabled'
-  | 'pending'
-  | 'completed'
-  | 'error';
+export type DailyWidgetState = 'disabled' | 'pending' | 'completed' | 'error';

@@ -1,5 +1,95 @@
 /* Dashboard CSS Module: estilos desacoplados para consistencia en producción */
 
+/* ── Variable de espaciado ──────────────────────────────────────────── */
+:root {
+  --dashboard-section-gap: 24px;
+}
+
+/* ── Contenedor principal ───────────────────────────────────────────── */
+.page {
+  padding: 24px;
+  background-color: var(--color-background-main, #f9fafb);
+  min-height: 100vh;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--dashboard-section-gap);
+  margin-top: var(--dashboard-section-gap);
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: 1fr 320px;
+  }
+}
+
+.mainCol {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dashboard-section-gap);
+}
+
+.sideCol {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dashboard-section-gap);
+}
+
+.goalsList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.emptyGoals {
+  font-size: 13px;
+  color: var(--color-text-secondary, #6b7280);
+  padding: 16px 0;
+}
+
+.emptyGoalsLink {
+  background: none;
+  border: none;
+  color: var(--color-primary-600, #2563eb);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+
+.emptyGoalsLink:hover {
+  text-decoration: underline;
+}
+
+.loadingScreen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.loadingText {
+  font-size: 13px;
+  color: var(--color-text-secondary, #6b7280);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.errorText {
+  font-size: 13px;
+  color: #ef4444;
+  font-weight: 500;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+
+
 .badgeActivo {
   background-color: #f0fdf4; /* green-50 */
   color: #16a34a; /* green-600 */

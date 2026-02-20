@@ -1,126 +1,157 @@
 "use client";
 
-import React, { useEffect } from 'react';
-import { Card, Button, Badge } from '@/components/ui';
+import React, { useState, useEffect } from 'react';
+import { Card, Badge } from '@/components/ui';
 import { analytics } from '@/services/analytics';
-import { resolveDailyWidgetState } from './DailyDecisionWidget.logic';
+import { getTodayQuestion } from '@/services/dashboardStore';
 import type { DailyDecisionWidgetProps } from './DailyDecisionWidget.types';
 import styles from './DailyDecisionWidget.module.css';
 
 export function DailyDecisionWidget({
   daily,
   primaryGoal,
-  onGoToDailyQuestion,
+  allGoals,
+  onSubmitDecision,
   onGoToImpact,
   onCreateGoal,
 }: DailyDecisionWidgetProps): React.ReactElement {
-  const widgetState = resolveDailyWidgetState(daily, primaryGoal);
+  const activeGoals = allGoals.filter((g) => !g.archived);
+  const todayQuestion = getTodayQuestion();
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [selectedGoalId, setSelectedGoalId] = useState<string>(
+    primaryGoal?.id ?? activeGoals[0]?.id ?? '',
+  );
+  const [submitting, setSubmitting] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
 
   useEffect(() => {
     analytics.dailyCtaCardViewed(daily.status);
-    if (widgetState === 'disabled') {
-      analytics.dailyCtaCardViewed('pending');
-    }
-  }, [daily.status, widgetState]);
+  }, [daily.status]);
 
-  const dotClass =
-    widgetState === 'pending' ? styles.dotPending :
-    widgetState === 'completed' ? styles.dotCompleted :
-    widgetState === 'error' ? styles.dotError :
-    styles.dotDisabled;
+  useEffect(() => {
+    if (primaryGoal?.id) setSelectedGoalId(primaryGoal.id);
+  }, [primaryGoal?.id]);
 
-  if (widgetState === 'disabled') {
+  // ── Estado: sin objetivos activos ────────────────────────────────────────
+  if (activeGoals.length === 0) {
     return (
       <Card variant="default" size="md" rounded2xl className={styles.disabledCard}>
         <Card.Content>
           <div className={styles.statusRow}>
             <span className={`${styles.dot} ${styles.dotDisabled}`} />
-            <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">
-              Decisión diaria
-            </span>
+            <span className={styles.sectionLabel}>Decisión diaria</span>
           </div>
           <p className={styles.headline}>Sin objetivo activo</p>
           <p className={styles.sub}>Crea un objetivo para empezar a tomar decisiones diarias.</p>
-          <Button variant="primary" size="sm" onClick={onCreateGoal}>
+          <button className={styles.primaryBtn} onClick={onCreateGoal}>
             Crear objetivo
-          </Button>
+          </button>
         </Card.Content>
       </Card>
     );
   }
 
-  if (widgetState === 'error') {
+  // ── Estado: completada hoy ────────────────────────────────────────────────
+  if (daily.status === 'completed') {
     return (
-      <Card variant="default" size="md" rounded2xl>
+      <Card variant="default" size="md" rounded2xl className={styles.widget}>
         <Card.Content>
           <div className={styles.statusRow}>
-            <span className={`${styles.dot} ${styles.dotError}`} />
-            <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Decisión diaria
-            </span>
+            <span className={`${styles.dot} ${styles.dotCompleted}`} />
+            <span className={styles.sectionLabel}>Decisión diaria</span>
+            <Badge variant="success" size="sm" withDot>Completada</Badge>
           </div>
-          <p className={styles.headline}>Algo salió mal</p>
-          <p className={styles.errorNote}>
-            La decisión fue registrada pero no se encontró el identificador. Recarga la página.
+          <p className={styles.headline}>¡Decisión tomada hoy!</p>
+          <p className={styles.sub}>
+            Ya registraste tu ahorro de hoy. Tu objetivo avanza.
           </p>
+          {daily.decisionId && (
+            <button
+              className={styles.outlineBtn}
+              onClick={() => {
+                analytics.dailyCtaClicked('completed', 'impact');
+                onGoToImpact(daily.decisionId!);
+              }}
+            >
+              Ver impacto →
+            </button>
+          )}
         </Card.Content>
       </Card>
     );
   }
 
-  const isCompleted = widgetState === 'completed';
+  // ── Estado: pendiente — mostrar pregunta inline ───────────────────────────
+  function handleSubmit() {
+    if (!selectedAnswer || !selectedGoalId) return;
+    setSubmitting(true);
+    analytics.dailyAnswerSubmitted(
+      daily.date,
+      todayQuestion.questionId,
+      selectedAnswer,
+      selectedGoalId,
+      primaryGoal?.id === selectedGoalId,
+    );
+    onSubmitDecision(todayQuestion.questionId, selectedAnswer, selectedGoalId);
+    setSubmitting(false);
+    setJustSaved(true);
+  }
 
   return (
     <Card variant="default" size="md" rounded2xl className={styles.widget}>
       <Card.Content>
         <div className={styles.statusRow}>
-          <span className={`${styles.dot} ${dotClass}`} />
-          <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
-            Decisión diaria
-          </span>
-          <Badge
-            variant={isCompleted ? 'success' : 'warning'}
-            size="sm"
-            withDot={isCompleted}
-          >
-            {isCompleted ? 'Completada' : 'Pendiente'}
-          </Badge>
+          <span className={`${styles.dot} ${styles.dotPending}`} />
+          <span className={styles.sectionLabel}>Decisión diaria</span>
+          <Badge variant="warning" size="sm">Pendiente</Badge>
         </div>
 
-        <p className={styles.headline}>
-          {isCompleted ? '¡Decisión tomada hoy!' : 'Tu decisión de hoy'}
-        </p>
-        <p className={styles.sub}>
-          {isCompleted
-            ? 'Ya tomaste tu decisión de ahorro. Consulta el impacto acumulado.'
-            : 'Una pequeña decisión diaria construye un gran resultado. ¿Cómo decides hoy?'}
-        </p>
+        <p className={styles.headline}>{todayQuestion.text}</p>
 
-        <div className={styles.ctaRow}>
-          {isCompleted ? (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                analytics.dailyCtaClicked('completed', 'impact');
-                if (daily.decisionId) onGoToImpact(daily.decisionId);
-              }}
+        {activeGoals.length > 1 && (
+          <div className={styles.goalSelector}>
+            <span className={styles.goalSelectorLabel}>Objetivo:</span>
+            <select
+              className={styles.goalSelect}
+              value={selectedGoalId}
+              onChange={(e) => setSelectedGoalId(e.target.value)}
             >
-              Ver impacto →
-            </Button>
-          ) : (
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => {
-                analytics.dailyCtaClicked('pending', 'daily_question');
-                onGoToDailyQuestion();
-              }}
+              {activeGoals.map((g) => (
+                <option key={g.id} value={g.id}>
+                  {g.title}{g.isPrimary ? ' ★' : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        <div className={styles.answers}>
+          {todayQuestion.answers.map((a) => (
+            <button
+              key={a.key}
+              className={`${styles.answerBtn} ${selectedAnswer === a.key ? styles.answerBtnSelected : ''}`}
+              onClick={() => setSelectedAnswer(a.key)}
+              disabled={submitting}
             >
-              Responder ahora
-            </Button>
-          )}
+              <span className={styles.answerLabel}>{a.label}</span>
+              {a.savingsHint && (
+                <span className={styles.savingsHint}>{a.savingsHint}</span>
+              )}
+            </button>
+          ))}
         </div>
+
+        {justSaved && (
+          <p className={styles.savedNote}>✓ Guardado</p>
+        )}
+
+        <button
+          className={styles.primaryBtn}
+          onClick={handleSubmit}
+          disabled={!selectedAnswer || !selectedGoalId || submitting}
+        >
+          {submitting ? 'Guardando...' : 'Confirmar decisión'}
+        </button>
       </Card.Content>
     </Card>
   );

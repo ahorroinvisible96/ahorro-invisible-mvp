@@ -93,3 +93,35 @@
   opacity: 0.5;
   pointer-events: none;
 }
+
+.primaryBtn {
+  font-size: 12px;
+  color: var(--color-primary-600, #2563eb);
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.12s;
+}
+
+.primaryBtn:hover {
+  background: #dbeafe;
+}
+
+.editBtn {
+  font-size: 12px;
+  color: #6b7280;
+  background: transparent;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.12s;
+}
+
+.editBtn:hover {
+  background: #f9fafb;
+}

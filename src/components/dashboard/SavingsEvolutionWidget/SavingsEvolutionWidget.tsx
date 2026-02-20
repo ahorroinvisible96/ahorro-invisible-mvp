@@ -19,7 +19,7 @@ export function SavingsEvolutionWidget({
     analytics.savingsEvolutionRangeChanged(range, mode);
   }, [range, mode]);
 
-  const maxValue = points.length > 0 ? Math.max(...points.map((p) => p.value)) : 1;
+  const maxValue = points.length > 0 ? Math.max(...points.map((p: { value: number }) => p.value)) : 1;
   const total = points.length > 0 ? points[points.length - 1].value : 0;
 
   const handleRange = (r: Range) => {
@@ -57,7 +57,7 @@ export function SavingsEvolutionWidget({
           <div className={styles.emptyState}>Sin datos para este período</div>
         ) : (
           <div className={styles.chartArea}>
-            {points.map((point, i) => {
+            {points.map((point: { date: string; value: number }, i: number) => {
               const heightPct = maxValue > 0 ? Math.max((point.value / maxValue) * 100, 5) : 5;
               const isLast = i === points.length - 1;
               return (
