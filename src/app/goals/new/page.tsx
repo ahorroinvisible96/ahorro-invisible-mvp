@@ -2,183 +2,100 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/Button/Button";
-import { Card } from "@/components/ui/Card/Card";
-import { FormInput } from "@/components/ui/FormInput";
+import { storeCreateGoal } from "@/services/dashboardStore";
+import { analytics } from "@/services/analytics";
 
 export default function CreateGoalPage() {
   const router = useRouter();
   const [title, setTitle] = useState("");
-  const [targetAmount, setTargetAmount] = useState<number>(1000);
-  const [timeHorizonMonths, setTimeHorizonMonths] = useState<number | null>(null);
+  const [targetAmount, setTargetAmount] = useState("");
+  const [horizonMonths, setHorizonMonths] = useState("12");
   const [error, setError] = useState("");
-  const [userName, setUserName] = useState("");
-  
+
   useEffect(() => {
-    // Verificar autenticación
     const isAuthenticated = localStorage.getItem("isAuthenticated");
-    if (isAuthenticated !== "true") {
-      router.replace("/signup");
-      return;
-    }
-    
-    // Verificar onboarding
+    if (isAuthenticated !== "true") { router.replace("/signup"); return; }
     const hasCompletedOnboarding = localStorage.getItem("hasCompletedOnboarding");
-    if (hasCompletedOnboarding !== "true") {
-      router.replace("/onboarding");
-      return;
-    }
-    
-    // Cargar nombre de usuario
-    const storedName = localStorage.getItem("userName");
-    if (storedName) {
-      setUserName(storedName);
-    }
-    
-    // Registrar evento de inicio de creación de objetivo
-    console.log("EVENT: goal_create_started", { source: "onboarding" });
+    if (hasCompletedOnboarding !== "true") { router.replace("/onboarding"); return; }
+    analytics.goalCreateStarted("goals_new_page");
   }, [router]);
-  
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    
-    // Validaciones
-    if (!title.trim()) {
-      setError("Ponle un nombre a tu objetivo.");
-      return;
-    }
-    
-    if (!targetAmount || targetAmount <= 0) {
-      setError("Escribe una cantidad válida.");
-      return;
-    }
-    
+    if (!title.trim()) { setError("Ponle un nombre a tu objetivo."); return; }
+    const amount = Number(targetAmount);
+    if (!targetAmount || isNaN(amount) || amount <= 0) { setError("Escribe una cantidad válida."); return; }
+    const months = Number(horizonMonths);
+    if (!horizonMonths || isNaN(months) || months < 1) { setError("El horizonte debe ser al menos 1 mes."); return; }
+
     try {
-      // Generar ID único para el objetivo
-      const goalId = `goal_${Date.now()}`;
-      
-      // Crear objeto de objetivo
-      const newGoal = {
-        id: goalId,
-        title,
-        target_amount: targetAmount,
-        current_amount: 0,
-        time_horizon_months: timeHorizonMonths,
-        is_primary: true, // El primer objetivo siempre es primary
-        archived: false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
-      
-      // Guardar en localStorage
-      const storedGoals = localStorage.getItem("goals");
-      const goals = storedGoals ? JSON.parse(storedGoals) : [];
-      
-      // Si ya hay objetivos, quitar el primary de los demás
-      const updatedGoals = goals.map((goal: any) => ({
-        ...goal,
-        is_primary: false
-      }));
-      
-      // Añadir el nuevo objetivo
-      updatedGoals.push(newGoal);
-      localStorage.setItem("goals", JSON.stringify(updatedGoals));
-      
-      // Registrar evento de objetivo creado
-      console.log("EVENT: goal_created", { 
-        goal_id: goalId,
-        is_primary_goal: true,
-        goal_target_amount: targetAmount,
-        goal_time_horizon_months: timeHorizonMonths
-      });
-      
-      // Redirigir al dashboard
+      storeCreateGoal({ title: title.trim(), targetAmount: amount, currentAmount: 0, horizonMonths: months });
+      analytics.goalCreated(`goal_${Date.now()}`, true, amount, months);
       router.push("/dashboard");
     } catch (err) {
-      console.error("Error al crear objetivo:", err);
       setError("No se pudo guardar. Intenta de nuevo.");
-      
-      // Registrar evento de error
-      console.log("EVENT: goal_create_error", { error: String(err) });
+      analytics.goalCreateError("save_failed", String(err));
     }
   };
-  
+
   return (
-    <main className="min-h-screen bg-background flex flex-col items-center justify-center p-0">
-      <div className="w-full">
-        <div className="flex items-center gap-2 mb-8 px-4">
-          <div className="w-8 h-8 rounded-md bg-black flex items-center justify-center text-white font-bold">
-            A
-          </div>
-          <div className="font-semibold">
-            <div>Ahorro</div>
-            <div className="text-lg text-indigo-400">Invisible</div>
-          </div>
+    <main style={{ minHeight: "100vh", background: "#f9fafb", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px" }}>
+      <div style={{ width: "100%", maxWidth: 440 }}>
+        <div style={{ marginBottom: 32, fontWeight: 700, fontSize: 20, color: "#111827" }}>
+          Ahorro <span style={{ color: "#2563eb" }}>Invisible</span>
         </div>
-        
-        <Card variant="default" size="md" className="rounded-none md:rounded-xl">
-          <Card.Content>
-            <h1 className="text-2xl font-semibold text-text-primary mb-2">
-              Crea tu primer objetivo
-            </h1>
-            <p className="text-text-secondary mb-6">
-              Será tu punto de referencia diario.
-            </p>
-            
-            {error && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
-                {error}
-              </div>
-            )}
-            
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <FormInput
-                label="Nombre del objetivo"
+        <div style={{ background: "#fff", borderRadius: 16, padding: "32px 28px", boxShadow: "0 4px 24px rgba(0,0,0,0.08)" }}>
+          <h1 style={{ fontSize: 22, fontWeight: 700, color: "#111827", marginBottom: 6 }}>Crea tu objetivo</h1>
+          <p style={{ fontSize: 14, color: "#6b7280", marginBottom: 24 }}>Será tu punto de referencia diario.</p>
+
+          {error && (
+            <div style={{ marginBottom: 16, padding: "10px 14px", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 8, fontSize: 13, color: "#ef4444" }}>
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit}>
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#111827", marginBottom: 6 }}>Nombre del objetivo</label>
+              <input
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Viaje, emergencia, formación..."
+                style={{ width: "100%", border: "1.5px solid #e5e7eb", borderRadius: 10, padding: "10px 14px", fontSize: 14, outline: "none", boxSizing: "border-box" }}
               />
-              
-              <div>
-                <label className="block text-sm font-medium text-text-primary mb-1.5">
-                  Cantidad objetivo
-                </label>
-                <div className="flex items-center">
-                  <span className="text-text-secondary text-lg mr-2">€</span>
-                  <input
-                    type="number"
-                    min="1"
-                    value={targetAmount}
-                    onChange={(e) => setTargetAmount(parseInt(e.target.value) || 0)}
-                    className="w-full rounded-xl border border-gray-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                  />
-                </div>
-              </div>
-              
-              <FormInput
-                label="Horizonte (meses) (opcional)"
+            </div>
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#111827", marginBottom: 6 }}>Meta (€)</label>
+              <input
                 type="number"
                 min="1"
-                value={timeHorizonMonths || ""}
-                onChange={(e) => {
-                  const value = e.target.value ? parseInt(e.target.value) : null;
-                  setTimeHorizonMonths(value);
-                }}
-                placeholder="12"
+                value={targetAmount}
+                onChange={(e) => setTargetAmount(e.target.value)}
+                placeholder="5000"
+                style={{ width: "100%", border: "1.5px solid #e5e7eb", borderRadius: 10, padding: "10px 14px", fontSize: 14, outline: "none", boxSizing: "border-box" }}
               />
-              
-              <Button
-                type="submit"
-                variant="primary"
-                size="lg"
-              >
-                Guardar objetivo
-              </Button>
-            </form>
-          </Card.Content>
-        </Card>
+            </div>
+            <div style={{ marginBottom: 28 }}>
+              <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#111827", marginBottom: 6 }}>Horizonte (meses)</label>
+              <input
+                type="number"
+                min="1"
+                value={horizonMonths}
+                onChange={(e) => setHorizonMonths(e.target.value)}
+                placeholder="12"
+                style={{ width: "100%", border: "1.5px solid #e5e7eb", borderRadius: 10, padding: "10px 14px", fontSize: 14, outline: "none", boxSizing: "border-box" }}
+              />
+            </div>
+            <button
+              type="submit"
+              style={{ width: "100%", padding: "12px 0", background: "#2563eb", color: "#fff", border: "none", borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: "pointer" }}
+            >
+              Guardar objetivo
+            </button>
+          </form>
+        </div>
       </div>
     </main>
   );

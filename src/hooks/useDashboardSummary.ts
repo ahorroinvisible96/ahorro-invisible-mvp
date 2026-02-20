@@ -15,9 +15,9 @@ import {
 type CreateGoalInput = {
   title: string;
   targetAmount: number;
-  currentAmount: number;
+  currentAmount?: number;
   horizonMonths: number;
-  isPrimary: boolean;
+  isPrimary?: boolean;
 };
 
 type UpdateGoalInput = Partial<Pick<CreateGoalInput, 'title' | 'targetAmount' | 'currentAmount' | 'horizonMonths' | 'isPrimary'>>;
@@ -62,7 +62,7 @@ export function useDashboardSummary(): UseDashboardSummaryReturn {
   }, [range]);
 
   const createGoal = useCallback((data: CreateGoalInput) => {
-    setSummary(storeCreateGoal(data, range));
+    setSummary(storeCreateGoal({ ...data, currentAmount: data.currentAmount ?? 0 }, range));
   }, [range]);
 
   const updateGoal = useCallback((goalId: string, patch: UpdateGoalInput) => {

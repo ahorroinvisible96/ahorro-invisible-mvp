@@ -88,34 +88,10 @@ type StoreState = {
   decisions: DailyDecision[];
 };
 
-const NOW = new Date().toISOString();
 const SEED: StoreState = {
-  userName: 'Javier',
-  incomeRange: { min: 2000, max: 3500, currency: 'EUR' },
-  goals: [
-    {
-      id: 'goal_seed_001',
-      title: 'Viaje a Japón',
-      targetAmount: 5000,
-      currentAmount: 650,
-      horizonMonths: 12,
-      isPrimary: true,
-      archived: false,
-      createdAt: new Date(Date.now() - 30 * 86_400_000).toISOString(),
-      updatedAt: NOW,
-    },
-    {
-      id: 'goal_seed_002',
-      title: 'Fondo de emergencia',
-      targetAmount: 3000,
-      currentAmount: 900,
-      horizonMonths: 18,
-      isPrimary: false,
-      archived: false,
-      createdAt: new Date(Date.now() - 60 * 86_400_000).toISOString(),
-      updatedAt: NOW,
-    },
-  ],
+  userName: 'Usuario',
+  incomeRange: null,
+  goals: [],
   decisions: [],
 };
 
@@ -213,21 +189,23 @@ export function storeUpdateIncome(
 }
 
 export function storeCreateGoal(
-  data: Pick<Goal, 'title' | 'targetAmount' | 'currentAmount' | 'horizonMonths' | 'isPrimary'>,
+  data: Pick<Goal, 'title' | 'targetAmount' | 'currentAmount' | 'horizonMonths'> & { isPrimary?: boolean },
   currentRange: '7d' | '30d' | '90d' = '30d',
 ): DashboardSummary {
   const state = loadStore();
   const now = new Date().toISOString();
-  if (data.isPrimary) {
+  const activeGoals = state.goals.filter((g) => !g.archived);
+  const shouldBePrimary = data.isPrimary === true || activeGoals.length === 0;
+  if (shouldBePrimary) {
     state.goals = state.goals.map((g) => ({ ...g, isPrimary: false, updatedAt: now }));
   }
   state.goals.push({
     id: `goal_${Date.now()}`,
     title: data.title,
     targetAmount: data.targetAmount,
-    currentAmount: data.currentAmount,
+    currentAmount: data.currentAmount ?? 0,
     horizonMonths: data.horizonMonths,
-    isPrimary: data.isPrimary,
+    isPrimary: shouldBePrimary,
     archived: false,
     createdAt: now,
     updatedAt: now,

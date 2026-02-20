@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { analytics } from '@/services/analytics';
 import { useDashboardSummary } from '@/hooks/useDashboardSummary';
@@ -14,14 +14,93 @@ import { GoalCardWidget } from '@/components/dashboard/GoalCardWidget';
 import { IncomeRangeWidget } from '@/components/dashboard/IncomeRangeWidget';
 import styles from './Dashboard.module.css';
 
+function CreateGoalModal({
+  onSave,
+  onClose,
+}: {
+  onSave: (data: { title: string; targetAmount: number; horizonMonths: number }) => void;
+  onClose: () => void;
+}): React.ReactElement {
+  const [title, setTitle] = useState('');
+  const [targetAmount, setTargetAmount] = useState('');
+  const [horizonMonths, setHorizonMonths] = useState('12');
+  const [formError, setFormError] = useState('');
+
+  function handleSave() {
+    setFormError('');
+    if (!title.trim()) { setFormError('Escribe un nombre para el objetivo.'); return; }
+    const amount = Number(targetAmount);
+    if (!targetAmount || isNaN(amount) || amount <= 0) { setFormError('Introduce una cantidad válida.'); return; }
+    const months = Number(horizonMonths);
+    if (!horizonMonths || isNaN(months) || months < 1) { setFormError('El horizonte debe ser al menos 1 mes.'); return; }
+    onSave({ title: title.trim(), targetAmount: amount, horizonMonths: months });
+  }
+
+  return (
+    <div className={styles.modalOverlay} onClick={onClose}>
+      <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.modalHeader}>
+          <h2 className={styles.modalTitle}>Nuevo objetivo</h2>
+          <button className={styles.modalClose} onClick={onClose} aria-label="Cerrar">✕</button>
+        </div>
+
+        {formError && <p className={styles.modalError}>{formError}</p>}
+
+        <div className={styles.modalField}>
+          <label className={styles.modalLabel}>Nombre del objetivo</label>
+          <input
+            className={styles.modalInput}
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Viaje, emergencia, formación..."
+            autoFocus
+          />
+        </div>
+
+        <div className={styles.modalField}>
+          <label className={styles.modalLabel}>Meta (€)</label>
+          <input
+            className={styles.modalInput}
+            type="number"
+            min="1"
+            value={targetAmount}
+            onChange={(e) => setTargetAmount(e.target.value)}
+            placeholder="5000"
+          />
+        </div>
+
+        <div className={styles.modalField}>
+          <label className={styles.modalLabel}>Horizonte (meses)</label>
+          <input
+            className={styles.modalInput}
+            type="number"
+            min="1"
+            value={horizonMonths}
+            onChange={(e) => setHorizonMonths(e.target.value)}
+            placeholder="12"
+          />
+        </div>
+
+        <div className={styles.modalActions}>
+          <button className={styles.modalCancelBtn} onClick={onClose}>Cancelar</button>
+          <button className={styles.modalSaveBtn} onClick={handleSave}>Guardar objetivo</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function DashboardPage() {
   const router = useRouter();
+  const [showCreateGoal, setShowCreateGoal] = useState(false);
   const {
     summary,
     loading,
     error,
     changeRange,
     updateIncome,
+    createGoal,
     archiveGoal,
     setPrimaryGoal,
     submitDecision,
@@ -68,11 +147,24 @@ export default function DashboardPage() {
 
   const handleCreateGoal = () => {
     analytics.goalCreateStarted('dashboard');
-    router.push('/goals/new');
+    setShowCreateGoal(true);
+  };
+
+  const handleSaveGoal = (data: { title: string; targetAmount: number; horizonMonths: number }) => {
+    createGoal({ title: data.title, targetAmount: data.targetAmount, horizonMonths: data.horizonMonths });
+    analytics.goalCreated(`goal_${Date.now()}`, activeGoals.length === 0, data.targetAmount, data.horizonMonths);
+    setShowCreateGoal(false);
   };
 
   return (
     <div className={styles.page}>
+      {showCreateGoal && (
+        <CreateGoalModal
+          onSave={handleSaveGoal}
+          onClose={() => setShowCreateGoal(false)}
+        />
+      )}
+
       <HeaderStatusBarWidget
         userName={summary.userName}
         systemActive={summary.systemActive}
@@ -96,7 +188,7 @@ export default function DashboardPage() {
           <DailyDecisionWidget
             daily={summary.daily}
             primaryGoal={summary.primaryGoal}
-            allGoals={summary.goals}
+            allGoals={activeGoals}
             onSubmitDecision={submitDecision}
             onGoToImpact={(id) => router.push(`/impact/${id}`)}
             onCreateGoal={handleCreateGoal}
@@ -125,9 +217,9 @@ export default function DashboardPage() {
             ))}
             {activeGoals.length === 0 && (
               <p className={styles.emptyGoals}>
-                No tienes objetivos activos.{' '}
+                No tienes objetivos aún.{' '}
                 <button className={styles.emptyGoalsLink} onClick={handleCreateGoal}>
-                  Crear uno →
+                  Crear objetivo →
                 </button>
               </p>
             )}
@@ -138,7 +230,7 @@ export default function DashboardPage() {
         <div className={styles.sideCol}>
           <MotivationCardWidget
             intensity={summary.intensity}
-            onAdjustRules={() => router.push('/ajustes')}
+            onAdjustRules={() => router.push('/settings')}
           />
         </div>
       </div>
