@@ -1,124 +1,82 @@
 "use client";
 
-import { useMemo } from 'react';
+import React from 'react';
 import { Card } from '@/components/ui/Card/Card';
 import { Button } from '@/components/ui/Button/Button';
-import { 
-  DailyDecisionCardWidgetProps, 
-  DailyDecisionCardWidgetState 
-} from './DailyDecisionCardWidget.types';
-import { analytics } from '@/services/analytics';
+import type { DailyDecisionCardWidgetProps } from './DailyDecisionCardWidget.types';
 
-export const DailyDecisionCardWidget: React.FC<DailyDecisionCardWidgetProps> = ({
-  status,
-  decisionId,
-  isLoading = false,
-  isDisabled = false,
-  onCtaClick,
-  onCreateGoalClick
-}) => {
-  // Determine widget state
-  const state: DailyDecisionCardWidgetState = useMemo(() => {
-    if (isLoading) return 'loading';
-    if (isDisabled) return 'disabled';
-    return 'active';
-  }, [isLoading, isDisabled]);
-
-  // Handle CTA click with analytics
-  const handleCtaClick = () => {
-    // Track analytics event
-    analytics.dailyCtaClicked(status, status === 'pending' ? 'daily_question' : 'impact');
-    
-    // Call the provided callback
-    if (onCtaClick) {
-      onCtaClick();
-    }
-  };
-
-  // Handle create goal click
-  const handleCreateGoalClick = () => {
-    if (onCreateGoalClick) {
-      onCreateGoalClick();
-    }
-  };
-
-  // Loading state
-  if (state === 'loading') {
-    return (
-      <Card variant="default" size="md">
-        <Card.Content>
-          <div className="h-6 w-40 bg-gray-200 animate-pulse rounded mb-3"></div>
-          <div className="h-4 w-32 bg-gray-200 animate-pulse rounded mb-6"></div>
-          <div className="h-10 bg-gray-200 animate-pulse rounded"></div>
-        </Card.Content>
-      </Card>
-    );
-  }
-
-  // Disabled state (no primary goal)
-  if (state === 'disabled') {
-    return (
-      <Card variant="default" size="md">
-        <Card.Content>
-          <h3 className="text-lg font-medium text-text-primary mb-2">
-            Necesitas un objetivo
-          </h3>
-          <p className="text-text-secondary mb-4">
-            Crea un objetivo para acceder a las decisiones diarias.
-          </p>
-          <Button
-            variant="primary"
-            size="md"
-            onClick={handleCreateGoalClick}
-          >
-            Crear objetivo
-          </Button>
-        </Card.Content>
-      </Card>
-    );
-  }
-
-  // Pending state
-  if (status === 'pending') {
-    return (
-      <Card variant="default" size="md">
-        <Card.Content>
-          <h3 className="text-lg font-medium text-text-primary mb-2">
-            Tu decisión de hoy
-          </h3>
-          <p className="text-text-secondary mb-4">
-            1 minuto. Un paso más.
-          </p>
-          <Button
-            variant="primary"
-            size="md"
-            onClick={handleCtaClick}
-          >
-            Responder ahora
-          </Button>
-        </Card.Content>
-      </Card>
-    );
-  }
-
-  // Completed state
+function SkeletonState(): React.ReactElement {
   return (
-    <Card variant="default" size="md">
+    <Card variant="default" size="md" rounded2xl>
       <Card.Content>
-        <h3 className="text-lg font-medium text-text-primary mb-2">
-          Hoy ya está
-        </h3>
-        <p className="text-text-secondary mb-4">
-          Mira tu impacto.
-        </p>
-        <Button
-          variant="primary"
-          size="md"
-          onClick={handleCtaClick}
-        >
-          Ver impacto
+        <div className="animate-pulse space-y-3">
+          <div className="h-4 w-32 bg-gray-200 rounded" />
+          <div className="h-3 w-40 bg-gray-200 rounded" />
+          <div className="h-9 w-28 bg-gray-200 rounded-lg mt-4" />
+        </div>
+      </Card.Content>
+    </Card>
+  );
+}
+
+function DisabledState({ onCreateGoal }: { onCreateGoal: () => void }): React.ReactElement {
+  return (
+    <Card variant="default" size="md" rounded2xl>
+      <Card.Content>
+        <p className="text-sm font-medium text-gray-900 mb-1">Tu decisión de hoy</p>
+        <p className="text-sm text-gray-500 mb-4">Crea un objetivo para continuar.</p>
+        <Button variant="primary" size="sm" onClick={onCreateGoal}>
+          Crear objetivo
         </Button>
       </Card.Content>
     </Card>
   );
-};
+}
+
+export function DailyDecisionCardWidget({
+  state,
+  onCtaClick,
+  onCreateGoal,
+}: DailyDecisionCardWidgetProps): React.ReactElement {
+  if (state.status === 'loading') return <SkeletonState />;
+
+  if (state.status === 'disabled' || state.status === 'empty') {
+    return <DisabledState onCreateGoal={onCreateGoal} />;
+  }
+
+  if (state.status === 'error') {
+    return (
+      <Card variant="default" size="md" rounded2xl>
+        <Card.Content>
+          <p className="text-sm text-gray-500">No se pudo cargar la decisión del día.</p>
+        </Card.Content>
+      </Card>
+    );
+  }
+
+  const daily = state.data;
+  const isPending = daily === null || daily.status === 'pending';
+
+  const title = isPending ? 'Tu decisión de hoy' : 'Hoy ya está';
+  const text = isPending ? '1 minuto. Un paso más.' : 'Mira tu impacto.';
+  const ctaLabel = isPending ? 'Responder ahora' : 'Ver impacto';
+  const destination = isPending ? 'daily_question' : 'impact';
+
+  return (
+    <Card variant="default" size="md" rounded2xl interactive>
+      <Card.Content>
+        <p className="text-sm font-semibold text-gray-900 mb-1">{title}</p>
+        <p className="text-sm text-gray-500 mb-4">{text}</p>
+        <Button
+          variant="primary"
+          size="sm"
+          onClick={() => onCtaClick(destination)}
+        >
+          {ctaLabel}
+        </Button>
+      </Card.Content>
+    </Card>
+  );
+}
+
+export default DailyDecisionCardWidget;

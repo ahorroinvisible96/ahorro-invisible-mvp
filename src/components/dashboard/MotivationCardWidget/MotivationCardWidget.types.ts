@@ -1,33 +1,14 @@
-import { DailyStatusInfo } from '@/types/dashboard';
+import type { DailyStatus } from '@/types/DailyQuestion';
+import type { WidgetState } from '@/types/WidgetState';
 
-/**
- * Props for MotivationCardWidget
- */
 export interface MotivationCardWidgetProps {
-  /**
-   * Daily status information for CTA
-   */
-  dailyStatus: DailyStatusInfo | null;
-  
-  /**
-   * Whether the widget is disabled (no primary goal)
-   */
-  isDisabled?: boolean;
-  
-  /**
-   * Callback when CTA button is clicked
-   */
-  onCtaClick?: () => void;
-  
-  /**
-   * Callback when create goal button is clicked (for disabled state)
-   */
-  onCreateGoalClick?: () => void;
+  dailyState: WidgetState<DailyStatus>;
+  onCtaClick: (destination: 'daily_question' | 'impact') => void;
+  onCreateGoal: () => void;
+  hasGoals: boolean;
 }
 
-/**
- * States for MotivationCardWidget
- */
-export type MotivationCardWidgetState = 
-  | 'active'
-  | 'disabled';
+export interface MotivationCtaClickedPayload {
+  daily_status: 'pending' | 'completed';
+  destination: 'daily_question' | 'impact';
+}

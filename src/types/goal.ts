@@ -1,49 +1,22 @@
-/**
- * Goal model representing a user's financial goal
- */
+export type GoalId = string;
+
 export interface Goal {
-  /**
-   * Unique identifier for the goal
-   */
-  id: string;
-  
-  /**
-   * Title of the goal
-   */
+  id: GoalId;
   title: string;
-  
-  /**
-   * Target amount to save
-   */
   target_amount: number;
-  
-  /**
-   * Current amount saved
-   */
   current_amount: number;
-  
-  /**
-   * Time horizon in months (optional)
-   */
   time_horizon_months: number | null;
-  
-  /**
-   * Whether this is the primary goal
-   */
   is_primary: boolean;
-  
-  /**
-   * Whether the goal is archived
-   */
   archived: boolean;
-  
-  /**
-   * Creation timestamp
-   */
   created_at: string;
-  
-  /**
-   * Last update timestamp
-   */
   updated_at: string;
+}
+
+export interface GoalProgress {
+  goal_id: GoalId;
+  progress_ratio: number;
+  progress_percent: number;
+  remaining_amount: number;
+  current_amount: number;
+  target_amount: number;
 }

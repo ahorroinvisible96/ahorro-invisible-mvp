@@ -1,186 +1,114 @@
 "use client";
 
-import { useMemo } from 'react';
+import React from 'react';
 import { Card } from '@/components/ui/Card/Card';
 import { Button } from '@/components/ui/Button/Button';
-import { ImpactSummaryWidgetProps } from './ImpactSummaryWidget.types';
-import { determineWidgetState, formatCurrency } from './ImpactSummaryWidget.logic';
-import { analytics } from '@/services/analytics';
+import type { ImpactSummaryWidgetProps } from './ImpactSummaryWidget.types';
 
-export const ImpactSummaryWidget: React.FC<ImpactSummaryWidgetProps> = ({
-  decision,
-  hasExtraSavingsAvailable = false,
-  isLoading = false,
-  error = null,
-  onExtraSavingsClick,
-  onHistoryClick
-}) => {
-  // Determine widget state
-  const state = determineWidgetState(isLoading, error, decision);
-  
-  // Handle extra savings click
-  const handleExtraSavingsClick = () => {
-    if (!decision) return;
-    
-    // Track analytics event
-    analytics.impactCtaExtraSavingsClicked(decision.id, decision.goal_id);
-    
-    // Call the provided callback
-    if (onExtraSavingsClick) {
-      onExtraSavingsClick();
-    }
-  };
-  
-  // Handle history click
-  const handleHistoryClick = () => {
-    // Track analytics event
-    analytics.impactCtaHistoryClicked();
-    
-    // Call the provided callback
-    if (onHistoryClick) {
-      onHistoryClick();
-    }
-  };
-  
-  // Loading state
-  if (state === 'loading') {
-    return (
-      <div className="w-full max-w-md">
-        <div className="mb-6">
-          <div className="h-8 w-36 bg-gray-200 animate-pulse rounded mb-2"></div>
-          <div className="h-5 w-64 bg-gray-200 animate-pulse rounded"></div>
-        </div>
-        
-        <Card className="p-6">
-          <div className="space-y-4 mb-6">
-            <div className="h-6 w-48 bg-gray-200 animate-pulse rounded"></div>
-            <div className="h-6 w-48 bg-gray-200 animate-pulse rounded"></div>
-          </div>
-          
-          <div className="flex flex-col space-y-3">
-            <div className="h-10 bg-gray-200 animate-pulse rounded"></div>
-            <div className="h-10 bg-gray-200 animate-pulse rounded"></div>
-          </div>
-        </Card>
-      </div>
-    );
-  }
-  
-  // Error state
-  if (state === 'error') {
-    return (
-      <div className="w-full max-w-md">
-        <div className="mb-6">
-          <h1 className="text-2xl font-semibold text-text-primary mb-2">Impacto de hoy</h1>
-          <p className="text-text-secondary">Esto es lo que suma tu constancia.</p>
-        </div>
-        
-        <Card className="p-6">
-          <div className="text-red-600 mb-4">
-            No se pudo cargar la información de impacto. Intenta de nuevo.
-          </div>
-          <Button 
-            variant="primary" 
-            size="md"
-            onClick={() => window.location.reload()}
-          >
-            Reintentar
-          </Button>
-        </Card>
-      </div>
-    );
-  }
-  
-  // No impact data available
-  if (state === 'no_impact') {
-    return (
-      <div className="w-full max-w-md">
-        <div className="mb-6">
-          <h1 className="text-2xl font-semibold text-text-primary mb-2">Impacto de hoy</h1>
-          <p className="text-text-secondary">Esto es lo que suma tu constancia.</p>
-        </div>
-        
-        <Card className="p-6">
-          <div className="mb-6">
-            <p className="text-text-primary font-medium mb-2">
-              Aún no tenemos estimación para esta decisión.
-            </p>
-            <p className="text-text-secondary">
-              Tu progreso sigue contando.
-            </p>
-          </div>
-          
-          <div className="flex flex-col space-y-3">
-            <Button 
-              variant="primary" 
-              size="md"
-              onClick={handleHistoryClick}
-            >
-              Ver historial
-            </Button>
-          </div>
-          
-          <p className="text-xs text-text-secondary text-center mt-4">
-            Estimación educativa. No es asesoramiento financiero.
-          </p>
-        </Card>
-      </div>
-    );
-  }
-  
-  // Active state with impact data
+function formatDelta(value: number): string {
+  const sign = value >= 0 ? '+' : '';
+  return `${sign}${new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(value)}`;
+}
+
+function SkeletonState(): React.ReactElement {
   return (
-    <div className="w-full max-w-md">
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-text-primary mb-2">Impacto de hoy</h1>
-        <p className="text-text-secondary">Esto es lo que suma tu constancia.</p>
-      </div>
-      
-      <Card className="p-6">
-        <div className="space-y-4 mb-6">
-          {decision?.impact.monthly_delta !== null && (
-            <p className="text-text-primary font-medium">
-              Estimación mensual: <span className="text-green-600">+{formatCurrency(decision?.impact.monthly_delta ?? 0)}</span>
-            </p>
-          )}
-          
-          {decision?.impact.yearly_delta !== null && (
-            <p className="text-text-primary font-medium">
-              Estimación anual: <span className="text-green-600">+{formatCurrency(decision?.impact.yearly_delta ?? 0)}</span>
-            </p>
-          )}
-          
-          {decision?.impact.label && (
-            <p className="text-text-secondary italic">
-              "{decision?.impact.label}"
-            </p>
-          )}
+    <Card variant="default" size="md" rounded2xl>
+      <Card.Content>
+        <div className="animate-pulse space-y-4">
+          <div className="h-5 w-32 bg-gray-200 rounded" />
+          <div className="h-3 w-56 bg-gray-200 rounded" />
+          <div className="h-16 w-full bg-gray-100 rounded-xl" />
         </div>
-        
-        <div className="flex flex-col space-y-3">
-          {hasExtraSavingsAvailable && (
-            <Button 
-              variant="primary" 
-              size="md"
-              onClick={handleExtraSavingsClick}
-            >
-              Registrar acción extra
-            </Button>
-          )}
-          
-          <Button 
-            variant={hasExtraSavingsAvailable ? "outline" : "primary"}
-            size="md"
-            onClick={handleHistoryClick}
-          >
+      </Card.Content>
+    </Card>
+  );
+}
+
+export function ImpactSummaryWidget({
+  state,
+  onExtraSavingsClick,
+  onHistoryClick,
+  onRetry,
+}: ImpactSummaryWidgetProps): React.ReactElement {
+  if (state.status === 'loading') return <SkeletonState />;
+
+  if (state.status === 'error') {
+    return (
+      <Card variant="default" size="md" rounded2xl>
+        <Card.Content>
+          <p className="text-sm text-gray-500 mb-4">No se pudo cargar el impacto.</p>
+          <Button variant="outline" size="sm" onClick={onRetry}>Reintentar</Button>
+        </Card.Content>
+      </Card>
+    );
+  }
+
+  if (state.status === 'empty' || !state.data) {
+    return (
+      <Card variant="default" size="md" rounded2xl>
+        <Card.Content>
+          <p className="text-sm text-gray-500 mb-2">Aún no tenemos estimación para esta decisión.</p>
+          <p className="text-sm text-gray-400 mb-4">Tu progreso sigue contando.</p>
+          <Button variant="outline" size="sm" onClick={onHistoryClick}>Ver historial</Button>
+        </Card.Content>
+      </Card>
+    );
+  }
+
+  const { impact } = state.data;
+  const hasImpact =
+    impact.monthly_delta !== null || impact.yearly_delta !== null;
+
+  return (
+    <Card variant="default" size="md" rounded2xl>
+      <Card.Content>
+        <h1 className="text-xl font-semibold text-gray-900 mb-1">Impacto de hoy</h1>
+        <p className="text-sm text-gray-500 mb-6">Esto es lo que suma tu constancia.</p>
+
+        {hasImpact ? (
+          <div className="bg-blue-50 rounded-xl p-4 mb-6 space-y-2">
+            {impact.monthly_delta !== null && (
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">Estimación mensual</span>
+                <span className={`text-sm font-semibold ${impact.monthly_delta >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                  {formatDelta(impact.monthly_delta)}
+                </span>
+              </div>
+            )}
+            {impact.yearly_delta !== null && (
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">Estimación anual</span>
+                <span className={`text-sm font-semibold ${impact.yearly_delta >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                  {formatDelta(impact.yearly_delta)}
+                </span>
+              </div>
+            )}
+            {impact.label && (
+              <p className="text-xs text-blue-600 pt-1">{impact.label}</p>
+            )}
+          </div>
+        ) : (
+          <div className="bg-gray-50 rounded-xl p-4 mb-6">
+            <p className="text-sm text-gray-500">Aún no tenemos estimación para esta decisión.</p>
+            <p className="text-sm text-gray-400 mt-1">Tu progreso sigue contando.</p>
+          </div>
+        )}
+
+        <p className="text-xs text-gray-400 mb-6">
+          Estimación educativa. No es asesoramiento financiero.
+        </p>
+
+        <div className="flex flex-col gap-2">
+          <Button variant="outline" size="md" fullWidth onClick={onExtraSavingsClick}>
+            Registrar acción extra
+          </Button>
+          <Button variant="ghost" size="md" fullWidth onClick={onHistoryClick}>
             Ver historial
           </Button>
         </div>
-        
-        <p className="text-xs text-text-secondary text-center mt-4">
-          Estimación educativa. No es asesoramiento financiero.
-        </p>
-      </Card>
-    </div>
+      </Card.Content>
+    </Card>
   );
-};
+}
+
+export default ImpactSummaryWidget;

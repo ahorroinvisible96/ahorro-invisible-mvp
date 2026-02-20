@@ -1,34 +1,14 @@
-import { Goal } from '@/types/goal';
+import type { Goal, GoalProgress } from '@/types/Goal';
+import type { WidgetState } from '@/types/WidgetState';
 
-export type PrimaryGoalHeroWidgetProps = {
-  /**
-   * The primary goal to display
-   */
-  primaryGoal: Goal | null;
-  
-  /**
-   * Loading state
-   */
-  isLoading?: boolean;
-  
-  /**
-   * Error state
-   */
-  error?: Error | null;
-  
-  /**
-   * Whether the system is active
-   */
-  isSystemActive?: boolean;
-  
-  /**
-   * Callback when create goal button is clicked
-   */
-  onCreateGoalClick?: () => void;
-};
+export interface PrimaryGoalHeroWidgetProps {
+  state: WidgetState<PrimaryGoalHeroData>;
+  onRetry: () => void;
+  onCreateGoal: () => void;
+}
 
-export type PrimaryGoalHeroWidgetState = 
-  | 'loading'
-  | 'empty'
-  | 'error'
-  | 'active';
+export interface PrimaryGoalHeroData {
+  goal: Goal;
+  progress: GoalProgress;
+  systemActive: boolean;
+}

@@ -1,2 +1,2 @@
-export * from './ImpactSummaryWidget';
-export * from './ImpactSummaryWidget.types';
+export { ImpactSummaryWidget } from './ImpactSummaryWidget';
+export type { ImpactSummaryWidgetProps, ImpactViewedPayload } from './ImpactSummaryWidget.types';

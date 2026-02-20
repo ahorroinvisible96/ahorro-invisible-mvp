@@ -1,2 +1,2 @@
-export * from './MotivationCardWidget';
-export * from './MotivationCardWidget.types';
+export { MotivationCardWidget } from './MotivationCardWidget';
+export type { MotivationCardWidgetProps, MotivationCtaClickedPayload } from './MotivationCardWidget.types';

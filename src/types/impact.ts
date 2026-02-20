@@ -1,16 +1,24 @@
-import { DailyDecision } from './daily';
+import type { DecisionId, QuestionId, AnswerKey, DailyDate } from './DailyQuestion';
+import type { GoalId } from './Goal';
 
-/**
- * Response from getting impact details
- */
-export interface ImpactDetailsResponse {
-  /**
-   * Decision data
-   */
+export interface DecisionImpact {
+  question_id: QuestionId;
+  answer_key: AnswerKey;
+  monthly_delta: number | null;
+  yearly_delta: number | null;
+  label: string | null;
+}
+
+export interface DailyDecision {
+  id: DecisionId;
+  date: DailyDate;
+  question_id: QuestionId;
+  answer_key: AnswerKey;
+  goal_id: GoalId;
+  impact: DecisionImpact;
+  created_at: string;
+}
+
+export interface DailyDecisionCreateResponse {
   decision: DailyDecision;
-  
-  /**
-   * Whether the user has extra savings actions available
-   */
-  has_extra_savings_available: boolean;
 }
