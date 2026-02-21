@@ -1,124 +1,282 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Card, Modal, Button } from '@/components/ui';
 import { analytics } from '@/services/analytics';
-import type { IncomeRangeWidgetProps, IncomeRange } from './IncomeRangeWidget.types';
+import type { IncomeRangeWidgetProps } from './IncomeRangeWidget.types';
 import styles from './IncomeRangeWidget.module.css';
 
-function formatRange(r: IncomeRange): string {
-  return `${r.min.toLocaleString('es-ES')}€ – ${r.max.toLocaleString('es-ES')}€`;
+const SLIDER_MAX = 10000;
+const SLIDER_STEP = 100;
+
+function formatCurrency(value: number): string {
+  return new Intl.NumberFormat('es-ES', {
+    style: 'currency',
+    currency: 'EUR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
 }
 
+// ── Iconos SVG inline ────────────────────────────────────────────────────────
+function WalletIcon({ size = 24 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/>
+      <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/>
+      <path d="M18 12a2 2 0 0 0 0 4h4v-4z"/>
+    </svg>
+  );
+}
+
+function TrendingUpIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+      <polyline points="17 6 23 6 23 12"/>
+    </svg>
+  );
+}
+
+function ArrowRightIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="5" y1="12" x2="19" y2="12"/>
+      <polyline points="12 5 19 12 12 19"/>
+    </svg>
+  );
+}
+
+function Edit2Icon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+    </svg>
+  );
+}
+
+function XIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+    </svg>
+  );
+}
+
+// ── Slider nativo estilizado ─────────────────────────────────────────────────
+function StyledSlider({
+  value,
+  min = 0,
+  max = SLIDER_MAX,
+  step = SLIDER_STEP,
+  onChange,
+  accent = 'purple',
+}: {
+  value: number;
+  min?: number;
+  max?: number;
+  step?: number;
+  onChange: (v: number) => void;
+  accent?: 'purple' | 'blue';
+}) {
+  const pct = ((value - min) / (max - min)) * 100;
+  return (
+    <div className={styles.sliderWrapper}>
+      <div className={styles.sliderTrack}>
+        <div
+          className={`${styles.sliderRange} ${accent === 'blue' ? styles.sliderRangeBlue : ''}`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      <input
+        type="range"
+        className={`${styles.sliderInput} ${accent === 'blue' ? styles.sliderInputBlue : ''}`}
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+      />
+    </div>
+  );
+}
+
+// ── Componente principal ─────────────────────────────────────────────────────
 export function IncomeRangeWidget({
   incomeRange,
   onSaveIncomeRange,
 }: IncomeRangeWidgetProps): React.ReactElement {
-  const [open, setOpen] = useState(false);
-  const [minVal, setMinVal] = useState('');
-  const [maxVal, setMaxVal] = useState('');
-  const [formError, setFormError] = useState('');
+  const isConfigured = incomeRange !== null;
+
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [draftRange, setDraftRange] = useState<[number, number]>([
+    incomeRange?.min ?? 2000,
+    incomeRange?.max ?? 6000,
+  ]);
 
   useEffect(() => {
     analytics.incomeRangeViewed();
   }, []);
 
-  function openModal() {
-    setMinVal(incomeRange ? String(incomeRange.min) : '');
-    setMaxVal(incomeRange ? String(incomeRange.max) : '');
-    setFormError('');
+  // Sincronizar draft cuando cambian props externas
+  useEffect(() => {
+    if (incomeRange) {
+      setDraftRange([incomeRange.min, incomeRange.max]);
+    }
+  }, [incomeRange?.min, incomeRange?.max]);
+
+  function openDialog() {
+    setDraftRange([incomeRange?.min ?? 2000, incomeRange?.max ?? 6000]);
     analytics.incomeEditOpened();
-    setOpen(true);
+    setIsDialogOpen(true);
   }
 
   function handleSave() {
-    const min = Number(minVal);
-    const max = Number(maxVal);
-    if (!minVal || !maxVal || isNaN(min) || isNaN(max)) {
-      setFormError('Introduce valores numéricos válidos.');
-      return;
-    }
-    if (min < 0 || max < 0) {
-      setFormError('Los valores deben ser positivos.');
-      return;
-    }
-    if (min >= max) {
-      setFormError('El mínimo debe ser menor que el máximo.');
-      return;
-    }
-    const range: IncomeRange = { min, max, currency: 'EUR' };
-    onSaveIncomeRange(range);
+    const [min, max] = draftRange;
+    onSaveIncomeRange({ min, max, currency: 'EUR' });
     analytics.incomeUpdated(min, max);
-    setOpen(false);
+    setIsDialogOpen(false);
   }
+
+  function handleMinChange(v: number) {
+    setDraftRange([v, Math.max(v, draftRange[1])]);
+  }
+
+  function handleMaxChange(v: number) {
+    setDraftRange([Math.min(draftRange[0], v), v]);
+  }
+
+  // Porcentaje para la barra decorativa (rango respecto al máximo del slider)
+  const barPct = isConfigured
+    ? Math.round(((incomeRange!.max - incomeRange!.min) / SLIDER_MAX) * 100)
+    : 0;
 
   return (
     <>
-      <Card
-        variant="default"
-        size="sm"
-        rounded2xl
-        className={incomeRange ? styles.cardFilled : styles.card}
-      >
-        <Card.Content>
-          <div className={styles.row}>
-            <div>
-              <div className={styles.label}>Ingresos mensuales</div>
-              {incomeRange ? (
-                <div className={styles.value}>{formatRange(incomeRange)}</div>
+      {/* ── Widget principal ── */}
+      <div className={styles.wrapper}>
+        {/* Blur glows decorativos */}
+        <div className={styles.glowPurple} />
+        <div className={styles.glowBlue} />
+
+        <div className={styles.inner}>
+          {/* Icono + textos */}
+          <div className={styles.left}>
+            <div className={styles.iconWrap}>
+              <WalletIcon size={22} />
+              {isConfigured && <span className={styles.configuredDot} />}
+            </div>
+
+            <div className={styles.texts}>
+              <div className={styles.labelRow}>
+                <span className={styles.label}>Ingresos Mensuales</span>
+                {isConfigured && (
+                  <span className={styles.configuredBadge}>
+                    <TrendingUpIcon /> Configurado
+                  </span>
+                )}
+              </div>
+
+              {isConfigured ? (
+                <>
+                  <div className={styles.rangeValue}>
+                    {formatCurrency(incomeRange!.min)} – {formatCurrency(incomeRange!.max)}
+                  </div>
+                  <div className={styles.rangeSubtext}>Rango mensual estimado</div>
+                </>
               ) : (
-                <div className={styles.emptyValue}>No configurado</div>
+                <div className={styles.unconfigured}>
+                  <span className={styles.dot} style={{ animationDelay: '0ms' }} />
+                  <span className={styles.dot} style={{ animationDelay: '150ms' }} />
+                  <span className={styles.dot} style={{ animationDelay: '300ms' }} />
+                  <span className={styles.unconfiguredText}>No configurado</span>
+                </div>
               )}
             </div>
-            <button className={styles.editBtn} onClick={openModal}>
-              {incomeRange ? 'Editar' : 'Configurar →'}
-            </button>
           </div>
-        </Card.Content>
-      </Card>
 
-      <Modal
-        isOpen={open}
-        onClose={() => setOpen(false)}
-        title="Editar ingresos mensuales"
-        size="sm"
-        footer={
-          <div className={styles.modalFooter}>
-            <Button variant="outline" size="sm" onClick={() => setOpen(false)}>
-              Cancelar
-            </Button>
-            <Button variant="primary" size="sm" onClick={handleSave}>
-              Guardar
-            </Button>
-          </div>
-        }
-      >
-        <div className={styles.form}>
-          <label className={styles.formLabel}>
-            Mínimo mensual (€)
-            <input
-              type="number"
-              className={styles.formInput}
-              value={minVal}
-              min={0}
-              onChange={(e) => { setMinVal(e.target.value); setFormError(''); }}
-              placeholder="ej: 2000"
-            />
-          </label>
-          <label className={styles.formLabel}>
-            Máximo mensual (€)
-            <input
-              type="number"
-              className={styles.formInput}
-              value={maxVal}
-              min={0}
-              onChange={(e) => { setMaxVal(e.target.value); setFormError(''); }}
-              placeholder="ej: 3500"
-            />
-          </label>
-          {formError && <p className={styles.formError}>{formError}</p>}
+          {/* Botón configurar/editar */}
+          <button className={styles.actionBtn} onClick={openDialog}>
+            {isConfigured ? (
+              <>
+                <span className={styles.actionBtnIconEdit}><Edit2Icon /></span>
+                Editar
+              </>
+            ) : (
+              <>
+                Configurar
+                <span className={styles.actionBtnIconArrow}><ArrowRightIcon /></span>
+              </>
+            )}
+          </button>
         </div>
-      </Modal>
+
+        {/* Barra de progreso decorativa */}
+        {isConfigured && (
+          <div className={styles.progressTrack}>
+            <div className={styles.progressFill} style={{ width: `${Math.max(10, barPct)}%` }} />
+          </div>
+        )}
+      </div>
+
+      {/* ── Modal de configuración ── */}
+      {isDialogOpen && (
+        <div className={styles.overlay} onClick={() => setIsDialogOpen(false)}>
+          <div className={styles.dialog} onClick={(e) => e.stopPropagation()}>
+
+            {/* Header */}
+            <div className={styles.dialogHeader}>
+              <div className={styles.dialogHeaderLeft}>
+                <div className={styles.dialogIconWrap}><WalletIcon size={20} /></div>
+                <h2 className={styles.dialogTitle}>Configurar Ingresos Mensuales</h2>
+              </div>
+              <button className={styles.dialogClose} onClick={() => setIsDialogOpen(false)}>
+                <XIcon />
+              </button>
+            </div>
+
+            {/* Card rango seleccionado */}
+            <div className={styles.rangeCard}>
+              <span className={styles.rangeCardLabel}>Rango seleccionado</span>
+              <div className={styles.rangeCardValues}>
+                <span className={styles.rangeCardMin}>{formatCurrency(draftRange[0])}</span>
+                <span className={styles.rangeCardSep}>—</span>
+                <span className={styles.rangeCardMax}>{formatCurrency(draftRange[1])}</span>
+              </div>
+            </div>
+
+            {/* Sliders */}
+            <div className={styles.sliders}>
+              {/* Mínimo */}
+              <div className={styles.sliderGroup}>
+                <div className={styles.sliderLabelRow}>
+                  <span className={styles.sliderLabel}>Ingreso Mínimo</span>
+                  <span className={styles.sliderBadgePurple}>{formatCurrency(draftRange[0])}</span>
+                </div>
+                <StyledSlider value={draftRange[0]} onChange={handleMinChange} accent="purple" />
+              </div>
+
+              {/* Máximo */}
+              <div className={styles.sliderGroup}>
+                <div className={styles.sliderLabelRow}>
+                  <span className={styles.sliderLabel}>Ingreso Máximo</span>
+                  <span className={styles.sliderBadgeBlue}>{formatCurrency(draftRange[1])}</span>
+                </div>
+                <StyledSlider value={draftRange[1]} onChange={handleMaxChange} accent="blue" />
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className={styles.dialogFooter}>
+              <button className={styles.btnCancel} onClick={() => setIsDialogOpen(false)}>
+                Cancelar
+              </button>
+              <button className={styles.btnSave} onClick={handleSave}>
+                Guardar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
