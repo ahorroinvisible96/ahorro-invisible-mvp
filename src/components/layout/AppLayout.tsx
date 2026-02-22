@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Sidebar from './Sidebar';
+import BottomNav from './BottomNav';
 import MainContent from './MainContent';
 import styles from './AppLayout.module.css';
 import { analytics } from '@/services/analytics';
@@ -58,7 +59,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
 
   return (
     <div className={styles.layout}>
-      <Sidebar 
+      <Sidebar
         userName={userName}
         onLogout={handleLogout}
         onOpenDailyDecision={onOpenDailyDecision}
@@ -70,6 +71,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
       >
         {children}
       </MainContent>
+      <BottomNav onOpenDailyDecision={onOpenDailyDecision} />
     </div>
   );
 };

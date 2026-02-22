@@ -2,7 +2,16 @@
 .page {
   min-height: 100vh;
   background: linear-gradient(160deg, #020617 0%, #0f172a 50%, #020617 100%);
-  padding: 0 0 40px;
+  padding: 0 0 80px;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+@media (min-width: 768px) {
+  .page {
+    padding: 0 0 40px;
+  }
 }
 
 /* ── Header de página ── */
@@ -69,6 +78,8 @@
   flex-direction: column;
   gap: 12px;
   padding: 0 16px;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 /* ── Loading ── */

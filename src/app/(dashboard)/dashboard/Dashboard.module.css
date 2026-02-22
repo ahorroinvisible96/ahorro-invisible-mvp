@@ -5,11 +5,20 @@
   --dashboard-section-gap: 24px;
 }
 
-/* ── Contenedor principal ───────────────────────────────────────────── */
+/* ── Contenedor principal — mobile first ───────────────────────────── */
 .page {
-  padding: 24px;
+  padding: 16px;
   background-color: var(--color-background-main, #f9fafb);
   min-height: 100vh;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+@media (min-width: 768px) {
+  .page {
+    padding: 24px;
+  }
 }
 
 .grid {
@@ -17,6 +26,8 @@
   grid-template-columns: 1fr;
   gap: var(--dashboard-section-gap);
   margin-top: var(--dashboard-section-gap);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 @media (min-width: 1024px) {

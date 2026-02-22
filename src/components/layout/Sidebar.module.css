@@ -13,6 +13,13 @@
   box-shadow: 4px 0 24px rgba(2, 6, 23, 0.5);
 }
 
+/* Ocultar en móvil — se usa BottomNav */
+@media (max-width: 767px) {
+  .sidebar {
+    display: none;
+  }
+}
+
 /* ── Logo ── */
 .logo {
   display: flex;

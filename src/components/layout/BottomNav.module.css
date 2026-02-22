@@ -1,0 +1,101 @@
+/* ── Barra de navegación inferior (solo móvil) ── */
+.nav {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background: rgba(10, 15, 30, 0.97);
+    border-top: 1px solid rgba(51, 65, 85, 0.5);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    z-index: 100;
+    padding: 0 4px;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* ── Ítem de nav (link) ── */
+.item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  flex: 1;
+  padding: 6px 4px;
+  text-decoration: none;
+  color: rgba(100, 116, 139, 0.7);
+  transition: color 150ms ease;
+  min-width: 0;
+}
+
+.item:hover {
+  color: #94a3b8;
+}
+
+.itemActive {
+  color: #c084fc;
+}
+
+/* ── Icono ── */
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  transition: background 150ms ease;
+}
+
+.itemActive .icon {
+  background: rgba(168, 85, 247, 0.15);
+}
+
+/* ── Label ── */
+.label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* ── Botón central Decisión Diaria ── */
+.dailyBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #a855f7, #2563eb);
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  flex-shrink: 0;
+  box-shadow: 0 4px 16px rgba(168, 85, 247, 0.45);
+  transition: all 150ms ease;
+  margin-top: -16px;
+}
+
+.dailyBtn:hover {
+  box-shadow: 0 6px 22px rgba(168, 85, 247, 0.6);
+  transform: translateY(-2px);
+}
+
+.dailyBtn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(168, 85, 247, 0.4);
+}

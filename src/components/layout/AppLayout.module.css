@@ -1,17 +1,14 @@
-/* 
- * Estilos para el componente AppLayout
- * Basado en la imagen de referencia del dashboard
- */
-
+/* ── Layout principal — mobile first ── */
 .layout {
   display: flex;
   min-height: 100vh;
   width: 100%;
+  /* En móvil el sidebar está oculto, BottomNav ocupa el footer */
 }
 
-/* Responsive */
-@media (max-width: 768px) {
+/* En desktop el sidebar lateral está visible */
+@media (min-width: 768px) {
   .layout {
-    flex-direction: column;
+    flex-direction: row;
   }
 }
