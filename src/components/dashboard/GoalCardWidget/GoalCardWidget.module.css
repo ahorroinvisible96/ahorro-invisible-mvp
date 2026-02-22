@@ -1,133 +1,372 @@
+/* ── Card container ── */
 .card {
-  transition: box-shadow 0.15s, transform 0.15s;
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 200ms ease;
 }
 
 .card:hover {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
   transform: translateY(-1px);
-  cursor: pointer;
 }
 
-.header {
+.card:hover .glowOverlay {
+  opacity: 0.3;
+}
+
+.card:hover .borderLayer {
+  border-color: rgba(71, 85, 105, 0.6);
+}
+
+/* ── Layer 1: fondo gradiente ── */
+.bgGradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+}
+
+/* ── Layer 2: glow overlay ── */
+.glowOverlay {
+  position: absolute;
+  inset: 0;
+  opacity: 0.2;
+  transition: opacity 500ms ease;
+  pointer-events: none;
+}
+
+.glowPurple {
+  position: absolute;
+  top: 0;
+  right: -80px;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: rgba(168, 85, 247, 0.2);
+  filter: blur(40px);
+}
+
+.glowBlue {
+  position: absolute;
+  bottom: -80px;
+  left: -80px;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.2);
+  filter: blur(40px);
+}
+
+/* ── Layer 3: borde ── */
+.borderLayer {
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  border: 1px solid rgba(51, 65, 85, 0.5);
+  box-shadow: 0 10px 15px -3px rgba(2, 6, 23, 0.5);
+  pointer-events: none;
+  transition: border-color 300ms ease;
+}
+
+/* ── Layer 4: contenido ── */
+.content {
+  position: relative;
+  padding: 20px;
+}
+
+/* ── Sección 1: Título y badge ── */
+.topRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+
+.topLeft {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
+  gap: 12px;
+  min-width: 0;
 }
 
-.title {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--color-text-primary, #111827);
-  flex: 1;
+.goalIconWrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(51, 65, 85, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #c084fc;
+  flex-shrink: 0;
+}
+
+.goalTitle {
+  font-size: 17px;
+  font-weight: 700;
+  color: #f1f5f9;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+/* Badge PRINCIPAL */
 .primaryBadge {
   display: inline-flex;
   align-items: center;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: #dbeafe;
-  color: #1d4ed8;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 8px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  backdrop-filter: blur(4px);
+  color: #60a5fa;
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   flex-shrink: 0;
-  margin-left: 8px;
 }
 
-.amounts {
+/* Badge Completado */
+.completedBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 8px;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #4ade80;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* ── Sección 2: Montos y progreso ── */
+.progressSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.amountsRow {
   display: flex;
   align-items: baseline;
-  gap: 4px;
-  margin-bottom: 8px;
+  justify-content: space-between;
 }
 
-.current {
+.amountsLeft {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.currentAmount {
+  font-size: 24px;
+  font-weight: 700;
+  color: #f1f5f9;
+  letter-spacing: -0.02em;
+}
+
+.amountSep {
   font-size: 16px;
+  color: rgba(100, 116, 139, 0.6);
+}
+
+.targetAmount {
+  font-size: 17px;
+  color: rgba(148, 163, 184, 0.7);
+}
+
+.pctWrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #c084fc;
+}
+
+.pctActive {
+  font-size: 20px;
   font-weight: 700;
-  color: var(--color-text-primary, #111827);
+  color: #c084fc;
 }
 
-.target {
-  font-size: 13px;
-  color: var(--color-text-secondary, #6b7280);
-}
-
-.pct {
-  font-size: 13px;
+.pctZero {
+  font-size: 20px;
   font-weight: 700;
-  color: var(--color-primary-600, #2563eb);
-  margin-left: auto;
+  color: rgba(100, 116, 139, 0.6);
 }
 
-.progressRow {
-  margin-bottom: 10px;
+/* Barra de progreso */
+.progressTrack {
+  position: relative;
+  height: 8px;
+  background: rgba(30, 41, 59, 0.8);
+  border-radius: 9999px;
+  overflow: hidden;
+  backdrop-filter: blur(4px);
 }
 
+.progressFill {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  border-radius: 9999px;
+  transition: width 700ms ease;
+}
+
+.progressFillActive {
+  background: linear-gradient(90deg, #a855f7, #9333ea, #2563eb);
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.3);
+}
+
+.progressFillZero {
+  background: rgba(51, 65, 85, 0.5);
+}
+
+/* ── Sección 3: Info y acciones ── */
+.bottomRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 12px;
+  border-top: 1px solid rgba(51, 65, 85, 0.3);
+  gap: 12px;
+}
+
+.infoLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: rgba(148, 163, 184, 0.7);
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.infoItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: rgba(148, 163, 184, 0.7);
+}
+
+.infoValue {
+  font-weight: 600;
+  color: rgba(203, 213, 225, 0.9);
+}
+
+.infoDot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(71, 85, 105, 0.8);
+  flex-shrink: 0;
+}
+
+.infoCompleted {
+  font-size: 13px;
+  font-weight: 600;
+  color: #4ade80;
+}
+
+/* ── Acciones ── */
 .actions {
   display: flex;
+  align-items: center;
   gap: 8px;
+  flex-shrink: 0;
 }
 
-.remaining {
+/* Botón "Hacer principal" */
+.makePrimaryBtn {
+  padding: 6px 12px;
+  border-radius: 8px;
   font-size: 12px;
-  color: var(--color-text-secondary, #6b7280);
-  margin-bottom: 8px;
-}
-
-.archiveBtn {
-  font-size: 12px;
-  color: #ef4444;
-  background: transparent;
-  border: 1px solid #fecaca;
-  border-radius: 6px;
-  padding: 4px 10px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: background 0.12s;
-}
-
-.archiveBtn:hover {
-  background: #fef2f2;
-}
-
-.archiving {
-  opacity: 0.5;
-  pointer-events: none;
-}
-
-.primaryBtn {
-  font-size: 12px;
-  color: var(--color-primary-600, #2563eb);
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
-  border-radius: 6px;
-  padding: 4px 10px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: background 0.12s;
-}
-
-.primaryBtn:hover {
-  background: #dbeafe;
-}
-
-.editBtn {
-  font-size: 12px;
-  color: #6b7280;
-  background: transparent;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  padding: 4px 10px;
-  cursor: pointer;
   font-weight: 500;
-  transition: background 0.12s;
+  color: #60a5fa;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  cursor: pointer;
+  transition: all 200ms ease;
+  white-space: nowrap;
+}
+
+.makePrimaryBtn:hover {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+/* Botón editar (icono) */
+.editBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(51, 65, 85, 0.5);
+  color: rgba(148, 163, 184, 0.7);
+  cursor: pointer;
+  transition: all 200ms ease;
 }
 
 .editBtn:hover {
-  background: #f9fafb;
+  background: rgba(51, 65, 85, 0.5);
+  border-color: rgba(71, 85, 105, 0.6);
+  color: rgba(203, 213, 225, 0.9);
+}
+
+.editIcon {
+  display: flex;
+  transition: transform 300ms ease;
+}
+
+.editBtn:hover .editIcon {
+  transform: rotate(12deg);
+}
+
+/* Botón archivar (icono) */
+.archiveBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(51, 65, 85, 0.5);
+  color: rgba(148, 163, 184, 0.7);
+  cursor: pointer;
+  transition: all 200ms ease;
+}
+
+.archiveBtn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #f87171;
+}
+
+.archiveBtn:disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.archiveIcon {
+  display: flex;
+  transition: transform 200ms ease;
+}
+
+.archiveBtn:hover .archiveIcon {
+  transform: scale(0.9);
+}
+
+/* ── Estado archivando ── */
+.archiving {
+  opacity: 0.4;
+  pointer-events: none;
 }
