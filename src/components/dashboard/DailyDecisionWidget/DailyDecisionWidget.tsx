@@ -133,6 +133,7 @@ export function DailyDecisionWidget({
   onCreateGoal,
   onResetDecision,
   onAddExtraSaving,
+  onGoToHistory,
 }: DailyDecisionWidgetProps): React.ReactElement {
   const activeGoals = allGoals.filter((g) => !g.archived);
   const todayQuestion = getTodayQuestion();
@@ -150,6 +151,14 @@ export function DailyDecisionWidget({
 
   useEffect(() => {
     analytics.dailyCtaCardViewed(daily.status);
+    // Cuando el status vuelve a 'pending' (tras reset), limpiar estado interno
+    if (daily.status === 'pending') {
+      setSelectedAnswer(null);
+      setConfirmed(false);
+      setSubmitting(false);
+      setUseCustomAmount(false);
+      setCustomAmount('');
+    }
   }, [daily.status]);
 
   useEffect(() => {
@@ -198,6 +207,14 @@ export function DailyDecisionWidget({
                   onClick={() => { analytics.dailyCtaClicked('completed', 'impact'); onGoToImpact(daily.decisionId!); }}
                 >
                   Ver impacto →
+                </button>
+              )}
+              {onGoToHistory && (
+                <button
+                  className={styles.btnOutline}
+                  onClick={() => { analytics.dailyCtaClicked('completed', 'history'); onGoToHistory(); }}
+                >
+                  Ver progreso →
                 </button>
               )}
               <button

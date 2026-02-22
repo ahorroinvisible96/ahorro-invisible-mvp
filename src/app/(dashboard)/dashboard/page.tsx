@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import type { Goal } from '@/types/Dashboard';
+import type { ExtraSaving } from '@/components/dashboard/DailyDecisionWidget/DailyDecisionWidget.types';
 import { useRouter } from 'next/navigation';
 import { analytics } from '@/services/analytics';
 import { useDashboardSummary } from '@/hooks/useDashboardSummary';
@@ -67,6 +68,90 @@ function EditGoalModal({
         <div className={styles.modalActions}>
           <button className={styles.modalCancelBtn} onClick={onClose}>Cancelar</button>
           <button className={styles.modalSaveBtn} onClick={handleSave}>Guardar cambios</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ExtraSavingDashboardModal({
+  allGoals,
+  primaryGoal,
+  onSave,
+  onClose,
+}: {
+  allGoals: Goal[];
+  primaryGoal: Goal | null;
+  onSave: (s: ExtraSaving) => void;
+  onClose: () => void;
+}): React.ReactElement {
+  const [name, setName] = useState('');
+  const [amount, setAmount] = useState('');
+  const [goalId, setGoalId] = useState(primaryGoal?.id ?? allGoals[0]?.id ?? '');
+  const [formError, setFormError] = useState('');
+
+  function handleSave() {
+    setFormError('');
+    if (!name.trim()) { setFormError('Escribe un nombre para el ahorro.'); return; }
+    const amt = Number(amount);
+    if (!amount || isNaN(amt) || amt <= 0) { setFormError('Introduce una cantidad válida.'); return; }
+    if (!goalId) { setFormError('Selecciona un objetivo.'); return; }
+    onSave({ name: name.trim(), amount: amt, goalId });
+  }
+
+  return (
+    <div className={styles.modalOverlay} onClick={onClose}>
+      <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.modalHeader}>
+          <h2 className={styles.modalTitle}>Añadir ahorro extra</h2>
+          <button className={styles.modalClose} onClick={onClose} aria-label="Cerrar">✕</button>
+        </div>
+
+        {formError && <p className={styles.modalError}>{formError}</p>}
+
+        <div className={styles.modalField}>
+          <label className={styles.modalLabel}>Nombre del ahorro</label>
+          <input
+            className={styles.modalInput}
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Ej: Ahorro extra café"
+            autoFocus
+          />
+        </div>
+
+        <div className={styles.modalField}>
+          <label className={styles.modalLabel}>Cantidad (€)</label>
+          <input
+            className={styles.modalInput}
+            type="number"
+            min="0.01"
+            step="0.01"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="0"
+          />
+        </div>
+
+        {allGoals.length > 0 && (
+          <div className={styles.modalField}>
+            <label className={styles.modalLabel}>Asignar a objetivo</label>
+            <select
+              className={styles.modalInput}
+              value={goalId}
+              onChange={(e) => setGoalId(e.target.value)}
+            >
+              {allGoals.map((g) => (
+                <option key={g.id} value={g.id}>{g.title}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        <div className={styles.modalActions}>
+          <button className={styles.modalCancelBtn} onClick={onClose}>Cancelar</button>
+          <button className={styles.modalSaveBtn} onClick={handleSave}>Guardar ahorro</button>
         </div>
       </div>
     </div>
@@ -246,6 +331,14 @@ export default function DashboardPage() {
           onClose={() => setEditingGoal(null)}
         />
       )}
+      {showExtraSaving && (
+        <ExtraSavingDashboardModal
+          allGoals={activeGoals}
+          primaryGoal={summary.primaryGoal}
+          onSave={(s: ExtraSaving) => { addExtraSaving(s); setShowExtraSaving(false); }}
+          onClose={() => setShowExtraSaving(false)}
+        />
+      )}
 
       <HeaderStatusBarWidget
         userName={summary.userName}
@@ -285,6 +378,7 @@ export default function DashboardPage() {
               onCreateGoal={handleCreateGoal}
               onResetDecision={resetDecision}
               onAddExtraSaving={addExtraSaving}
+              onGoToHistory={() => router.push('/history')}
             />
           </div>
 

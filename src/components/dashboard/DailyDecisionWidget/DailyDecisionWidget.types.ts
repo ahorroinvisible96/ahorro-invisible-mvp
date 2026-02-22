@@ -15,6 +15,7 @@ export type DailyDecisionWidgetProps = {
   onCreateGoal: () => void;
   onResetDecision?: () => void;
   onAddExtraSaving?: (saving: ExtraSaving) => void;
+  onGoToHistory?: () => void;
 };
 
 export type DailyWidgetState = 'disabled' | 'pending' | 'completed' | 'error';
