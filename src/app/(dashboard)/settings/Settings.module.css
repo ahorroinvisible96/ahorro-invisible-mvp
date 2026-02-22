@@ -1,0 +1,82 @@
+/* ── Página ── */
+.page {
+  min-height: 100vh;
+  background: linear-gradient(160deg, #020617 0%, #0f172a 50%, #020617 100%);
+  padding: 0 0 40px;
+}
+
+/* ── Header de página ── */
+.pageHeader {
+  position: relative;
+  padding: 28px 20px 20px;
+  overflow: hidden;
+}
+
+.pageHeaderGlow {
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: rgba(37, 99, 235, 0.1);
+  filter: blur(60px);
+  pointer-events: none;
+}
+
+.pageHeaderInner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pageIconWrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #2563eb, #a855f7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+}
+
+.pageTitles {
+  display: flex;
+  flex-direction: column;
+}
+
+.pageTitle {
+  font-size: 20px;
+  font-weight: 800;
+  color: #f1f5f9;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.pageSubtitle {
+  font-size: 13px;
+  color: rgba(148, 163, 184, 0.65);
+  margin: 2px 0 0;
+}
+
+/* ── Stack de widgets ── */
+.widgetsStack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 16px;
+}
+
+/* ── Loading ── */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: rgba(148, 163, 184, 0.6);
+  font-size: 14px;
+}
