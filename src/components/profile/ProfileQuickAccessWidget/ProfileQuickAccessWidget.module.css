@@ -59,9 +59,9 @@
 }
 
 .title {
-  font-size: 15px;
-  font-weight: 700;
-  color: #f1f5f9;
+  font-size: var(--widget-title-size, 15px);
+  font-weight: var(--widget-title-weight, 700);
+  color: var(--text-primary, #f1f5f9);
   margin: 0;
 }
 
@@ -100,9 +100,9 @@
 }
 
 .itemIconWrap {
-  width: 32px;
-  height: 32px;
-  border-radius: 9px;
+  width: var(--icon-wrap-size, 34px);
+  height: var(--icon-wrap-size, 34px);
+  border-radius: var(--icon-wrap-radius, 10px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -128,7 +128,7 @@
 }
 
 .itemLabel {
-  font-size: 14px;
+  font-size: var(--widget-row-label, 14px);
   font-weight: 600;
   color: #e2e8f0;
 }

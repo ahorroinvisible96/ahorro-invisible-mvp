@@ -5,6 +5,58 @@
 :root {
   --background: #F5F5F0;
   --foreground: #1F2937;
+
+  /* ── Design tokens — coherencia visual global ── */
+
+  /* Colores de texto */
+  --text-primary:    #f1f5f9;
+  --text-secondary:  rgba(148, 163, 184, 0.75);
+  --text-muted:      rgba(100, 116, 139, 0.65);
+  --text-label:      rgba(148, 163, 184, 0.6);
+
+  /* Colores de acento */
+  --accent-purple:   #a855f7;
+  --accent-blue:     #2563eb;
+  --accent-green:    #22c55e;
+  --accent-red:      #ef4444;
+  --accent-yellow:   #eab308;
+
+  /* Superficies */
+  --surface-card:    linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  --surface-inner:   rgba(15, 23, 42, 0.5);
+  --border-subtle:   rgba(51, 65, 85, 0.5);
+  --border-card:     rgba(51, 65, 85, 0.55);
+
+  /* ── Widget icon wrap — tamaño ÚNICO 34×34px ── */
+  --icon-wrap-size:   34px;
+  --icon-wrap-radius: 10px;
+  --icon-svg-size:    16px;
+
+  /* ── Widget header ── */
+  --widget-title-size:   15px;
+  --widget-title-weight: 700;
+  --widget-label-size:   11px;
+  --widget-label-weight: 700;
+
+  /* ── Widget body text ── */
+  --widget-body-size:    13px;
+  --widget-row-label:    14px;
+  --widget-row-sub:      12px;
+
+  /* ── Widget padding ── */
+  --widget-padding:      20px;
+  --widget-radius:       16px;
+  --widget-gap:          12px;
+
+  /* ── Botones ── */
+  --btn-radius:          10px;
+  --btn-font-size:       14px;
+  --btn-font-weight:     600;
+  --btn-padding-y:       11px;
+
+  /* ── Gradiente primario ── */
+  --grad-primary: linear-gradient(90deg, #a855f7, #2563eb);
+  --grad-primary-hover: linear-gradient(90deg, #9333ea, #1d4ed8);
 }
 
 body {

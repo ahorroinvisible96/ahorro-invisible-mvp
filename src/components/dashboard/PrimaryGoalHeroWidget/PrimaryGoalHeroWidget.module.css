@@ -58,9 +58,9 @@
 }
 
 .iconBadge {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
+  width: var(--icon-wrap-size, 34px);
+  height: var(--icon-wrap-size, 34px);
+  border-radius: var(--icon-wrap-radius, 10px);
   background: linear-gradient(135deg, #6366f1, #a855f7);
   display: flex;
   align-items: center;
@@ -70,9 +70,9 @@
 }
 
 .headerLabel {
-  font-size: 11px;
-  font-weight: 700;
-  color: rgba(148, 163, 184, 0.85);
+  font-size: var(--widget-label-size, 11px);
+  font-weight: var(--widget-label-weight, 700);
+  color: var(--text-secondary, rgba(148, 163, 184, 0.75));
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -94,9 +94,9 @@
 
 /* ── Title ── */
 .title {
-  font-size: 26px;
+  font-size: 22px;
   font-weight: 800;
-  color: #f1f5f9;
+  color: var(--text-primary, #f1f5f9);
   margin: 0 0 16px;
   line-height: 1.15;
 }
@@ -216,7 +216,7 @@
 }
 
 .infoText {
-  font-size: 13px;
+  font-size: var(--widget-body-size, 13px);
   color: rgba(203, 213, 225, 0.9);
   margin: 0 0 3px;
   line-height: 1.5;
@@ -300,14 +300,14 @@
 }
 
 .emptyTitle {
-  font-size: 15px;
-  font-weight: 700;
-  color: #f1f5f9;
+  font-size: var(--widget-title-size, 15px);
+  font-weight: var(--widget-title-weight, 700);
+  color: var(--text-primary, #f1f5f9);
   margin: 0;
 }
 
 .emptySubtitle {
-  font-size: 13px;
-  color: rgba(148, 163, 184, 0.65);
+  font-size: var(--widget-body-size, 13px);
+  color: var(--text-muted, rgba(100, 116, 139, 0.65));
   margin: 0;
 }

@@ -59,9 +59,9 @@
 }
 
 .title {
-  font-size: 15px;
-  font-weight: 700;
-  color: #f1f5f9;
+  font-size: var(--widget-title-size, 15px);
+  font-weight: var(--widget-title-weight, 700);
+  color: var(--text-primary, #f1f5f9);
   margin: 0;
 }
 
@@ -87,15 +87,15 @@
 }
 
 .rowLabel {
-  font-size: 14px;
+  font-size: var(--widget-row-label, 14px);
   font-weight: 600;
   color: #e2e8f0;
   margin: 0;
 }
 
 .rowSub {
-  font-size: 12px;
-  color: rgba(100, 116, 139, 0.7);
+  font-size: var(--widget-row-sub, 12px);
+  color: var(--text-muted, rgba(100, 116, 139, 0.65));
   margin: 0;
 }
 
@@ -106,11 +106,11 @@
   gap: 6px;
   padding: 7px 14px;
   background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(51, 65, 85, 0.5);
-  border-radius: 9px;
+  border: 1px solid var(--border-subtle, rgba(51, 65, 85, 0.5));
+  border-radius: var(--btn-radius, 10px);
   color: #94a3b8;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--widget-body-size, 13px);
+  font-weight: var(--btn-font-weight, 600);
   cursor: pointer;
   transition: all 180ms ease;
   white-space: nowrap;

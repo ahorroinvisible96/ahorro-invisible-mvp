@@ -59,22 +59,22 @@
 }
 
 .title {
-  font-size: 15px;
-  font-weight: 700;
+  font-size: var(--widget-title-size, 15px);
+  font-weight: var(--widget-title-weight, 700);
   color: #fca5a5;
   margin: 0;
 }
 
 /* ── Descripción ── */
 .description {
-  font-size: 13px;
-  color: rgba(148, 163, 184, 0.7);
+  font-size: var(--widget-body-size, 13px);
+  color: var(--text-secondary, rgba(148, 163, 184, 0.75));
   line-height: 1.6;
   margin: 0 0 16px;
   padding: 12px 14px;
   background: rgba(239, 68, 68, 0.06);
   border: 1px solid rgba(239, 68, 68, 0.15);
-  border-radius: 10px;
+  border-radius: var(--btn-radius, 10px);
 }
 
 /* ── Botón reset ── */
@@ -82,12 +82,12 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 11px 18px;
+  padding: var(--btn-padding-y, 11px) 18px;
   background: transparent;
   border: 1.5px solid rgba(239, 68, 68, 0.4);
-  border-radius: 10px;
+  border-radius: var(--btn-radius, 10px);
   color: #f87171;
-  font-size: 14px;
+  font-size: var(--btn-font-size, 14px);
   font-weight: 700;
   cursor: pointer;
   transition: all 200ms ease;

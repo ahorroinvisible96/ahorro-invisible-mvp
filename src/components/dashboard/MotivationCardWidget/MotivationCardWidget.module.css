@@ -69,9 +69,9 @@
 }
 
 .iconWrap {
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
+  width: var(--icon-wrap-size, 34px);
+  height: var(--icon-wrap-size, 34px);
+  border-radius: var(--icon-wrap-radius, 10px);
   background: linear-gradient(135deg, #a855f7, #2563eb);
   display: flex;
   align-items: center;
@@ -81,9 +81,9 @@
 }
 
 .headerLabel {
-  font-size: 11px;
-  font-weight: 700;
-  color: rgba(148, 163, 184, 0.8);
+  font-size: var(--widget-label-size, 11px);
+  font-weight: var(--widget-label-weight, 700);
+  color: var(--text-secondary, rgba(148, 163, 184, 0.75));
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -305,16 +305,16 @@
 
 /* ── Copy motivacional ── */
 .headline {
-  font-size: 17px;
-  font-weight: 700;
-  color: #f1f5f9;
+  font-size: var(--widget-title-size, 15px);
+  font-weight: var(--widget-title-weight, 700);
+  color: var(--text-primary, #f1f5f9);
   margin: 0 0 6px;
   line-height: 1.3;
 }
 
 .sub {
-  font-size: 13px;
-  color: rgba(148, 163, 184, 0.7);
+  font-size: var(--widget-body-size, 13px);
+  color: var(--text-secondary, rgba(148, 163, 184, 0.75));
   margin: 0 0 16px;
   line-height: 1.5;
 }

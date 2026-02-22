@@ -59,9 +59,9 @@
 }
 
 .title {
-  font-size: 15px;
-  font-weight: 700;
-  color: #f1f5f9;
+  font-size: var(--widget-title-size, 15px);
+  font-weight: var(--widget-title-weight, 700);
+  color: var(--text-primary, #f1f5f9);
   margin: 0;
 }
 
@@ -87,14 +87,14 @@
 }
 
 .statusLabel {
-  font-size: 13px;
+  font-size: var(--widget-body-size, 13px);
   font-weight: 600;
   color: #4ade80;
 }
 
 .statusEmail {
-  font-size: 12px;
-  color: rgba(100, 116, 139, 0.7);
+  font-size: var(--widget-row-sub, 12px);
+  color: var(--text-muted, rgba(100, 116, 139, 0.65));
   margin-left: auto;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -117,11 +117,11 @@
   width: 100%;
   padding: 12px 16px;
   background: rgba(15, 23, 42, 0.5);
-  border: 1px solid rgba(51, 65, 85, 0.4);
-  border-radius: 12px;
+  border: 1px solid var(--border-subtle, rgba(51, 65, 85, 0.5));
+  border-radius: var(--btn-radius, 10px);
   color: rgba(148, 163, 184, 0.8);
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--widget-row-label, 14px);
+  font-weight: var(--btn-font-weight, 600);
   cursor: pointer;
   transition: all 180ms ease;
   text-align: left;
