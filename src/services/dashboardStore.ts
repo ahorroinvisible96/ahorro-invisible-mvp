@@ -317,6 +317,47 @@ export function storeUpdateUserName(
   return buildSummary(currentRange);
 }
 
+export function storeDeleteDecision(
+  decisionId: string,
+  currentRange: '7d' | '30d' | '90d' = '30d',
+): DashboardSummary {
+  const state = loadStore();
+  const now = new Date().toISOString();
+  const dec = state.decisions.find((d) => d.id === decisionId);
+  if (dec) {
+    const goal = state.goals.find((g) => g.id === dec.goalId);
+    if (goal) {
+      goal.currentAmount = Math.max(0, goal.currentAmount - dec.deltaAmount);
+      goal.updatedAt = now;
+    }
+    state.decisions = state.decisions.filter((d) => d.id !== decisionId);
+    persistStore(state);
+  }
+  return buildSummary(currentRange);
+}
+
+export function storeEditDecision(
+  decisionId: string,
+  newAmount: number,
+  currentRange: '7d' | '30d' | '90d' = '30d',
+): DashboardSummary {
+  const state = loadStore();
+  const now = new Date().toISOString();
+  const dec = state.decisions.find((d) => d.id === decisionId);
+  if (dec) {
+    const oldAmount = dec.deltaAmount;
+    const diff = newAmount - oldAmount;
+    dec.deltaAmount = newAmount;
+    const goal = state.goals.find((g) => g.id === dec.goalId);
+    if (goal) {
+      goal.currentAmount = Math.max(0, goal.currentAmount + diff);
+      goal.updatedAt = now;
+    }
+    persistStore(state);
+  }
+  return buildSummary(currentRange);
+}
+
 export function storeResetDecision(
   currentRange: '7d' | '30d' | '90d' = '30d',
 ): DashboardSummary {

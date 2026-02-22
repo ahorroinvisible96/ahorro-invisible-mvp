@@ -1,0 +1,116 @@
+/* ── Container ── */
+.wrapper {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.bgGradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+}
+
+.glowPurple {
+  position: absolute;
+  top: -30px;
+  right: -40px;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: rgba(168, 85, 247, 0.15);
+  filter: blur(40px);
+  pointer-events: none;
+}
+
+.borderLayer {
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  border: 1px solid rgba(51, 65, 85, 0.5);
+  box-shadow: 0 20px 40px -12px rgba(2, 6, 23, 0.6);
+  pointer-events: none;
+}
+
+.content {
+  position: relative;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ── Header ── */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.iconWrap {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #a855f7, #2563eb);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.headerLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(148, 163, 184, 0.8);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ── Fila de filtro ── */
+.filterRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.filterLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(100, 116, 139, 0.8);
+  min-width: 64px;
+  flex-shrink: 0;
+}
+
+/* ── Chips ── */
+.chip {
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(51, 65, 85, 0.6);
+  background: rgba(30, 41, 59, 0.5);
+  color: rgba(148, 163, 184, 0.7);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 180ms ease;
+  white-space: nowrap;
+}
+
+.chip:hover {
+  border-color: rgba(96, 165, 250, 0.4);
+  color: #cbd5e1;
+  background: rgba(30, 41, 59, 0.8);
+}
+
+.chipActive {
+  border-color: rgba(96, 165, 250, 0.6);
+  background: rgba(37, 99, 235, 0.2);
+  color: #93c5fd;
+  font-weight: 700;
+}
+
+.chipActive:hover {
+  background: rgba(37, 99, 235, 0.3);
+}
