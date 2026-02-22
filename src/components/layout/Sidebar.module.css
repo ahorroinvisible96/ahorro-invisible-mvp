@@ -1,182 +1,258 @@
-/* 
- * Estilos para el componente Sidebar
- * Basado en la imagen de referencia del dashboard
- */
-
+/* ── Sidebar principal ── */
 .sidebar {
-  width: var(--sidebar-width);
+  width: 220px;
   height: 100vh;
-  background: var(--gradient-sidebar);
-  color: var(--color-text-inverted);
+  background: linear-gradient(180deg, #0a0f1e 0%, #0d1526 60%, #0a0f1e 100%);
+  border-right: 1px solid rgba(51, 65, 85, 0.4);
   display: flex;
   flex-direction: column;
   position: fixed;
   left: 0;
   top: 0;
-  z-index: var(--z-index-fixed);
+  z-index: 50;
+  box-shadow: 4px 0 24px rgba(2, 6, 23, 0.5);
 }
 
+/* ── Logo ── */
 .logo {
-  padding: var(--spacing-6);
   display: flex;
   align-items: center;
-  gap: var(--spacing-3);
+  gap: 10px;
+  padding: 20px 16px 16px;
 }
 
-.logoIcon {
-  width: var(--spacing-11);
-  height: var(--spacing-11);
-  background-color: var(--color-primary-500);
-  border-radius: var(--border-radius-xl);
+.logoMark {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #a855f7, #2563eb);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--shadow-blue-lg);
+  color: #fff;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.35);
 }
 
-.logoText {
+.logoTexts {
   display: flex;
   flex-direction: column;
+  line-height: 1;
 }
 
-.logoTitle {
-  font-weight: var(--font-weight-semibold);
-  font-size: var(--font-size-base);
-  line-height: 1.2;
+.logoName {
+  font-size: 14px;
+  font-weight: 800;
+  color: #f1f5f9;
+  letter-spacing: -0.2px;
 }
 
-.logoSubtitle {
-  font-size: var(--font-size-xs);
-  letter-spacing: var(--letter-spacing-widest);
-  opacity: 0.8;
+.logoSub {
+  font-size: 9px;
+  font-weight: 700;
+  color: rgba(168, 85, 247, 0.7);
+  letter-spacing: 0.12em;
   text-transform: uppercase;
+  margin-top: 1px;
 }
 
-.menu {
-  padding: var(--spacing-3) var(--spacing-3) var(--spacing-6);
+/* ── Separador ── */
+.divider {
+  height: 1px;
+  background: rgba(51, 65, 85, 0.4);
+  margin: 0 16px;
+}
+
+/* ── Navegación ── */
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 14px 10px 10px;
   flex: 1;
-  display: flex;
-  flex-direction: column;
 }
 
-.menuHeader {
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-medium);
-  letter-spacing: var(--letter-spacing-wider);
+.navLabel {
+  font-size: 9px;
+  font-weight: 700;
+  color: rgba(100, 116, 139, 0.55);
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.6);
-  padding: 0 var(--spacing-3);
-  margin-bottom: var(--spacing-3);
+  padding: 0 8px;
+  margin-bottom: 6px;
 }
 
-.menuList {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-1);
-}
-
-.menuItem {
+/* ── Item de navegación (link y button) ── */
+.navItem {
   display: flex;
   align-items: center;
-  padding: var(--spacing-2) var(--spacing-3);
-  border-radius: var(--border-radius-lg);
-  color: rgba(255, 255, 255, 0.8);
-  transition: all var(--transition-fast) var(--transition-ease);
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  color: rgba(148, 163, 184, 0.75);
+  font-size: 13px;
+  font-weight: 500;
   text-decoration: none;
-}
-
-.menuItem:hover {
-  background-color: rgba(255, 255, 255, 0.05);
-  color: var(--color-text-inverted);
-}
-
-.menuItemActive {
-  background-color: var(--color-primary-500);
-  color: var(--color-text-inverted);
-  box-shadow: var(--shadow-inner);
-}
-
-.menuIcon {
-  width: var(--spacing-9);
-  height: var(--spacing-9);
-  display: grid;
-  place-items: center;
-  border-radius: var(--border-radius-lg);
-  margin-right: var(--spacing-3);
-}
-
-.menuIconActive {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-.menuLabel {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-}
-
-.menuChevron {
-  margin-left: auto;
-  opacity: 0.9;
-}
-
-.user {
-  margin-top: auto;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding: var(--spacing-4);
-}
-
-.userInfo {
-  display: flex;
-  align-items: center;
-  padding: var(--spacing-4);
-}
-
-.userAvatar {
-  width: var(--spacing-8);
-  height: var(--spacing-8);
-  border-radius: 50%;
-  background-color: var(--color-primary-500);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: var(--font-weight-medium);
-}
-
-.userName {
-  margin-left: var(--spacing-3);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-}
-
-.menuItemBtn {
-  width: 100%;
-  background: transparent;
-  border: none;
+  transition: all 160ms ease;
+  position: relative;
   cursor: pointer;
+  border: none;
+  background: transparent;
+  width: 100%;
   text-align: left;
   font-family: inherit;
 }
 
-.logoutButton {
-  width: 100%;
-  text-align: left;
-  padding: var(--spacing-2) var(--spacing-3);
-  color: rgba(255, 255, 255, 0.55);
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-2);
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  transition: all var(--transition-fast) var(--transition-ease);
-  font-size: var(--font-size-xs);
-  border-radius: var(--border-radius-lg);
+.navItem:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #e2e8f0;
 }
 
-.logoutButton:hover {
-  background-color: rgba(255, 255, 255, 0.05);
-  color: var(--color-text-inverted);
+/* ── Item activo ── */
+.navItemActive {
+  background: rgba(168, 85, 247, 0.12);
+  color: #f1f5f9;
+  font-weight: 600;
+}
+
+.navItemActive:hover {
+  background: rgba(168, 85, 247, 0.16);
+}
+
+/* ── Icono del item ── */
+.navIcon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(51, 65, 85, 0.3);
+  color: rgba(100, 116, 139, 0.8);
+  flex-shrink: 0;
+  transition: all 160ms ease;
+}
+
+.navItem:hover .navIcon {
+  background: rgba(51, 65, 85, 0.5);
+  color: #94a3b8;
+}
+
+.navIconActive {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.3), rgba(37, 99, 235, 0.3));
+  color: #c084fc;
+}
+
+/* ── Pip activo (punto derecho) ── */
+.activePip {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #a855f7;
+  margin-left: auto;
+  box-shadow: 0 0 6px rgba(168, 85, 247, 0.7);
+  flex-shrink: 0;
+}
+
+/* ── Botón Decisión Diaria (especial) ── */
+.navItemDailyBtn {
+  background: rgba(168, 85, 247, 0.08);
+  border: 1px solid rgba(168, 85, 247, 0.2);
+  color: #c084fc;
+  font-weight: 600;
+}
+
+.navItemDailyBtn:hover {
+  background: rgba(168, 85, 247, 0.16);
+  border-color: rgba(168, 85, 247, 0.35);
+  color: #d8b4fe;
+}
+
+.navIconDaily {
+  background: rgba(168, 85, 247, 0.2);
+  color: #c084fc;
+}
+
+.navItemDailyBtn:hover .navIconDaily {
+  background: rgba(168, 85, 247, 0.3);
+  color: #d8b4fe;
+}
+
+/* ── Spacer ── */
+.spacer {
+  flex: 1;
+}
+
+/* ── Footer usuario ── */
+.footer {
+  padding-bottom: 12px;
+}
+
+.userRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  margin: 8px 8px 0;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid rgba(51, 65, 85, 0.35);
+}
+
+.avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #a855f7, #2563eb);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.userTexts {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.userName {
+  font-size: 12px;
+  font-weight: 700;
+  color: #e2e8f0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.userRole {
+  font-size: 10px;
+  color: rgba(100, 116, 139, 0.65);
+  line-height: 1.2;
+}
+
+.logoutBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: transparent;
+  border: 1px solid rgba(51, 65, 85, 0.4);
+  color: rgba(100, 116, 139, 0.6);
+  cursor: pointer;
+  transition: all 160ms ease;
+  flex-shrink: 0;
+}
+
+.logoutBtn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #f87171;
 }
