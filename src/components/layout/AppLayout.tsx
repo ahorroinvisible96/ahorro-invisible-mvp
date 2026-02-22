@@ -6,25 +6,11 @@ import styles from './AppLayout.module.css';
 import { analytics } from '@/services/analytics';
 
 export interface AppLayoutProps {
-  /**
-   * Contenido principal
-   */
   children: React.ReactNode;
-  
-  /**
-   * Título de la página
-   */
   title?: React.ReactNode;
-  
-  /**
-   * Subtítulo de la página
-   */
   subtitle?: React.ReactNode;
-  
-  /**
-   * Mostrar patrón de fondo
-   */
   withPattern?: boolean;
+  onOpenDailyDecision?: () => void;
 }
 
 export const AppLayout: React.FC<AppLayoutProps> = ({
@@ -32,6 +18,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   title,
   subtitle,
   withPattern = true,
+  onOpenDailyDecision,
 }) => {
   const router = useRouter();
   const [userName, setUserName] = useState('');
@@ -74,6 +61,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
       <Sidebar 
         userName={userName}
         onLogout={handleLogout}
+        onOpenDailyDecision={onOpenDailyDecision}
       />
       <MainContent
         title={title}

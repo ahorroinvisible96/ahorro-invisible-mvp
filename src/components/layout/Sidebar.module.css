@@ -151,6 +151,15 @@
   font-weight: var(--font-weight-medium);
 }
 
+.menuItemBtn {
+  width: 100%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+
 .logoutButton {
   width: 100%;
   text-align: left;

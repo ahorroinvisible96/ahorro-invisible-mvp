@@ -63,17 +63,18 @@ interface MenuItem {
 interface SidebarProps {
   userName?: string;
   onLogout?: () => void;
+  onOpenDailyDecision?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ 
   userName = 'Usuario', 
-  onLogout 
+  onLogout,
+  onOpenDailyDecision,
 }) => {
   const pathname = usePathname();
   
   const menuItems: MenuItem[] = [
     { href: "/dashboard", label: "Dashboard", icon: HomeIcon },
-    { href: "/daily", label: "Decisión Diaria", icon: BoltIcon },
     { href: "/profile", label: "Perfil", icon: UserIcon },
     { href: "/history", label: "Historial", icon: ClockIcon },
     { href: "/settings", label: "Ajustes", icon: GearIcon },
@@ -109,6 +110,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
         
         <nav className={styles.menuList}>
+          {/* Decisión Diaria — abre modal en vez de navegar */}
+          <button
+            className={`${styles.menuItem} ${styles.menuItemBtn}`}
+            onClick={onOpenDailyDecision}
+          >
+            <span className={styles.menuIcon}>
+              <BoltIcon className="h-5 w-5" />
+            </span>
+            <span className={styles.menuLabel}>Decisión Diaria</span>
+          </button>
+
           {menuItems.map((item) => {
             const active = isActive(item.href);
             
