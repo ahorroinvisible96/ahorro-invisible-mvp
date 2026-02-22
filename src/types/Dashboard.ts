@@ -56,4 +56,6 @@ export type DashboardSummary = {
   intensity: 'low' | 'medium' | 'high' | 'unknown';
   avgMonthlySavings: number;
   estimatedMonthsRemaining: number | null;
+  streak: number;
+  totalSaved: number;
 };

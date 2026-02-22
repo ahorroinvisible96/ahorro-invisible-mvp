@@ -115,6 +115,21 @@ function persistStore(state: StoreState): void {
 }
 
 // ─── Lógica interna ───────────────────────────────────────────────────────────
+function computeStreak(decisions: DailyDecision[]): number {
+  if (decisions.length === 0) return 0;
+  const today = new Date().toISOString().split('T')[0];
+  let streak = 0;
+  let cursor = new Date(today);
+  while (true) {
+    const dateStr = cursor.toISOString().split('T')[0];
+    const found = decisions.some((d) => d.date === dateStr);
+    if (!found) break;
+    streak++;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return streak;
+}
+
 function computeIntensity(decisions: DailyDecision[]): 'low' | 'medium' | 'high' | 'unknown' {
   const cutoff = new Date(Date.now() - 7 * 86_400_000).toISOString().split('T')[0];
   const recent = decisions.filter((d) => d.date >= cutoff);
@@ -173,6 +188,9 @@ export function buildSummary(range: '7d' | '30d' | '90d' = '30d'): DashboardSumm
     }
   }
 
+  const totalSaved = state.decisions.reduce((s, d) => s + d.deltaAmount, 0);
+  const streak = computeStreak(state.decisions);
+
   return {
     userName: state.userName,
     systemActive: true,
@@ -192,6 +210,8 @@ export function buildSummary(range: '7d' | '30d' | '90d' = '30d'): DashboardSumm
     intensity: computeIntensity(state.decisions),
     avgMonthlySavings,
     estimatedMonthsRemaining,
+    streak,
+    totalSaved,
   };
 }
 
@@ -297,6 +317,54 @@ export function storeUpdateUserName(
   return buildSummary(currentRange);
 }
 
+export function storeResetDecision(
+  currentRange: '7d' | '30d' | '90d' = '30d',
+): DashboardSummary {
+  const state = loadStore();
+  const today = new Date().toISOString().split('T')[0];
+  const now = new Date().toISOString();
+  const todayDec = state.decisions.find((d) => d.date === today);
+  if (todayDec) {
+    const goal = state.goals.find((g) => g.id === todayDec.goalId);
+    if (goal) {
+      goal.currentAmount = Math.max(0, goal.currentAmount - todayDec.deltaAmount);
+      goal.updatedAt = now;
+    }
+    state.decisions = state.decisions.filter((d) => d.date !== today);
+    persistStore(state);
+  }
+  return buildSummary(currentRange);
+}
+
+export function storeAddExtraSaving(
+  name: string,
+  amount: number,
+  goalId: string,
+  currentRange: '7d' | '30d' | '90d' = '30d',
+): DashboardSummary {
+  const state = loadStore();
+  const today = new Date().toISOString().split('T')[0];
+  const now = new Date().toISOString();
+  state.decisions.push({
+    id: `extra_${Date.now()}`,
+    date: today,
+    questionId: 'extra_saving',
+    answerKey: name,
+    goalId,
+    deltaAmount: amount,
+    monthlyProjection: 0,
+    yearlyProjection: 0,
+    createdAt: now,
+  });
+  const goal = state.goals.find((g) => g.id === goalId);
+  if (goal) {
+    goal.currentAmount += amount;
+    goal.updatedAt = now;
+  }
+  persistStore(state);
+  return buildSummary(currentRange);
+}
+
 export function storeResetAllData(): void {
   if (typeof window === 'undefined') return;
   try {
@@ -344,6 +412,7 @@ export function storeSubmitDecision(
   answerKey: string,
   goalId: string,
   currentRange: '7d' | '30d' | '90d' = '30d',
+  customAmount?: number,
 ): DashboardSummary {
   const state = loadStore();
   const today = new Date().toISOString().split('T')[0];
@@ -361,7 +430,8 @@ export function storeSubmitDecision(
   }
 
   const multiplier = incomeMultiplier(state.incomeRange);
-  const effectiveDelta = Math.round(rule.immediateDelta * multiplier * 100) / 100;
+  const baseDelta = customAmount != null && customAmount > 0 ? customAmount : rule.immediateDelta;
+  const effectiveDelta = Math.round(baseDelta * multiplier * 100) / 100;
   const effectiveMonthly = Math.round(rule.monthlyProjection * multiplier * 100) / 100;
   const effectiveYearly = Math.round(rule.yearlyProjection * multiplier * 100) / 100;
 

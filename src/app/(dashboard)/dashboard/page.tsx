@@ -154,6 +154,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const [showCreateGoal, setShowCreateGoal] = useState(false);
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
+  const [showExtraSaving, setShowExtraSaving] = useState(false);
   const {
     summary,
     loading,
@@ -165,6 +166,8 @@ export default function DashboardPage() {
     archiveGoal,
     setPrimaryGoal,
     submitDecision,
+    resetDecision,
+    addExtraSaving,
   } = useDashboardSummary();
 
   useEffect(() => {
@@ -261,18 +264,29 @@ export default function DashboardPage() {
           <PrimaryGoalHeroWidget
             goal={summary.primaryGoal}
             estimatedMonthsRemaining={summary.estimatedMonthsRemaining}
+            dailyCompleted={summary.daily.status === 'completed'}
             onCreateGoal={handleCreateGoal}
             onOpenGoal={(id) => router.push(`/goals/${id}`)}
+            onGoToDailyDecision={() => {
+              const el = document.getElementById('daily-decision-widget');
+              el?.scrollIntoView({ behavior: 'smooth' });
+            }}
+            onAddExtraSaving={() => setShowExtraSaving(true)}
+            onGoToHistory={() => router.push('/history')}
           />
 
-          <DailyDecisionWidget
-            daily={summary.daily}
-            primaryGoal={summary.primaryGoal}
-            allGoals={activeGoals}
-            onSubmitDecision={submitDecision}
-            onGoToImpact={(id) => router.push(`/impact/${id}`)}
-            onCreateGoal={handleCreateGoal}
-          />
+          <div id="daily-decision-widget">
+            <DailyDecisionWidget
+              daily={summary.daily}
+              primaryGoal={summary.primaryGoal}
+              allGoals={activeGoals}
+              onSubmitDecision={submitDecision}
+              onGoToImpact={(id) => router.push(`/impact/${id}`)}
+              onCreateGoal={handleCreateGoal}
+              onResetDecision={resetDecision}
+              onAddExtraSaving={addExtraSaving}
+            />
+          </div>
 
           <SavingsEvolutionWidget
             evolution={summary.savingsEvolution}
@@ -311,6 +325,8 @@ export default function DashboardPage() {
         <div className={styles.sideCol}>
           <MotivationCardWidget
             intensity={summary.intensity}
+            streak={summary.streak ?? 0}
+            totalSaved={summary.totalSaved ?? 0}
             onAdjustRules={() => router.push('/settings')}
           />
         </div>

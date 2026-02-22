@@ -11,6 +11,8 @@ import {
   storeArchiveGoal,
   storeSetPrimaryGoal,
   storeSubmitDecision,
+  storeResetDecision,
+  storeAddExtraSaving,
 } from '@/services/dashboardStore';
 
 type CreateGoalInput = {
@@ -36,7 +38,9 @@ type UseDashboardSummaryReturn = {
   updateGoal: (goalId: string, patch: UpdateGoalInput) => void;
   archiveGoal: (goalId: string) => void;
   setPrimaryGoal: (goalId: string) => void;
-  submitDecision: (questionId: string, answerKey: string, goalId: string) => void;
+  submitDecision: (questionId: string, answerKey: string, goalId: string, customAmount?: number) => void;
+  resetDecision: () => void;
+  addExtraSaving: (saving: { name: string; amount: number; goalId: string }) => void;
 };
 
 export function useDashboardSummary(): UseDashboardSummaryReturn {
@@ -83,8 +87,16 @@ export function useDashboardSummary(): UseDashboardSummaryReturn {
     setSummary(storeSetPrimaryGoal(goalId, range));
   }, [range]);
 
-  const submitDecision = useCallback((questionId: string, answerKey: string, goalId: string) => {
-    setSummary(storeSubmitDecision(questionId, answerKey, goalId, range));
+  const submitDecision = useCallback((questionId: string, answerKey: string, goalId: string, customAmount?: number) => {
+    setSummary(storeSubmitDecision(questionId, answerKey, goalId, range, customAmount));
+  }, [range]);
+
+  const resetDecision = useCallback(() => {
+    setSummary(storeResetDecision(range));
+  }, [range]);
+
+  const addExtraSaving = useCallback((saving: { name: string; amount: number; goalId: string }) => {
+    setSummary(storeAddExtraSaving(saving.name, saving.amount, saving.goalId, range));
   }, [range]);
 
   return {
@@ -101,5 +113,7 @@ export function useDashboardSummary(): UseDashboardSummaryReturn {
     archiveGoal,
     setPrimaryGoal,
     submitDecision,
+    resetDecision,
+    addExtraSaving,
   };
 }

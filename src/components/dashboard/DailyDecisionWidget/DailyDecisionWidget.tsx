@@ -3,8 +3,95 @@
 import React, { useState, useEffect } from 'react';
 import { analytics } from '@/services/analytics';
 import { getTodayQuestion, DAILY_DECISION_RULES } from '@/services/dashboardStore';
-import type { DailyDecisionWidgetProps } from './DailyDecisionWidget.types';
+import type { DailyDecisionWidgetProps, ExtraSaving } from './DailyDecisionWidget.types';
 import styles from './DailyDecisionWidget.module.css';
+
+// ── Modal de ahorro extra ────────────────────────────────────────────────────
+function ExtraSavingModal({
+  allGoals,
+  primaryGoal,
+  onSave,
+  onClose,
+}: {
+  allGoals: { id: string; title: string }[];
+  primaryGoal: { id: string } | null;
+  onSave: (s: ExtraSaving) => void;
+  onClose: () => void;
+}) {
+  const [name, setName] = useState('');
+  const [amount, setAmount] = useState('');
+  const [goalId, setGoalId] = useState(primaryGoal?.id ?? allGoals[0]?.id ?? '');
+  const [error, setError] = useState('');
+
+  function handleSave() {
+    setError('');
+    if (!name.trim()) { setError('Escribe un nombre para el ahorro.'); return; }
+    const amt = Number(amount);
+    if (!amount || isNaN(amt) || amt <= 0) { setError('Introduce una cantidad válida.'); return; }
+    if (!goalId) { setError('Selecciona un objetivo.'); return; }
+    onSave({ name: name.trim(), amount: amt, goalId });
+  }
+
+  return (
+    <div className={styles.overlay} onClick={onClose}>
+      <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.modalHeader}>
+          <h3 className={styles.modalTitle}>Añadir ahorro extra</h3>
+          <button className={styles.modalClose} onClick={onClose}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+
+        {error && <p className={styles.modalError}>{error}</p>}
+
+        <div className={styles.modalField}>
+          <label className={styles.modalLabel}>Nombre del ahorro</label>
+          <input
+            className={styles.modalInput}
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Ej: Ahorro extra café"
+            autoFocus
+          />
+        </div>
+
+        <div className={styles.modalField}>
+          <label className={styles.modalLabel}>Cantidad (€)</label>
+          <input
+            className={styles.modalInput}
+            type="number"
+            min="0.01"
+            step="0.01"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="0"
+          />
+        </div>
+
+        {allGoals.length > 0 && (
+          <div className={styles.modalField}>
+            <label className={styles.modalLabel}>Asignar a objetivo</label>
+            <select
+              className={styles.modalSelect}
+              value={goalId}
+              onChange={(e) => setGoalId(e.target.value)}
+            >
+              {allGoals.map((g) => (
+                <option key={g.id} value={g.id}>{g.title}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        <div className={styles.modalFooter}>
+          <button className={styles.btnCancel} onClick={onClose}>Cancelar</button>
+          <button className={styles.btnSave} onClick={handleSave}>Guardar ahorro</button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function CoffeeIcon() {
   return (
@@ -44,6 +131,8 @@ export function DailyDecisionWidget({
   onSubmitDecision,
   onGoToImpact,
   onCreateGoal,
+  onResetDecision,
+  onAddExtraSaving,
 }: DailyDecisionWidgetProps): React.ReactElement {
   const activeGoals = allGoals.filter((g) => !g.archived);
   const todayQuestion = getTodayQuestion();
@@ -54,6 +143,10 @@ export function DailyDecisionWidget({
   );
   const [submitting, setSubmitting] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [showExtraModal, setShowExtraModal] = useState(false);
+  const [useCustomAmount, setUseCustomAmount] = useState(false);
+  const [customAmount, setCustomAmount] = useState('');
 
   useEffect(() => {
     analytics.dailyCtaCardViewed(daily.status);
@@ -89,23 +182,78 @@ export function DailyDecisionWidget({
   // ── Estado: completada hoy ───────────────────────────────────────────────
   if (daily.status === 'completed') {
     return (
-      <div className={styles.wrapper}>
-        <div className={styles.blurBlue} />
-        <div className={styles.blurPurple} />
-        <div className={styles.card}>
-          <WidgetHeader completed />
-          <h2 className={styles.title}>¡Decisión tomada hoy!</h2>
-          <p className={styles.subtitle}>Ya registraste tu ahorro de hoy. Tu objetivo avanza.</p>
-          {daily.decisionId && (
-            <button
-              className={styles.btnOutline}
-              onClick={() => { analytics.dailyCtaClicked('completed', 'impact'); onGoToImpact(daily.decisionId!); }}
-            >
-              Ver impacto →
-            </button>
-          )}
+      <>
+        <div className={styles.wrapper}>
+          <div className={styles.blurBlue} />
+          <div className={styles.blurPurple} />
+          <div className={styles.card}>
+            <WidgetHeader completed />
+            <h2 className={styles.title}>¡Decisión tomada hoy!</h2>
+            <p className={styles.subtitle}>Ya registraste tu ahorro de hoy. Tu objetivo avanza.</p>
+
+            <div className={styles.completedActions}>
+              {daily.decisionId && (
+                <button
+                  className={styles.btnOutline}
+                  onClick={() => { analytics.dailyCtaClicked('completed', 'impact'); onGoToImpact(daily.decisionId!); }}
+                >
+                  Ver impacto →
+                </button>
+              )}
+              <button
+                className={styles.btnExtraSaving}
+                onClick={() => setShowExtraModal(true)}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                Añadir ahorro extra
+              </button>
+              {onResetDecision && (
+                <button
+                  className={styles.btnReset}
+                  onClick={() => setShowResetConfirm(true)}
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="1 4 1 10 7 10"/>
+                    <path d="M3.51 15a9 9 0 1 0 .49-3.5"/>
+                  </svg>
+                  Reiniciar decisión
+                </button>
+              )}
+            </div>
+          </div>
         </div>
-      </div>
+
+        {/* ── Modal confirmación reset ── */}
+        {showResetConfirm && (
+          <div className={styles.overlay} onClick={() => setShowResetConfirm(false)}>
+            <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
+              <div className={styles.modalHeader}>
+                <h3 className={styles.modalTitle}>¿Reiniciar decisión?</h3>
+                <button className={styles.modalClose} onClick={() => setShowResetConfirm(false)}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+              <p className={styles.modalText}>Se eliminará el ahorro registrado hoy y se revertirá el progreso del objetivo. Esta acción no se puede deshacer.</p>
+              <div className={styles.modalFooter}>
+                <button className={styles.btnCancel} onClick={() => setShowResetConfirm(false)}>Cancelar</button>
+                <button className={styles.btnDanger} onClick={() => { onResetDecision!(); setShowResetConfirm(false); }}>Sí, reiniciar</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Modal ahorro extra ── */}
+        {showExtraModal && (
+          <ExtraSavingModal
+            allGoals={activeGoals}
+            primaryGoal={primaryGoal}
+            onSave={(s) => { onAddExtraSaving?.(s); setShowExtraModal(false); }}
+            onClose={() => setShowExtraModal(false)}
+          />
+        )}
+      </>
     );
   }
 
@@ -113,6 +261,7 @@ export function DailyDecisionWidget({
   function handleConfirm() {
     if (!canConfirm) return;
     const goalId = isSavingAnswer ? selectedGoalId : (activeGoals[0]?.id ?? '');
+    const finalAmount = useCustomAmount && customAmount ? Number(customAmount) : undefined;
     setSubmitting(true);
     analytics.dailyAnswerSubmitted(
       daily.date,
@@ -121,7 +270,7 @@ export function DailyDecisionWidget({
       goalId,
       primaryGoal?.id === goalId,
     );
-    onSubmitDecision(todayQuestion.questionId, selectedAnswer!, goalId);
+    onSubmitDecision(todayQuestion.questionId, selectedAnswer!, goalId, finalAmount);
     setConfirmed(true);
     setTimeout(() => setSubmitting(false), 1800);
   }
@@ -189,9 +338,39 @@ export function DailyDecisionWidget({
         {/* ── Selector de objetivo inline: solo si la respuesta tiene ahorro ── */}
         {isSavingAnswer && (
           <div className={styles.goalSection}>
-            <p className={styles.goalSectionLabel}>
-              Destinar <span className={styles.deltaHighlight}>+{savingsDelta}€</span> a:
-            </p>
+            <div className={styles.goalSectionLabelRow}>
+              <p className={styles.goalSectionLabel}>
+                Destinar{' '}
+                {useCustomAmount && customAmount
+                  ? <span className={styles.deltaHighlight}>+{customAmount}€</span>
+                  : <span className={styles.deltaHighlight}>+{savingsDelta}€</span>
+                }{' '}a:
+              </p>
+              <button
+                className={styles.customAmountToggle}
+                onClick={() => { setUseCustomAmount(!useCustomAmount); setCustomAmount(''); }}
+                disabled={submitting || confirmed}
+              >
+                {useCustomAmount ? 'Usar precio sugerido' : 'Cambiar importe'}
+              </button>
+            </div>
+
+            {useCustomAmount && (
+              <div className={styles.customAmountRow}>
+                <input
+                  className={styles.customAmountInput}
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  value={customAmount}
+                  onChange={(e) => setCustomAmount(e.target.value)}
+                  placeholder={`${savingsDelta}`}
+                  disabled={submitting || confirmed}
+                />
+                <span className={styles.customAmountUnit}>€</span>
+              </div>
+            )}
+
 
             {activeGoals.length === 0 ? (
               /* Sin objetivos: CTA inline dentro del mismo widget */

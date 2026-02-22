@@ -28,8 +28,12 @@ function EmptyState({ onCreateGoal }: { onCreateGoal: () => void }): React.React
 export function PrimaryGoalHeroWidget({
   goal,
   estimatedMonthsRemaining,
+  dailyCompleted,
   onCreateGoal,
   onOpenGoal,
+  onGoToDailyDecision,
+  onAddExtraSaving,
+  onGoToHistory,
 }: PrimaryGoalHeroProps): React.ReactElement {
   const [mounted, setMounted] = useState(false);
 
@@ -119,15 +123,18 @@ export function PrimaryGoalHeroWidget({
         {/* Buttons */}
         <div className={styles.buttonsRow}>
           {!d.isCompleted ? (
-            <button className={styles.btnPrimary} onClick={() => onOpenGoal(goal.id)}>
-              Añadir Fondos
+            <button
+              className={styles.btnPrimary}
+              onClick={() => dailyCompleted ? onAddExtraSaving() : onGoToDailyDecision()}
+            >
+              {dailyCompleted ? 'Añadir Fondos' : 'Ir a Decisión Diaria'}
             </button>
           ) : (
             <button className={styles.btnPrimary} onClick={onCreateGoal}>
               Crear nueva meta
             </button>
           )}
-          <button className={styles.btnSecondary} onClick={() => onOpenGoal(goal.id)}>
+          <button className={styles.btnSecondary} onClick={onGoToHistory}>
             Ver Detalles
           </button>
         </div>
