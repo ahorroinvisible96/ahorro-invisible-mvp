@@ -130,151 +130,267 @@ export default function OnboardingPage() {
     }
   };
   
+  const STEP_META = [
+    { icon: '💰', label: 'INGRESOS',  question: '¿En qué rango están tus ingresos mensuales?' },
+    { icon: '🧠', label: 'PERFIL',    question: '¿Cómo describirías tu relación con el dinero?' },
+    { icon: '🎯', label: 'OBJETIVO',  question: '¿Qué tipo de objetivo te gustaría alcanzar primero?' },
+  ];
+
+  const STEP_OPTIONS = [
+    [
+      { value: 'below_1000', label: 'Menos de 1.000€',        sub: 'Ingresos hasta 1.000€/mes' },
+      { value: '1000_2000',  label: 'Entre 1.000€ y 2.000€', sub: 'Rango medio-bajo' },
+      { value: '2000_3500',  label: 'Entre 2.000€ y 3.500€', sub: 'Rango medio' },
+      { value: 'above_3500', label: 'Más de 3.500€',          sub: 'Rango medio-alto' },
+    ],
+    [
+      { value: 'reactive',  label: 'Reactiva',      sub: 'Gasto sin pensar mucho' },
+      { value: 'avoidant',  label: 'Evitativa',     sub: 'Prefiero no mirar mis finanzas' },
+      { value: 'anxious',   label: 'Ansiosa',        sub: 'Me preocupo constantemente' },
+      { value: 'planning',  label: 'Planificadora',  sub: 'Intento organizarme' },
+    ],
+    [
+      { value: 'travel',    label: 'Viaje',                  sub: 'Escapadas, aventuras, escapadas' },
+      { value: 'emergency', label: 'Fondo de emergencia',    sub: 'Colchón para imprevistos' },
+      { value: 'purchase',  label: 'Compra importante',      sub: 'Coche, tecnología, hogar...' },
+      { value: 'freedom',   label: 'Libertad financiera',    sub: 'Independencia económica' },
+    ],
+  ];
+
+  const currentValues = [incomeRange, moneyFeeling, goalType];
+  const currentSetters = [setIncomeRange, setMoneyFeeling, setGoalType];
+  const meta = STEP_META[step - 1];
+  const options = STEP_OPTIONS[step - 1];
+  const selected = currentValues[step - 1];
+  const setSelected = currentSetters[step - 1];
+
+  const isDisabled = !selected;
+  const pct = Math.round((step / 3) * 100);
+
   return (
-    <main className="min-h-screen bg-background flex flex-col items-center justify-center p-0">
-      <div className="w-full">
-        <div className="flex items-center gap-2 mb-8 px-4">
-          <div className="w-8 h-8 rounded-md bg-black flex items-center justify-center text-white font-bold">
-            A
-          </div>
-          <div className="font-semibold">
-            <div>Ahorro</div>
-            <div className="text-lg text-indigo-400">Invisible</div>
+    <main style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '24px 16px',
+      fontFamily: 'var(--font-geist-sans, Arial, sans-serif)',
+    }}>
+      {/* Glow decorativo */}
+      <div style={{
+        position: 'fixed', top: '20%', left: '50%', transform: 'translateX(-50%)',
+        width: 600, height: 400,
+        background: 'radial-gradient(ellipse, rgba(168,85,247,0.12) 0%, transparent 70%)',
+        pointerEvents: 'none',
+      }} />
+
+      <div style={{ width: '100%', maxWidth: 480, position: 'relative' }}>
+
+        {/* Logo */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 32 }}>
+          <div style={{
+            width: 36, height: 36, borderRadius: 10,
+            background: 'linear-gradient(135deg, #a855f7, #2563eb)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: '#fff', fontWeight: 800, fontSize: 18,
+            boxShadow: '0 4px 14px rgba(168,85,247,0.4)',
+          }}>A</div>
+          <div>
+            <span style={{ color: '#f1f5f9', fontWeight: 700, fontSize: 16 }}>Ahorro </span>
+            <span style={{ color: '#a855f7', fontWeight: 700, fontSize: 16 }}>Invisible</span>
           </div>
         </div>
-        
-        <Card variant="default" size="md" className="rounded-none md:rounded-xl">
-          <Card.Content>
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-text-secondary">Paso {step} de 3</span>
-                <span className="text-sm text-text-secondary">{Math.round((step / 3) * 100)}%</span>
+
+        {/* Card principal */}
+        <div style={{
+          position: 'relative',
+          borderRadius: 20,
+          background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+          border: '1px solid rgba(51,65,85,0.6)',
+          boxShadow: '0 25px 50px rgba(2,6,23,0.7)',
+          overflow: 'hidden',
+          padding: '28px 24px',
+        }}>
+          {/* Glow interior */}
+          <div style={{
+            position: 'absolute', top: -40, left: -40,
+            width: 200, height: 200,
+            background: 'radial-gradient(ellipse, rgba(168,85,247,0.1) 0%, transparent 70%)',
+            pointerEvents: 'none',
+          }} />
+
+          {/* Barra de progreso */}
+          <div style={{ marginBottom: 28 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                {[1, 2, 3].map((s) => (
+                  <div key={s} style={{
+                    width: s === step ? 28 : 8,
+                    height: 8,
+                    borderRadius: 999,
+                    background: s < step
+                      ? 'linear-gradient(90deg, #a855f7, #2563eb)'
+                      : s === step
+                        ? 'linear-gradient(90deg, #a855f7, #2563eb)'
+                        : 'rgba(51,65,85,0.6)',
+                    transition: 'all 300ms ease',
+                    boxShadow: s <= step ? '0 0 8px rgba(168,85,247,0.5)' : 'none',
+                  }} />
+                ))}
               </div>
-              <Progress 
-                value={(step / 3) * 100} 
-                className="mb-4" 
-                size="sm" 
-                color="blue" 
-              />
+              <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(148,163,184,0.6)', letterSpacing: '0.08em' }}>
+                {pct}% COMPLETADO
+              </span>
             </div>
-            
-            {/* Título general */}
-            <h1 className="text-xl font-semibold text-text-primary mb-1">
-              Un minuto y empezamos
-            </h1>
-            <p className="text-text-secondary text-sm mb-6">
-              Solo 3 preguntas para ajustar tu experiencia.
-            </p>
-            
-            {/* Paso 1: Rango de ingresos */}
-            {step === 1 && (
-              <>
-                <div className="mb-6">
-                  <h2 className="text-lg font-medium text-text-primary mb-3">
-                    ¿En qué rango están tus ingresos mensuales?
-                  </h2>
-                  
-                  <div className="space-y-2">
-                    {[
-                      { value: "below_1000", label: "Menos de 1.000€" },
-                      { value: "1000_2000", label: "Entre 1.000€ y 2.000€" },
-                      { value: "2000_3500", label: "Entre 2.000€ y 3.500€" },
-                      { value: "above_3500", label: "Más de 3.500€" }
-                    ].map((option) => (
-                      <OptionButton
-                        key={option.value}
-                        value={option.value}
-                        label={option.label}
-                        selected={incomeRange === option.value}
-                        onClick={() => setIncomeRange(option.value)}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </>
-            )}
-            
-            {/* Paso 2: Relación con el dinero */}
-            {step === 2 && (
-              <>
-                <div className="mb-6">
-                  <h2 className="text-lg font-medium text-text-primary mb-3">
-                    ¿Cómo describirías tu relación con el dinero?
-                  </h2>
-                  
-                  <div className="space-y-2">
-                    {[
-                      { value: "reactive", label: "Reactiva: gasto sin pensar mucho" },
-                      { value: "avoidant", label: "Evitativa: prefiero no mirar mis finanzas" },
-                      { value: "anxious", label: "Ansiosa: me preocupo constantemente" },
-                      { value: "planning", label: "Planificadora: intento organizarme" }
-                    ].map((option) => (
-                      <OptionButton
-                        key={option.value}
-                        value={option.value}
-                        label={option.label}
-                        selected={moneyFeeling === option.value}
-                        onClick={() => setMoneyFeeling(option.value)}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </>
-            )}
-            
-            {/* Paso 3: Tipo de objetivo */}
-            {step === 3 && (
-              <>
-                <div className="mb-6">
-                  <h2 className="text-lg font-medium text-text-primary mb-3">
-                    ¿Qué tipo de objetivo te gustaría alcanzar primero?
-                  </h2>
-                  
-                  <div className="space-y-2">
-                    {[
-                      { value: "travel", label: "Viaje" },
-                      { value: "emergency", label: "Fondo de emergencia" },
-                      { value: "purchase", label: "Compra importante" },
-                      { value: "freedom", label: "Libertad financiera" }
-                    ].map((option) => (
-                      <OptionButton
-                        key={option.value}
-                        value={option.value}
-                        label={option.label}
-                        selected={goalType === option.value}
-                        onClick={() => setGoalType(option.value)}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </>
-            )}
-            
-            {/* Botones de navegación */}
-            <div className="flex space-x-3">
-              {step > 1 && (
-                <Button
-                  onClick={handleBack}
-                  variant="outline"
-                  size="md"
-                  className="w-1/3"
+            <div style={{
+              height: 3, borderRadius: 999,
+              background: 'rgba(51,65,85,0.5)',
+              overflow: 'hidden',
+            }}>
+              <div style={{
+                width: `${pct}%`,
+                height: '100%',
+                background: 'linear-gradient(90deg, #a855f7, #2563eb)',
+                borderRadius: 999,
+                transition: 'width 400ms ease',
+                boxShadow: '0 0 8px rgba(168,85,247,0.6)',
+              }} />
+            </div>
+          </div>
+
+          {/* Header del paso */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+            <div style={{
+              width: 34, height: 34, borderRadius: 10,
+              background: 'linear-gradient(135deg, #a855f7, #2563eb)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 16, flexShrink: 0,
+              boxShadow: '0 4px 14px rgba(168,85,247,0.3)',
+            }}>{meta.icon}</div>
+            <span style={{
+              fontSize: 11, fontWeight: 700,
+              color: 'rgba(148,163,184,0.7)',
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+            }}>PASO {step} DE 3 · {meta.label}</span>
+          </div>
+
+          <h2 style={{
+            fontSize: 18, fontWeight: 700,
+            color: '#f1f5f9', margin: '0 0 24px',
+            lineHeight: 1.3,
+          }}>{meta.question}</h2>
+
+          {/* Opciones */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 28 }}>
+            {options.map((opt) => {
+              const isActive = selected === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  onClick={() => setSelected(opt.value)}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    width: '100%', padding: '14px 16px',
+                    borderRadius: 12,
+                    background: isActive
+                      ? 'linear-gradient(135deg, rgba(168,85,247,0.2), rgba(37,99,235,0.2))'
+                      : 'rgba(15,23,42,0.5)',
+                    border: isActive
+                      ? '1px solid rgba(168,85,247,0.55)'
+                      : '1px solid rgba(51,65,85,0.5)',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    transition: 'all 180ms ease',
+                    boxShadow: isActive ? '0 0 16px rgba(168,85,247,0.15)' : 'none',
+                    fontFamily: 'inherit',
+                  }}
                 >
-                  Atrás
-                </Button>
-              )}
-              
-              <Button
-                onClick={handleNext}
-                variant="primary"
-                size="md"
-                className={step > 1 ? 'w-2/3' : 'w-full'}
-                disabled={step === 1 && !incomeRange || step === 2 && !moneyFeeling || step === 3 && !goalType}
+                  <div>
+                    <div style={{
+                      fontSize: 14, fontWeight: 600,
+                      color: isActive ? '#f1f5f9' : '#cbd5e1',
+                      marginBottom: 2,
+                    }}>{opt.label}</div>
+                    <div style={{
+                      fontSize: 12,
+                      color: isActive ? 'rgba(196,181,253,0.8)' : 'rgba(100,116,139,0.7)',
+                    }}>{opt.sub}</div>
+                  </div>
+                  <div style={{
+                    width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
+                    border: isActive ? '2px solid #a855f7' : '2px solid rgba(51,65,85,0.7)',
+                    background: isActive ? 'linear-gradient(135deg, #a855f7, #2563eb)' : 'transparent',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    transition: 'all 180ms ease',
+                    boxShadow: isActive ? '0 0 8px rgba(168,85,247,0.5)' : 'none',
+                  }}>
+                    {isActive && (
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Botones navegación */}
+          <div style={{ display: 'flex', gap: 10 }}>
+            {step > 1 && (
+              <button
+                onClick={handleBack}
+                style={{
+                  flex: 1, padding: '12px 0',
+                  borderRadius: 10,
+                  background: 'rgba(15,23,42,0.5)',
+                  border: '1px solid rgba(51,65,85,0.5)',
+                  color: 'rgba(148,163,184,0.8)',
+                  fontSize: 14, fontWeight: 600,
+                  cursor: 'pointer', fontFamily: 'inherit',
+                  transition: 'all 180ms ease',
+                }}
               >
-                {step < 3 ? "Siguiente" : "Empezar"}
-              </Button>
-            </div>
-          </Card.Content>
-        </Card>
+                Atrás
+              </button>
+            )}
+            <button
+              onClick={handleNext}
+              disabled={isDisabled}
+              style={{
+                flex: step > 1 ? 2 : 1, padding: '12px 0',
+                borderRadius: 10,
+                background: isDisabled
+                  ? 'rgba(51,65,85,0.4)'
+                  : 'linear-gradient(90deg, #a855f7, #2563eb)',
+                border: 'none',
+                color: isDisabled ? 'rgba(100,116,139,0.6)' : '#fff',
+                fontSize: 14, fontWeight: 700,
+                cursor: isDisabled ? 'not-allowed' : 'pointer',
+                fontFamily: 'inherit',
+                transition: 'all 200ms ease',
+                boxShadow: isDisabled ? 'none' : '0 4px 14px rgba(168,85,247,0.35)',
+              }}
+            >
+              {step < 3 ? 'Siguiente →' : 'Empezar 🚀'}
+            </button>
+          </div>
+
+        </div>
+
+        {/* Saludo personalizado */}
+        {userName && (
+          <p style={{
+            textAlign: 'center', marginTop: 20,
+            fontSize: 13, color: 'rgba(148,163,184,0.5)',
+          }}>
+            Configurando tu experiencia, {userName} ✨
+          </p>
+        )}
+
       </div>
     </main>
   );
