@@ -83,6 +83,7 @@ export function getTodayQuestion(): DailyQuestion {
 // ─── Forma interna del store ──────────────────────────────────────────────────
 type StoreState = {
   userName: string;
+  userEmail: string;
   incomeRange: IncomeRange | null;
   goals: Goal[];
   decisions: DailyDecision[];
@@ -90,6 +91,7 @@ type StoreState = {
 
 const SEED: StoreState = {
   userName: 'Usuario',
+  userEmail: '',
   incomeRange: null,
   goals: [],
   decisions: [],
@@ -100,9 +102,24 @@ function loadStore(): StoreState {
   if (typeof window === 'undefined') return structuredClone(SEED);
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw) as StoreState;
+    if (raw) {
+      const parsed = JSON.parse(raw) as StoreState;
+      // Migración: si el nombre aún es el seed por defecto, intentar leer del registro
+      if (!parsed.userName || parsed.userName === 'Usuario') {
+        const regName = localStorage.getItem('userName');
+        if (regName) parsed.userName = regName;
+      }
+      // Migración: asegurar campo userEmail
+      if (!parsed.userEmail) {
+        parsed.userEmail = localStorage.getItem('userEmail') ?? '';
+      }
+      return parsed;
+    }
   } catch { /* fallthrough */ }
+  // Primer arranque: leer datos del registro
   const state = structuredClone(SEED);
+  state.userName = localStorage.getItem('userName') ?? 'Usuario';
+  state.userEmail = localStorage.getItem('userEmail') ?? '';
   persistStore(state);
   return state;
 }
@@ -193,6 +210,7 @@ export function buildSummary(range: '7d' | '30d' | '90d' = '30d'): DashboardSumm
 
   return {
     userName: state.userName,
+    userEmail: state.userEmail,
     systemActive: true,
     incomeRange: state.incomeRange,
     goals: state.goals,
@@ -313,8 +331,23 @@ export function storeUpdateUserName(
 ): DashboardSummary {
   const state = loadStore();
   state.userName = userName.trim() || state.userName;
+  // Mantener sincronizado el localStorage legacy
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('userName', state.userName);
+  }
   persistStore(state);
   return buildSummary(currentRange);
+}
+
+export function storeInitUser(
+  userName: string,
+  userEmail: string,
+): void {
+  if (typeof window === 'undefined') return;
+  const state = loadStore();
+  if (userName.trim()) state.userName = userName.trim();
+  if (userEmail.trim()) state.userEmail = userEmail.trim();
+  persistStore(state);
 }
 
 export function storeDeleteDecision(

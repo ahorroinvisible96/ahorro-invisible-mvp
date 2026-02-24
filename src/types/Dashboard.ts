@@ -43,6 +43,7 @@ export type SavingsEvolutionPoint = {
 
 export type DashboardSummary = {
   userName: string;
+  userEmail: string;
   systemActive: boolean;
   incomeRange: IncomeRange | null;
   goals: Goal[];

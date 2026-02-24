@@ -14,6 +14,7 @@ export function getMockDashboardSummary(range: '7d' | '30d' | '90d' = '30d'): Da
 
   return {
     userName: 'Javier',
+    userEmail: 'javier@example.com',
     systemActive: true,
     incomeRange: { min: 2000, max: 3500, currency: 'EUR' },
     primaryGoal: {

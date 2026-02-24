@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { analytics } from '@/services/analytics';
-import { storeResetAllData, storeExportData } from '@/services/dashboardStore';
+import { storeResetAllData, storeExportData, buildSummary } from '@/services/dashboardStore';
 import { SettingsMyDataWidget } from '@/components/settings/SettingsMyDataWidget/SettingsMyDataWidget';
 import { SettingsNotificationsWidget } from '@/components/settings/SettingsNotificationsWidget/SettingsNotificationsWidget';
 import { SettingsSessionWidget } from '@/components/settings/SettingsSessionWidget/SettingsSessionWidget';
@@ -14,11 +14,14 @@ import styles from './Settings.module.css';
 export default function SettingsPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [userEmail, setUserEmail] = useState('');
 
   useEffect(() => {
     analytics.setScreen('settings');
     const isAuth = localStorage.getItem('isAuthenticated');
     if (isAuth !== 'true') { router.replace('/signup'); return; }
+    const summary = buildSummary('30d');
+    setUserEmail(summary.userEmail);
     analytics.settingsViewed();
     setLoading(false);
   }, [router]);
@@ -94,7 +97,7 @@ export default function SettingsPage() {
         <SettingsNotificationsWidget />
 
         {/* Widget 3: Sesión */}
-        <SettingsSessionWidget onLogout={handleLogout} />
+        <SettingsSessionWidget email={userEmail} onLogout={handleLogout} />
 
         {/* Widget 4: Zona de peligro */}
         <SettingsDangerZoneWidget onResetAll={handleResetAll} />

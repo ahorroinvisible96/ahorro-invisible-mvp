@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/Button/Button";
 import { Progress } from "@/components/ui/Progress/Progress";
 import { OptionButton } from "@/components/ui/OptionButton";
 import { analytics } from "@/services/analytics";
+import { storeUpdateIncome, storeUpdateUserName } from "@/services/dashboardStore";
+import type { IncomeRange } from "@/types/Dashboard";
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -81,21 +83,39 @@ export default function OnboardingPage() {
     }
   };
   
+  // Convierte el string del selector de ingresos a IncomeRange { min, max, currency }
+  function incomeStringToRange(value: string): IncomeRange | null {
+    switch (value) {
+      case 'below_1000': return { min: 0,    max: 1000, currency: 'EUR' };
+      case '1000_2000':  return { min: 1000, max: 2000, currency: 'EUR' };
+      case '2000_3500':  return { min: 2000, max: 3500, currency: 'EUR' };
+      case 'above_3500': return { min: 3500, max: 6000, currency: 'EUR' };
+      default: return null;
+    }
+  }
+
   const handleComplete = () => {
     try {
       // Marcar onboarding como completado
       localStorage.setItem("hasCompletedOnboarding", "true");
       
-      // Inicializar datos básicos
+      // Persistir datos en el store (fuente única de verdad)
+      // 1. Asegurar que el nombre del registro esté en el store
+      const storedName = localStorage.getItem("userName");
+      if (storedName) storeUpdateUserName(storedName);
+
+      // 2. Convertir y persistir el rango de ingresos en el store
+      const incomeObj = incomeStringToRange(incomeRange);
+      if (incomeObj) storeUpdateIncome(incomeObj);
+
+      // 3. Guardar datos completos del onboarding para referencia
       const onboardingData = {
         incomeRange,
         moneyFeeling,
         goalType,
         completedAt: new Date().toISOString()
       };
-      
       localStorage.setItem("onboardingData", JSON.stringify(onboardingData));
-      localStorage.setItem("dailyDecisions", JSON.stringify([]));
       
       // Registrar evento de onboarding completado
       analytics.onboardingCompleted();

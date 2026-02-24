@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button/Button";
 import { Card } from "@/components/ui/Card/Card";
 import { FormInput } from "@/components/ui/FormInput";
 import { analytics } from "@/services/analytics";
+import { storeInitUser } from "@/services/dashboardStore";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -62,10 +63,13 @@ export default function SignupPage() {
     }
     
     try {
-      // Guardar datos del usuario en localStorage
+      // Guardar datos del usuario en localStorage (claves legacy)
       localStorage.setItem("userName", name);
       localStorage.setItem("userEmail", email);
       localStorage.setItem("isAuthenticated", "true");
+      
+      // Inicializar el store con nombre y email reales
+      storeInitUser(name.trim(), email.trim());
       
       // Registrar evento de signup exitoso
       analytics.signupSuccess();

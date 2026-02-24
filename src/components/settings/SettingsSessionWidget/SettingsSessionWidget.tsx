@@ -5,6 +5,7 @@ import type { SettingsSessionWidgetProps } from './SettingsSessionWidget.types';
 import styles from './SettingsSessionWidget.module.css';
 
 export function SettingsSessionWidget({
+  email,
   onLogout,
 }: SettingsSessionWidgetProps): React.ReactElement {
   return (
@@ -27,6 +28,7 @@ export function SettingsSessionWidget({
         <div className={styles.statusRow}>
           <span className={styles.statusDot} />
           <span className={styles.statusLabel}>Sesión activa</span>
+          {email && <span className={styles.statusEmail}>{email}</span>}
         </div>
 
         <button className={styles.logoutBtn} onClick={onLogout}>

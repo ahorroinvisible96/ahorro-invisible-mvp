@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { buildSummary } from '@/services/dashboardStore';
 import Sidebar from './Sidebar';
 import BottomNav from './BottomNav';
 import MainContent from './MainContent';
@@ -23,7 +24,11 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
 }) => {
   const router = useRouter();
   const [userName, setUserName] = useState('');
-  
+
+  const loadUserName = useCallback(() => {
+    setUserName(buildSummary('30d').userName);
+  }, []);
+
   useEffect(() => {
     // Verificar autenticación
     const isAuthenticated = localStorage.getItem("isAuthenticated");
@@ -39,12 +44,9 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
       return;
     }
     
-    // Cargar nombre de usuario
-    const storedUserName = localStorage.getItem("userName");
-    if (storedUserName) {
-      setUserName(storedUserName);
-    }
-  }, [router]);
+    // Cargar nombre desde la fuente única de verdad (store)
+    loadUserName();
+  }, [router, loadUserName]);
 
   const handleLogout = () => {
     try {

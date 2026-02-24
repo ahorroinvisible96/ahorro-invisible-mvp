@@ -24,7 +24,7 @@ export default function ProfilePage() {
     if (isAuth !== 'true') { router.replace('/signup'); return; }
     const summary = buildSummary('30d');
     setUserName(summary.userName);
-    setEmail(localStorage.getItem('userEmail') ?? '');
+    setEmail(summary.userEmail);
     setIncomeRange(summary.incomeRange);
     analytics.profileViewed();
     setLoading(false);
