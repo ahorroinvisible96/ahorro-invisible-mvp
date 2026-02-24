@@ -343,7 +343,9 @@ export default function DashboardPage() {
       <HeaderStatusBarWidget
         userName={summary.userName}
         systemActive={summary.systemActive}
+        streak={summary.streak ?? 0}
         onOpenProfile={() => router.push('/profile')}
+        onOpenSettings={() => router.push('/settings')}
       />
 
       <div className={styles.grid}>
