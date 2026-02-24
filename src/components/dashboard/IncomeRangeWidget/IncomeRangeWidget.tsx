@@ -108,6 +108,7 @@ export function IncomeRangeWidget({
   const isConfigured = incomeRange !== null;
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [revealed, setRevealed] = useState(false);
   const [draftRange, setDraftRange] = useState<[number, number]>([
     incomeRange?.min ?? 2000,
     incomeRange?.max ?? 6000,
@@ -145,11 +146,6 @@ export function IncomeRangeWidget({
     setDraftRange([Math.min(draftRange[0], v), v]);
   }
 
-  // Porcentaje para la barra decorativa (rango respecto al máximo del slider)
-  const barPct = isConfigured
-    ? Math.round(((incomeRange!.max - incomeRange!.min) / SLIDER_MAX) * 100)
-    : 0;
-
   return (
     <>
       {/* ── Widget principal ── */}
@@ -178,10 +174,31 @@ export function IncomeRangeWidget({
 
               {isConfigured ? (
                 <>
-                  <div className={styles.rangeValue}>
-                    {formatCurrency(incomeRange!.min)} – {formatCurrency(incomeRange!.max)}
-                  </div>
-                  <div className={styles.rangeSubtext}>Rango mensual estimado</div>
+                  <button
+                    className={`${styles.rangeValueWrap} ${revealed ? styles.rangeValueRevealed : ''}`}
+                    onClick={() => setRevealed((v) => !v)}
+                    aria-label={revealed ? 'Ocultar ingresos' : 'Mostrar ingresos'}
+                    title={revealed ? 'Pulsa para ocultar' : 'Pulsa para ver'}
+                  >
+                    <div className={styles.rangeValue}>
+                      {formatCurrency(incomeRange!.min)} – {formatCurrency(incomeRange!.max)}
+                    </div>
+                    <span className={styles.revealHint}>
+                      {revealed ? (
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                          <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                          <line x1="1" y1="1" x2="23" y2="23"/>
+                        </svg>
+                      ) : (
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                          <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                      )}
+                    </span>
+                  </button>
+                  <div className={styles.rangeSubtext}>Rango mensual estimado · {revealed ? 'visible' : 'oculto'}</div>
                 </>
               ) : (
                 <div className={styles.unconfigured}>
@@ -209,13 +226,6 @@ export function IncomeRangeWidget({
             )}
           </button>
         </div>
-
-        {/* Barra de progreso decorativa */}
-        {isConfigured && (
-          <div className={styles.progressTrack}>
-            <div className={styles.progressFill} style={{ width: `${Math.max(10, barPct)}%` }} />
-          </div>
-        )}
       </div>
 
       {/* ── Modal de configuración ── */}

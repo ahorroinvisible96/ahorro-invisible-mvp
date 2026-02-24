@@ -13,7 +13,6 @@ import { SavingsEvolutionWidget } from '@/components/dashboard/SavingsEvolutionW
 import { MotivationCardWidget } from '@/components/dashboard/MotivationCardWidget';
 import { GoalsSectionWidget } from '@/components/dashboard/GoalsSectionWidget';
 import { GoalCardWidget } from '@/components/dashboard/GoalCardWidget';
-import { IncomeRangeWidget } from '@/components/dashboard/IncomeRangeWidget';
 import styles from './Dashboard.module.css';
 
 function EditGoalModal({
@@ -351,11 +350,6 @@ export default function DashboardPage() {
       <div className={styles.grid}>
         {/* Columna izquierda */}
         <div className={styles.mainCol}>
-          <IncomeRangeWidget
-            incomeRange={summary.incomeRange}
-            onSaveIncomeRange={updateIncome}
-          />
-
           <PrimaryGoalHeroWidget
             goal={summary.primaryGoal}
             estimatedMonthsRemaining={summary.estimatedMonthsRemaining}

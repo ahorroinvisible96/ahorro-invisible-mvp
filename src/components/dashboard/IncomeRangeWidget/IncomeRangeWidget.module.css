@@ -110,6 +110,18 @@
   color: #4ade80;
 }
 
+/* ── Blur/reveal wrapper ── */
+.rangeValueWrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  user-select: none;
+}
+
 .rangeValue {
   font-size: 22px;
   font-weight: 700;
@@ -117,6 +129,25 @@
   letter-spacing: -0.02em;
   line-height: 1.2;
   white-space: nowrap;
+  filter: blur(6px);
+  transition: filter 300ms ease;
+  pointer-events: none;
+}
+
+.rangeValueRevealed .rangeValue {
+  filter: blur(0);
+}
+
+.revealHint {
+  display: flex;
+  align-items: center;
+  color: rgba(148, 163, 184, 0.5);
+  flex-shrink: 0;
+  transition: color 200ms ease;
+}
+
+.rangeValueWrap:hover .revealHint {
+  color: rgba(148, 163, 184, 0.9);
 }
 
 .rangeSubtext {
@@ -188,26 +219,6 @@
 
 .actionBtn:hover .actionBtnIconEdit {
   transform: rotate(12deg);
-}
-
-/* ── Barra de progreso ── */
-.progressTrack {
-  position: relative;
-  height: 8px;
-  background: rgba(30, 41, 59, 0.8);
-  border-radius: 0 0 16px 16px;
-  overflow: hidden;
-  backdrop-filter: blur(4px);
-}
-
-.progressFill {
-  position: absolute;
-  inset-block: 0;
-  left: 0;
-  background: linear-gradient(90deg, #a855f7, #9333ea, #2563eb);
-  box-shadow: 0 0 12px rgba(168, 85, 247, 0.4);
-  border-radius: 0 4px 4px 0;
-  transition: width 500ms ease;
 }
 
 /* ── Overlay modal ── */
