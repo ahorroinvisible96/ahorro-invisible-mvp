@@ -421,6 +421,7 @@ export default function DashboardPage() {
             intensity={summary.intensity}
             streak={summary.streak ?? 0}
             totalSaved={summary.totalSaved ?? 0}
+            moneyFeeling={summary.moneyFeeling}
             onAdjustRules={() => router.push('/settings')}
           />
         </div>

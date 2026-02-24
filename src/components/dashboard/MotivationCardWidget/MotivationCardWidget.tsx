@@ -83,11 +83,20 @@ const COPY: Record<MotivationIntensity, { headline: string; sub: string }> = {
   unknown: { headline: 'Empieza tu racha hoy.', sub: 'Cada decisión te acerca a tu objetivo.' },
 };
 
+// Copy adicional según relación con el dinero del onboarding
+const MONEY_FEELING_HINT: Record<string, string> = {
+  reactive:  'Cada pausa antes de gastar es una victoria.',
+  avoidant:  'Mirar tus finanzas hoy es el primer paso.',
+  anxious:   'Un pequeño hábito reduce la ansiedad financiera.',
+  planning:  'Tu organización es tu mayor activo.',
+};
+
 // ── Componente ───────────────────────────────────────────────────────────────
 export function MotivationCardWidget({
   intensity,
   streak,
   totalSaved,
+  moneyFeeling,
   onAdjustRules,
 }: MotivationCardWidgetProps): React.ReactElement {
   useEffect(() => {
@@ -95,6 +104,7 @@ export function MotivationCardWidget({
   }, [intensity]);
 
   const { headline, sub } = COPY[intensity];
+  const feelingHint = moneyFeeling ? MONEY_FEELING_HINT[moneyFeeling] ?? null : null;
   const levelCfg = getLevel(totalSaved);
   const levelPct = getLevelProgress(totalSaved, levelCfg);
   const nextLevelCfg = LEVELS[LEVELS.indexOf(levelCfg) + 1] ?? null;
@@ -177,7 +187,7 @@ export function MotivationCardWidget({
 
         {/* ── Copy motivacional ── */}
         <p className={styles.headline}>{headline}</p>
-        <p className={styles.sub}>{sub}</p>
+        <p className={styles.sub}>{feelingHint ?? sub}</p>
 
         {/* ── Botón ajustar ── */}
         <button

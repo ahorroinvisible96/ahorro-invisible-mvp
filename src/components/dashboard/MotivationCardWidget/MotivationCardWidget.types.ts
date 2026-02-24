@@ -6,5 +6,6 @@ export type MotivationCardWidgetProps = {
   intensity: MotivationIntensity;
   streak: number;          // días consecutivos con decisión completada
   totalSaved: number;      // euros totales ahorrados
+  moneyFeeling?: string | null;
   onAdjustRules: () => void;
 };

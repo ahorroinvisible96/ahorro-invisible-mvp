@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button/Button";
 import { Progress } from "@/components/ui/Progress/Progress";
 import { OptionButton } from "@/components/ui/OptionButton";
 import { analytics } from "@/services/analytics";
-import { storeUpdateIncome, storeUpdateUserName } from "@/services/dashboardStore";
+import { storeUpdateIncome, storeUpdateUserName, storeUpdateMoneyFeeling } from "@/services/dashboardStore";
 import type { IncomeRange } from "@/types/Dashboard";
 
 export default function OnboardingPage() {
@@ -107,6 +107,9 @@ export default function OnboardingPage() {
       // 2. Convertir y persistir el rango de ingresos en el store
       const incomeObj = incomeStringToRange(incomeRange);
       if (incomeObj) storeUpdateIncome(incomeObj);
+
+      // 3. Persistir relación con el dinero en el store
+      if (moneyFeeling) storeUpdateMoneyFeeling(moneyFeeling);
 
       // 3. Guardar datos completos del onboarding para referencia
       const onboardingData = {

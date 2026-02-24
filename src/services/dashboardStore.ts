@@ -85,6 +85,7 @@ type StoreState = {
   userName: string;
   userEmail: string;
   incomeRange: IncomeRange | null;
+  moneyFeeling: string | null;
   goals: Goal[];
   decisions: DailyDecision[];
 };
@@ -93,6 +94,7 @@ const SEED: StoreState = {
   userName: 'Usuario',
   userEmail: '',
   incomeRange: null,
+  moneyFeeling: null,
   goals: [],
   decisions: [],
 };
@@ -120,6 +122,14 @@ function loadStore(): StoreState {
   const state = structuredClone(SEED);
   state.userName = localStorage.getItem('userName') ?? 'Usuario';
   state.userEmail = localStorage.getItem('userEmail') ?? '';
+  // Migración: leer moneyFeeling del onboardingData si existe
+  try {
+    const onbRaw = localStorage.getItem('onboardingData');
+    if (onbRaw) {
+      const onb = JSON.parse(onbRaw);
+      if (onb.moneyFeeling) state.moneyFeeling = onb.moneyFeeling;
+    }
+  } catch { /* fallthrough */ }
   persistStore(state);
   return state;
 }
@@ -211,6 +221,7 @@ export function buildSummary(range: '7d' | '30d' | '90d' = '30d'): DashboardSumm
   return {
     userName: state.userName,
     userEmail: state.userEmail,
+    moneyFeeling: state.moneyFeeling,
     systemActive: true,
     incomeRange: state.incomeRange,
     goals: state.goals,
@@ -348,6 +359,16 @@ export function storeInitUser(
   if (userName.trim()) state.userName = userName.trim();
   if (userEmail.trim()) state.userEmail = userEmail.trim();
   persistStore(state);
+}
+
+export function storeUpdateMoneyFeeling(
+  moneyFeeling: string,
+  currentRange: '7d' | '30d' | '90d' = '30d',
+): DashboardSummary {
+  const state = loadStore();
+  state.moneyFeeling = moneyFeeling;
+  persistStore(state);
+  return buildSummary(currentRange);
 }
 
 export function storeDeleteDecision(

@@ -12,11 +12,28 @@ export default function CreateGoalPage() {
   const [horizonMonths, setHorizonMonths] = useState("12");
   const [error, setError] = useState("");
 
+  const GOAL_TYPE_LABELS: Record<string, string> = {
+    travel:    'Viaje',
+    emergency: 'Fondo de emergencia',
+    purchase:  'Compra importante',
+    freedom:   'Libertad financiera',
+  };
+
   useEffect(() => {
     const isAuthenticated = localStorage.getItem("isAuthenticated");
     if (isAuthenticated !== "true") { router.replace("/signup"); return; }
     const hasCompletedOnboarding = localStorage.getItem("hasCompletedOnboarding");
     if (hasCompletedOnboarding !== "true") { router.replace("/onboarding"); return; }
+    // Prelllenar el nombre con el tipo de objetivo elegido en el onboarding
+    try {
+      const onbRaw = localStorage.getItem("onboardingData");
+      if (onbRaw) {
+        const onb = JSON.parse(onbRaw);
+        if (onb.goalType && GOAL_TYPE_LABELS[onb.goalType]) {
+          setTitle(GOAL_TYPE_LABELS[onb.goalType]);
+        }
+      }
+    } catch { /* fallthrough */ }
     analytics.goalCreateStarted("goals_new_page");
   }, [router]);
 
