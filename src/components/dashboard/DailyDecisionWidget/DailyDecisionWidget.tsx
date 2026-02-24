@@ -201,14 +201,6 @@ export function DailyDecisionWidget({
             <p className={styles.subtitle}>Ya registraste tu ahorro de hoy. Tu objetivo avanza.</p>
 
             <div className={styles.completedActions}>
-              {daily.decisionId && (
-                <button
-                  className={styles.btnOutline}
-                  onClick={() => { analytics.dailyCtaClicked('completed', 'impact'); onGoToImpact(daily.decisionId!); }}
-                >
-                  Ver impacto →
-                </button>
-              )}
               {onGoToHistory && (
                 <button
                   className={styles.btnOutline}

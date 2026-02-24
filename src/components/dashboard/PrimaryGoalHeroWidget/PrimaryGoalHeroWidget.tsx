@@ -123,12 +123,24 @@ export function PrimaryGoalHeroWidget({
         {/* Buttons */}
         <div className={styles.buttonsRow}>
           {!d.isCompleted ? (
-            <button
-              className={styles.btnPrimary}
-              onClick={() => dailyCompleted ? onAddExtraSaving() : onGoToDailyDecision()}
-            >
-              {dailyCompleted ? 'Añadir Fondos' : 'Ir a Decisión Diaria'}
-            </button>
+            dailyCompleted ? (
+              <button
+                className={styles.btnAddFunds}
+                onClick={onAddExtraSaving}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                Añadir Fondos
+              </button>
+            ) : (
+              <button
+                className={styles.btnPrimary}
+                onClick={onGoToDailyDecision}
+              >
+                Ir a Decisión Diaria
+              </button>
+            )
           ) : (
             <button className={styles.btnPrimary} onClick={onCreateGoal}>
               Crear nueva meta

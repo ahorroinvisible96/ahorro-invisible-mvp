@@ -278,6 +278,30 @@
   color: #f1f5f9;
 }
 
+.btnAddFunds {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 0;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #a855f7, #2563eb);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 200ms ease;
+  box-shadow: 0 4px 14px rgba(168, 85, 247, 0.35);
+}
+
+.btnAddFunds:hover {
+  background: linear-gradient(90deg, #9333ea, #1d4ed8);
+  transform: scale(1.02);
+  box-shadow: 0 6px 20px rgba(168, 85, 247, 0.5);
+}
+
 /* ── Empty state ── */
 .emptyState {
   display: flex;
