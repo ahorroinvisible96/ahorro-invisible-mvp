@@ -111,11 +111,12 @@
 }
 
 .rangeValue {
-  font-size: 26px;
+  font-size: 22px;
   font-weight: 700;
   color: #f1f5f9;
   letter-spacing: -0.02em;
   line-height: 1.2;
+  white-space: nowrap;
 }
 
 .rangeSubtext {
@@ -512,6 +513,22 @@
 .btnSave:hover {
   background: linear-gradient(135deg, #9333ea, #7e22ce, #1d4ed8);
   box-shadow: 0 10px 15px -3px rgba(168, 85, 247, 0.4);
+}
+
+/* ── Responsive móvil ── */
+@media (max-width: 480px) {
+  .inner {
+    gap: 10px;
+  }
+
+  .rangeValue {
+    font-size: 18px;
+  }
+
+  .actionBtn {
+    padding: 7px 10px;
+    font-size: 12px;
+  }
 }
 
 /* ── Animaciones ── */

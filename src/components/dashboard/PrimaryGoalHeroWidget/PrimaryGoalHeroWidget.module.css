@@ -75,13 +75,16 @@
   color: var(--text-secondary, rgba(148, 163, 184, 0.75));
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .horizonChip {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 4px 12px;
+  padding: 4px 10px;
   border-radius: 999px;
   background: rgba(59, 130, 246, 0.15);
   border: 1px solid rgba(59, 130, 246, 0.3);
@@ -90,6 +93,8 @@
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* ── Title ── */
@@ -116,16 +121,21 @@
 }
 
 .currentAmount {
-  font-size: 30px;
+  font-size: 28px;
   font-weight: 800;
   color: #f1f5f9;
   line-height: 1;
+  white-space: nowrap;
 }
 
 .targetAmount {
-  font-size: 15px;
+  font-size: 14px;
   color: rgba(148, 163, 184, 0.65);
   font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
 }
 
 .pctChip {
@@ -300,6 +310,38 @@
   background: linear-gradient(90deg, #9333ea, #1d4ed8);
   transform: scale(1.02);
   box-shadow: 0 6px 20px rgba(168, 85, 247, 0.5);
+}
+
+/* ── Responsive móvil ── */
+@media (max-width: 480px) {
+  .card {
+    padding: 16px 16px 18px;
+  }
+
+  .currentAmount {
+    font-size: 24px;
+  }
+
+  .targetAmount {
+    font-size: 13px;
+    max-width: 90px;
+  }
+
+  .title {
+    font-size: 18px;
+  }
+
+  .buttonsRow {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .btnPrimary,
+  .btnSecondary,
+  .btnAddFunds {
+    width: 100%;
+    font-size: 13px;
+  }
 }
 
 /* ── Empty state ── */
