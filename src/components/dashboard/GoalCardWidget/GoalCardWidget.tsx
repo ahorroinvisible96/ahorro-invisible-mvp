@@ -67,7 +67,6 @@ export function GoalCardWidget({
   onSetPrimary,
   onEditGoal,
 }: GoalCardWidgetProps): React.ReactElement {
-  const [archiving, setArchiving] = useState(false);
   const pct = computeGoalPct(goal);
   const remaining = computeGoalRemaining(goal);
   const isCompleted = goal.currentAmount >= goal.targetAmount;
@@ -78,9 +77,6 @@ export function GoalCardWidget({
 
   const handleArchive = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!window.confirm(`¿Archivar "${goal.title}"?`)) return;
-    setArchiving(true);
-    analytics.goalArchived(goal.id, goal.isPrimary);
     onArchiveGoal(goal.id);
   };
 
@@ -91,7 +87,7 @@ export function GoalCardWidget({
 
   return (
     <div
-      className={`${styles.card} ${archiving ? styles.archiving : ''}`}
+      className={styles.card}
       onClick={() => onOpenGoal(goal.id)}
     >
       {/* Layer 1: fondo gradiente */}
@@ -192,7 +188,6 @@ export function GoalCardWidget({
             <button
               className={styles.archiveBtn}
               onClick={handleArchive}
-              disabled={archiving}
               title="Archivar"
             >
               <span className={styles.archiveIcon}><ArchiveIcon /></span>
