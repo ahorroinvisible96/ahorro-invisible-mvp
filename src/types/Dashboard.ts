@@ -41,6 +41,11 @@ export type SavingsEvolutionPoint = {
   value: number;
 };
 
+export type Hucha = {
+  balance: number;
+  entries: { amount: number; fromGoalId: string; fromGoalTitle: string; date: string }[];
+};
+
 export type DashboardSummary = {
   userName: string;
   userEmail: string;
@@ -60,4 +65,5 @@ export type DashboardSummary = {
   estimatedMonthsRemaining: number | null;
   streak: number;
   totalSaved: number;
+  hucha: Hucha;
 };

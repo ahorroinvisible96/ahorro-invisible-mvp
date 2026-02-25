@@ -384,6 +384,24 @@ export default function DashboardPage() {
             onGoToDailyQuestion={() => router.push('/daily')}
           />
 
+          {summary.hucha.balance > 0 && (
+            <div
+              onClick={() => router.push('/goals')}
+              style={{ background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 14, padding: '14px 16px', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}
+            >
+              <span style={{ fontSize: 22 }}>🪣</span>
+              <div style={{ flex: 1 }}>
+                <p style={{ fontSize: 13, fontWeight: 700, color: '#fbbf24', margin: 0 }}>
+                  Hucha · {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(summary.hucha.balance)}
+                </p>
+                <p style={{ fontSize: 12, color: 'rgba(251,191,36,0.65)', margin: '2px 0 0' }}>
+                  Saldo sin asignar — toca para asignarlo a un objetivo
+                </p>
+              </div>
+              <span style={{ fontSize: 12, color: 'rgba(251,191,36,0.5)' }}>→</span>
+            </div>
+          )}
+
           <GoalsSectionWidget
             goalsCount={activeGoals.length}
             onCreateGoal={handleCreateGoal}

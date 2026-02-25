@@ -6,12 +6,14 @@ import { analytics } from '@/services/analytics';
 import {
   buildSummary,
   storeCreateGoal,
-  storeArchiveGoal,
+  storeArchiveGoalSafe,
+  storeGetGoalBalance,
   storeSetPrimaryGoal,
   storeUpdateGoal,
   storeListArchivedGoals,
+  storeTransferFromHucha,
 } from '@/services/dashboardStore';
-import type { Goal } from '@/types/Dashboard';
+import type { Goal, Hucha } from '@/types/Dashboard';
 
 function formatEUR(n: number) {
   return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
@@ -23,21 +25,39 @@ function pct(g: Goal) {
 
 type ModalMode = 'create' | 'edit';
 
+const S = {
+  overlay: { position: 'fixed' as const, inset: 0, background: 'rgba(2,6,23,0.78)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: 16 },
+  box: { background: 'linear-gradient(135deg,#0f172a 0%,#1e293b 60%,#0f172a 100%)', border: '1px solid rgba(51,65,85,0.5)', borderRadius: 20, padding: 24, width: '100%', maxWidth: 440, boxShadow: '0 25px 50px -12px rgba(2,6,23,0.9)', display: 'flex', flexDirection: 'column' as const, gap: 16 },
+  label: { fontSize: 11, fontWeight: 700, color: 'rgba(148,163,184,0.7)', textTransform: 'uppercase' as const, letterSpacing: '0.08em', display: 'block', marginBottom: 6 },
+  input: { width: '100%', background: 'rgba(15,23,42,0.8)', border: '1px solid rgba(51,65,85,0.6)', borderRadius: 12, padding: '11px 14px', fontSize: 14, color: '#f1f5f9', outline: 'none', boxSizing: 'border-box' as const },
+  select: { width: '100%', background: 'rgba(15,23,42,0.8)', border: '1px solid rgba(51,65,85,0.6)', borderRadius: 12, padding: '11px 14px', fontSize: 14, color: '#f1f5f9', outline: 'none', boxSizing: 'border-box' as const },
+  btnCancel: { flex: 1, padding: '11px 0', border: '1px solid rgba(51,65,85,0.5)', borderRadius: 12, background: 'rgba(30,41,59,0.5)', color: 'rgba(203,213,225,0.8)', fontSize: 14, fontWeight: 600, cursor: 'pointer' },
+  btnSave: { flex: 2, padding: '11px 0', border: 'none', borderRadius: 12, background: 'linear-gradient(90deg,#a855f7,#2563eb)', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer' },
+  btnDanger: { flex: 2, padding: '11px 0', border: 'none', borderRadius: 12, background: 'linear-gradient(90deg,#ef4444,#dc2626)', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer' },
+  btnClose: { display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: 8, background: 'rgba(30,41,59,0.6)', border: '1px solid rgba(51,65,85,0.5)', color: 'rgba(148,163,184,0.7)', cursor: 'pointer', fontSize: 14 },
+  modalTitle: { fontSize: 17, fontWeight: 700, color: '#f1f5f9', margin: 0 },
+  errorBox: { fontSize: 13, color: '#f87171', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 10, padding: '10px 12px' },
+};
+
 function GoalModal({
   mode,
   initial,
   onSave,
   onClose,
+  hucha,
 }: {
   mode: ModalMode;
   initial?: Goal;
-  onSave: (data: { title: string; targetAmount: number; horizonMonths: number }) => void;
+  onSave: (data: { title: string; targetAmount: number; horizonMonths: number; applyHucha: boolean }) => void;
   onClose: () => void;
+  hucha: Hucha;
 }) {
   const [title, setTitle] = useState(initial?.title ?? '');
   const [amount, setAmount] = useState(String(initial?.targetAmount ?? ''));
   const [months, setMonths] = useState(String(initial?.horizonMonths ?? '12'));
+  const [applyHucha, setApplyHucha] = useState(false);
   const [err, setErr] = useState('');
+  const showHuchaOption = mode === 'create' && hucha.balance > 0;
 
   function submit() {
     setErr('');
@@ -46,32 +66,108 @@ function GoalModal({
     if (!a || a <= 0) { setErr('Introduce una cantidad válida.'); return; }
     const m = Number(months);
     if (!m || m < 1) { setErr('El horizonte debe ser al menos 1 mes.'); return; }
-    onSave({ title: title.trim(), targetAmount: a, horizonMonths: m });
+    onSave({ title: title.trim(), targetAmount: a, horizonMonths: m, applyHucha });
   }
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 16 }} onClick={onClose}>
-      <div style={{ background: '#fff', borderRadius: 20, padding: '28px 24px', width: '100%', maxWidth: 420, boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }} onClick={e => e.stopPropagation()}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-          <h2 style={{ fontSize: 18, fontWeight: 700, color: '#111827', margin: 0 }}>{mode === 'create' ? 'Nuevo objetivo' : 'Editar objetivo'}</h2>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#9ca3af', padding: 4 }}>✕</button>
+    <div style={S.overlay} onClick={onClose}>
+      <div style={S.box} onClick={e => e.stopPropagation()}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h2 style={S.modalTitle}>{mode === 'create' ? 'Nuevo objetivo' : 'Editar objetivo'}</h2>
+          <button style={S.btnClose} onClick={onClose}>✕</button>
         </div>
-        {err && <p style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '8px 12px', color: '#dc2626', fontSize: 13, marginBottom: 16 }}>{err}</p>}
-        <div style={{ marginBottom: 16 }}>
-          <label style={{ fontSize: 13, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 6 }}>Nombre</label>
-          <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Ej: Viaje a Japón" style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #e5e7eb', borderRadius: 10, fontSize: 14, outline: 'none', boxSizing: 'border-box' }} />
+        {err && <p style={S.errorBox}>{err}</p>}
+        <div><label style={S.label}>Nombre</label>
+          <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Ej: Viaje a Japón" style={S.input} autoFocus />
         </div>
-        <div style={{ marginBottom: 16 }}>
-          <label style={{ fontSize: 13, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 6 }}>Meta (€)</label>
-          <input type="number" min="1" value={amount} onChange={e => setAmount(e.target.value)} placeholder="Ej: 2000" style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #e5e7eb', borderRadius: 10, fontSize: 14, outline: 'none', boxSizing: 'border-box' }} />
+        <div><label style={S.label}>Meta (€)</label>
+          <input type="number" min="1" value={amount} onChange={e => setAmount(e.target.value)} placeholder="2000" style={S.input} />
         </div>
-        <div style={{ marginBottom: 24 }}>
-          <label style={{ fontSize: 13, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 6 }}>Horizonte (meses)</label>
-          <input type="number" min="1" value={months} onChange={e => setMonths(e.target.value)} style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #e5e7eb', borderRadius: 10, fontSize: 14, outline: 'none', boxSizing: 'border-box' }} />
+        <div><label style={S.label}>Horizonte (meses)</label>
+          <input type="number" min="1" value={months} onChange={e => setMonths(e.target.value)} style={S.input} />
         </div>
-        <div style={{ display: 'flex', gap: 10 }}>
-          <button onClick={onClose} style={{ flex: 1, padding: '12px 0', background: '#f9fafb', border: '1.5px solid #e5e7eb', borderRadius: 10, fontSize: 14, fontWeight: 500, cursor: 'pointer', color: '#374151' }}>Cancelar</button>
-          <button onClick={submit} style={{ flex: 2, padding: '12px 0', background: '#2563eb', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: 'pointer', color: '#fff' }}>{mode === 'create' ? 'Crear objetivo' : 'Guardar cambios'}</button>
+        {showHuchaOption && (
+          <label style={{ display: 'flex', alignItems: 'flex-start', gap: 12, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.25)', borderRadius: 12, padding: '12px 14px', cursor: 'pointer' }}>
+            <input type="checkbox" checked={applyHucha} onChange={e => setApplyHucha(e.target.checked)} style={{ marginTop: 2, accentColor: '#a855f7', width: 16, height: 16, flexShrink: 0 }} />
+            <span style={{ fontSize: 13, color: '#fbbf24', lineHeight: 1.4 }}>
+              <strong>Asignar saldo de la Hucha</strong><br />
+              <span style={{ color: 'rgba(251,191,36,0.7)', fontSize: 12 }}>Transferir {formatEUR(hucha.balance)} al nuevo objetivo</span>
+            </span>
+          </label>
+        )}
+        <div style={{ display: 'flex', gap: 10, paddingTop: 4 }}>
+          <button style={S.btnCancel} onClick={onClose}>Cancelar</button>
+          <button style={S.btnSave} onClick={submit}>{mode === 'create' ? 'Crear objetivo' : 'Guardar'}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ArchiveModal({
+  goal,
+  otherGoals,
+  onConfirm,
+  onClose,
+}: {
+  goal: Goal;
+  otherGoals: Goal[];
+  onConfirm: (destination: string | 'hucha') => void;
+  onClose: () => void;
+}) {
+  const hasOthers = otherGoals.length > 0;
+  const [destination, setDestination] = useState<string>(hasOthers ? otherGoals[0].id : 'hucha');
+  const hasBalance = goal.currentAmount > 0;
+
+  return (
+    <div style={S.overlay} onClick={onClose}>
+      <div style={S.box} onClick={e => e.stopPropagation()}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h2 style={S.modalTitle}>Archivar objetivo</h2>
+          <button style={S.btnClose} onClick={onClose}>✕</button>
+        </div>
+        <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 12, padding: '12px 14px' }}>
+          <p style={{ fontSize: 13, color: '#f87171', margin: 0, fontWeight: 600 }}>📦 {goal.title}</p>
+          {hasBalance && (
+            <p style={{ fontSize: 13, color: 'rgba(248,113,113,0.8)', margin: '4px 0 0' }}>
+              Saldo acumulado: <strong style={{ color: '#f87171' }}>{formatEUR(goal.currentAmount)}</strong>
+            </p>
+          )}
+        </div>
+        {hasBalance ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <p style={{ fontSize: 13, color: 'rgba(148,163,184,0.9)', margin: 0 }}>
+              ¿Dónde quieres transferir el saldo acumulado?
+            </p>
+            {hasOthers ? (
+              <div>
+                <label style={S.label}>Transferir saldo a</label>
+                <select style={S.select} value={destination} onChange={e => setDestination(e.target.value)}>
+                  {otherGoals.map(g => (
+                    <option key={g.id} value={g.id} style={{ background: '#1e293b' }}>
+                      {g.title} ({formatEUR(g.currentAmount)} ahorrados)
+                    </option>
+                  ))}
+                  <option value="hucha" style={{ background: '#1e293b' }}>🪣 Enviar a la Hucha</option>
+                </select>
+              </div>
+            ) : (
+              <div style={{ background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.25)', borderRadius: 12, padding: '12px 14px' }}>
+                <p style={{ fontSize: 13, color: '#fbbf24', margin: 0, fontWeight: 600 }}>🪣 Sin otros objetivos activos</p>
+                <p style={{ fontSize: 12, color: 'rgba(251,191,36,0.7)', margin: '4px 0 0' }}>
+                  El saldo se guardará en la <strong>Hucha</strong> hasta que crees un nuevo objetivo.
+                </p>
+              </div>
+            )}
+          </div>
+        ) : (
+          <p style={{ fontSize: 13, color: 'rgba(148,163,184,0.7)', margin: 0 }}>
+            Este objetivo no tiene saldo acumulado. Se archivará directamente.
+          </p>
+        )}
+        <div style={{ display: 'flex', gap: 10, paddingTop: 4 }}>
+          <button style={S.btnCancel} onClick={onClose}>Cancelar</button>
+          <button style={S.btnDanger} onClick={() => onConfirm(hasBalance ? destination : 'hucha')}>Archivar</button>
         </div>
       </div>
     </div>
@@ -94,27 +190,27 @@ function GoalCard({
   const p = pct(goal);
   const isCompleted = goal.currentAmount >= goal.targetAmount;
   return (
-    <div style={{ background: '#fff', borderRadius: 16, padding: '20px', boxShadow: '0 1px 6px rgba(0,0,0,0.06)', cursor: 'pointer' }} onClick={onDetail}>
+    <div style={{ background: 'linear-gradient(135deg,#0f172a,#1e293b)', border: '1px solid rgba(51,65,85,0.4)', borderRadius: 16, padding: '18px 20px', cursor: 'pointer', boxShadow: '0 4px 12px rgba(2,6,23,0.4)' }} onClick={onDetail}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
-            <span style={{ fontSize: 15, fontWeight: 700, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{goal.title}</span>
-            {goal.isPrimary && <span style={{ fontSize: 11, fontWeight: 700, background: '#dbeafe', color: '#1d4ed8', padding: '2px 8px', borderRadius: 20, flexShrink: 0 }}>PRINCIPAL</span>}
-            {isCompleted && <span style={{ fontSize: 11, fontWeight: 700, background: '#dcfce7', color: '#16a34a', padding: '2px 8px', borderRadius: 20, flexShrink: 0 }}>✓ COMPLETADO</span>}
+            <span style={{ fontSize: 15, fontWeight: 700, color: '#f1f5f9', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{goal.title}</span>
+            {goal.isPrimary && <span style={{ fontSize: 10, fontWeight: 700, background: 'rgba(37,99,235,0.2)', color: '#60a5fa', padding: '2px 8px', borderRadius: 20, border: '1px solid rgba(37,99,235,0.3)', flexShrink: 0 }}>PRINCIPAL</span>}
+            {isCompleted && <span style={{ fontSize: 10, fontWeight: 700, background: 'rgba(22,163,74,0.15)', color: '#4ade80', padding: '2px 8px', borderRadius: 20, border: '1px solid rgba(22,163,74,0.3)', flexShrink: 0 }}>✓ COMPLETADO</span>}
           </div>
-          <p style={{ fontSize: 13, color: '#6b7280', margin: 0 }}>{goal.horizonMonths} meses · {formatEUR(goal.currentAmount)} / {formatEUR(goal.targetAmount)}</p>
+          <p style={{ fontSize: 13, color: 'rgba(148,163,184,0.7)', margin: 0 }}>{goal.horizonMonths} meses · {formatEUR(goal.currentAmount)} / {formatEUR(goal.targetAmount)}</p>
         </div>
-        <span style={{ fontSize: 16, fontWeight: 800, color: '#2563eb', flexShrink: 0, marginLeft: 12 }}>{p}%</span>
+        <span style={{ fontSize: 15, fontWeight: 800, color: '#60a5fa', flexShrink: 0, marginLeft: 12 }}>{p}%</span>
       </div>
-      <div style={{ background: '#e5e7eb', borderRadius: 999, height: 6, overflow: 'hidden', marginBottom: 12 }}>
-        <div style={{ width: `${p}%`, height: 6, background: isCompleted ? '#16a34a' : 'linear-gradient(90deg,#60a5fa,#2563eb)', borderRadius: 999 }} />
+      <div style={{ background: 'rgba(30,41,59,0.8)', borderRadius: 999, height: 5, overflow: 'hidden', marginBottom: 12 }}>
+        <div style={{ width: `${p}%`, height: 5, background: isCompleted ? 'linear-gradient(90deg,#4ade80,#16a34a)' : 'linear-gradient(90deg,#a855f7,#2563eb)', borderRadius: 999 }} />
       </div>
       <div style={{ display: 'flex', gap: 8 }} onClick={e => e.stopPropagation()}>
         {!goal.isPrimary && !isCompleted && (
-          <button onClick={onSetPrimary} style={{ fontSize: 12, padding: '5px 10px', border: '1px solid #bfdbfe', background: '#eff6ff', color: '#1d4ed8', borderRadius: 7, cursor: 'pointer', fontWeight: 600 }}>Principal</button>
+          <button onClick={onSetPrimary} style={{ fontSize: 12, padding: '5px 10px', border: '1px solid rgba(37,99,235,0.35)', background: 'rgba(37,99,235,0.12)', color: '#60a5fa', borderRadius: 8, cursor: 'pointer', fontWeight: 600 }}>Principal</button>
         )}
-        <button onClick={onEdit} style={{ fontSize: 12, padding: '5px 10px', border: '1px solid #e5e7eb', background: '#f9fafb', color: '#374151', borderRadius: 7, cursor: 'pointer' }}>Editar</button>
-        <button onClick={onArchive} style={{ fontSize: 12, padding: '5px 10px', border: '1px solid #fecaca', background: 'transparent', color: '#dc2626', borderRadius: 7, cursor: 'pointer' }}>Archivar</button>
+        <button onClick={onEdit} style={{ fontSize: 12, padding: '5px 10px', border: '1px solid rgba(51,65,85,0.5)', background: 'rgba(30,41,59,0.5)', color: 'rgba(203,213,225,0.8)', borderRadius: 8, cursor: 'pointer' }}>Editar</button>
+        <button onClick={onArchive} style={{ fontSize: 12, padding: '5px 10px', border: '1px solid rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.08)', color: '#f87171', borderRadius: 8, cursor: 'pointer' }}>Archivar</button>
       </div>
     </div>
   );
@@ -124,15 +220,18 @@ export default function GoalsPage() {
   const router = useRouter();
   const [activeGoals, setActiveGoals] = useState<Goal[]>([]);
   const [archivedGoals, setArchivedGoals] = useState<Goal[]>([]);
+  const [hucha, setHucha] = useState<Hucha>({ balance: 0, entries: [] });
   const [showArchived, setShowArchived] = useState(false);
   const [modalMode, setModalMode] = useState<ModalMode | null>(null);
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
+  const [archivingGoal, setArchivingGoal] = useState<Goal | null>(null);
   const [loading, setLoading] = useState(true);
 
   const refresh = () => {
     const summary = buildSummary('30d');
     setActiveGoals(summary.goals.filter(g => !g.archived));
     setArchivedGoals(storeListArchivedGoals());
+    setHucha(summary.hucha);
   };
 
   useEffect(() => {
@@ -143,25 +242,44 @@ export default function GoalsPage() {
     setLoading(false);
   }, [router]);
 
-  const handleCreate = (data: { title: string; targetAmount: number; horizonMonths: number }) => {
-    const summary = storeCreateGoal({ ...data, currentAmount: 0 });
-    analytics.goalCreated(`goal_${Date.now()}`, summary.goals.filter(g => !g.archived).length === 1, data.targetAmount, data.horizonMonths);
+  const handleCreate = (data: { title: string; targetAmount: number; horizonMonths: number; applyHucha: boolean }) => {
+    const summary = storeCreateGoal({ title: data.title, targetAmount: data.targetAmount, horizonMonths: data.horizonMonths, currentAmount: 0 });
+    const newGoal = summary.goals.filter(g => !g.archived).slice(-1)[0];
+    if (data.applyHucha && newGoal && hucha.balance > 0) {
+      storeTransferFromHucha(newGoal.id, hucha.balance);
+    }
+    analytics.goalCreated(newGoal?.id ?? '', summary.goals.filter(g => !g.archived).length === 1, data.targetAmount, data.horizonMonths);
     setModalMode(null);
     refresh();
   };
 
-  const handleEdit = (data: { title: string; targetAmount: number; horizonMonths: number }) => {
+  const handleEdit = (data: { title: string; targetAmount: number; horizonMonths: number; applyHucha: boolean }) => {
     if (!editingGoal) return;
-    storeUpdateGoal(editingGoal.id, data);
+    storeUpdateGoal(editingGoal.id, { title: data.title, targetAmount: data.targetAmount, horizonMonths: data.horizonMonths });
     setModalMode(null);
     setEditingGoal(null);
     refresh();
   };
 
-  const handleArchive = (goalId: string) => {
-    if (!window.confirm('¿Archivar este objetivo?')) return;
-    storeArchiveGoal(goalId);
-    analytics.goalArchived(goalId, activeGoals.find(g => g.id === goalId)?.isPrimary ?? false);
+  const handleArchiveRequest = (goalId: string) => {
+    const goal = activeGoals.find(g => g.id === goalId);
+    if (!goal) return;
+    const balance = storeGetGoalBalance(goalId);
+    const others = activeGoals.filter(g => g.id !== goalId);
+    if (balance > 0 || others.length > 0) {
+      setArchivingGoal(goal);
+    } else {
+      storeArchiveGoalSafe(goalId, 'hucha');
+      analytics.goalArchived(goalId, goal.isPrimary);
+      refresh();
+    }
+  };
+
+  const handleArchiveConfirm = (destination: string | 'hucha') => {
+    if (!archivingGoal) return;
+    storeArchiveGoalSafe(archivingGoal.id, destination);
+    analytics.goalArchived(archivingGoal.id, archivingGoal.isPrimary);
+    setArchivingGoal(null);
     refresh();
   };
 
@@ -171,40 +289,65 @@ export default function GoalsPage() {
   };
 
   if (loading) {
-    return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f9fafb' }}><span style={{ color: '#9ca3af' }}>Cargando...</span></div>;
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#020617' }}>
+        <span style={{ color: 'rgba(148,163,184,0.6)', fontSize: 14 }}>Cargando objetivos...</span>
+      </div>
+    );
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f9fafb', padding: '24px 16px' }}>
+    <div style={{ minHeight: '100vh', background: '#020617', padding: '24px 16px 80px' }}>
       <div style={{ maxWidth: 600, margin: '0 auto' }}>
 
+        {/* Modals */}
         {modalMode && (
           <GoalModal
             mode={modalMode}
             initial={modalMode === 'edit' ? editingGoal ?? undefined : undefined}
             onSave={modalMode === 'create' ? handleCreate : handleEdit}
             onClose={() => { setModalMode(null); setEditingGoal(null); }}
+            hucha={hucha}
+          />
+        )}
+        {archivingGoal && (
+          <ArchiveModal
+            goal={archivingGoal}
+            otherGoals={activeGoals.filter(g => g.id !== archivingGoal.id)}
+            onConfirm={handleArchiveConfirm}
+            onClose={() => setArchivingGoal(null)}
           />
         )}
 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
           <div>
-            <button onClick={() => router.push('/dashboard')} style={{ background: 'none', border: 'none', color: '#6b7280', fontSize: 13, cursor: 'pointer', padding: 0, marginBottom: 6 }}>← Dashboard</button>
-            <h1 style={{ fontSize: 22, fontWeight: 800, color: '#111827', margin: 0 }}>Mis Objetivos</h1>
+            <button onClick={() => router.push('/dashboard')} style={{ background: 'none', border: 'none', color: 'rgba(148,163,184,0.6)', fontSize: 13, cursor: 'pointer', padding: 0, marginBottom: 6 }}>← Dashboard</button>
+            <h1 style={{ fontSize: 22, fontWeight: 800, color: '#f1f5f9', margin: 0 }}>Mis Objetivos</h1>
           </div>
-          <button onClick={() => setModalMode('create')} style={{ padding: '10px 18px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: 12, fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
+          <button onClick={() => setModalMode('create')} style={{ padding: '10px 18px', background: 'linear-gradient(90deg,#a855f7,#2563eb)', color: '#fff', border: 'none', borderRadius: 12, fontWeight: 700, fontSize: 14, cursor: 'pointer', boxShadow: '0 4px 14px rgba(168,85,247,0.35)' }}>
             + Nuevo
           </button>
         </div>
 
+        {/* Badge Hucha */}
+        {hucha.balance > 0 && (
+          <div style={{ background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 14, padding: '14px 16px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 12 }}>
+            <span style={{ fontSize: 22 }}>🪣</span>
+            <div style={{ flex: 1 }}>
+              <p style={{ fontSize: 13, fontWeight: 700, color: '#fbbf24', margin: 0 }}>Hucha · {formatEUR(hucha.balance)}</p>
+              <p style={{ fontSize: 12, color: 'rgba(251,191,36,0.65)', margin: '2px 0 0' }}>Saldo sin asignar. Crea un objetivo para transferirlo.</p>
+            </div>
+          </div>
+        )}
+
         {/* Objetivos activos */}
         {activeGoals.length === 0 ? (
-          <div style={{ background: '#fff', borderRadius: 16, padding: '40px 24px', textAlign: 'center', boxShadow: '0 1px 6px rgba(0,0,0,0.06)' }}>
+          <div style={{ background: 'linear-gradient(135deg,#0f172a,#1e293b)', border: '1px solid rgba(51,65,85,0.4)', borderRadius: 16, padding: '40px 24px', textAlign: 'center' }}>
             <div style={{ fontSize: 48, marginBottom: 12 }}>🎯</div>
-            <p style={{ fontSize: 15, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Sin objetivos activos</p>
-            <p style={{ fontSize: 13, color: '#9ca3af', marginBottom: 20 }}>Crea tu primer objetivo para empezar a ahorrar.</p>
-            <button onClick={() => setModalMode('create')} style={{ padding: '12px 24px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: 12, fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>Crear objetivo</button>
+            <p style={{ fontSize: 15, fontWeight: 600, color: '#f1f5f9', marginBottom: 6 }}>Sin objetivos activos</p>
+            <p style={{ fontSize: 13, color: 'rgba(148,163,184,0.6)', marginBottom: 20 }}>Crea tu primer objetivo para empezar a ahorrar.</p>
+            <button onClick={() => setModalMode('create')} style={{ padding: '12px 24px', background: 'linear-gradient(90deg,#a855f7,#2563eb)', color: '#fff', border: 'none', borderRadius: 12, fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>Crear objetivo</button>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 }}>
@@ -214,7 +357,7 @@ export default function GoalsPage() {
                 goal={g}
                 onDetail={() => router.push(`/goals/${g.id}`)}
                 onEdit={() => { setEditingGoal(g); setModalMode('edit'); }}
-                onArchive={() => handleArchive(g.id)}
+                onArchive={() => handleArchiveRequest(g.id)}
                 onSetPrimary={() => handleSetPrimary(g.id)}
               />
             ))}
@@ -224,18 +367,18 @@ export default function GoalsPage() {
         {/* Objetivos archivados */}
         {archivedGoals.length > 0 && (
           <div>
-            <button onClick={() => setShowArchived(v => !v)} style={{ background: 'none', border: 'none', color: '#6b7280', fontSize: 13, cursor: 'pointer', marginBottom: 12, fontWeight: 600 }}>
+            <button onClick={() => setShowArchived(v => !v)} style={{ background: 'none', border: 'none', color: 'rgba(148,163,184,0.5)', fontSize: 13, cursor: 'pointer', marginBottom: 12, fontWeight: 600 }}>
               {showArchived ? '▲' : '▼'} Archivados ({archivedGoals.length})
             </button>
             {showArchived && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {archivedGoals.map(g => (
-                  <div key={g.id} style={{ background: '#f9fafb', borderRadius: 12, padding: '14px 18px', border: '1px solid #e5e7eb', opacity: 0.7 }}>
+                  <div key={g.id} style={{ background: 'rgba(15,23,42,0.6)', borderRadius: 12, padding: '14px 18px', border: '1px solid rgba(51,65,85,0.3)', opacity: 0.65 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: 14, fontWeight: 600, color: '#6b7280' }}>{g.title}</span>
-                      <span style={{ fontSize: 12, color: '#9ca3af' }}>{pct(g)}%</span>
+                      <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(148,163,184,0.8)' }}>{g.title}</span>
+                      <span style={{ fontSize: 12, color: 'rgba(100,116,139,0.7)' }}>{pct(g)}%</span>
                     </div>
-                    <p style={{ fontSize: 12, color: '#9ca3af', margin: '4px 0 0' }}>{formatEUR(g.currentAmount)} / {formatEUR(g.targetAmount)}</p>
+                    <p style={{ fontSize: 12, color: 'rgba(100,116,139,0.6)', margin: '4px 0 0' }}>{formatEUR(g.currentAmount)} / {formatEUR(g.targetAmount)}</p>
                   </div>
                 ))}
               </div>

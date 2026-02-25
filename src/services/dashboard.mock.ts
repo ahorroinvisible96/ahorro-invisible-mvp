@@ -49,5 +49,6 @@ export function getMockDashboardSummary(range: '7d' | '30d' | '90d' = '30d'): Da
     estimatedMonthsRemaining: 87,
     streak: 0,
     totalSaved: 650,
+    hucha: { balance: 0, entries: [] },
   };
 }

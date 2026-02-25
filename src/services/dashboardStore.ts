@@ -5,6 +5,7 @@ import type {
   DailyDecisionRule,
   DashboardSummary,
   SavingsEvolutionPoint,
+  Hucha,
 } from '@/types/Dashboard';
 
 // ─── Clave de persistencia ───────────────────────────────────────────────────
@@ -88,6 +89,7 @@ type StoreState = {
   moneyFeeling: string | null;
   goals: Goal[];
   decisions: DailyDecision[];
+  hucha: Hucha;
 };
 
 const SEED: StoreState = {
@@ -97,6 +99,7 @@ const SEED: StoreState = {
   moneyFeeling: null,
   goals: [],
   decisions: [],
+  hucha: { balance: 0, entries: [] },
 };
 
 // ─── I/O localStorage ─────────────────────────────────────────────────────────
@@ -114,6 +117,10 @@ function loadStore(): StoreState {
       // Migración: asegurar campo userEmail
       if (!parsed.userEmail) {
         parsed.userEmail = localStorage.getItem('userEmail') ?? '';
+      }
+      // Migración: asegurar campo hucha
+      if (!parsed.hucha) {
+        parsed.hucha = { balance: 0, entries: [] };
       }
       return parsed;
     }
@@ -241,6 +248,7 @@ export function buildSummary(range: '7d' | '30d' | '90d' = '30d'): DashboardSumm
     estimatedMonthsRemaining,
     streak,
     totalSaved,
+    hucha: state.hucha ?? { balance: 0, entries: [] },
   };
 }
 
@@ -456,6 +464,96 @@ export function storeAddExtraSaving(
     goal.currentAmount += amount;
     goal.updatedAt = now;
   }
+  persistStore(state);
+  return buildSummary(currentRange);
+}
+
+// ─── Archivar objetivo con seguridad de saldo ────────────────────────────────
+// Devuelve el saldo que tenía el objetivo (para que la UI decida si mostrar modal)
+export function storeGetGoalBalance(goalId: string): number {
+  const state = loadStore();
+  const goal = state.goals.find((g) => g.id === goalId);
+  return goal?.currentAmount ?? 0;
+}
+
+// Archiva el objetivo y reasigna su saldo al destino indicado:
+// - targetGoalId: reasigna a otro objetivo existente
+// - 'hucha': envía a la hucha
+export function storeArchiveGoalSafe(
+  goalId: string,
+  destination: string | 'hucha',
+  currentRange: '7d' | '30d' | '90d' = '30d',
+): DashboardSummary {
+  const state = loadStore();
+  const now = new Date().toISOString();
+  const today = new Date().toISOString().split('T')[0];
+  const goal = state.goals.find((g) => g.id === goalId);
+  if (!goal) return buildSummary(currentRange);
+
+  const balance = goal.currentAmount;
+
+  // Reasignar saldo
+  if (balance > 0) {
+    if (destination === 'hucha') {
+      if (!state.hucha) state.hucha = { balance: 0, entries: [] };
+      state.hucha.balance = Math.round((state.hucha.balance + balance) * 100) / 100;
+      state.hucha.entries.push({
+        amount: balance,
+        fromGoalId: goalId,
+        fromGoalTitle: goal.title,
+        date: today,
+      });
+    } else {
+      const target = state.goals.find((g) => g.id === destination && !g.archived);
+      if (target) {
+        target.currentAmount = Math.round((target.currentAmount + balance) * 100) / 100;
+        target.updatedAt = now;
+      }
+    }
+  }
+
+  // Redirigir decisions del objetivo archivado al destino
+  if (destination !== 'hucha' && destination !== goalId) {
+    state.decisions = state.decisions.map((d) =>
+      d.goalId === goalId ? { ...d, goalId: destination } : d,
+    );
+  }
+
+  // Archivar el objetivo
+  const wasPrimary = goal.isPrimary;
+  goal.isPrimary = false;
+  goal.currentAmount = 0;
+  goal.archived = true;
+  goal.updatedAt = now;
+
+  if (wasPrimary) {
+    const next = state.goals.find((g) => !g.archived && g.id !== goalId);
+    if (next) { next.isPrimary = true; next.updatedAt = now; }
+  }
+
+  persistStore(state);
+  return buildSummary(currentRange);
+}
+
+// Transfiere saldo de la hucha a un objetivo (total o parcial)
+export function storeTransferFromHucha(
+  goalId: string,
+  amount: number,
+  currentRange: '7d' | '30d' | '90d' = '30d',
+): DashboardSummary {
+  const state = loadStore();
+  const now = new Date().toISOString();
+  if (!state.hucha || state.hucha.balance <= 0) return buildSummary(currentRange);
+
+  const transfer = Math.min(amount, state.hucha.balance);
+  state.hucha.balance = Math.round((state.hucha.balance - transfer) * 100) / 100;
+
+  const goal = state.goals.find((g) => g.id === goalId && !g.archived);
+  if (goal) {
+    goal.currentAmount = Math.round((goal.currentAmount + transfer) * 100) / 100;
+    goal.updatedAt = now;
+  }
+
   persistStore(state);
   return buildSummary(currentRange);
 }
