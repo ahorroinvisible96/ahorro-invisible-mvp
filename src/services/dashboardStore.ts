@@ -558,6 +558,81 @@ export function storeTransferFromHucha(
   return buildSummary(currentRange);
 }
 
+// ─── Reactivar objetivo archivado ────────────────────────────────────────────
+export function storeReactivateGoal(
+  goalId: string,
+  currentRange: '7d' | '30d' | '90d' = '30d',
+): DashboardSummary {
+  const state = loadStore();
+  const now = new Date().toISOString();
+  const goal = state.goals.find((g) => g.id === goalId);
+  if (!goal) return buildSummary(currentRange);
+
+  goal.archived = false;
+  goal.updatedAt = now;
+
+  // Si no hay ningún objetivo principal activo, este pasa a ser principal
+  const hasActivePrimary = state.goals.some((g) => !g.archived && g.isPrimary);
+  if (!hasActivePrimary) {
+    goal.isPrimary = true;
+  }
+
+  persistStore(state);
+  return buildSummary(currentRange);
+}
+
+// ─── Eliminar objetivo definitivamente ───────────────────────────────────────
+// Requiere que el saldo ya esté a 0 (resuelto previamente) o se pase destino
+export function storeDeleteGoalPermanent(
+  goalId: string,
+  destination: string | 'hucha' | null,
+  currentRange: '7d' | '30d' | '90d' = '30d',
+): DashboardSummary {
+  const state = loadStore();
+  const now = new Date().toISOString();
+  const today = new Date().toISOString().split('T')[0];
+  const goal = state.goals.find((g) => g.id === goalId);
+  if (!goal) return buildSummary(currentRange);
+
+  const balance = goal.currentAmount;
+
+  // Resolver saldo si existe
+  if (balance > 0 && destination) {
+    if (destination === 'hucha') {
+      if (!state.hucha) state.hucha = { balance: 0, entries: [] };
+      state.hucha.balance = Math.round((state.hucha.balance + balance) * 100) / 100;
+      state.hucha.entries.push({
+        amount: balance,
+        fromGoalId: goalId,
+        fromGoalTitle: goal.title,
+        date: today,
+      });
+    } else {
+      const target = state.goals.find((g) => g.id === destination && !g.archived);
+      if (target) {
+        target.currentAmount = Math.round((target.currentAmount + balance) * 100) / 100;
+        target.updatedAt = now;
+      }
+    }
+  }
+
+  // Redirigir decisions al destino si existe
+  if (destination && destination !== 'hucha' && destination !== goalId) {
+    state.decisions = state.decisions.map((d) =>
+      d.goalId === goalId ? { ...d, goalId: destination } : d,
+    );
+  } else {
+    // Eliminar decisions del objetivo borrado (no hay donde redirigir)
+    state.decisions = state.decisions.filter((d) => d.goalId !== goalId);
+  }
+
+  // Eliminar el objetivo del array
+  state.goals = state.goals.filter((g) => g.id !== goalId);
+
+  persistStore(state);
+  return buildSummary(currentRange);
+}
+
 export function storeResetAllData(): void {
   if (typeof window === 'undefined') return;
   try {
