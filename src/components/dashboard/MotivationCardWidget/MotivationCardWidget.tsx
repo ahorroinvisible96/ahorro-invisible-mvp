@@ -5,7 +5,7 @@ import { analytics } from '@/services/analytics';
 import type { MotivationCardWidgetProps, MotivationIntensity, MotivationLevel } from './MotivationCardWidget.types';
 import styles from './MotivationCardWidget.module.css';
 import { useWidgetCollapse } from '@/hooks/useWidgetCollapse';
-import { CollapsibleWidget } from '@/components/dashboard/CollapsibleWidget/CollapsibleWidget';
+import { CollapseChevron } from '@/components/dashboard/CollapsibleWidget/CollapsibleWidget';
 
 // ── Iconos SVG inline ────────────────────────────────────────────────────────
 function FlameIcon() {
@@ -113,44 +113,8 @@ export function MotivationCardWidget({
   const levelPct = getLevelProgress(totalSaved, levelCfg);
   const nextLevelCfg = LEVELS[LEVELS.indexOf(levelCfg) + 1] ?? null;
 
-  const collapsedSummary = (
-    <div className={styles.wrapper}>
-      <div className={styles.bgGradient} />
-      <div className={styles.glowOverlay}>
-        <div className={styles.glowPurple} />
-        <div className={styles.glowBlue} />
-      </div>
-      <div className={styles.borderLayer} />
-      <div className={styles.content}>
-        <div className={styles.header}>
-          <div className={styles.headerLeft}>
-            <div className={styles.iconWrap}><TrendingUpIcon /></div>
-            <span className={styles.headerLabel}>MOTIVACIÓN</span>
-          </div>
-          <div className={`${styles.intensityBadge} ${styles[`intensity_${intensity}`]}`}>
-            {intensity === 'high' ? <FlameIcon /> : <ZapIcon />}
-            {intensity === 'high' ? 'ALTA' : intensity === 'medium' ? 'MEDIA' : intensity === 'low' ? 'BAJA' : '—'}
-          </div>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingRight: 40 }}>
-          <div className={`${styles.levelBadge} ${styles[`level_${levelCfg.color}`]}`}>
-            <span className={styles.levelEmoji}>{levelCfg.emoji}</span>
-            <span className={styles.levelName}>{levelCfg.label}</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'rgba(148,163,184,0.7)' }}>
-            <span>🔥</span>
-            <span style={{ fontWeight: 700, color: '#f1f5f9' }}>{streak}</span>
-            <span>días</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
   return (
-    <CollapsibleWidget id="motivation_card" collapsed={collapsed} onToggle={toggle} summary={collapsedSummary}>
     <div className={styles.wrapper}>
-      {/* Capas de fondo */}
       <div className={styles.bgGradient} />
       <div className={styles.glowOverlay}>
         <div className={styles.glowPurple} />
@@ -158,7 +122,6 @@ export function MotivationCardWidget({
       </div>
       <div className={styles.borderLayer} />
 
-      {/* Contenido */}
       <div className={styles.content}>
 
         {/* ── Header ── */}
@@ -167,82 +130,104 @@ export function MotivationCardWidget({
             <div className={styles.iconWrap}><TrendingUpIcon /></div>
             <span className={styles.headerLabel}>MOTIVACIÓN</span>
           </div>
-          <div className={`${styles.intensityBadge} ${styles[`intensity_${intensity}`]}`}>
-            {intensity === 'high' ? <FlameIcon /> : <ZapIcon />}
-            {intensity === 'high' ? 'ALTA' : intensity === 'medium' ? 'MEDIA' : intensity === 'low' ? 'BAJA' : '—'}
-          </div>
-        </div>
-
-        {/* ── Nivel actual ── */}
-        <div className={styles.levelRow}>
-          <div className={`${styles.levelBadge} ${styles[`level_${levelCfg.color}`]}`}>
-            <span className={styles.levelEmoji}>{levelCfg.emoji}</span>
-            <span className={styles.levelName}>{levelCfg.label}</span>
-          </div>
-          <div className={styles.totalSaved}>{formatEUR(totalSaved)} ahorrados</div>
-        </div>
-
-        {/* ── Barra de progreso al siguiente nivel ── */}
-        <div className={styles.levelProgressSection}>
-          <div className={styles.levelProgressHeader}>
-            <span className={styles.levelProgressLabel}>
-              {nextLevelCfg
-                ? `Progreso a ${nextLevelCfg.label} ${nextLevelCfg.emoji}`
-                : '¡Nivel máximo alcanzado!'}
-            </span>
-            <span className={styles.levelProgressPct}>{levelPct}%</span>
-          </div>
-          <div className={styles.levelProgressTrack}>
-            <div
-              className={`${styles.levelProgressFill} ${styles[`levelFill_${levelCfg.color}`]}`}
-              style={{ width: `${levelPct}%` }}
-            />
-          </div>
-          {nextLevelCfg && (
-            <div className={styles.levelProgressHint}>
-              Faltan {formatEUR(nextLevelCfg.minSaved - totalSaved)} para {nextLevelCfg.label}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div className={`${styles.intensityBadge} ${styles[`intensity_${intensity}`]}`}>
+              {intensity === 'high' ? <FlameIcon /> : <ZapIcon />}
+              {intensity === 'high' ? 'ALTA' : intensity === 'medium' ? 'MEDIA' : intensity === 'low' ? 'BAJA' : '—'}
             </div>
-          )}
+            <CollapseChevron collapsed={collapsed} onToggle={toggle} />
+          </div>
         </div>
 
-        {/* ── Racha de días ── */}
-        <div className={styles.streakRow}>
-          <div className={styles.streakBox}>
-            <span className={styles.streakIcon}>🔥</span>
-            <div className={styles.streakInfo}>
-              <span className={styles.streakCount}>{streak}</span>
-              <span className={styles.streakLabel}>días seguidos</span>
+        {/* Resumen mínimo plegado */}
+        {collapsed && (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }} onClick={toggle}>
+            <div className={`${styles.levelBadge} ${styles[`level_${levelCfg.color}`]}`}>
+              <span className={styles.levelEmoji}>{levelCfg.emoji}</span>
+              <span className={styles.levelName}>{levelCfg.label}</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'rgba(148,163,184,0.7)' }}>
+              <span>🔥</span>
+              <span style={{ fontWeight: 700, color: '#f1f5f9' }}>{streak}</span>
+              <span>días</span>
             </div>
           </div>
-          <div className={styles.streakDots}>
-            {Array.from({ length: 7 }).map((_, i) => (
-              <div
-                key={i}
-                className={`${styles.streakDot} ${i < Math.min(streak, 7) ? styles.streakDotActive : ''}`}
-              />
-            ))}
-          </div>
-        </div>
+        )}
 
-        {/* ── Copy motivacional ── */}
-        <p className={styles.headline}>{headline}</p>
-        <p className={styles.sub}>{feelingHint ?? sub}</p>
+        {/* ── Cuerpo colapsable ── */}
+        {!collapsed && (
+          <>
+            {/* ── Nivel actual ── */}
+            <div className={styles.levelRow}>
+              <div className={`${styles.levelBadge} ${styles[`level_${levelCfg.color}`]}`}>
+                <span className={styles.levelEmoji}>{levelCfg.emoji}</span>
+                <span className={styles.levelName}>{levelCfg.label}</span>
+              </div>
+              <div className={styles.totalSaved}>{formatEUR(totalSaved)} ahorrados</div>
+            </div>
 
-        {/* ── Botón ajustar ── */}
-        <button
-          className={styles.adjustBtn}
-          onClick={() => {
-            analytics.motivationCtaClicked('pending', 'impact');
-            onAdjustRules();
-          }}
-        >
-          <SettingsIcon />
-          Ajustar reglas
-        </button>
+            {/* ── Barra de progreso al siguiente nivel ── */}
+            <div className={styles.levelProgressSection}>
+              <div className={styles.levelProgressHeader}>
+                <span className={styles.levelProgressLabel}>
+                  {nextLevelCfg
+                    ? `Progreso a ${nextLevelCfg.label} ${nextLevelCfg.emoji}`
+                    : '¡Nivel máximo alcanzado!'}
+                </span>
+                <span className={styles.levelProgressPct}>{levelPct}%</span>
+              </div>
+              <div className={styles.levelProgressTrack}>
+                <div
+                  className={`${styles.levelProgressFill} ${styles[`levelFill_${levelCfg.color}`]}`}
+                  style={{ width: `${levelPct}%` }}
+                />
+              </div>
+              {nextLevelCfg && (
+                <div className={styles.levelProgressHint}>
+                  Faltan {formatEUR(nextLevelCfg.minSaved - totalSaved)} para {nextLevelCfg.label}
+                </div>
+              )}
+            </div>
+
+            {/* ── Racha de días ── */}
+            <div className={styles.streakRow}>
+              <div className={styles.streakBox}>
+                <span className={styles.streakIcon}>🔥</span>
+                <div className={styles.streakInfo}>
+                  <span className={styles.streakCount}>{streak}</span>
+                  <span className={styles.streakLabel}>días seguidos</span>
+                </div>
+              </div>
+              <div className={styles.streakDots}>
+                {Array.from({ length: 7 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className={`${styles.streakDot} ${i < Math.min(streak, 7) ? styles.streakDotActive : ''}`}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* ── Copy motivacional ── */}
+            <p className={styles.headline}>{headline}</p>
+            <p className={styles.sub}>{feelingHint ?? sub}</p>
+
+            {/* ── Botón ajustar ── */}
+            <button
+              className={styles.adjustBtn}
+              onClick={() => {
+                analytics.motivationCtaClicked('pending', 'impact');
+                onAdjustRules();
+              }}
+            >
+              <SettingsIcon />
+              Ajustar reglas
+            </button>
+          </>
+        )}
 
       </div>
     </div>
-    </CollapsibleWidget>
   );
 }
 

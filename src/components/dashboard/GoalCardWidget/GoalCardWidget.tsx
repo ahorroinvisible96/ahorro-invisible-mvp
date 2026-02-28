@@ -6,7 +6,7 @@ import { computeGoalPct, computeGoalRemaining, formatEUR } from './GoalCardWidge
 import type { GoalCardWidgetProps } from './GoalCardWidget.types';
 import styles from './GoalCardWidget.module.css';
 import { useWidgetCollapse } from '@/hooks/useWidgetCollapse';
-import { CollapsibleWidget } from '@/components/dashboard/CollapsibleWidget/CollapsibleWidget';
+import { CollapseChevron } from '@/components/dashboard/CollapsibleWidget/CollapsibleWidget';
 
 // ── Iconos SVG inline ────────────────────────────────────────────────────────
 function TargetIcon({ size = 20 }: { size?: number }) {
@@ -88,48 +88,7 @@ export function GoalCardWidget({
     onSetPrimary(goal.id);
   };
 
-  const collapsedSummary = (
-    <div
-      className={styles.card}
-      onClick={() => onOpenGoal(goal.id)}
-    >
-      <div className={styles.bgGradient} />
-      <div className={styles.glowOverlay}>
-        <div className={styles.glowPurple} />
-        <div className={styles.glowBlue} />
-      </div>
-      <div className={styles.borderLayer} />
-      <div className={styles.content}>
-        <div className={styles.topRow}>
-          <div className={styles.topLeft}>
-            <div className={styles.goalIconWrap}><TargetIcon size={20} /></div>
-            <span className={styles.goalTitle}>{goal.title}</span>
-          </div>
-          {goal.isPrimary && (
-            <div className={styles.primaryBadge}><StarIcon /><span>PRINCIPAL</span></div>
-          )}
-          {isCompleted && !goal.isPrimary && (
-            <div className={styles.completedBadge}>Completado</div>
-          )}
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingRight: 40 }}>
-          <div className={styles.progressTrack} style={{ flex: 1, margin: 0 }}>
-            <div
-              className={`${styles.progressFill} ${pct > 0 ? styles.progressFillActive : styles.progressFillZero}`}
-              style={{ width: `${pct}%` }}
-            />
-          </div>
-          <div className={styles.pctWrap}>
-            <TrendingUpIcon />
-            <span className={pct > 0 ? styles.pctActive : styles.pctZero}>{pct}%</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
   return (
-    <CollapsibleWidget id={`goal_card_${goal.id}`} collapsed={collapsed} onToggle={toggle} summary={collapsedSummary}>
     <div
       className={styles.card}
       onClick={() => onOpenGoal(goal.id)}
@@ -149,29 +108,48 @@ export function GoalCardWidget({
       {/* Layer 4: contenido */}
       <div className={styles.content}>
 
-        {/* ── Sección 1: Título y badge principal ── */}
+        {/* ── Sección 1: Título, badge y chevron ── */}
         <div className={styles.topRow}>
           <div className={styles.topLeft}>
-            <div className={styles.goalIconWrap}>
-              <TargetIcon size={20} />
-            </div>
+            <div className={styles.goalIconWrap}><TargetIcon size={20} /></div>
             <span className={styles.goalTitle}>{goal.title}</span>
           </div>
-
-          {goal.isPrimary && (
-            <div className={styles.primaryBadge}>
-              <StarIcon />
-              <span>PRINCIPAL</span>
-            </div>
-          )}
-
-          {isCompleted && !goal.isPrimary && (
-            <div className={styles.completedBadge}>Completado</div>
-          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }} onClick={e => e.stopPropagation()}>
+            {goal.isPrimary && (
+              <div className={styles.primaryBadge}><StarIcon /><span>PRINCIPAL</span></div>
+            )}
+            {isCompleted && !goal.isPrimary && (
+              <div className={styles.completedBadge}>Completado</div>
+            )}
+            <CollapseChevron collapsed={collapsed} onToggle={toggle} />
+          </div>
         </div>
 
-        {/* ── Sección 2: Montos y barra de progreso ── */}
-        <div className={styles.progressSection}>
+        {/* Resumen mínimo plegado: barra + % */}
+        {collapsed && (
+          <div className={styles.progressSection} style={{ marginBottom: 0 }}>
+            <div className={styles.amountsRow}>
+              <div className={styles.amountsLeft}>
+                <span className={styles.currentAmount}>{formatEUR(goal.currentAmount)}</span>
+                <span className={styles.amountSep}>/</span>
+                <span className={styles.targetAmount}>{formatEUR(goal.targetAmount)}</span>
+              </div>
+              <div className={styles.pctWrap}>
+                <TrendingUpIcon />
+                <span className={pct > 0 ? styles.pctActive : styles.pctZero}>{pct}%</span>
+              </div>
+            </div>
+            <div className={styles.progressTrack}>
+              <div
+                className={`${styles.progressFill} ${pct > 0 ? styles.progressFillActive : styles.progressFillZero}`}
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* ── Sección 2: Montos y barra de progreso (solo desplegado) ── */}
+        {!collapsed && <div className={styles.progressSection}>
           <div className={styles.amountsRow}>
             <div className={styles.amountsLeft}>
               <span className={styles.currentAmount}>{formatEUR(goal.currentAmount)}</span>
@@ -190,10 +168,10 @@ export function GoalCardWidget({
               style={{ width: `${pct}%` }}
             />
           </div>
-        </div>
+        </div>}
 
-        {/* ── Sección 3: Info y acciones ── */}
-        <div className={styles.bottomRow}>
+        {/* ── Sección 3: Info y acciones (solo desplegado) ── */}
+        {!collapsed && <div className={styles.bottomRow}>
           <div className={styles.infoLeft}>
             {!isCompleted && (
               <>
@@ -237,11 +215,10 @@ export function GoalCardWidget({
               <span className={styles.archiveIcon}><ArchiveIcon /></span>
             </button>
           </div>
-        </div>
+        </div>}
 
       </div>
     </div>
-    </CollapsibleWidget>
   );
 }
 

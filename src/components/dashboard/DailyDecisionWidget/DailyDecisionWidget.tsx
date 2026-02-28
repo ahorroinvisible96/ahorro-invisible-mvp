@@ -6,7 +6,7 @@ import { getTodayQuestion, DAILY_DECISION_RULES } from '@/services/dashboardStor
 import type { DailyDecisionWidgetProps, ExtraSaving } from './DailyDecisionWidget.types';
 import styles from './DailyDecisionWidget.module.css';
 import { useWidgetCollapse } from '@/hooks/useWidgetCollapse';
-import { CollapsibleWidget } from '@/components/dashboard/CollapsibleWidget/CollapsibleWidget';
+import { CollapseChevron } from '@/components/dashboard/CollapsibleWidget/CollapsibleWidget';
 
 // ── Modal de ahorro extra ────────────────────────────────────────────────────
 function ExtraSavingModal({
@@ -105,23 +105,26 @@ function CoffeeIcon() {
   );
 }
 
-function WidgetHeader({ completed }: { completed: boolean }) {
+function WidgetHeader({ completed, collapsed, onToggle }: { completed: boolean; collapsed: boolean; onToggle: () => void }) {
   return (
     <div className={styles.header}>
       <div className={styles.headerLeft}>
         <div className={styles.iconBadge}><CoffeeIcon /></div>
         <span className={styles.headerLabel}>DECISIÓN DIARIA</span>
       </div>
-      {completed ? (
-        <div className={styles.badgeCompleted}>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-          Completado
-        </div>
-      ) : (
-        <div className={styles.badgePending}>
-          <span className={styles.badgeDot} /> Pendiente
-        </div>
-      )}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        {completed ? (
+          <div className={styles.badgeCompleted}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Completado
+          </div>
+        ) : (
+          <div className={styles.badgePending}>
+            <span className={styles.badgeDot} /> Pendiente
+          </div>
+        )}
+        <CollapseChevron collapsed={collapsed} onToggle={onToggle} />
+      </div>
     </div>
   );
 }
@@ -191,63 +194,46 @@ export function DailyDecisionWidget({
     !submitting &&
     !confirmed;
 
-  const collapsedSummary = (
-    <div className={styles.wrapper}>
-      <div className={styles.blurBlue} />
-      <div className={styles.blurPurple} />
-      <div className={styles.card}>
-        <WidgetHeader completed={daily.status === 'completed'} />
-        <p style={{ fontSize: 14, color: 'rgba(148,163,184,0.75)', margin: '8px 0 0', paddingRight: 40, lineHeight: 1.4 }}>
-          {daily.status === 'completed' ? '¡Decisión tomada hoy! Tu objetivo avanza.' : todayQuestion.text}
-        </p>
-      </div>
-    </div>
-  );
-
   // ── Estado: completada hoy ───────────────────────────────────────────────
   if (daily.status === 'completed') {
     return (
-      <CollapsibleWidget id="daily_decision" collapsed={collapsed} onToggle={toggle} summary={collapsedSummary}>
       <>
         <div className={styles.wrapper}>
           <div className={styles.blurBlue} />
           <div className={styles.blurPurple} />
           <div className={styles.card}>
-            <WidgetHeader completed />
-            <h2 className={styles.title}>¡Decisión tomada hoy!</h2>
-            <p className={styles.subtitle}>Ya registraste tu ahorro de hoy. Tu objetivo avanza.</p>
-
-            <div className={styles.completedActions}>
-              {onGoToHistory && (
-                <button
-                  className={styles.btnOutline}
-                  onClick={() => { analytics.dailyCtaClicked('completed', 'history'); onGoToHistory(); }}
-                >
-                  Ver progreso →
-                </button>
-              )}
-              <button
-                className={styles.btnExtraSaving}
-                onClick={() => setShowExtraModal(true)}
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                </svg>
-                Añadir ahorro extra
-              </button>
-              {onResetDecision && (
-                <button
-                  className={styles.btnReset}
-                  onClick={() => setShowResetConfirm(true)}
-                >
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="1 4 1 10 7 10"/>
-                    <path d="M3.51 15a9 9 0 1 0 .49-3.5"/>
-                  </svg>
-                  Reiniciar decisión
-                </button>
-              )}
-            </div>
+            <WidgetHeader completed collapsed={collapsed} onToggle={toggle} />
+            {!collapsed && (
+              <>
+                <h2 className={styles.title}>¡Decisión tomada hoy!</h2>
+                <p className={styles.subtitle}>Ya registraste tu ahorro de hoy. Tu objetivo avanza.</p>
+                <div className={styles.completedActions}>
+                  {onGoToHistory && (
+                    <button
+                      className={styles.btnOutline}
+                      onClick={() => { analytics.dailyCtaClicked('completed', 'history'); onGoToHistory(); }}
+                    >
+                      Ver progreso →
+                    </button>
+                  )}
+                  <button className={styles.btnExtraSaving} onClick={() => setShowExtraModal(true)}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    Añadir ahorro extra
+                  </button>
+                  {onResetDecision && (
+                    <button className={styles.btnReset} onClick={() => setShowResetConfirm(true)}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="1 4 1 10 7 10"/>
+                        <path d="M3.51 15a9 9 0 1 0 .49-3.5"/>
+                      </svg>
+                      Reiniciar decisión
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         </div>
 
@@ -269,8 +255,6 @@ export function DailyDecisionWidget({
             </div>
           </div>
         )}
-
-        {/* ── Modal ahorro extra ── */}
         {showExtraModal && (
           <ExtraSavingModal
             allGoals={activeGoals}
@@ -280,7 +264,6 @@ export function DailyDecisionWidget({
           />
         )}
       </>
-      </CollapsibleWidget>
     );
   }
 
@@ -311,18 +294,20 @@ export function DailyDecisionWidget({
 
   // ── Render ───────────────────────────────────────────────────────────────
   return (
-    <CollapsibleWidget id="daily_decision" collapsed={collapsed} onToggle={toggle} summary={collapsedSummary}>
     <div className={styles.wrapper}>
       <div className={styles.blurBlue} />
       <div className={styles.blurPurple} />
       <div className={styles.card}>
 
-        <WidgetHeader completed={confirmed} />
+        <WidgetHeader completed={confirmed} collapsed={collapsed} onToggle={toggle} />
 
-        <h2 className={styles.title}>{todayQuestion.text}</h2>
+        {!collapsed && <h2 className={styles.title}>{todayQuestion.text}</h2>}
+        {collapsed && (
+          <p style={{ fontSize: 13, color: 'rgba(148,163,184,0.65)', margin: '4px 0 0', lineHeight: 1.4, cursor: 'pointer' }} onClick={toggle}>{todayQuestion.text}</p>
+        )}
 
         {/* ── Opciones: precio SIEMPRE visible si delta > 0 ── */}
-        <div className={styles.answers}>
+        {!collapsed && <div className={styles.answers}>
           {todayQuestion.answers.map((a) => {
             const rule = DAILY_DECISION_RULES.find(
               (r) => r.questionId === todayQuestion.questionId && r.answerKey === a.key,
@@ -361,10 +346,10 @@ export function DailyDecisionWidget({
               </button>
             );
           })}
-        </div>
+        </div>}
 
         {/* ── Selector de objetivo inline: solo si la respuesta tiene ahorro ── */}
-        {isSavingAnswer && (
+        {!collapsed && isSavingAnswer && (
           <div className={styles.goalSection}>
             <div className={styles.goalSectionLabelRow}>
               <p className={styles.goalSectionLabel}>
@@ -461,7 +446,7 @@ export function DailyDecisionWidget({
         )}
 
         {/* ── Mensaje motivacional ── */}
-        {motivationalMsg && (
+        {!collapsed && motivationalMsg && (
           <div className={styles.motivBox}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={styles.motivIcon}>
               <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
@@ -471,7 +456,7 @@ export function DailyDecisionWidget({
         )}
 
         {/* ── Botón confirmar ── */}
-        <button
+        {!collapsed && <button
           className={`${styles.btnPrimary} ${!canConfirm ? styles.btnDisabled : ''}`}
           onClick={handleConfirm}
           disabled={!canConfirm}
@@ -484,11 +469,10 @@ export function DailyDecisionWidget({
               Decisión Confirmada
             </span>
           ) : 'Confirmar decisión'}
-        </button>
+        </button>}
 
       </div>
     </div>
-    </CollapsibleWidget>
   );
 }
 

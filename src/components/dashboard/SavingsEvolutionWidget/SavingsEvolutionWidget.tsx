@@ -5,7 +5,7 @@ import { analytics } from '@/services/analytics';
 import type { SavingsEvolutionWidgetProps } from './SavingsEvolutionWidget.types';
 import styles from './SavingsEvolutionWidget.module.css';
 import { useWidgetCollapse } from '@/hooks/useWidgetCollapse';
-import { CollapsibleWidget } from '@/components/dashboard/CollapsibleWidget/CollapsibleWidget';
+import { CollapseChevron } from '@/components/dashboard/CollapsibleWidget/CollapsibleWidget';
 
 // ── Iconos SVG inline ────────────────────────────────────────────────────────
 function TrendingUpIcon() {
@@ -87,133 +87,95 @@ export function SavingsEvolutionWidget({
   const hasData = (evolution?.points?.length ?? 0) > 0;
   const { collapsed, toggle } = useWidgetCollapse('savings_evolution', false);
 
-  const collapsedSummary = (
-    <div className={styles.wrapper}>
-      <div className={styles.bgGradient} />
-      <div className={styles.glowOverlay}>
-        <div className={styles.glowPurple} />
-        <div className={styles.glowBlue} />
-      </div>
-      <div className={styles.borderLayer} />
-      <div className={styles.content}>
-        <div className={styles.header}>
-          <div className={styles.headerLeft}>
-            <div className={styles.iconWrap}><TrendingUpIcon /></div>
-            <span className={styles.title}>Evolución del ahorro</span>
-          </div>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, paddingRight: 40 }}>
-          <span className={styles.totalAmount}>{formatCurrency(totalAmount)}</span>
-          <span className={styles.totalLabel}>en {getRangeDays(selectedRange)}d</span>
-        </div>
-      </div>
-    </div>
-  );
-
   return (
-    <CollapsibleWidget id="savings_evolution" collapsed={collapsed} onToggle={toggle} summary={collapsedSummary}>
     <div className={styles.wrapper}>
-      {/* Layer 1: fondo gradiente */}
       <div className={styles.bgGradient} />
-
-      {/* Layer 2: glow overlay */}
       <div className={styles.glowOverlay}>
         <div className={styles.glowPurple} />
         <div className={styles.glowBlue} />
       </div>
-
-      {/* Layer 3: borde */}
       <div className={styles.borderLayer} />
-
-      {/* Layer 4: contenido */}
       <div className={styles.content}>
 
         {/* ── Header ── */}
         <div className={styles.header}>
           <div className={styles.headerLeft}>
-            <div className={styles.iconWrap}>
-              <TrendingUpIcon />
-            </div>
+            <div className={styles.iconWrap}><TrendingUpIcon /></div>
             <span className={styles.title}>Evolución del ahorro</span>
           </div>
-
           <div className={styles.headerRight}>
             {evolution?.mode === 'demo' && (
               <div className={styles.demoBadge}>DEMO</div>
             )}
-            <div className={styles.rangeSelector}>
-              {RANGES.map((r) => (
-                <button
-                  key={r}
-                  className={`${styles.rangeBtn} ${selectedRange === r ? styles.rangeBtnActive : ''}`}
-                  onClick={() => handleRangeChange(r)}
-                >
-                  {r.toUpperCase()}
-                </button>
-              ))}
-            </div>
+            {!collapsed && (
+              <div className={styles.rangeSelector}>
+                {RANGES.map((r) => (
+                  <button
+                    key={r}
+                    className={`${styles.rangeBtn} ${selectedRange === r ? styles.rangeBtnActive : ''}`}
+                    onClick={() => handleRangeChange(r)}
+                  >
+                    {r.toUpperCase()}
+                  </button>
+                ))}
+              </div>
+            )}
+            <CollapseChevron collapsed={collapsed} onToggle={toggle} />
           </div>
         </div>
 
         {/* ── Total acumulado ── */}
-        <div className={styles.totalSection}>
+        <div className={styles.totalSection} style={{ cursor: collapsed ? 'pointer' : 'default' }} onClick={collapsed ? toggle : undefined}>
           <div className={styles.totalAmount}>{formatCurrency(totalAmount)}</div>
           <div className={styles.totalLabel}>Acumulado en {getRangeDays(selectedRange)}d</div>
         </div>
 
         {/* ── Gráfico o estado vacío ── */}
-        {hasData ? (
-          <div className={styles.chartContainer}>
-            <div className={styles.barsRow}>
-              {evolution!.points.map((point, index) => {
-                const heightPct = maxValue > 0 ? (point.value / maxValue) * 100 : 0;
-                const dateLabel = new Date(point.date).toLocaleDateString('es-ES', {
-                  day: 'numeric',
-                  month: 'short',
-                });
-                return (
-                  <div key={index} className={styles.barWrapper}>
-                    {/* Tooltip */}
-                    <div className={styles.tooltip}>
-                      <div className={styles.tooltipInner}>
-                        <div className={styles.tooltipDate}>{dateLabel}</div>
-                        <div className={styles.tooltipValue}>{formatCurrency(point.value)}</div>
+        {!collapsed && (
+          hasData ? (
+            <div className={styles.chartContainer}>
+              <div className={styles.barsRow}>
+                {evolution!.points.map((point, index) => {
+                  const heightPct = maxValue > 0 ? (point.value / maxValue) * 100 : 0;
+                  const dateLabel = new Date(point.date).toLocaleDateString('es-ES', {
+                    day: 'numeric',
+                    month: 'short',
+                  });
+                  return (
+                    <div key={index} className={styles.barWrapper}>
+                      <div className={styles.tooltip}>
+                        <div className={styles.tooltipInner}>
+                          <div className={styles.tooltipDate}>{dateLabel}</div>
+                          <div className={styles.tooltipValue}>{formatCurrency(point.value)}</div>
+                        </div>
+                        <div className={styles.tooltipArrow} />
                       </div>
-                      <div className={styles.tooltipArrow} />
+                      <div className={styles.bar} style={{ height: `${heightPct}%` }}>
+                        <div className={styles.barBase} />
+                        <div className={styles.barShine} />
+                      </div>
                     </div>
-
-                    {/* Barra */}
-                    <div
-                      className={styles.bar}
-                      style={{ height: `${heightPct}%` }}
-                    >
-                      <div className={styles.barBase} />
-                      <div className={styles.barShine} />
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
+              <div className={styles.axisLine} />
             </div>
-            <div className={styles.axisLine} />
-          </div>
-        ) : (
-          <div className={styles.emptyState}>
-            <div className={styles.emptyIconWrap}>
-              <BarChart3Icon />
+          ) : (
+            <div className={styles.emptyState}>
+              <div className={styles.emptyIconWrap}><BarChart3Icon /></div>
+              <p className={styles.emptyText}>Aún no hay datos para este período.</p>
+              {onGoToDailyQuestion && (
+                <button className={styles.emptyBtn} onClick={onGoToDailyQuestion}>
+                  <span>Responder ahora</span>
+                  <span className={styles.emptyBtnArrow}><ArrowRightIcon /></span>
+                </button>
+              )}
             </div>
-            <p className={styles.emptyText}>Aún no hay datos para este período.</p>
-            {onGoToDailyQuestion && (
-              <button className={styles.emptyBtn} onClick={onGoToDailyQuestion}>
-                <span>Responder ahora</span>
-                <span className={styles.emptyBtnArrow}><ArrowRightIcon /></span>
-              </button>
-            )}
-          </div>
+          )
         )}
 
       </div>
     </div>
-    </CollapsibleWidget>
   );
 }
 
