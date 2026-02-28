@@ -72,7 +72,7 @@ export function GoalCardWidget({
   const pct = computeGoalPct(goal);
   const remaining = computeGoalRemaining(goal);
   const isCompleted = goal.currentAmount >= goal.targetAmount;
-  const { collapsed, toggle } = useWidgetCollapse(`goal_card_${goal.id}`, false);
+  const { collapsed, toggle } = useWidgetCollapse(`goal_card_${goal.id}`, !goal.isPrimary);
 
   useEffect(() => {
     analytics.goalCardViewed(goal.id, goal.isPrimary, pct);

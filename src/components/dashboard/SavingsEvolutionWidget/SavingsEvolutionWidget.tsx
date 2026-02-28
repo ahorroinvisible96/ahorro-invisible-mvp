@@ -85,7 +85,7 @@ export function SavingsEvolutionWidget({
     ? Math.max(...evolution.points.map((p) => p.value))
     : 0;
   const hasData = (evolution?.points?.length ?? 0) > 0;
-  const { collapsed, toggle } = useWidgetCollapse('savings_evolution', false);
+  const { collapsed, toggle } = useWidgetCollapse('savings_evolution', true);
 
   return (
     <div className={styles.wrapper}>

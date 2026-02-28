@@ -101,7 +101,7 @@ export function MotivationCardWidget({
   moneyFeeling,
   onAdjustRules,
 }: MotivationCardWidgetProps): React.ReactElement {
-  const { collapsed, toggle } = useWidgetCollapse('motivation_card', false);
+  const { collapsed, toggle } = useWidgetCollapse('motivation_card', true);
 
   useEffect(() => {
     analytics.dashboardMotivationCardViewed();
