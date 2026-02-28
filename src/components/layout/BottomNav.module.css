@@ -13,8 +13,8 @@
     left: 0;
     right: 0;
     height: 64px;
-    background: rgba(10, 15, 30, 0.97);
-    border-top: 1px solid rgba(51, 65, 85, 0.5);
+    background: var(--color-background-bottomnav);
+    border-top: 1px solid var(--color-border-nav);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     z-index: 100;
@@ -33,7 +33,7 @@
   flex: 1;
   padding: 6px 4px;
   text-decoration: none;
-  color: rgba(100, 116, 139, 0.7);
+  color: var(--color-text-nav);
   transition: color 150ms ease;
   min-width: 0;
 }

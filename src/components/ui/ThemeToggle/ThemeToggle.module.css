@@ -6,23 +6,24 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.5rem;
-  border-radius: 0.5rem;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all var(--transition-fast) var(--transition-ease);
-  color: var(--color-text-secondary);
-  background-color: transparent;
-  border: none;
+  transition: all 160ms ease;
+  color: var(--theme-toggle-color);
+  background: var(--theme-toggle-bg);
+  border: 1px solid var(--theme-toggle-border);
 }
 
 .themeToggle:hover {
-  background-color: var(--color-background-hover);
-  color: var(--color-text-primary);
+  background: var(--theme-toggle-bg-hover);
+  color: var(--theme-toggle-color-hover);
 }
 
 .themeToggle:focus {
   outline: none;
-  box-shadow: 0 0 0 2px var(--color-primary-500);
+  box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.4);
 }
 
 .icon {

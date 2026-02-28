@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import styles from './Sidebar.module.css';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 // ── Iconos SVG inline (16×16 stroke) ─────────────────────────────────────────
 
@@ -149,6 +150,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* ── Footer usuario ── */}
       <div className={styles.footer}>
         <div className={styles.divider} />
+        <div className={styles.themeRow}>
+          <span className={styles.themeLabel}>Tema</span>
+          <ThemeToggle />
+        </div>
         <div className={styles.userRow}>
           <div className={styles.avatar}>
             {userName.charAt(0).toUpperCase()}

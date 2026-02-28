@@ -8,7 +8,7 @@
   margin-bottom: 28px;
   padding: 20px 24px;
   border-radius: 20px;
-  background: linear-gradient(135deg, rgba(30,41,59,0.9) 0%, rgba(15,23,42,0.95) 100%);
+  background: var(--color-background-header);
   border: 1px solid rgba(51,65,85,0.5);
   box-shadow: 0 8px 32px rgba(2,6,23,0.5);
   overflow: hidden;
@@ -72,14 +72,14 @@
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background: linear-gradient(135deg, #1e293b, #0f172a);
+  background: var(--header-avatar-inner);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  font-size: 22px;
+  font-size: var(--header-avatar-font-size);
   font-weight: 800;
-  color: #f1f5f9;
+  color: var(--color-text-primary);
 }
 
 .avatarImg {
@@ -97,7 +97,7 @@
   height: 13px;
   border-radius: 50%;
   background: #22c55e;
-  border: 2.5px solid #0f172a;
+  border: 2.5px solid var(--header-online-border);
   animation: pulse 1.8s ease-in-out infinite;
 }
 
@@ -113,7 +113,7 @@
   gap: 6px;
   font-size: 18px;
   font-weight: 800;
-  color: #f1f5f9;
+  color: var(--color-text-greeting);
   line-height: 1.2;
   margin: 0 0 4px;
   white-space: nowrap;
@@ -132,7 +132,7 @@
   align-items: center;
   gap: 5px;
   font-size: 13px;
-  color: rgba(148,163,184,0.75);
+  color: var(--color-text-sub);
   margin: 0 0 10px;
 }
 
@@ -230,21 +230,21 @@
   width: 38px;
   height: 38px;
   border-radius: 12px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(51,65,85,0.5);
+  background: var(--header-iconbtn-bg);
+  border: 1px solid var(--color-border-subtle);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgba(148,163,184,0.8);
+  color: var(--color-text-secondary);
   cursor: pointer;
   transition: all 200ms ease;
   flex-shrink: 0;
 }
 
 .iconBtn:hover {
-  background: rgba(255,255,255,0.1);
+  background: var(--header-iconbtn-bg-hover);
   border-color: rgba(99,102,241,0.4);
-  color: #f1f5f9;
+  color: var(--color-text-primary);
 }
 
 .settingsIcon {
@@ -260,14 +260,14 @@
   width: 38px;
   height: 38px;
   border-radius: 12px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(51,65,85,0.5);
+  background: var(--header-iconbtn-bg);
+  border: 1px solid var(--color-border-subtle);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 14px;
   font-weight: 700;
-  color: #f1f5f9;
+  color: var(--color-text-primary);
   cursor: pointer;
   transition: all 200ms ease;
   flex-shrink: 0;

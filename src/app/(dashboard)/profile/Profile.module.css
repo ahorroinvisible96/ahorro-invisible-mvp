@@ -1,7 +1,7 @@
 /* ── Página ── */
 .page {
   min-height: 100vh;
-  background: linear-gradient(160deg, #020617 0%, #0f172a 50%, #020617 100%);
+  background: var(--color-background-page);
   padding: 0 0 80px;
   box-sizing: border-box;
   overflow-x: hidden;
@@ -61,14 +61,14 @@
 .pageTitle {
   font-size: 20px;
   font-weight: 800;
-  color: #f1f5f9;
+  color: var(--color-text-page-title);
   margin: 0;
   line-height: 1.2;
 }
 
 .pageSubtitle {
   font-size: 13px;
-  color: rgba(148, 163, 184, 0.65);
+  color: var(--color-text-page-sub);
   margin: 2px 0 0;
 }
 
@@ -88,6 +88,6 @@
   align-items: center;
   justify-content: center;
   height: 200px;
-  color: rgba(148, 163, 184, 0.6);
+  color: var(--color-text-label);
   font-size: 14px;
 }

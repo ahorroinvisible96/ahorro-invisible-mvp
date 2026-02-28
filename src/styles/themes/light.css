@@ -4,34 +4,86 @@
  */
 
 :root[data-theme="light"] {
-  /* Colores de fondo */
-  --color-background-main: #F5F5F0;
-  --color-background-sidebar: #0B1E3B;
-  --color-background-card: #FFFFFF;
+  /* ── Fondos de página ── */
+  --color-background-main: #f1f5f9;
+  --color-background-page: linear-gradient(160deg, #e2e8f0 0%, #f1f5f9 50%, #e8edf4 100%);
+  --color-background-card: #ffffff;
   --color-background-badge: #f0fdf4;
-  --color-background-input: #FFFFFF;
-  --color-background-hover: #F9FAFB;
-  
-  /* Colores de texto */
-  --color-text-primary: #1F2937;
-  --color-text-secondary: #6B7280;
-  --color-text-tertiary: #9CA3AF;
-  --color-text-inverted: #FFFFFF;
+  --color-background-input: #ffffff;
+  --color-background-hover: rgba(0,0,0,0.04);
+  --color-background-sidebar: linear-gradient(180deg, #1e293b 0%, #0f172a 60%, #1a2540 100%);
+  --color-background-bottomnav: rgba(15, 23, 42, 0.97);
+  --color-background-modal: linear-gradient(135deg, #ffffff 0%, #f8fafc 60%, #ffffff 100%);
+  --color-background-header: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.98) 100%);
+  --color-background-overlay: rgba(15, 23, 42, 0.5);
+
+  /* ── Texto ── */
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-text-muted: #64748b;
+  --color-text-label: #94a3b8;
+  --color-text-inverted: #ffffff;
   --color-text-success: #16a34a;
-  --color-text-danger: #ef4444;
-  
-  /* Colores de borde */
+  --color-text-danger: #dc2626;
+  --color-text-page-title: #0f172a;
+  --color-text-page-sub: #64748b;
+  --color-text-nav: rgba(148, 163, 184, 0.9);
+  --color-text-nav-active: #f1f5f9;
+  --color-text-nav-label: rgba(148, 163, 184, 0.5);
+  --color-text-user-name: #f1f5f9;
+  --color-text-user-role: rgba(148, 163, 184, 0.7);
+  --color-text-greeting: #0f172a;
+  --color-text-sub: #64748b;
+
+  /* ── Bordes ── */
+  --color-border-subtle: rgba(203, 213, 225, 0.8);
+  --color-border-card: rgba(226, 232, 240, 0.8);
+  --color-border-sidebar: rgba(51, 65, 85, 0.4);
+  --color-border-nav: rgba(203, 213, 225, 0.5);
+  --color-border-input: #cbd5e1;
+  --color-border-btn: #cbd5e1;
   --color-border-light: #f3f4f6;
   --color-border-medium: #e5e7eb;
-  --color-border-blue: #dbeafe;
-  --color-border-green: #bbf7d0;
-  
-  /* Sombras */
+
+  /* ── Superficies de nav (sidebar sigue oscuro) ── */
+  --nav-item-bg: transparent;
+  --nav-item-bg-hover: rgba(255, 255, 255, 0.07);
+  --nav-item-bg-active: rgba(168, 85, 247, 0.18);
+  --nav-icon-bg: rgba(51, 65, 85, 0.35);
+  --nav-icon-color: rgba(148, 163, 184, 0.8);
+  --nav-item-daily-bg: rgba(168, 85, 247, 0.1);
+  --nav-item-daily-border: rgba(168, 85, 247, 0.25);
+  --nav-user-row-bg: rgba(15, 23, 42, 0.6);
+  --nav-user-row-border: rgba(51, 65, 85, 0.4);
+  --nav-logout-bg-hover: rgba(239, 68, 68, 0.15);
+  --nav-logout-border-hover: rgba(239, 68, 68, 0.35);
+
+  /* ── Modales (en modo light son blancos) ── */
+  --modal-input-bg: #f8fafc;
+  --modal-cancel-bg: #f1f5f9;
+  --modal-cancel-bg-hover: #e2e8f0;
+  --modal-close-bg: #f1f5f9;
+  --modal-close-bg-hover: #e2e8f0;
+  --modal-closebtndash-bg: rgba(248, 250, 252, 0.95);
+
+  /* ── Header barra (en light es blanco) ── */
+  --header-avatar-inner: linear-gradient(135deg, #e2e8f0, #cbd5e1);
+  --header-online-border: #f1f5f9;
+  --header-iconbtn-bg: rgba(0,0,0,0.04);
+  --header-iconbtn-bg-hover: rgba(0,0,0,0.08);
+
+  /* ── Toggle tema ── */
+  --theme-toggle-bg: rgba(203, 213, 225, 0.5);
+  --theme-toggle-bg-hover: rgba(148, 163, 184, 0.5);
+  --theme-toggle-border: #cbd5e1;
+  --theme-toggle-color: #475569;
+  --theme-toggle-color-hover: #0f172a;
+
+  /* ── Sombras ── */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  --shadow-blue-sm: 0 1px 2px rgba(47, 99, 255, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
   --shadow-blue-md: 0 4px 12px rgba(47, 99, 255, 0.15);
-  --shadow-blue-lg: 0 14px 30px rgba(47, 99, 255, 0.35);
+  --shadow-sidebar: 4px 0 24px rgba(0, 0, 0, 0.15);
 }
