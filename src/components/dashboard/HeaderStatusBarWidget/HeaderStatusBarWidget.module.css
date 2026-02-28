@@ -4,44 +4,17 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 28px;
-  padding: 20px 24px;
-  border-radius: 20px;
-  background: var(--color-background-header);
-  border: 1px solid rgba(51,65,85,0.5);
-  box-shadow: 0 8px 32px rgba(2,6,23,0.5);
+  gap: 12px;
+  margin-bottom: 24px;
+  padding: 16px 0 8px;
   overflow: hidden;
-}
-
-/* Overlays decorativos */
-.header::before {
-  content: '';
-  position: absolute;
-  top: -60px;
-  left: -60px;
-  width: 220px;
-  height: 220px;
-  background: radial-gradient(ellipse, rgba(168,85,247,0.12) 0%, transparent 70%);
-  pointer-events: none;
-}
-
-.header::after {
-  content: '';
-  position: absolute;
-  bottom: -40px;
-  right: -40px;
-  width: 180px;
-  height: 180px;
-  background: radial-gradient(ellipse, rgba(37,99,235,0.1) 0%, transparent 70%);
-  pointer-events: none;
 }
 
 /* ── Left: avatar + info ── */
 .leftGroup {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   flex: 1;
   min-width: 0;
 }
@@ -54,10 +27,10 @@
 }
 
 .avatarRing {
-  width: 52px;
-  height: 52px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  padding: 2.5px;
+  padding: 2px;
   background: linear-gradient(135deg, #a855f7, #2563eb, #a855f7);
   background-size: 200% 200%;
   animation: gradientShift 3s ease infinite;
@@ -111,14 +84,15 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 800;
   color: var(--color-text-greeting);
-  line-height: 1.2;
-  margin: 0 0 4px;
+  line-height: 1.1;
+  margin: 0 0 3px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  letter-spacing: -0.3px;
 }
 
 .waveEmoji {
@@ -133,7 +107,7 @@
   gap: 5px;
   font-size: 13px;
   color: var(--color-text-sub);
-  margin: 0 0 10px;
+  margin: 0 0 8px;
 }
 
 .sparkle {
@@ -227,11 +201,11 @@
 
 /* Botón icon genérico */
 .iconBtn {
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
   background: var(--header-iconbtn-bg);
-  border: 1px solid var(--color-border-subtle);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -257,11 +231,11 @@
 
 /* Botón avatar (solo mobile) */
 .profileBtn {
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
   background: var(--header-iconbtn-bg);
-  border: 1px solid var(--color-border-subtle);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -281,7 +255,7 @@
 /* ── Responsive móvil ── */
 @media (max-width: 480px) {
   .header {
-    padding: 14px 14px;
+    padding: 12px 0 6px;
     gap: 10px;
     flex-wrap: nowrap;
     align-items: flex-start;

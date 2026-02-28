@@ -2,7 +2,7 @@
 .wrapper {
   position: relative;
   width: 100%;
-  border-radius: 16px;
+  border-radius: 24px;
   overflow: hidden;
   background: var(--widget-bg);
   border: 1px solid var(--widget-border);
@@ -547,3 +547,4 @@
   0%, 100% { opacity: 1; transform: scale(1); }
   50%       { opacity: 0.4; transform: scale(0.85); }
 }
+

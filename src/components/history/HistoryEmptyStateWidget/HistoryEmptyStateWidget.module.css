@@ -1,7 +1,7 @@
 /* ── Container ── */
 .wrapper {
   position: relative;
-  border-radius: 16px;
+  border-radius: 24px;
   overflow: hidden;
 }
 
@@ -87,3 +87,4 @@
   background: linear-gradient(90deg, #1d4ed8, #9333ea);
   box-shadow: 0 6px 20px rgba(37, 99, 235, 0.45);
 }
+

@@ -1,7 +1,7 @@
 /* ── Container ── */
 .wrapper {
   position: relative;
-  border-radius: 16px;
+  border-radius: 24px;
   overflow: hidden;
 }
 
@@ -142,3 +142,4 @@
   transform: translateX(3px);
   color: #60a5fa;
 }
+

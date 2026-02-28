@@ -1,7 +1,7 @@
 /* ── Container ── */
 .wrapper {
   position: relative;
-  border-radius: 16px;
+  border-radius: 24px;
   overflow: hidden;
 }
 
@@ -114,3 +114,4 @@
 .chipActive:hover {
   background: rgba(37, 99, 235, 0.3);
 }
+

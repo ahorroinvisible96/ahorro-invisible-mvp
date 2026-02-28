@@ -3,14 +3,13 @@
   width: 220px;
   height: 100vh;
   background: var(--color-background-sidebar);
-  border-right: 1px solid var(--color-border-sidebar);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
   display: flex;
   flex-direction: column;
   position: fixed;
   left: 0;
   top: 0;
   z-index: 50;
-  box-shadow: var(--shadow-sidebar);
 }
 
 /* Ocultar en móvil — se usa BottomNav */
@@ -31,14 +30,14 @@
 .logoMark {
   width: 32px;
   height: 32px;
-  border-radius: 9px;
+  border-radius: 10px;
   background: linear-gradient(135deg, #a855f7, #2563eb);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.35);
+  box-shadow: 0 4px 14px rgba(168, 85, 247, 0.4);
 }
 
 .logoTexts {
@@ -117,21 +116,20 @@
 
 /* ── Item activo ── */
 .navItemActive {
-  background: var(--nav-item-bg-active);
-  color: var(--color-text-nav-active);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
   font-weight: 600;
 }
 
 .navItemActive:hover {
-  background: var(--nav-item-bg-active);
-  filter: brightness(1.15);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 /* ── Icono del item ── */
 .navIcon {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -148,8 +146,8 @@
 }
 
 .navIconActive {
-  background: linear-gradient(135deg, rgba(168, 85, 247, 0.3), rgba(37, 99, 235, 0.3));
-  color: #c084fc;
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
 }
 
 /* ── Pip activo (punto derecho) ── */
@@ -225,9 +223,9 @@
 }
 
 .avatar {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
   background: linear-gradient(135deg, #a855f7, #2563eb);
   display: flex;
   align-items: center;

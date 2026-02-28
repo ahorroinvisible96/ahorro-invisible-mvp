@@ -5,72 +5,72 @@
 
 :root[data-theme="dark"] {
   /* ── Fondos de página ── */
-  --color-background-main: #020617;
-  --color-background-page: linear-gradient(160deg, #020617 0%, #0f172a 50%, #020617 100%);
-  --color-background-card: #1e293b;
-  --color-background-badge: #064e3b;
-  --color-background-input: rgba(15, 23, 42, 0.8);
-  --color-background-hover: rgba(255,255,255,0.05);
-  --color-background-sidebar: linear-gradient(180deg, #0a0f1e 0%, #0d1526 60%, #0a0f1e 100%);
-  --color-background-bottomnav: rgba(10, 15, 30, 0.97);
-  --color-background-modal: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #0f172a 100%);
-  --color-background-header: linear-gradient(135deg, rgba(30,41,59,0.9) 0%, rgba(15,23,42,0.95) 100%);
-  --color-background-overlay: rgba(2, 6, 23, 0.8);
+  --color-background-main: #0d0d14;
+  --color-background-page: #0d0d14;
+  --color-background-card: #16161f;
+  --color-background-badge: #0d2e1a;
+  --color-background-input: rgba(255, 255, 255, 0.07);
+  --color-background-hover: rgba(255,255,255,0.06);
+  --color-background-sidebar: #0d0d14;
+  --color-background-bottomnav: #0d0d14;
+  --color-background-modal: #16161f;
+  --color-background-header: transparent;
+  --color-background-overlay: rgba(0, 0, 0, 0.85);
 
   /* ── Texto ── */
-  --color-text-primary: #f1f5f9;
-  --color-text-secondary: rgba(148, 163, 184, 0.75);
-  --color-text-muted: rgba(100, 116, 139, 0.65);
-  --color-text-label: rgba(148, 163, 184, 0.6);
-  --color-text-inverted: #ffffff;
-  --color-text-success: #4ade80;
-  --color-text-danger: #f87171;
-  --color-text-page-title: #f1f5f9;
-  --color-text-page-sub: rgba(148, 163, 184, 0.65);
-  --color-text-nav: rgba(148, 163, 184, 0.75);
-  --color-text-nav-active: #f1f5f9;
-  --color-text-nav-label: rgba(100, 116, 139, 0.55);
-  --color-text-user-name: #e2e8f0;
-  --color-text-user-role: rgba(100, 116, 139, 0.65);
-  --color-text-greeting: #f1f5f9;
-  --color-text-sub: rgba(148,163,184,0.75);
+  --color-text-primary: #ffffff;
+  --color-text-secondary: rgba(255, 255, 255, 0.55);
+  --color-text-muted: rgba(255, 255, 255, 0.35);
+  --color-text-label: rgba(255, 255, 255, 0.45);
+  --color-text-inverted: #0d0d14;
+  --color-text-success: #30d158;
+  --color-text-danger: #ff453a;
+  --color-text-page-title: #ffffff;
+  --color-text-page-sub: rgba(255, 255, 255, 0.5);
+  --color-text-nav: rgba(255, 255, 255, 0.45);
+  --color-text-nav-active: #ffffff;
+  --color-text-nav-label: rgba(255, 255, 255, 0.3);
+  --color-text-user-name: #ffffff;
+  --color-text-user-role: rgba(255, 255, 255, 0.45);
+  --color-text-greeting: #ffffff;
+  --color-text-sub: rgba(255, 255, 255, 0.55);
 
   /* ── Bordes ── */
-  --color-border-subtle: rgba(51, 65, 85, 0.5);
-  --color-border-card: rgba(51, 65, 85, 0.55);
-  --color-border-sidebar: rgba(51, 65, 85, 0.4);
-  --color-border-nav: rgba(51, 65, 85, 0.5);
-  --color-border-input: rgba(51, 65, 85, 0.6);
-  --color-border-btn: rgba(51, 65, 85, 0.4);
-  --color-border-light: #374151;
-  --color-border-medium: #4B5563;
+  --color-border-subtle: rgba(255, 255, 255, 0.08);
+  --color-border-card: rgba(255, 255, 255, 0.07);
+  --color-border-sidebar: rgba(255, 255, 255, 0.06);
+  --color-border-nav: rgba(255, 255, 255, 0.08);
+  --color-border-input: rgba(255, 255, 255, 0.1);
+  --color-border-btn: rgba(255, 255, 255, 0.08);
+  --color-border-light: rgba(255, 255, 255, 0.08);
+  --color-border-medium: rgba(255, 255, 255, 0.12);
 
   /* ── Superficies de nav ── */
   --nav-item-bg: transparent;
-  --nav-item-bg-hover: rgba(255, 255, 255, 0.05);
-  --nav-item-bg-active: rgba(168, 85, 247, 0.12);
-  --nav-icon-bg: rgba(51, 65, 85, 0.3);
-  --nav-icon-color: rgba(100, 116, 139, 0.8);
-  --nav-item-daily-bg: rgba(168, 85, 247, 0.08);
-  --nav-item-daily-border: rgba(168, 85, 247, 0.2);
-  --nav-user-row-bg: rgba(15, 23, 42, 0.5);
-  --nav-user-row-border: rgba(51, 65, 85, 0.35);
-  --nav-logout-bg-hover: rgba(239, 68, 68, 0.1);
-  --nav-logout-border-hover: rgba(239, 68, 68, 0.3);
+  --nav-item-bg-hover: rgba(255, 255, 255, 0.06);
+  --nav-item-bg-active: rgba(255, 255, 255, 0.1);
+  --nav-icon-bg: rgba(255, 255, 255, 0.08);
+  --nav-icon-color: rgba(255, 255, 255, 0.5);
+  --nav-item-daily-bg: rgba(168, 85, 247, 0.15);
+  --nav-item-daily-border: rgba(168, 85, 247, 0.3);
+  --nav-user-row-bg: rgba(255, 255, 255, 0.05);
+  --nav-user-row-border: rgba(255, 255, 255, 0.08);
+  --nav-logout-bg-hover: rgba(255, 69, 58, 0.1);
+  --nav-logout-border-hover: rgba(255, 69, 58, 0.3);
 
   /* ── Modales ── */
-  --modal-input-bg: rgba(15, 23, 42, 0.8);
-  --modal-cancel-bg: rgba(30, 41, 59, 0.5);
-  --modal-cancel-bg-hover: rgba(51, 65, 85, 0.5);
-  --modal-close-bg: rgba(30, 41, 59, 0.6);
-  --modal-close-bg-hover: rgba(51, 65, 85, 0.6);
-  --modal-closebtndash-bg: rgba(15, 23, 42, 0.85);
+  --modal-input-bg: rgba(255, 255, 255, 0.07);
+  --modal-cancel-bg: rgba(255, 255, 255, 0.07);
+  --modal-cancel-bg-hover: rgba(255, 255, 255, 0.12);
+  --modal-close-bg: rgba(255, 255, 255, 0.08);
+  --modal-close-bg-hover: rgba(255, 255, 255, 0.14);
+  --modal-closebtndash-bg: rgba(0, 0, 0, 0.5);
 
   /* ── Header barra ── */
-  --header-avatar-inner: linear-gradient(135deg, #1e293b, #0f172a);
-  --header-online-border: #0f172a;
-  --header-iconbtn-bg: rgba(255,255,255,0.05);
-  --header-iconbtn-bg-hover: rgba(255,255,255,0.1);
+  --header-avatar-inner: #1c1c28;
+  --header-online-border: #0d0d14;
+  --header-iconbtn-bg: rgba(255,255,255,0.08);
+  --header-iconbtn-bg-hover: rgba(255,255,255,0.14);
 
   /* ── Toggle tema ── */
   --theme-toggle-bg: rgba(51, 65, 85, 0.4);
@@ -80,20 +80,20 @@
   --theme-toggle-color-hover: #f1f5f9;
 
   /* ── Legacy text tokens (usados en widgets vía var(--text-primary)) ── */
-  --text-primary: #f1f5f9;
-  --text-secondary: rgba(148, 163, 184, 0.75);
-  --text-muted: rgba(100, 116, 139, 0.65);
-  --text-label: rgba(148, 163, 184, 0.6);
-  --border-subtle: rgba(51, 65, 85, 0.5);
-  --border-card: rgba(51, 65, 85, 0.55);
-  --surface-card: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-  --surface-inner: rgba(15, 23, 42, 0.5);
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.55);
+  --text-muted: rgba(255, 255, 255, 0.35);
+  --text-label: rgba(255, 255, 255, 0.45);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-card: rgba(255, 255, 255, 0.07);
+  --surface-card: #16161f;
+  --surface-inner: rgba(255, 255, 255, 0.05);
 
   /* ── Sombras ── */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6);
-  --shadow-blue-md: 0 4px 12px rgba(47, 99, 255, 0.25);
-  --shadow-sidebar: 4px 0 24px rgba(2, 6, 23, 0.5);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 24px 48px rgba(0, 0, 0, 0.6);
+  --shadow-blue-md: 0 4px 16px rgba(168, 85, 247, 0.3);
+  --shadow-sidebar: 1px 0 0 rgba(255, 255, 255, 0.06);
 }

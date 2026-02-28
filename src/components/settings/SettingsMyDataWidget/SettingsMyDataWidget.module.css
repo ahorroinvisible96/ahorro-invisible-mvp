@@ -1,7 +1,7 @@
 /* ── Container ── */
 .wrapper {
   position: relative;
-  border-radius: 16px;
+  border-radius: 24px;
   overflow: hidden;
 }
 
@@ -123,3 +123,4 @@
   border-color: rgba(59, 130, 246, 0.35);
   color: #60a5fa;
 }
+

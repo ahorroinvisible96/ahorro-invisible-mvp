@@ -12,13 +12,11 @@
     bottom: 0;
     left: 0;
     right: 0;
-    height: 64px;
+    height: 68px;
     background: var(--color-background-bottomnav);
-    border-top: 1px solid var(--color-border-nav);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
     z-index: 100;
-    padding: 0 4px;
+    padding: 0 8px;
     padding-bottom: env(safe-area-inset-bottom);
   }
 }
@@ -29,21 +27,21 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
+  gap: 4px;
   flex: 1;
-  padding: 6px 4px;
+  padding: 8px 4px;
   text-decoration: none;
   color: var(--color-text-nav);
-  transition: color 150ms ease;
+  transition: color 200ms ease;
   min-width: 0;
 }
 
 .item:hover {
-  color: #94a3b8;
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .itemActive {
-  color: #c084fc;
+  color: #ffffff;
 }
 
 /* ── Icono ── */
@@ -51,21 +49,21 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  transition: background 150ms ease;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  transition: background 200ms ease;
 }
 
 .itemActive .icon {
-  background: rgba(168, 85, 247, 0.15);
+  background: rgba(255, 255, 255, 0.12);
 }
 
 /* ── Label ── */
 .label {
   font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  font-weight: 500;
+  letter-spacing: 0.01em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -77,25 +75,25 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 52px;
-  height: 52px;
-  border-radius: 16px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
   background: linear-gradient(135deg, #a855f7, #2563eb);
   border: none;
   color: #fff;
   cursor: pointer;
   flex-shrink: 0;
-  box-shadow: 0 4px 16px rgba(168, 85, 247, 0.45);
-  transition: all 150ms ease;
-  margin-top: -16px;
+  box-shadow: 0 4px 20px rgba(168, 85, 247, 0.5);
+  transition: all 200ms ease;
+  margin-top: -20px;
 }
 
 .dailyBtn:hover {
-  box-shadow: 0 6px 22px rgba(168, 85, 247, 0.6);
-  transform: translateY(-2px);
+  box-shadow: 0 6px 28px rgba(168, 85, 247, 0.65);
+  transform: translateY(-3px) scale(1.04);
 }
 
 .dailyBtn:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(168, 85, 247, 0.4);
+  transform: translateY(0) scale(0.97);
+  box-shadow: 0 2px 10px rgba(168, 85, 247, 0.4);
 }

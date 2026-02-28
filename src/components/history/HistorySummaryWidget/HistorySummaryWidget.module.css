@@ -1,7 +1,7 @@
 /* ── Container ── */
 .wrapper {
   position: relative;
-  border-radius: 16px;
+  border-radius: 24px;
   overflow: hidden;
 }
 
@@ -92,3 +92,4 @@
 .totalSavedZero {
   color: rgba(148, 163, 184, 0.5);
 }
+

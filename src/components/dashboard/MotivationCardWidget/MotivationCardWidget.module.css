@@ -1,7 +1,7 @@
 /* ── Container principal ── */
 .wrapper {
   position: relative;
-  border-radius: 16px;
+  border-radius: 24px;
   overflow: hidden;
 }
 
@@ -340,3 +340,4 @@
   border-color: var(--widget-answer-hover-border);
   color: var(--color-text-primary);
 }
+

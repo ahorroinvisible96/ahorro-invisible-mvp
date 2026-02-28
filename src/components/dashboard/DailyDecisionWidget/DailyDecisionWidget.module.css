@@ -1,7 +1,7 @@
 /* ── Wrapper dark + glows ── */
 .wrapper {
   position: relative;
-  border-radius: 20px;
+  border-radius: 24px;
   overflow: hidden;
   background: var(--widget-bg);
 }
