@@ -8,7 +8,7 @@
 .bgGradient {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  background: var(--widget-bg);
 }
 
 .glowBlue {
@@ -27,7 +27,7 @@
   position: absolute;
   inset: 0;
   border-radius: 16px;
-  border: 1px solid rgba(51, 65, 85, 0.5);
+  border: 1px solid var(--widget-border);
   pointer-events: none;
 }
 
@@ -45,19 +45,19 @@
   width: 52px;
   height: 52px;
   border-radius: 14px;
-  background: rgba(51, 65, 85, 0.4);
-  border: 1px solid rgba(71, 85, 105, 0.4);
+  background: var(--widget-icon-bg);
+  border: 1px solid var(--widget-icon-border);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgba(100, 116, 139, 0.7);
+  color: var(--color-text-muted);
   margin-bottom: 4px;
 }
 
 .title {
   font-size: 16px;
   font-weight: 700;
-  color: #f1f5f9;
+  color: var(--color-text-primary);
   margin: 0;
 }
 

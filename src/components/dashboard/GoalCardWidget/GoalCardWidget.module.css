@@ -16,14 +16,14 @@
 }
 
 .card:hover .borderLayer {
-  border-color: rgba(71, 85, 105, 0.6);
+  border-color: var(--widget-border-hover);
 }
 
 /* ── Layer 1: fondo gradiente ── */
 .bgGradient {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  background: var(--widget-bg);
 }
 
 /* ── Layer 2: glow overlay ── */
@@ -62,8 +62,8 @@
   position: absolute;
   inset: 0;
   border-radius: 16px;
-  border: 1px solid rgba(51, 65, 85, 0.5);
-  box-shadow: 0 10px 15px -3px rgba(2, 6, 23, 0.5);
+  border: 1px solid var(--widget-border);
+  box-shadow: var(--widget-shadow-sm);
   pointer-events: none;
   transition: border-color 300ms ease;
 }
@@ -94,8 +94,8 @@
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background: rgba(30, 41, 59, 0.6);
-  border: 1px solid rgba(51, 65, 85, 0.5);
+  background: var(--widget-icon-bg);
+  border: 1px solid var(--widget-icon-border);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -106,7 +106,7 @@
 .goalTitle {
   font-size: 17px;
   font-weight: 700;
-  color: #f1f5f9;
+  color: var(--color-text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -167,7 +167,7 @@
 .currentAmount {
   font-size: 24px;
   font-weight: 700;
-  color: #f1f5f9;
+  color: var(--color-text-primary);
   letter-spacing: -0.02em;
 }
 
@@ -204,7 +204,7 @@
 .progressTrack {
   position: relative;
   height: 8px;
-  background: rgba(30, 41, 59, 0.8);
+  background: var(--widget-track-bg);
   border-radius: 9999px;
   overflow: hidden;
   backdrop-filter: blur(4px);
@@ -233,7 +233,7 @@
   align-items: center;
   justify-content: space-between;
   padding-top: 12px;
-  border-top: 1px solid rgba(51, 65, 85, 0.3);
+  border-top: 1px solid var(--widget-divider-light);
   gap: 12px;
 }
 
@@ -308,17 +308,17 @@
   width: 34px;
   height: 34px;
   border-radius: 8px;
-  background: rgba(30, 41, 59, 0.5);
-  border: 1px solid rgba(51, 65, 85, 0.5);
-  color: rgba(148, 163, 184, 0.7);
+  background: var(--widget-edit-bg);
+  border: 1px solid var(--widget-edit-border);
+  color: var(--color-text-secondary);
   cursor: pointer;
   transition: all 200ms ease;
 }
 
 .editBtn:hover {
-  background: rgba(51, 65, 85, 0.5);
-  border-color: rgba(71, 85, 105, 0.6);
-  color: rgba(203, 213, 225, 0.9);
+  background: var(--widget-edit-hover);
+  border-color: var(--widget-border-hover);
+  color: var(--color-text-primary);
 }
 
 .editIcon {
@@ -338,9 +338,9 @@
   width: 34px;
   height: 34px;
   border-radius: 8px;
-  background: rgba(30, 41, 59, 0.5);
-  border: 1px solid rgba(51, 65, 85, 0.5);
-  color: rgba(148, 163, 184, 0.7);
+  background: var(--widget-edit-bg);
+  border: 1px solid var(--widget-edit-border);
+  color: var(--color-text-secondary);
   cursor: pointer;
   transition: all 200ms ease;
 }

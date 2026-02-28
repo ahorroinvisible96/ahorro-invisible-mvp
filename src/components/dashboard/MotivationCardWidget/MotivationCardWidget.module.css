@@ -8,7 +8,7 @@
 .bgGradient {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  background: var(--widget-bg);
 }
 
 .glowOverlay {
@@ -44,8 +44,8 @@
   position: absolute;
   inset: 0;
   border-radius: 16px;
-  border: 1px solid rgba(51, 65, 85, 0.5);
-  box-shadow: 0 20px 40px -12px rgba(2, 6, 23, 0.7);
+  border: 1px solid var(--widget-border);
+  box-shadow: var(--widget-shadow);
   pointer-events: none;
 }
 
@@ -208,7 +208,7 @@
 
 .levelProgressTrack {
   height: 6px;
-  background: rgba(30, 41, 59, 0.8);
+  background: var(--widget-track-bg);
   border-radius: 999px;
   overflow: hidden;
   margin-bottom: 4px;
@@ -247,8 +247,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 12px 14px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--widget-inner-bg);
+  border: 1px solid var(--widget-inner-border);
   border-radius: 12px;
   margin-bottom: 16px;
 }
@@ -272,7 +272,7 @@
 .streakCount {
   font-size: 22px;
   font-weight: 800;
-  color: #f1f5f9;
+  color: var(--color-text-primary);
   line-height: 1.1;
 }
 
@@ -326,9 +326,9 @@
   gap: 6px;
   padding: 8px 14px;
   border-radius: 8px;
-  border: 1px solid rgba(100, 116, 139, 0.4);
-  background: rgba(51, 65, 85, 0.4);
-  color: rgba(148, 163, 184, 0.85);
+  border: 1px solid var(--widget-adjust-border);
+  background: var(--widget-adjust-bg);
+  color: var(--color-text-secondary);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -336,7 +336,7 @@
 }
 
 .adjustBtn:hover {
-  background: rgba(51, 65, 85, 0.7);
-  border-color: rgba(100, 116, 139, 0.65);
-  color: #f1f5f9;
+  background: var(--widget-adjust-hover);
+  border-color: var(--widget-answer-hover-border);
+  color: var(--color-text-primary);
 }

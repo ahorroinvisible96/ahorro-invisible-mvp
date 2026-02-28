@@ -4,9 +4,9 @@
   width: 100%;
   border-radius: 16px;
   overflow: hidden;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
-  border: 1px solid rgba(51, 65, 85, 0.5);
-  box-shadow: 0 25px 50px -12px rgba(2, 6, 23, 0.8);
+  background: var(--widget-bg);
+  border: 1px solid var(--widget-border);
+  box-shadow: var(--widget-shadow);
   padding: 20px 24px 0;
 }
 
@@ -77,7 +77,7 @@
   height: 14px;
   border-radius: 50%;
   background: #22c55e;
-  border: 2px solid #0f172a;
+  border: 2px solid var(--header-online-border);
   animation: pulseDot 2s ease-in-out infinite;
 }
 
@@ -125,7 +125,7 @@
 .rangeValue {
   font-size: 22px;
   font-weight: 700;
-  color: #f1f5f9;
+  color: var(--color-text-primary);
   letter-spacing: -0.02em;
   line-height: 1.2;
   white-space: nowrap;
@@ -187,8 +187,8 @@
   gap: 6px;
   padding: 8px 14px;
   border-radius: 10px;
-  background: rgba(30, 41, 59, 0.6);
-  border: 1px solid rgba(51, 65, 85, 0.6);
+  background: var(--widget-action-bg);
+  border: 1px solid var(--widget-action-border);
   color: #60a5fa;
   font-size: 13px;
   font-weight: 600;
@@ -198,7 +198,7 @@
 }
 
 .actionBtn:hover {
-  background: rgba(51, 65, 85, 0.6);
+  background: var(--widget-cancel-hover);
   border-color: rgba(59, 130, 246, 0.6);
   box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2);
 }
@@ -238,8 +238,8 @@
 .dialog {
   width: 100%;
   max-width: 440px;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #0f172a 100%);
-  border: 1px solid rgba(51, 65, 85, 0.5);
+  background: var(--widget-modal-bg);
+  border: 1px solid var(--widget-border);
   border-radius: 20px;
   box-shadow: 0 25px 50px -12px rgba(2, 6, 23, 0.9);
   padding: 24px;
@@ -276,7 +276,7 @@
 .dialogTitle {
   font-size: 16px;
   font-weight: 700;
-  color: #f1f5f9;
+  color: var(--color-text-primary);
   margin: 0;
 }
 
@@ -287,16 +287,16 @@
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: rgba(30, 41, 59, 0.6);
-  border: 1px solid rgba(51, 65, 85, 0.5);
-  color: rgba(148, 163, 184, 0.7);
+  background: var(--widget-edit-bg);
+  border: 1px solid var(--widget-edit-border);
+  color: var(--color-text-secondary);
   cursor: pointer;
   transition: all 200ms ease;
 }
 
 .dialogClose:hover {
-  background: rgba(51, 65, 85, 0.6);
-  color: #f1f5f9;
+  background: var(--widget-cancel-hover);
+  color: var(--color-text-primary);
 }
 
 /* ── Card rango seleccionado ── */
@@ -306,8 +306,8 @@
   align-items: baseline;
   padding: 16px;
   border-radius: 12px;
-  background: rgba(30, 41, 59, 0.5);
-  border: 1px solid rgba(51, 65, 85, 0.5);
+  background: var(--widget-range-card-bg);
+  border: 1px solid var(--widget-range-card-border);
 }
 
 .rangeCardLabel {
@@ -324,7 +324,7 @@
 .rangeCardMin {
   font-size: 22px;
   font-weight: 700;
-  color: #f1f5f9;
+  color: var(--color-text-primary);
 }
 
 .rangeCardSep {
@@ -335,7 +335,7 @@
 .rangeCardMax {
   font-size: 22px;
   font-weight: 700;
-  color: #f1f5f9;
+  color: var(--color-text-primary);
 }
 
 /* ── Sliders ── */
@@ -396,7 +396,7 @@
   left: 0;
   right: 0;
   height: 8px;
-  background: rgba(30, 41, 59, 0.9);
+  background: var(--widget-slider-track);
   border-radius: 9999px;
   overflow: hidden;
 }
@@ -493,9 +493,9 @@
   flex: 1;
   padding: 10px 16px;
   border-radius: 10px;
-  background: rgba(30, 41, 59, 0.5);
-  border: 1px solid rgba(51, 65, 85, 0.5);
-  color: rgba(203, 213, 225, 0.8);
+  background: var(--widget-cancel-bg);
+  border: 1px solid var(--widget-border);
+  color: var(--color-text-secondary);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -503,8 +503,8 @@
 }
 
 .btnCancel:hover {
-  background: rgba(51, 65, 85, 0.5);
-  color: #f1f5f9;
+  background: var(--widget-cancel-hover);
+  color: var(--color-text-primary);
 }
 
 .btnSave {

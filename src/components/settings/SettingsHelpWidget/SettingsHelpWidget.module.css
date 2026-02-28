@@ -8,7 +8,7 @@
 .bgGradient {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #0f172a 100%);
+  background: var(--widget-bg);
 }
 
 .glowPurple {
@@ -27,8 +27,8 @@
   position: absolute;
   inset: 0;
   border-radius: 16px;
-  border: 1px solid rgba(51, 65, 85, 0.55);
-  box-shadow: 0 20px 40px -12px rgba(2, 6, 23, 0.5);
+  border: 1px solid var(--widget-border);
+  box-shadow: var(--widget-shadow-sm);
   pointer-events: none;
 }
 
@@ -75,7 +75,7 @@
 .faqItem {
   border-radius: 10px;
   overflow: hidden;
-  border: 1px solid rgba(51, 65, 85, 0.35);
+  border: 1px solid var(--widget-divider-light);
   transition: border-color 180ms ease;
 }
 
@@ -100,7 +100,7 @@
 .faqQuestionText {
   font-size: var(--widget-body-size, 13px);
   font-weight: 600;
-  color: #e2e8f0;
+  color: var(--color-text-primary);
   line-height: 1.4;
 }
 
@@ -118,9 +118,9 @@
 .faqAnswer {
   padding: 0 14px 12px;
   font-size: var(--widget-body-size, 13px);
-  color: var(--text-secondary, rgba(148, 163, 184, 0.75));
+  color: var(--color-text-secondary);
   line-height: 1.6;
-  border-top: 1px solid rgba(51, 65, 85, 0.3);
+  border-top: 1px solid var(--widget-divider-light);
   padding-top: 10px;
 }
 
@@ -131,7 +131,7 @@
   justify-content: center;
   margin-top: 16px;
   padding-top: 14px;
-  border-top: 1px solid rgba(51, 65, 85, 0.3);
+  border-top: 1px solid var(--widget-divider-light);
   gap: 6px;
 }
 

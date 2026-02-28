@@ -8,7 +8,7 @@
 .bgGradient {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  background: var(--widget-bg-alt);
 }
 
 .glowPurple {
@@ -27,8 +27,8 @@
   position: absolute;
   inset: 0;
   border-radius: 16px;
-  border: 1px solid rgba(51, 65, 85, 0.6);
-  box-shadow: 0 20px 40px -12px rgba(2, 6, 23, 0.5);
+  border: 1px solid var(--widget-border);
+  box-shadow: var(--widget-shadow-sm);
   pointer-events: none;
 }
 
@@ -98,8 +98,8 @@
 .input {
   width: 100%;
   padding: 10px 14px;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid var(--border-card, rgba(51, 65, 85, 0.55));
+  background: var(--widget-input-bg-alt);
+  border: 1px solid var(--widget-border);
   border-radius: var(--btn-radius, 10px);
   color: var(--text-primary, #f1f5f9);
   font-size: var(--widget-row-label, 14px);
@@ -115,9 +115,9 @@
 }
 
 .inputDisabled {
-  color: rgba(100, 116, 139, 0.6);
+  color: var(--color-text-muted);
   cursor: not-allowed;
-  background: rgba(15, 23, 42, 0.3);
+  background: var(--widget-inner-bg);
 }
 
 .inputHint {

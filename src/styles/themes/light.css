@@ -79,6 +79,59 @@
   --theme-toggle-color: #475569;
   --theme-toggle-color-hover: #0f172a;
 
+  /* ── Legacy text tokens (usados en widgets vía var(--text-primary)) ── */
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --text-label: #94a3b8;
+  --border-subtle: rgba(203, 213, 225, 0.8);
+  --border-card: rgba(226, 232, 240, 0.8);
+  --surface-card: #ffffff;
+  --surface-inner: #f8fafc;
+
+  /* ── Variables estructurales de widgets ── */
+  --widget-bg: #ffffff;
+  --widget-bg-alt: #f8fafc;
+  --widget-card-bg: rgba(255, 255, 255, 0.97);
+  --widget-border: rgba(203, 213, 225, 0.7);
+  --widget-border-hover: rgba(148, 163, 184, 0.7);
+  --widget-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  --widget-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --widget-inner-bg: rgba(0, 0, 0, 0.025);
+  --widget-inner-border: rgba(0, 0, 0, 0.07);
+  --widget-answer-bg: #f1f5f9;
+  --widget-answer-border: rgba(203, 213, 225, 0.8);
+  --widget-answer-hover-bg: #e2e8f0;
+  --widget-answer-hover-border: rgba(148, 163, 184, 0.8);
+  --widget-range-selector-bg: #f1f5f9;
+  --widget-track-bg: rgba(0, 0, 0, 0.08);
+  --widget-track-bg-light: rgba(0, 0, 0, 0.08);
+  --widget-icon-bg: #f1f5f9;
+  --widget-icon-border: rgba(203, 213, 225, 0.7);
+  --widget-action-bg: #f1f5f9;
+  --widget-action-border: #cbd5e1;
+  --widget-cancel-bg: #f1f5f9;
+  --widget-cancel-hover: #e2e8f0;
+  --widget-input-bg: #f8fafc;
+  --widget-input-bg-alt: #f8fafc;
+  --widget-modal-bg: #ffffff;
+  --widget-list-item-bg: #f8fafc;
+  --widget-list-item-border: rgba(203, 213, 225, 0.6);
+  --widget-list-item-hover: #f1f5f9;
+  --widget-divider: rgba(203, 213, 225, 0.5);
+  --widget-divider-light: rgba(203, 213, 225, 0.4);
+  --widget-adjust-bg: #f1f5f9;
+  --widget-adjust-border: rgba(203, 213, 225, 0.8);
+  --widget-adjust-hover: #e2e8f0;
+  --widget-tooltip-bg: #ffffff;
+  --widget-slider-track: rgba(203, 213, 225, 0.6);
+  --widget-edit-bg: #f1f5f9;
+  --widget-edit-border: rgba(203, 213, 225, 0.7);
+  --widget-edit-hover: #e2e8f0;
+  --widget-range-card-bg: #f1f5f9;
+  --widget-range-card-border: rgba(203, 213, 225, 0.7);
+  --widget-logout-bg: #f8fafc;
+
   /* ── Sombras ── */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08);

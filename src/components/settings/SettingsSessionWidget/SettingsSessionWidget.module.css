@@ -8,7 +8,7 @@
 .bgGradient {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  background: var(--widget-bg-alt);
 }
 
 .glowGreen {
@@ -27,8 +27,8 @@
   position: absolute;
   inset: 0;
   border-radius: 16px;
-  border: 1px solid rgba(51, 65, 85, 0.55);
-  box-shadow: 0 20px 40px -12px rgba(2, 6, 23, 0.5);
+  border: 1px solid var(--widget-border);
+  box-shadow: var(--widget-shadow-sm);
   pointer-events: none;
 }
 
@@ -109,8 +109,8 @@
   gap: 10px;
   width: 100%;
   padding: 12px 16px;
-  background: rgba(15, 23, 42, 0.5);
-  border: 1px solid var(--border-subtle, rgba(51, 65, 85, 0.5));
+  background: var(--widget-logout-bg);
+  border: 1px solid var(--widget-border);
   border-radius: var(--btn-radius, 10px);
   color: rgba(148, 163, 184, 0.8);
   font-size: var(--widget-row-label, 14px);

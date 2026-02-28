@@ -8,7 +8,7 @@
 .bgGradient {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  background: var(--widget-bg-alt);
 }
 
 .glowBlue {
@@ -27,8 +27,8 @@
   position: absolute;
   inset: 0;
   border-radius: 16px;
-  border: 1px solid rgba(51, 65, 85, 0.55);
-  box-shadow: 0 20px 40px -12px rgba(2, 6, 23, 0.5);
+  border: 1px solid var(--widget-border);
+  box-shadow: var(--widget-shadow-sm);
   pointer-events: none;
 }
 
@@ -72,7 +72,7 @@
   justify-content: space-between;
   gap: 12px;
   padding: 13px 0;
-  border-bottom: 1px solid rgba(51, 65, 85, 0.35);
+  border-bottom: 1px solid var(--widget-divider-light);
 }
 
 .row:last-child {
@@ -89,7 +89,7 @@
 .rowLabel {
   font-size: var(--widget-row-label, 14px);
   font-weight: 600;
-  color: #e2e8f0;
+  color: var(--color-text-primary);
   margin: 0;
 }
 
@@ -105,10 +105,10 @@
   align-items: center;
   gap: 6px;
   padding: 7px 14px;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid var(--border-subtle, rgba(51, 65, 85, 0.5));
+  background: var(--widget-action-bg);
+  border: 1px solid var(--widget-action-border);
   border-radius: var(--btn-radius, 10px);
-  color: #94a3b8;
+  color: var(--color-text-secondary);
   font-size: var(--widget-body-size, 13px);
   font-weight: var(--btn-font-weight, 600);
   cursor: pointer;

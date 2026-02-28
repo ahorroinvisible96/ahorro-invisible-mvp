@@ -9,7 +9,7 @@
 .bgGradient {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  background: var(--widget-bg);
 }
 
 /* ── Layer 2: glow overlay ── */
@@ -47,8 +47,8 @@
   position: absolute;
   inset: 0;
   border-radius: 16px;
-  border: 1px solid rgba(51, 65, 85, 0.5);
-  box-shadow: 0 25px 50px -12px rgba(2, 6, 23, 0.8);
+  border: 1px solid var(--widget-border);
+  box-shadow: var(--widget-shadow);
   pointer-events: none;
 }
 
@@ -120,8 +120,8 @@
   gap: 4px;
   padding: 4px;
   border-radius: 10px;
-  background: rgba(30, 41, 59, 0.6);
-  border: 1px solid rgba(51, 65, 85, 0.5);
+  background: var(--widget-range-selector-bg);
+  border: 1px solid var(--widget-border);
 }
 
 .rangeBtn {
@@ -160,7 +160,7 @@
 .totalAmount {
   font-size: 36px;
   font-weight: 700;
-  color: #f1f5f9;
+  color: var(--color-text-primary);
   letter-spacing: -0.02em;
   line-height: 1.1;
   margin-bottom: 4px;
@@ -214,9 +214,9 @@
 .tooltipInner {
   padding: 8px 12px;
   border-radius: 8px;
-  background: #1e293b;
-  border: 1px solid rgba(51, 65, 85, 0.5);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+  background: var(--widget-tooltip-bg);
+  border: 1px solid var(--widget-border);
+  box-shadow: var(--shadow-lg);
 }
 
 .tooltipDate {
@@ -228,7 +228,7 @@
 .tooltipValue {
   font-size: 13px;
   font-weight: 700;
-  color: #f1f5f9;
+  color: var(--color-text-primary);
 }
 
 .tooltipArrow {
@@ -238,9 +238,9 @@
   transform: translateX(-50%) translateY(-50%) rotate(45deg);
   width: 8px;
   height: 8px;
-  background: #1e293b;
-  border-right: 1px solid rgba(51, 65, 85, 0.5);
-  border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+  background: var(--widget-tooltip-bg);
+  border-right: 1px solid var(--widget-border);
+  border-bottom: 1px solid var(--widget-border);
 }
 
 /* La barra en sí */
@@ -286,8 +286,8 @@
   width: 64px;
   height: 64px;
   border-radius: 16px;
-  background: rgba(30, 41, 59, 0.6);
-  border: 1px solid rgba(51, 65, 85, 0.5);
+  background: var(--widget-icon-bg);
+  border: 1px solid var(--widget-icon-border);
   display: flex;
   align-items: center;
   justify-content: center;

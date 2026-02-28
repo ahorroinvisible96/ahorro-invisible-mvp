@@ -142,6 +142,49 @@
   /* ── Gradiente primario ── */
   --grad-primary: linear-gradient(90deg, #a855f7, #2563eb);
   --grad-primary-hover: linear-gradient(90deg, #9333ea, #1d4ed8);
+
+  /* ── Variables estructurales de widgets (dark por defecto) ── */
+  --widget-bg: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  --widget-bg-alt: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  --widget-card-bg: linear-gradient(135deg, rgba(30,41,59,0.85) 0%, rgba(15,23,42,0.92) 100%);
+  --widget-border: rgba(51, 65, 85, 0.5);
+  --widget-border-hover: rgba(71, 85, 105, 0.6);
+  --widget-shadow: 0 25px 50px -12px rgba(2, 6, 23, 0.8);
+  --widget-shadow-sm: 0 10px 15px -3px rgba(2, 6, 23, 0.5);
+  --widget-inner-bg: rgba(255, 255, 255, 0.04);
+  --widget-inner-border: rgba(255, 255, 255, 0.07);
+  --widget-answer-bg: rgba(51, 65, 85, 0.3);
+  --widget-answer-border: rgba(100, 116, 139, 0.4);
+  --widget-answer-hover-bg: rgba(51, 65, 85, 0.5);
+  --widget-answer-hover-border: rgba(100, 116, 139, 0.7);
+  --widget-range-selector-bg: rgba(30, 41, 59, 0.6);
+  --widget-track-bg: rgba(30, 41, 59, 0.8);
+  --widget-track-bg-light: rgba(255, 255, 255, 0.08);
+  --widget-icon-bg: rgba(30, 41, 59, 0.6);
+  --widget-icon-border: rgba(51, 65, 85, 0.5);
+  --widget-action-bg: rgba(30, 41, 59, 0.6);
+  --widget-action-border: rgba(51, 65, 85, 0.6);
+  --widget-cancel-bg: rgba(51, 65, 85, 0.4);
+  --widget-cancel-hover: rgba(51, 65, 85, 0.7);
+  --widget-input-bg: rgba(30, 41, 59, 0.8);
+  --widget-input-bg-alt: rgba(15, 23, 42, 0.6);
+  --widget-modal-bg: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  --widget-list-item-bg: rgba(15, 23, 42, 0.5);
+  --widget-list-item-border: rgba(51, 65, 85, 0.4);
+  --widget-list-item-hover: rgba(30, 41, 59, 0.8);
+  --widget-divider: rgba(51, 65, 85, 0.4);
+  --widget-divider-light: rgba(51, 65, 85, 0.3);
+  --widget-adjust-bg: rgba(51, 65, 85, 0.4);
+  --widget-adjust-border: rgba(100, 116, 139, 0.4);
+  --widget-adjust-hover: rgba(51, 65, 85, 0.7);
+  --widget-tooltip-bg: #1e293b;
+  --widget-slider-track: rgba(30, 41, 59, 0.9);
+  --widget-edit-bg: rgba(30, 41, 59, 0.5);
+  --widget-edit-border: rgba(51, 65, 85, 0.5);
+  --widget-edit-hover: rgba(51, 65, 85, 0.5);
+  --widget-range-card-bg: rgba(30, 41, 59, 0.5);
+  --widget-range-card-border: rgba(51, 65, 85, 0.5);
+  --widget-logout-bg: rgba(15, 23, 42, 0.5);
 }
 
 body {

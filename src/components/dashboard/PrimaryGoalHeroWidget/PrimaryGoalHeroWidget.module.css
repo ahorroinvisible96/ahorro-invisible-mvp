@@ -3,7 +3,7 @@
   position: relative;
   border-radius: 20px;
   overflow: hidden;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  background: var(--widget-bg);
 }
 
 .blurBlue {
@@ -36,11 +36,11 @@
 .card {
   position: relative;
   z-index: 1;
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.92) 100%);
+  background: var(--widget-card-bg);
   backdrop-filter: blur(4px);
   border-radius: 18px;
   padding: 20px 22px 22px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--widget-border);
 }
 
 /* ── Header ── */
@@ -123,14 +123,14 @@
 .currentAmount {
   font-size: 28px;
   font-weight: 800;
-  color: #f1f5f9;
+  color: var(--color-text-primary);
   line-height: 1;
   white-space: nowrap;
 }
 
 .targetAmount {
   font-size: 14px;
-  color: rgba(148, 163, 184, 0.65);
+  color: var(--color-text-secondary);
   font-weight: 400;
   white-space: nowrap;
   overflow: hidden;
@@ -156,7 +156,7 @@
   position: relative;
   width: 100%;
   height: 8px;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--widget-track-bg-light);
   border-radius: 999px;
   overflow: hidden;
   margin-bottom: 14px;
@@ -211,8 +211,8 @@
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--widget-inner-bg);
+  border: 1px solid var(--widget-inner-border);
   border-radius: 12px;
   padding: 12px 14px;
   margin-bottom: 18px;
@@ -227,13 +227,13 @@
 
 .infoText {
   font-size: var(--widget-body-size, 13px);
-  color: rgba(203, 213, 225, 0.9);
+  color: var(--color-text-secondary);
   margin: 0 0 3px;
   line-height: 1.5;
 }
 
 .infoText strong {
-  color: #f1f5f9;
+  color: var(--color-text-primary);
   font-weight: 700;
 }
 
@@ -272,10 +272,10 @@
 .btnSecondary {
   flex: 1;
   padding: 12px 0;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--widget-border);
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(203, 213, 225, 0.85);
+  background: var(--widget-answer-bg);
+  color: var(--color-text-secondary);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -283,9 +283,9 @@
 }
 
 .btnSecondary:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.22);
-  color: #f1f5f9;
+  background: var(--widget-answer-hover-bg);
+  border-color: var(--widget-border-hover);
+  color: var(--color-text-primary);
 }
 
 .btnAddFunds {

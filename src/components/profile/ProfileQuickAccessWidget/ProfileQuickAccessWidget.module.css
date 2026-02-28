@@ -8,7 +8,7 @@
 .bgGradient {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #0f172a 100%);
+  background: var(--widget-bg);
 }
 
 .glowBlue {
@@ -27,8 +27,8 @@
   position: absolute;
   inset: 0;
   border-radius: 16px;
-  border: 1px solid rgba(51, 65, 85, 0.5);
-  box-shadow: 0 20px 40px -12px rgba(2, 6, 23, 0.5);
+  border: 1px solid var(--widget-border);
+  box-shadow: var(--widget-shadow-sm);
   pointer-events: none;
 }
 
@@ -77,8 +77,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 13px 16px;
-  background: rgba(15, 23, 42, 0.5);
-  border: 1px solid rgba(51, 65, 85, 0.4);
+  background: var(--widget-list-item-bg);
+  border: 1px solid var(--widget-list-item-border);
   border-radius: 12px;
   cursor: pointer;
   transition: all 180ms ease;
@@ -88,7 +88,7 @@
 }
 
 .item:hover {
-  background: rgba(30, 41, 59, 0.8);
+  background: var(--widget-list-item-hover);
   border-color: rgba(59, 130, 246, 0.3);
   transform: translateX(2px);
 }
@@ -130,7 +130,7 @@
 .itemLabel {
   font-size: var(--widget-row-label, 14px);
   font-weight: 600;
-  color: #e2e8f0;
+  color: var(--color-text-primary);
 }
 
 .chevron {

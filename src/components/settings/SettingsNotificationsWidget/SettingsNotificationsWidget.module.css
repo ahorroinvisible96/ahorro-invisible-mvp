@@ -8,7 +8,7 @@
 .bgGradient {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #0f172a 100%);
+  background: var(--widget-bg);
 }
 
 .glowYellow {
@@ -27,8 +27,8 @@
   position: absolute;
   inset: 0;
   border-radius: 16px;
-  border: 1px solid rgba(51, 65, 85, 0.55);
-  box-shadow: 0 20px 40px -12px rgba(2, 6, 23, 0.5);
+  border: 1px solid var(--widget-border);
+  box-shadow: var(--widget-shadow-sm);
   pointer-events: none;
 }
 
@@ -72,7 +72,7 @@
   justify-content: space-between;
   gap: 12px;
   padding: 13px 0;
-  border-bottom: 1px solid rgba(51, 65, 85, 0.35);
+  border-bottom: 1px solid var(--widget-divider-light);
 }
 
 .row:last-child {
@@ -89,7 +89,7 @@
 .rowLabel {
   font-size: var(--widget-row-label, 14px);
   font-weight: 600;
-  color: #e2e8f0;
+  color: var(--color-text-primary);
   margin: 0;
 }
 
