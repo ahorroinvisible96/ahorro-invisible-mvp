@@ -170,7 +170,7 @@ export function GoalCardWidget({
           </div>
         </div>}
 
-        {/* ── Sección 3: Info y acciones (solo desplegado) ── */}
+        {/* ── Sección 3: Info (solo desplegado) ── */}
         {!collapsed && <div className={styles.bottomRow}>
           <div className={styles.infoLeft}>
             {!isCompleted && (
@@ -188,32 +188,6 @@ export function GoalCardWidget({
             {isCompleted && (
               <span className={styles.infoCompleted}>¡Objetivo alcanzado!</span>
             )}
-          </div>
-
-          <div className={styles.actions} onClick={(e) => e.stopPropagation()}>
-            {!goal.isPrimary && (
-              <button className={styles.makePrimaryBtn} onClick={handleSetPrimary}>
-                Hacer principal
-              </button>
-            )}
-
-            {onEditGoal && (
-              <button
-                className={styles.editBtn}
-                onClick={(e) => { e.stopPropagation(); onEditGoal(goal.id); }}
-                title="Editar"
-              >
-                <span className={styles.editIcon}><Edit2Icon /></span>
-              </button>
-            )}
-
-            <button
-              className={styles.archiveBtn}
-              onClick={handleArchive}
-              title="Archivar"
-            >
-              <span className={styles.archiveIcon}><ArchiveIcon /></span>
-            </button>
           </div>
         </div>}
 

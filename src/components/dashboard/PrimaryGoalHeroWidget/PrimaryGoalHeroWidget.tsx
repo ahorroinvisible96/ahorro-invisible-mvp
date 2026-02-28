@@ -125,7 +125,6 @@ export function PrimaryGoalHeroWidget({
                       <> ETA: <strong>{estimatedMonthsRemaining} mes{estimatedMonthsRemaining !== 1 ? 'es' : ''}</strong>.</>
                     )}
                   </p>
-                  <p className={styles.infoSub}>¡Sigue así! Cada pequeño paso cuenta.</p>
                 </div>
               </div>
             ) : (
@@ -135,7 +134,7 @@ export function PrimaryGoalHeroWidget({
               </div>
             )}
 
-            {/* Buttons */}
+            {/* Button — solo CTA principal */}
             <div className={styles.buttonsRow}>
               {!d.isCompleted ? (
                 dailyCompleted ? (
@@ -155,9 +154,6 @@ export function PrimaryGoalHeroWidget({
                   Crear nueva meta
                 </button>
               )}
-              <button className={styles.btnSecondary} onClick={onGoToHistory}>
-                Ver Detalles
-              </button>
             </div>
           </>
         )}

@@ -21,28 +21,24 @@ function SettingsIcon() {
 
 export function HeaderStatusBarWidget({
   userName,
-  systemActive,
   userAvatar,
-  motivationalPhrase,
   streak = 0,
   onOpenProfile,
   onOpenSettings,
-  onOpenNotifications,
 }: HeaderStatusBarProps): React.ReactElement {
   useEffect(() => {
     analytics.setScreen('dashboard');
   }, []);
 
   const initials = userName.trim().charAt(0).toUpperCase();
-  const phrase = motivationalPhrase ?? 'Tus ahorros crecen mientras brilla el día.';
 
   return (
     <div className={styles.header}>
 
-      {/* ── Left: avatar + info ── */}
+      {/* ── Left: avatar + saludo ── */}
       <div className={styles.leftGroup}>
 
-        {/* Avatar circular */}
+        {/* Avatar */}
         <div className={styles.avatarWrap} onClick={onOpenProfile} role="button" aria-label="Ver perfil">
           <div className={styles.avatarRing}>
             <div className={styles.avatarInner}>
@@ -52,7 +48,6 @@ export function HeaderStatusBarWidget({
               }
             </div>
           </div>
-          <span className={styles.onlineDot} />
         </div>
 
         {/* Texto */}
@@ -61,39 +56,17 @@ export function HeaderStatusBarWidget({
             Hola, {userName}
             <span className={styles.waveEmoji} aria-hidden>👋</span>
           </h1>
-          <p className={styles.sub}>
-            <span className={styles.sparkle}>✨</span>
-            {phrase}
-          </p>
-
-          {/* Racha */}
-          {streak > 0 ? (
+          {streak > 0 && (
             <div className={styles.streakBadge}>
               <span className={styles.streakFlame}>🔥</span>
               <span className={styles.streakText}>{streak} {streak === 1 ? 'día' : 'días'} de racha</span>
-            </div>
-          ) : (
-            <div className={styles.streakZero}>
-              <span className={styles.streakFlame}>💤</span>
-              <span className={styles.streakZeroText}>Empieza tu racha hoy</span>
             </div>
           )}
         </div>
       </div>
 
-      {/* ── Right: acciones ── */}
+      {/* ── Right: settings ── */}
       <div className={styles.actions}>
-
-        {/* Badge sistema */}
-        <div className={systemActive
-          ? styles.systemPill
-          : `${styles.systemPill} ${styles.systemPillInactive}`
-        }>
-          <span className={systemActive ? styles.systemDot : styles.systemDotInactive} />
-          SISTEMA {systemActive ? 'ACTIVO' : 'INACTIVO'}
-        </div>
-
-        {/* Botón settings */}
         {onOpenSettings && (
           <button
             className={styles.iconBtn}
@@ -103,21 +76,6 @@ export function HeaderStatusBarWidget({
             <SettingsIcon />
           </button>
         )}
-
-        {/* Botón notificaciones */}
-        {onOpenNotifications && (
-          <button
-            className={styles.iconBtn}
-            onClick={onOpenNotifications}
-            aria-label="Notificaciones"
-          >
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-            </svg>
-          </button>
-        )}
-
       </div>
     </div>
   );
