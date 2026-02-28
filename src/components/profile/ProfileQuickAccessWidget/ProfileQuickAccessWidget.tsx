@@ -3,12 +3,15 @@
 import React from 'react';
 import type { ProfileQuickAccessWidgetProps } from './ProfileQuickAccessWidget.types';
 import styles from './ProfileQuickAccessWidget.module.css';
+import { useWidgetCollapse } from '@/hooks/useWidgetCollapse';
+import { CollapseChevron } from '@/components/dashboard/CollapsibleWidget/CollapsibleWidget';
 
 export function ProfileQuickAccessWidget({
   onGoToSettings,
   onGoToGoals,
   onGoToHistory,
 }: ProfileQuickAccessWidgetProps): React.ReactElement {
+  const { collapsed, toggle } = useWidgetCollapse('profile_quick_access', false);
   const items = [
     {
       label: 'Mis objetivos',
@@ -60,10 +63,11 @@ export function ProfileQuickAccessWidget({
               <polyline points="13 2 13 9 20 9"/>
             </svg>
           </div>
-          <h2 className={styles.title}>Accesos rápidos</h2>
+          <h2 className={styles.title} style={{ flex: 1 }}>Accesos rápidos</h2>
+          <CollapseChevron collapsed={collapsed} onToggle={toggle} />
         </div>
 
-        <div className={styles.list}>
+        {!collapsed && <div className={styles.list}>
           {items.map((item) => (
             <button key={item.label} className={styles.item} onClick={item.onClick}>
               <div className={styles.itemLeft}>
@@ -79,7 +83,7 @@ export function ProfileQuickAccessWidget({
               </span>
             </button>
           ))}
-        </div>
+        </div>}
       </div>
     </div>
   );

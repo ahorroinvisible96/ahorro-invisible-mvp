@@ -3,6 +3,8 @@
 import React from 'react';
 import type { HistoryFiltersWidgetProps } from './HistoryFiltersWidget.types';
 import styles from './HistoryFiltersWidget.module.css';
+import { useWidgetCollapse } from '@/hooks/useWidgetCollapse';
+import { CollapseChevron } from '@/components/dashboard/CollapsibleWidget/CollapsibleWidget';
 
 const RANGE_OPTIONS = [
   { label: 'Todo', value: 'all' },
@@ -26,6 +28,7 @@ export function HistoryFiltersWidget({
   categories,
   onChange,
 }: HistoryFiltersWidgetProps): React.ReactElement {
+  const { collapsed, toggle } = useWidgetCollapse('history_filters', false);
   return (
     <div className={styles.wrapper}>
       <div className={styles.bgGradient} />
@@ -41,65 +44,62 @@ export function HistoryFiltersWidget({
               <line x1="11" y1="18" x2="13" y2="18"/>
             </svg>
           </div>
-          <span className={styles.headerLabel}>Filtros</span>
+          <span className={styles.headerLabel} style={{ flex: 1 }}>Filtros</span>
+          <CollapseChevron collapsed={collapsed} onToggle={toggle} />
         </div>
 
-        {/* Periodo */}
-        <div className={styles.filterRow}>
-          <span className={styles.filterLabel}>Periodo</span>
-          {RANGE_OPTIONS.map((opt) => (
-            <button
-              key={opt.value}
-              className={`${styles.chip} ${filters.range === opt.value ? styles.chipActive : ''}`}
-              onClick={() => onChange({ range: opt.value })}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
+        {!collapsed && (
+          <>
+            {/* Periodo */}
+            <div className={styles.filterRow}>
+              <span className={styles.filterLabel}>Periodo</span>
+              {RANGE_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  className={`${styles.chip} ${filters.range === opt.value ? styles.chipActive : ''}`}
+                  onClick={() => onChange({ range: opt.value })}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
 
-        {/* Objetivo (solo si hay más de 1) */}
-        {goals.length > 1 && (
-          <div className={styles.filterRow}>
-            <span className={styles.filterLabel}>Objetivo</span>
-            <button
-              className={`${styles.chip} ${filters.goalId === 'all' ? styles.chipActive : ''}`}
-              onClick={() => onChange({ goalId: 'all' })}
-            >
-              Todos
-            </button>
-            {goals.map((g) => (
-              <button
-                key={g.id}
-                className={`${styles.chip} ${filters.goalId === g.id ? styles.chipActive : ''}`}
-                onClick={() => onChange({ goalId: g.id })}
-              >
-                {g.title}
-              </button>
-            ))}
-          </div>
-        )}
+            {/* Objetivo (solo si hay más de 1) */}
+            {goals.length > 1 && (
+              <div className={styles.filterRow}>
+                <span className={styles.filterLabel}>Objetivo</span>
+                <button
+                  className={`${styles.chip} ${filters.goalId === 'all' ? styles.chipActive : ''}`}
+                  onClick={() => onChange({ goalId: 'all' })}
+                >Todos</button>
+                {goals.map((g) => (
+                  <button
+                    key={g.id}
+                    className={`${styles.chip} ${filters.goalId === g.id ? styles.chipActive : ''}`}
+                    onClick={() => onChange({ goalId: g.id })}
+                  >{g.title}</button>
+                ))}
+              </div>
+            )}
 
-        {/* Categoría (solo si hay más de 1) */}
-        {categories.length > 1 && (
-          <div className={styles.filterRow}>
-            <span className={styles.filterLabel}>Categoría</span>
-            <button
-              className={`${styles.chip} ${filters.category === 'all' ? styles.chipActive : ''}`}
-              onClick={() => onChange({ category: 'all' })}
-            >
-              Todas
-            </button>
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                className={`${styles.chip} ${filters.category === cat ? styles.chipActive : ''}`}
-                onClick={() => onChange({ category: cat })}
-              >
-                {CATEGORY_LABELS[cat] ?? cat}
-              </button>
-            ))}
-          </div>
+            {/* Categoría (solo si hay más de 1) */}
+            {categories.length > 1 && (
+              <div className={styles.filterRow}>
+                <span className={styles.filterLabel}>Categoría</span>
+                <button
+                  className={`${styles.chip} ${filters.category === 'all' ? styles.chipActive : ''}`}
+                  onClick={() => onChange({ category: 'all' })}
+                >Todas</button>
+                {categories.map((cat) => (
+                  <button
+                    key={cat}
+                    className={`${styles.chip} ${filters.category === cat ? styles.chipActive : ''}`}
+                    onClick={() => onChange({ category: cat })}
+                  >{CATEGORY_LABELS[cat] ?? cat}</button>
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

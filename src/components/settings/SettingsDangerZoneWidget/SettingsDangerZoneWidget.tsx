@@ -3,10 +3,13 @@
 import React, { useState } from 'react';
 import type { SettingsDangerZoneWidgetProps } from './SettingsDangerZoneWidget.types';
 import styles from './SettingsDangerZoneWidget.module.css';
+import { useWidgetCollapse } from '@/hooks/useWidgetCollapse';
+import { CollapseChevron } from '@/components/dashboard/CollapsibleWidget/CollapsibleWidget';
 
 export function SettingsDangerZoneWidget({
   onResetAll,
 }: SettingsDangerZoneWidgetProps): React.ReactElement {
+  const { collapsed, toggle } = useWidgetCollapse('settings_danger_zone', false);
   const [confirming, setConfirming] = useState(false);
 
   function handleClick() {
@@ -34,14 +37,15 @@ export function SettingsDangerZoneWidget({
               <line x1="12" y1="17" x2="12.01" y2="17"/>
             </svg>
           </div>
-          <h2 className={styles.title}>Zona de peligro</h2>
+          <h2 className={styles.title} style={{ flex: 1 }}>Zona de peligro</h2>
+          <CollapseChevron collapsed={collapsed} onToggle={toggle} />
         </div>
 
-        <p className={styles.description}>
+        {!collapsed && <p className={styles.description}>
           Esta acción borrará <strong style={{ color: '#fca5a5' }}>todos</strong> tus datos permanentemente: objetivos, historial y configuración. Esta acción no se puede deshacer.
-        </p>
+        </p>}
 
-        <button className={styles.resetBtn} onClick={handleClick}>
+        {!collapsed && <button className={styles.resetBtn} onClick={handleClick}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="3 6 5 6 21 6"/>
             <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
@@ -49,7 +53,7 @@ export function SettingsDangerZoneWidget({
             <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
           </svg>
           {confirming ? '⚠️ Pulsa de nuevo para confirmar' : 'Borrar todos los datos'}
-        </button>
+        </button>}
       </div>
     </div>
   );

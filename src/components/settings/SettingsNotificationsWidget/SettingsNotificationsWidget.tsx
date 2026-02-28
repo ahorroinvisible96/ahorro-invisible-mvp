@@ -2,8 +2,11 @@
 
 import React from 'react';
 import styles from './SettingsNotificationsWidget.module.css';
+import { useWidgetCollapse } from '@/hooks/useWidgetCollapse';
+import { CollapseChevron } from '@/components/dashboard/CollapsibleWidget/CollapsibleWidget';
 
 export function SettingsNotificationsWidget(): React.ReactElement {
+  const { collapsed, toggle } = useWidgetCollapse('settings_notifications', false);
   const items = [
     { label: 'Recordatorio diario', sub: 'Para no olvidar tu decisión del día' },
     { label: 'Resumen semanal', sub: 'Progreso de la semana' },
@@ -24,10 +27,11 @@ export function SettingsNotificationsWidget(): React.ReactElement {
               <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
             </svg>
           </div>
-          <h2 className={styles.title}>Notificaciones</h2>
+          <h2 className={styles.title} style={{ flex: 1 }}>Notificaciones</h2>
+          <CollapseChevron collapsed={collapsed} onToggle={toggle} />
         </div>
 
-        {items.map((item) => (
+        {!collapsed && items.map((item) => (
           <div key={item.label} className={styles.row}>
             <div className={styles.rowTexts}>
               <p className={styles.rowLabel}>{item.label}</p>

@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { analytics } from '@/services/analytics';
 import type { IncomeRangeWidgetProps } from './IncomeRangeWidget.types';
 import styles from './IncomeRangeWidget.module.css';
+import { useWidgetCollapse } from '@/hooks/useWidgetCollapse';
+import { CollapseChevron } from '@/components/dashboard/CollapsibleWidget/CollapsibleWidget';
 
 const SLIDER_MAX = 10000;
 const SLIDER_STEP = 100;
@@ -106,6 +108,7 @@ export function IncomeRangeWidget({
   onSaveIncomeRange,
 }: IncomeRangeWidgetProps): React.ReactElement {
   const isConfigured = incomeRange !== null;
+  const { collapsed, toggle } = useWidgetCollapse('income_range', false);
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [revealed, setRevealed] = useState(false);
@@ -150,13 +153,12 @@ export function IncomeRangeWidget({
     <>
       {/* ── Widget principal ── */}
       <div className={styles.wrapper}>
-        {/* Blur glows decorativos */}
         <div className={styles.glowPurple} />
         <div className={styles.glowBlue} />
 
         <div className={styles.inner}>
           {/* Icono + textos */}
-          <div className={styles.left}>
+          <div className={styles.left} style={{ flex: 1 }}>
             <div className={styles.iconWrap}>
               <WalletIcon size={22} />
               {isConfigured && <span className={styles.configuredDot} />}
@@ -211,21 +213,30 @@ export function IncomeRangeWidget({
             </div>
           </div>
 
-          {/* Botón configurar/editar */}
-          <button className={styles.actionBtn} onClick={openDialog}>
-            {isConfigured ? (
-              <>
-                <span className={styles.actionBtnIconEdit}><Edit2Icon /></span>
-                Editar
-              </>
-            ) : (
-              <>
-                Configurar
-                <span className={styles.actionBtnIconArrow}><ArrowRightIcon /></span>
-              </>
+          {/* Botón configurar/editar + chevron */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+            {!collapsed && (
+              <button className={styles.actionBtn} onClick={openDialog}>
+                {isConfigured ? (
+                  <><span className={styles.actionBtnIconEdit}><Edit2Icon /></span>Editar</>
+                ) : (
+                  <>Configurar<span className={styles.actionBtnIconArrow}><ArrowRightIcon /></span></>
+                )}
+              </button>
             )}
-          </button>
+            <CollapseChevron collapsed={collapsed} onToggle={toggle} />
+          </div>
         </div>
+
+        {/* Cuerpo colapsable: solo muestra textos extra plegado */}
+        {collapsed && isConfigured && (
+          <div
+            style={{ paddingLeft: 16, paddingBottom: 8, fontSize: 13, color: 'rgba(148,163,184,0.7)', cursor: 'pointer' }}
+            onClick={toggle}
+          >
+            {incomeRange!.min.toLocaleString('es-ES')} – {incomeRange!.max.toLocaleString('es-ES')} €/mes
+          </div>
+        )}
       </div>
 
       {/* ── Modal de configuración ── */}

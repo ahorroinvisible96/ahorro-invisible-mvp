@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import type { HistoryDecisionItem } from '@/hooks/useHistorySummary';
 import type { HistoryDecisionsListWidgetProps } from './HistoryDecisionsListWidget.types';
 import styles from './HistoryDecisionsListWidget.module.css';
+import { useWidgetCollapse } from '@/hooks/useWidgetCollapse';
+import { CollapseChevron } from '@/components/dashboard/CollapsibleWidget/CollapsibleWidget';
 
 function formatDate(dateString: string): string {
   return new Intl.DateTimeFormat('es-ES', {
@@ -135,13 +137,48 @@ export function HistoryDecisionsListWidget({
 }: HistoryDecisionsListWidgetProps): React.ReactElement {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const { collapsed, toggle } = useWidgetCollapse('history_decisions_list', false);
 
   const deletingDecision = decisions.find((d) => d.id === deletingId) ?? null;
   const editingDecision = decisions.find((d) => d.id === editingId) ?? null;
 
   return (
     <>
-      <div className={styles.list}>
+      {/* Header colapsable */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '12px 16px',
+        background: 'rgba(15,23,42,0.6)',
+        border: '1px solid rgba(51,65,85,0.4)',
+        borderRadius: collapsed ? 16 : '16px 16px 0 0',
+        marginBottom: collapsed ? 0 : 0,
+        cursor: 'pointer',
+      }} onClick={toggle}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            width: 28, height: 28, borderRadius: 8,
+            background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)',
+            color: '#818cf8', flexShrink: 0,
+          }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
+              <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+            </svg>
+          </div>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(241,245,249,0.9)', letterSpacing: '0.03em' }}>
+            DECISIONES REGISTRADAS
+          </span>
+          <span style={{ fontSize: 12, color: 'rgba(148,163,184,0.6)', fontWeight: 500 }}>
+            {decisions.length} en total
+          </span>
+        </div>
+        <CollapseChevron collapsed={collapsed} onToggle={toggle} />
+      </div>
+
+      {!collapsed && <div className={styles.list}>
         {decisions.map((d) => (
           <div
             key={d.id}
@@ -215,7 +252,7 @@ export function HistoryDecisionsListWidget({
             </div>
           </div>
         ))}
-      </div>
+      </div>}
 
       {/* Modal eliminar */}
       {deletingDecision && (

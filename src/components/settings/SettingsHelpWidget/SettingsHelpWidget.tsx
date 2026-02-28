@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import styles from './SettingsHelpWidget.module.css';
+import { useWidgetCollapse } from '@/hooks/useWidgetCollapse';
+import { CollapseChevron } from '@/components/dashboard/CollapsibleWidget/CollapsibleWidget';
 
 const FAQS = [
   {
@@ -28,6 +30,7 @@ const FAQS = [
 
 export function SettingsHelpWidget(): React.ReactElement {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const { collapsed, toggle: toggleCollapse } = useWidgetCollapse('settings_help', false);
 
   function toggle(i: number) {
     setOpenIndex(openIndex === i ? null : i);
@@ -48,10 +51,11 @@ export function SettingsHelpWidget(): React.ReactElement {
               <line x1="12" y1="17" x2="12.01" y2="17"/>
             </svg>
           </div>
-          <h2 className={styles.title}>Ayuda y FAQs</h2>
+          <h2 className={styles.title} style={{ flex: 1 }}>Ayuda y FAQs</h2>
+          <CollapseChevron collapsed={collapsed} onToggle={toggleCollapse} />
         </div>
 
-        <div className={styles.faqList}>
+        {!collapsed && <div className={styles.faqList}>
           {FAQS.map((faq, i) => (
             <div key={i} className={styles.faqItem}>
               <button className={styles.faqQuestion} onClick={() => toggle(i)}>
@@ -67,12 +71,12 @@ export function SettingsHelpWidget(): React.ReactElement {
               )}
             </div>
           ))}
-        </div>
+        </div>}
 
-        <div className={styles.versionRow}>
+        {!collapsed && <div className={styles.versionRow}>
           <span className={styles.versionText}>Ahorro Invisible</span>
           <span className={styles.versionBadge}>v1.1.0</span>
-        </div>
+        </div>}
       </div>
     </div>
   );
