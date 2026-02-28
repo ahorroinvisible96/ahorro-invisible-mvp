@@ -5,6 +5,8 @@ import { analytics } from '@/services/analytics';
 import { getTodayQuestion, DAILY_DECISION_RULES } from '@/services/dashboardStore';
 import type { DailyDecisionWidgetProps, ExtraSaving } from './DailyDecisionWidget.types';
 import styles from './DailyDecisionWidget.module.css';
+import { useWidgetCollapse } from '@/hooks/useWidgetCollapse';
+import { CollapsibleWidget } from '@/components/dashboard/CollapsibleWidget/CollapsibleWidget';
 
 // ── Modal de ahorro extra ────────────────────────────────────────────────────
 function ExtraSavingModal({
@@ -137,6 +139,7 @@ export function DailyDecisionWidget({
 }: DailyDecisionWidgetProps): React.ReactElement {
   const activeGoals = allGoals.filter((g) => !g.archived);
   const todayQuestion = getTodayQuestion();
+  const { collapsed, toggle } = useWidgetCollapse('daily_decision', false);
 
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [selectedGoalId, setSelectedGoalId] = useState<string>(
@@ -188,9 +191,23 @@ export function DailyDecisionWidget({
     !submitting &&
     !confirmed;
 
+  const collapsedSummary = (
+    <div className={styles.wrapper}>
+      <div className={styles.blurBlue} />
+      <div className={styles.blurPurple} />
+      <div className={styles.card}>
+        <WidgetHeader completed={daily.status === 'completed'} />
+        <p style={{ fontSize: 14, color: 'rgba(148,163,184,0.75)', margin: '8px 0 0', paddingRight: 40, lineHeight: 1.4 }}>
+          {daily.status === 'completed' ? '¡Decisión tomada hoy! Tu objetivo avanza.' : todayQuestion.text}
+        </p>
+      </div>
+    </div>
+  );
+
   // ── Estado: completada hoy ───────────────────────────────────────────────
   if (daily.status === 'completed') {
     return (
+      <CollapsibleWidget id="daily_decision" collapsed={collapsed} onToggle={toggle} summary={collapsedSummary}>
       <>
         <div className={styles.wrapper}>
           <div className={styles.blurBlue} />
@@ -263,6 +280,7 @@ export function DailyDecisionWidget({
           />
         )}
       </>
+      </CollapsibleWidget>
     );
   }
 
@@ -293,6 +311,7 @@ export function DailyDecisionWidget({
 
   // ── Render ───────────────────────────────────────────────────────────────
   return (
+    <CollapsibleWidget id="daily_decision" collapsed={collapsed} onToggle={toggle} summary={collapsedSummary}>
     <div className={styles.wrapper}>
       <div className={styles.blurBlue} />
       <div className={styles.blurPurple} />
@@ -469,6 +488,7 @@ export function DailyDecisionWidget({
 
       </div>
     </div>
+    </CollapsibleWidget>
   );
 }
 

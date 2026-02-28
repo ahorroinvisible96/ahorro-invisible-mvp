@@ -5,6 +5,8 @@ import { analytics } from '@/services/analytics';
 import { computeGoalPct, computeGoalRemaining, formatEUR } from './GoalCardWidget.logic';
 import type { GoalCardWidgetProps } from './GoalCardWidget.types';
 import styles from './GoalCardWidget.module.css';
+import { useWidgetCollapse } from '@/hooks/useWidgetCollapse';
+import { CollapsibleWidget } from '@/components/dashboard/CollapsibleWidget/CollapsibleWidget';
 
 // ── Iconos SVG inline ────────────────────────────────────────────────────────
 function TargetIcon({ size = 20 }: { size?: number }) {
@@ -70,6 +72,7 @@ export function GoalCardWidget({
   const pct = computeGoalPct(goal);
   const remaining = computeGoalRemaining(goal);
   const isCompleted = goal.currentAmount >= goal.targetAmount;
+  const { collapsed, toggle } = useWidgetCollapse(`goal_card_${goal.id}`, false);
 
   useEffect(() => {
     analytics.goalCardViewed(goal.id, goal.isPrimary, pct);
@@ -85,7 +88,48 @@ export function GoalCardWidget({
     onSetPrimary(goal.id);
   };
 
+  const collapsedSummary = (
+    <div
+      className={styles.card}
+      onClick={() => onOpenGoal(goal.id)}
+    >
+      <div className={styles.bgGradient} />
+      <div className={styles.glowOverlay}>
+        <div className={styles.glowPurple} />
+        <div className={styles.glowBlue} />
+      </div>
+      <div className={styles.borderLayer} />
+      <div className={styles.content}>
+        <div className={styles.topRow}>
+          <div className={styles.topLeft}>
+            <div className={styles.goalIconWrap}><TargetIcon size={20} /></div>
+            <span className={styles.goalTitle}>{goal.title}</span>
+          </div>
+          {goal.isPrimary && (
+            <div className={styles.primaryBadge}><StarIcon /><span>PRINCIPAL</span></div>
+          )}
+          {isCompleted && !goal.isPrimary && (
+            <div className={styles.completedBadge}>Completado</div>
+          )}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingRight: 40 }}>
+          <div className={styles.progressTrack} style={{ flex: 1, margin: 0 }}>
+            <div
+              className={`${styles.progressFill} ${pct > 0 ? styles.progressFillActive : styles.progressFillZero}`}
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+          <div className={styles.pctWrap}>
+            <TrendingUpIcon />
+            <span className={pct > 0 ? styles.pctActive : styles.pctZero}>{pct}%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
+    <CollapsibleWidget id={`goal_card_${goal.id}`} collapsed={collapsed} onToggle={toggle} summary={collapsedSummary}>
     <div
       className={styles.card}
       onClick={() => onOpenGoal(goal.id)}
@@ -197,6 +241,7 @@ export function GoalCardWidget({
 
       </div>
     </div>
+    </CollapsibleWidget>
   );
 }
 

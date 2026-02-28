@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { analytics } from '@/services/analytics';
 import type { SavingsEvolutionWidgetProps } from './SavingsEvolutionWidget.types';
 import styles from './SavingsEvolutionWidget.module.css';
+import { useWidgetCollapse } from '@/hooks/useWidgetCollapse';
+import { CollapsibleWidget } from '@/components/dashboard/CollapsibleWidget/CollapsibleWidget';
 
 // ── Iconos SVG inline ────────────────────────────────────────────────────────
 function TrendingUpIcon() {
@@ -83,8 +85,33 @@ export function SavingsEvolutionWidget({
     ? Math.max(...evolution.points.map((p) => p.value))
     : 0;
   const hasData = (evolution?.points?.length ?? 0) > 0;
+  const { collapsed, toggle } = useWidgetCollapse('savings_evolution', false);
+
+  const collapsedSummary = (
+    <div className={styles.wrapper}>
+      <div className={styles.bgGradient} />
+      <div className={styles.glowOverlay}>
+        <div className={styles.glowPurple} />
+        <div className={styles.glowBlue} />
+      </div>
+      <div className={styles.borderLayer} />
+      <div className={styles.content}>
+        <div className={styles.header}>
+          <div className={styles.headerLeft}>
+            <div className={styles.iconWrap}><TrendingUpIcon /></div>
+            <span className={styles.title}>Evolución del ahorro</span>
+          </div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, paddingRight: 40 }}>
+          <span className={styles.totalAmount}>{formatCurrency(totalAmount)}</span>
+          <span className={styles.totalLabel}>en {getRangeDays(selectedRange)}d</span>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
+    <CollapsibleWidget id="savings_evolution" collapsed={collapsed} onToggle={toggle} summary={collapsedSummary}>
     <div className={styles.wrapper}>
       {/* Layer 1: fondo gradiente */}
       <div className={styles.bgGradient} />
@@ -186,6 +213,7 @@ export function SavingsEvolutionWidget({
 
       </div>
     </div>
+    </CollapsibleWidget>
   );
 }
 

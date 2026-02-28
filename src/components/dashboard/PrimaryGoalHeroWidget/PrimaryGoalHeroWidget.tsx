@@ -5,6 +5,8 @@ import { analytics } from '@/services/analytics';
 import { computeGoalDisplayData, formatEUR } from './PrimaryGoalHeroWidget.logic';
 import type { PrimaryGoalHeroProps } from './PrimaryGoalHeroWidget.types';
 import styles from './PrimaryGoalHeroWidget.module.css';
+import { useWidgetCollapse } from '@/hooks/useWidgetCollapse';
+import { CollapsibleWidget } from '@/components/dashboard/CollapsibleWidget/CollapsibleWidget';
 
 function EmptyState({ onCreateGoal }: { onCreateGoal: () => void }): React.ReactElement {
   return (
@@ -36,6 +38,7 @@ export function PrimaryGoalHeroWidget({
   onGoToHistory,
 }: PrimaryGoalHeroProps): React.ReactElement {
   const [mounted, setMounted] = useState(false);
+  const { collapsed, toggle } = useWidgetCollapse('primary_goal', false);
 
   useEffect(() => {
     analytics.goalPrimaryWidgetViewed();
@@ -48,7 +51,32 @@ export function PrimaryGoalHeroWidget({
   const d = computeGoalDisplayData(goal);
   const progressWidth = mounted ? d.progressPct : 0;
 
+  const collapsedSummary = (
+    <div className={styles.wrapper}>
+      <div className={styles.blurBlue} />
+      <div className={styles.blurPurple} />
+      <div className={styles.card}>
+        <div className={styles.headerRow}>
+          <div className={styles.headerLeft}>
+            <div className={styles.iconBadge}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+              </svg>
+            </div>
+            <span className={styles.headerLabel}>OBJETIVO PRINCIPAL</span>
+          </div>
+          <div className={styles.horizonChip}>{goal.horizonMonths} MESES</div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingRight: 40 }}>
+          <h2 className={styles.title} style={{ margin: 0 }}>{goal.title}</h2>
+          <span style={{ fontSize: 20, fontWeight: 800, color: '#60a5fa' }}>{d.progressPct}%</span>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
+    <CollapsibleWidget id="primary_goal" collapsed={collapsed} onToggle={toggle} summary={collapsedSummary}>
     <div className={styles.wrapper}>
       <div className={styles.blurBlue} />
       <div className={styles.blurPurple} />
@@ -152,6 +180,7 @@ export function PrimaryGoalHeroWidget({
         </div>
       </div>
     </div>
+    </CollapsibleWidget>
   );
 }
 

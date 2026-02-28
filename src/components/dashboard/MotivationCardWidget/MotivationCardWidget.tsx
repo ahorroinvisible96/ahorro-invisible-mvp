@@ -4,6 +4,8 @@ import React, { useEffect } from 'react';
 import { analytics } from '@/services/analytics';
 import type { MotivationCardWidgetProps, MotivationIntensity, MotivationLevel } from './MotivationCardWidget.types';
 import styles from './MotivationCardWidget.module.css';
+import { useWidgetCollapse } from '@/hooks/useWidgetCollapse';
+import { CollapsibleWidget } from '@/components/dashboard/CollapsibleWidget/CollapsibleWidget';
 
 // ── Iconos SVG inline ────────────────────────────────────────────────────────
 function FlameIcon() {
@@ -99,6 +101,8 @@ export function MotivationCardWidget({
   moneyFeeling,
   onAdjustRules,
 }: MotivationCardWidgetProps): React.ReactElement {
+  const { collapsed, toggle } = useWidgetCollapse('motivation_card', false);
+
   useEffect(() => {
     analytics.dashboardMotivationCardViewed();
   }, [intensity]);
@@ -109,7 +113,42 @@ export function MotivationCardWidget({
   const levelPct = getLevelProgress(totalSaved, levelCfg);
   const nextLevelCfg = LEVELS[LEVELS.indexOf(levelCfg) + 1] ?? null;
 
+  const collapsedSummary = (
+    <div className={styles.wrapper}>
+      <div className={styles.bgGradient} />
+      <div className={styles.glowOverlay}>
+        <div className={styles.glowPurple} />
+        <div className={styles.glowBlue} />
+      </div>
+      <div className={styles.borderLayer} />
+      <div className={styles.content}>
+        <div className={styles.header}>
+          <div className={styles.headerLeft}>
+            <div className={styles.iconWrap}><TrendingUpIcon /></div>
+            <span className={styles.headerLabel}>MOTIVACIÓN</span>
+          </div>
+          <div className={`${styles.intensityBadge} ${styles[`intensity_${intensity}`]}`}>
+            {intensity === 'high' ? <FlameIcon /> : <ZapIcon />}
+            {intensity === 'high' ? 'ALTA' : intensity === 'medium' ? 'MEDIA' : intensity === 'low' ? 'BAJA' : '—'}
+          </div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingRight: 40 }}>
+          <div className={`${styles.levelBadge} ${styles[`level_${levelCfg.color}`]}`}>
+            <span className={styles.levelEmoji}>{levelCfg.emoji}</span>
+            <span className={styles.levelName}>{levelCfg.label}</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'rgba(148,163,184,0.7)' }}>
+            <span>🔥</span>
+            <span style={{ fontWeight: 700, color: '#f1f5f9' }}>{streak}</span>
+            <span>días</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
+    <CollapsibleWidget id="motivation_card" collapsed={collapsed} onToggle={toggle} summary={collapsedSummary}>
     <div className={styles.wrapper}>
       {/* Capas de fondo */}
       <div className={styles.bgGradient} />
@@ -203,6 +242,7 @@ export function MotivationCardWidget({
 
       </div>
     </div>
+    </CollapsibleWidget>
   );
 }
 
