@@ -2,5 +2,15 @@
   "framework": "nextjs",
   "devCommand": "next dev",
   "installCommand": "npm install",
-  "outputDirectory": ".next"
+  "outputDirectory": ".next",
+  "crons": [
+    {
+      "path": "/api/cron/daily-reminder",
+      "schedule": "0 19 * * *"
+    },
+    {
+      "path": "/api/cron/daily-reminder",
+      "schedule": "0 20 * * *"
+    }
+  ]
 }

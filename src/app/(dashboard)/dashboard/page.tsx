@@ -389,6 +389,8 @@ export default function DashboardPage() {
   const [activeMilestone, setActiveMilestone] = useState<number | null>(null);
   const [showStreakRecovery, setShowStreakRecovery] = useState(false);
   const [lastStreakShown, setLastStreakShown] = useState(false);
+  const [streakAtRisk, setStreakAtRisk] = useState(false);
+  const [streakAlertDismissed, setStreakAlertDismissed] = useState(false);
   const {
     summary,
     loading,
@@ -433,7 +435,18 @@ export default function DashboardPage() {
       setShowStreakRecovery(true);
       setLastStreakShown(true);
     }
-  }, [summary?.newMilestone, summary?.streakBrokeYesterday]);
+    // Alerta "racha en riesgo": después de las 18:00, decisión pendiente y racha activa
+    if (
+      summary.streak > 0 &&
+      summary.daily.status === 'pending' &&
+      !streakAlertDismissed
+    ) {
+      const hour = new Date().getHours();
+      if (hour >= 18) setStreakAtRisk(true);
+    } else {
+      setStreakAtRisk(false);
+    }
+  }, [summary?.newMilestone, summary?.streakBrokeYesterday, summary?.streak, summary?.daily.status, streakAlertDismissed]);
 
   if (loading || !summary) {
     return (
@@ -556,6 +569,48 @@ export default function DashboardPage() {
       <div className={styles.grid}>
         {/* Columna izquierda */}
         <div className={styles.mainCol}>
+          {/* Banner: racha en riesgo */}
+          {streakAtRisk && (
+            <div style={{
+              background: 'rgba(245,158,11,0.1)',
+              border: '1px solid rgba(245,158,11,0.35)',
+              borderRadius: 14,
+              padding: '14px 18px',
+              marginBottom: 16,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 12,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <span style={{ fontSize: 22 }}>⚡</span>
+                <div>
+                  <p style={{ fontSize: 14, fontWeight: 700, color: '#fcd34d', margin: 0 }}>
+                    Tu racha de {summary.streak} días está en riesgo
+                  </p>
+                  <p style={{ fontSize: 12, color: 'rgba(252,211,77,0.7)', margin: '2px 0 0' }}>
+                    Completa tu decisión antes de medianoche
+                  </p>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+                <button
+                  onClick={() => router.push('/daily')}
+                  style={{ padding: '7px 14px', background: 'rgba(245,158,11,0.3)', border: '1px solid rgba(245,158,11,0.5)', borderRadius: 8, color: '#fcd34d', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}
+                >
+                  Decidir ahora
+                </button>
+                <button
+                  onClick={() => { setStreakAtRisk(false); setStreakAlertDismissed(true); }}
+                  style={{ padding: '7px 10px', background: 'transparent', border: 'none', color: 'rgba(252,211,77,0.5)', fontSize: 16, cursor: 'pointer' }}
+                  aria-label="Cerrar alerta"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+          )}
+
           <PrimaryGoalHeroWidget
             goal={summary.primaryGoal}
             estimatedMonthsRemaining={summary.estimatedMonthsRemaining}

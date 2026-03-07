@@ -9,7 +9,7 @@ import type { DailyDecision, Goal } from "@/types/Dashboard";
 type StoreShape = { decisions: DailyDecision[]; goals: Goal[] };
 
 function formatEUR(n: number): string {
-  return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 2 }).format(n);
+  return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
 }
 
 function formatDate(d: string): string {
@@ -20,6 +20,9 @@ export default function ImpactPage({ params }: { params: { decision_id: string }
   const router = useRouter();
   const [decision, setDecision] = useState<DailyDecision | null>(null);
   const [goal, setGoal] = useState<Goal | null>(null);
+  const [sameDecisionCount, setSameDecisionCount] = useState(0);
+  const [totalSavedAllTime, setTotalSavedAllTime] = useState(0);
+  const [shared, setShared] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
@@ -36,6 +39,17 @@ export default function ImpactPage({ params }: { params: { decision_id: string }
       if (!found) { setError(true); setLoading(false); return; }
 
       const foundGoal = store.goals.find((g) => g.id === found.goalId) ?? null;
+
+      // Histórico: cuántas veces han tomado la misma decisión (mismo questionId + answerKey)
+      const count = store.decisions.filter(
+        (d) => d.questionId === found.questionId && d.answerKey === found.answerKey
+      ).length;
+      setSameDecisionCount(count);
+
+      // Total ahorrado acumulado en toda la historia
+      const total = store.decisions.reduce((s, d) => s + (d.deltaAmount ?? 0), 0);
+      setTotalSavedAllTime(total);
+
       setDecision(found);
       setGoal(foundGoal);
       setLoading(false);
@@ -186,12 +200,64 @@ export default function ImpactPage({ params }: { params: { decision_id: string }
           </div>
         )}
 
+        {/* Proyección anual acumulada */}
+        {decision.yearlyProjection > 0 && (
+          <div style={{ background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.25)', borderRadius: 16, padding: '20px 24px', marginBottom: 16 }}>
+            <p style={{ fontSize: 12, fontWeight: 700, color: 'rgba(196,181,253,0.8)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 14 }}>🚀 Si repites este hábito</p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <span style={{ fontSize: 14, color: DARK.textSecondary }}>365 días seguidos</span>
+              <span style={{ fontSize: 18, fontWeight: 800, color: '#c4b5fd' }}>+{formatEUR(decision.yearlyProjection)}</span>
+            </div>
+            {totalSavedAllTime > 0 && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: 14, color: DARK.textSecondary }}>Total ahorrado hasta hoy</span>
+                <span style={{ fontSize: 15, fontWeight: 700, color: '#a78bfa' }}>{formatEUR(totalSavedAllTime)}</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Comparativa histórica */}
+        {sameDecisionCount > 1 && (
+          <div style={{ background: DARK.card, borderRadius: 16, padding: '16px 24px', border: `1px solid ${DARK.cardBorder}`, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 14 }}>
+            <span style={{ fontSize: 28 }}>🔥</span>
+            <div>
+              <p style={{ fontSize: 14, fontWeight: 700, color: DARK.textPrimary, margin: 0 }}>
+                Llevas {sameDecisionCount} {sameDecisionCount === 1 ? 'vez' : 'veces'} tomando esta decisión
+              </p>
+              <p style={{ fontSize: 12, color: DARK.textSecondary, margin: '3px 0 0' }}>
+                La constancia es tu superpoder financiero.
+              </p>
+            </div>
+          </div>
+        )}
+
         <p style={{ fontSize: 11, color: 'rgba(51,65,85,0.8)', textAlign: 'center', marginBottom: 20 }}>
           Estimación educativa. No es asesoramiento financiero.
         </p>
 
         {/* CTAs */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {/* Compartir */}
+          <button
+            onClick={async () => {
+              const q = DAILY_QUESTIONS.find((q) => q.questionId === decision.questionId);
+              const ans = q?.answers.find((a) => a.key === decision.answerKey)?.label ?? decision.answerKey;
+              const text = decision.yearlyProjection > 0
+                ? `Con Ahorro Invisible acabo de registrar una decisión que puede ahorrarme ${formatEUR(decision.yearlyProjection)} al año. ¡Pequeñas decisiones, grandes resultados! 💪`
+                : `Con Ahorro Invisible acabo de registrar una decisión consciente: "${ans}". ¡Construyendo hábitos de ahorro! 💡`;
+              if (navigator.share) {
+                await navigator.share({ title: 'Mi decisión en Ahorro Invisible', text, url: 'https://ahorro-invisible.vercel.app' }).catch(() => null);
+              } else {
+                await navigator.clipboard.writeText(text).catch(() => null);
+                setShared(true);
+                setTimeout(() => setShared(false), 2500);
+              }
+            }}
+            style={{ padding: '13px 0', background: 'linear-gradient(90deg,#a855f7,#2563eb)', border: 'none', borderRadius: 12, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}
+          >
+            {shared ? '✅ Copiado al portapapeles' : '📤 Compartir mi logro'}
+          </button>
           <button
             onClick={() => { analytics.impactCtaExtraSavingsClicked(decision.id, decision.goalId); router.push('/extra-saving'); }}
             style={{ padding: '13px 0', background: DARK.card, border: `1.5px solid ${DARK.border}`, borderRadius: 12, color: DARK.textPrimary, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}
