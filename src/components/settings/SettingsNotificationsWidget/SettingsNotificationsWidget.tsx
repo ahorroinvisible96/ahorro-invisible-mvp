@@ -53,13 +53,23 @@ export function SettingsNotificationsWidget(): React.ReactElement {
     }
 
     // Register SW and subscribe to push
-    await registerServiceWorker();
-    await subscribeToPush().catch(() => null);
+    const swReg = await registerServiceWorker();
+    console.info('[push] SW registration:', swReg);
+
+    const sub = await subscribeToPush().catch((e) => { console.error('[push] subscribeToPush error:', e); return null; });
+    console.info('[push] subscription:', sub);
+
+    if (!sub) {
+      setLoading(false);
+      setInfo('⚠️ No se pudo suscribir al push. Revisa la consola (F12).');
+      return;
+    }
 
     // Save subscription to Supabase if user is logged in
     const userId = localStorage.getItem('supabaseUserId');
+    console.info('[push] userId from localStorage:', userId);
     if (userId) {
-      await savePushSubscriptionToSupabase(userId).catch(() => null);
+      await savePushSubscriptionToSupabase(userId).catch((e) => console.error('[push] saveSub error:', e));
     }
 
     // Schedule local daily reminder at 8pm

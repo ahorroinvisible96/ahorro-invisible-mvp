@@ -82,10 +82,10 @@ export async function authSendMagicLink(email: string): Promise<{ error: string 
     return { error: 'El magic link requiere Supabase configurado. Consulta env.example para configurarlo.' };
   }
 
-  const redirectTo =
-    typeof window !== 'undefined'
-      ? `${window.location.origin}/auth/callback`
-      : undefined;
+  const appUrl =
+    process.env.NEXT_PUBLIC_APP_URL ||
+    (typeof window !== 'undefined' ? window.location.origin : '');
+  const redirectTo = appUrl ? `${appUrl}/auth/callback` : undefined;
 
   const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectTo } });
   return { error: error?.message ?? null };
