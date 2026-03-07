@@ -153,12 +153,13 @@ export async function pushLocalDataToSupabase(
               .eq('date', dec.date as string)
               .neq('question_id', 'extra_saving')
               .neq('question_id', 'grace_day');
-            const { error: err2 } = await supabase.from('decisions').insert(dec);
+            // upsert para tolerar race condition con decisions_pkey
+            const { error: err2 } = await supabase.from('decisions').upsert(dec, { onConflict: 'id' });
             if (err2) {
               if (err2.code === '23503') {
-                const { error: err3 } = await supabase.from('decisions').insert({ ...dec, goal_id: null });
+                const { error: err3 } = await supabase.from('decisions').upsert({ ...dec, goal_id: null }, { onConflict: 'id' });
                 if (!err3) migrated += 1;
-              } else { console.error('[sync] decision re-insert loop:', err2.code, err2.message, dec.id); }
+              } else { console.error('[sync] decision re-upsert loop:', err2.code, err2.message, dec.id); }
             } else { migrated += 1; }
           } else {
             console.error('[sync] decision:', error.code, error.message, dec.id, dec.question_id, dec.date);
@@ -357,14 +358,15 @@ export async function syncDecisionToSupabase(
           .eq('date', row.date)
           .neq('question_id', 'extra_saving')
           .neq('question_id', 'grace_day');
-        const { error: err2 } = await db.from('decisions').insert(row);
+        // upsert (no insert) para tolerar race condition: si la PK ya existe → UPDATE
+        const { error: err2 } = await db.from('decisions').upsert(row, { onConflict: 'id' });
         if (err2) {
           if (err2.code === '23503') {
-            const { error: err3 } = await db.from('decisions').insert({ ...row, goal_id: null });
-            if (err3) { console.error('[sync] decision re-insert FK:', err3.code, err3.message); return { ok: false, error: err3.message }; }
+            const { error: err3 } = await db.from('decisions').upsert({ ...row, goal_id: null }, { onConflict: 'id' });
+            if (err3) { console.error('[sync] decision re-upsert FK:', err3.code, err3.message); return { ok: false, error: err3.message }; }
             return { ok: true };
           }
-          console.error('[sync] decision re-insert:', err2.code, err2.message);
+          console.error('[sync] decision re-upsert:', err2.code, err2.message);
           return { ok: false, error: err2.message };
         }
         return { ok: true };
