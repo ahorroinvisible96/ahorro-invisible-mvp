@@ -1,93 +1,106 @@
 "use client";
 
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
-import type { GoalRow, DecisionRow } from '@/lib/supabase';
 
 const STORAGE_KEY = 'ahorro_invisible_dashboard_v1';
 
-// ─── Push local data → Supabase (migración de early adopters) ─────────────────
+// ─── Push local data → Supabase ───────────────────────────────────────────────
 export async function pushLocalDataToSupabase(
   userId: string,
 ): Promise<{ success: boolean; migrated: number; error?: string }> {
   if (!isSupabaseConfigured || !supabase) {
-    return { success: false, migrated: 0, error: 'Supabase no está configurado. Consulta env.example.' };
+    return { success: false, migrated: 0, error: 'Supabase no está configurado.' };
   }
 
+  let raw: string | null = null;
+  try { raw = localStorage.getItem(STORAGE_KEY); } catch { /* SSR */ }
+  if (!raw) return { success: true, migrated: 0 };
+
+  let store: {
+    userName?: string;
+    moneyFeeling?: string;
+    incomeRange?: Record<string, unknown>;
+    goals?: Record<string, unknown>[];
+    decisions?: Record<string, unknown>[];
+    hucha?: { balance: number; entries: unknown[] };
+  };
+  try { store = JSON.parse(raw); } catch { return { success: false, migrated: 0, error: 'JSON parse error' }; }
+
+  let migrated = 0;
+
+  // 1. Perfil
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { success: true, migrated: 0 };
+    const { error } = await supabase.from('user_profiles').upsert(
+      { id: userId, name: store.userName ?? null, money_feeling: store.moneyFeeling ?? null, income_range: store.incomeRange ?? null, updated_at: new Date().toISOString() },
+      { onConflict: 'id' },
+    );
+    if (error) console.error('[sync] user_profiles error:', error.message, error.details);
+  } catch (e) { console.error('[sync] user_profiles exception:', e); }
 
-    const store = JSON.parse(raw) as {
-      userName?: string;
-      moneyFeeling?: string;
-      incomeRange?: Record<string, unknown>;
-      goals?: GoalRow[];
-      decisions?: DecisionRow[];
-      hucha?: { balance: number; entries: unknown[] };
-    };
-
-    let migrated = 0;
-
-    // 1. Perfil de usuario
-    await supabase.from('user_profiles').upsert({
-      id: userId,
-      name: store.userName ?? null,
-      money_feeling: store.moneyFeeling ?? null,
-      income_range: store.incomeRange ?? null,
-      updated_at: new Date().toISOString(),
-    });
-
-    // 2. Objetivos
-    if (store.goals?.length) {
-      const goals = store.goals.map((g: Record<string, unknown>) => ({
+  // 2. Goals — upsert en batch, log si falla
+  if (store.goals?.length) {
+    const goals = (store.goals as Record<string, unknown>[])
+      .filter(g => g.id && g.title)
+      .map(g => ({
         id: g.id as string,
         user_id: userId,
         title: g.title as string,
-        target_amount: g.targetAmount as number,
-        current_amount: g.currentAmount as number,
-        horizon_months: g.horizonMonths as number,
-        is_primary: g.isPrimary as boolean,
-        archived: g.archived as boolean,
-        created_at: g.createdAt as string,
-        updated_at: g.updatedAt as string,
+        target_amount: Number(g.targetAmount ?? 0),
+        current_amount: Number(g.currentAmount ?? 0),
+        horizon_months: Number(g.horizonMonths ?? 12),
+        is_primary: Boolean(g.isPrimary),
+        archived: Boolean(g.archived),
+        created_at: (g.createdAt as string) || new Date().toISOString(),
+        updated_at: (g.updatedAt as string) || new Date().toISOString(),
       }));
-      const { error } = await supabase.from('goals').upsert(goals, { onConflict: 'id' });
-      if (!error) migrated += goals.length;
+    if (goals.length) {
+      try {
+        const { error } = await supabase.from('goals').upsert(goals, { onConflict: 'id' });
+        if (error) { console.error('[sync] goals error:', error.message, error.details, goals); }
+        else { migrated += goals.length; }
+      } catch (e) { console.error('[sync] goals exception:', e); }
     }
+  }
 
-    // 3. Decisiones
-    if (store.decisions?.length) {
-      const decisions = store.decisions
-        .filter((d: Record<string, unknown>) => d.questionId !== 'grace_day') // skip synthetic
-        .map((d: Record<string, unknown>) => ({
-          id: d.id as string,
-          user_id: userId,
-          date: d.date as string,
-          question_id: d.questionId as string,
-          answer_key: d.answerKey as string,
-          goal_id: (d.goalId as string) || null,
-          delta_amount: d.deltaAmount as number,
-          monthly_projection: d.monthlyProjection as number,
-          yearly_projection: d.yearlyProjection as number,
-          created_at: d.createdAt as string,
-        }));
-      const { error } = await supabase.from('decisions').upsert(decisions, { onConflict: 'id' });
-      if (!error) migrated += decisions.length;
+  // 3. Decisions — upsert de una en una para evitar fallos en batch por constraint
+  if (store.decisions?.length) {
+    const decisions = (store.decisions as Record<string, unknown>[])
+      .filter(d => d.id && d.questionId !== 'grace_day' && d.date)
+      .map(d => ({
+        id: d.id as string,
+        user_id: userId,
+        date: d.date as string,
+        question_id: d.questionId as string,
+        answer_key: (d.answerKey as string) || '',
+        goal_id: (d.goalId as string) || null,
+        delta_amount: Number(d.deltaAmount ?? 0),
+        monthly_projection: Number(d.monthlyProjection ?? 0),
+        yearly_projection: Number(d.yearlyProjection ?? 0),
+        created_at: (d.createdAt as string) || new Date().toISOString(),
+      }));
+
+    for (const dec of decisions) {
+      try {
+        const { error } = await supabase.from('decisions').upsert(dec, { onConflict: 'id' });
+        if (error) { console.error('[sync] decision error:', error.message, error.details, dec); }
+        else { migrated += 1; }
+      } catch (e) { console.error('[sync] decision exception:', e); }
     }
+  }
 
-    // 4. Hucha
-    if (store.hucha) {
-      await supabase.from('hucha').upsert(
-        { user_id: userId, balance: store.hucha.balance, entries: store.hucha.entries ?? [] },
+  // 4. Hucha
+  if (store.hucha != null) {
+    try {
+      const { error } = await supabase.from('hucha').upsert(
+        { user_id: userId, balance: Number(store.hucha.balance ?? 0), entries: store.hucha.entries ?? [] },
         { onConflict: 'user_id' },
       );
-    }
-
-    localStorage.setItem('supabase_last_sync', new Date().toISOString());
-    return { success: true, migrated };
-  } catch (err) {
-    return { success: false, migrated: 0, error: String(err) };
+      if (error) console.error('[sync] hucha error:', error.message);
+    } catch (e) { console.error('[sync] hucha exception:', e); }
   }
+
+  try { localStorage.setItem('supabase_last_sync', new Date().toISOString()); } catch { /* SSR */ }
+  return { success: true, migrated };
 }
 
 // ─── Pull Supabase → localStorage (restaurar en nuevo dispositivo) ────────────

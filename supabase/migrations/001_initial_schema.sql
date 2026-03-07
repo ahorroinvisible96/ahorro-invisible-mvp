@@ -57,7 +57,7 @@ create policy "Users can manage own decisions" on public.decisions
   for all using (auth.uid() = user_id);
 
 create unique index if not exists decisions_user_date_idx on public.decisions(user_id, date)
-  where question_id != 'grace_day';
+  where question_id not in ('grace_day', 'extra_saving');
 create index if not exists decisions_user_id_idx on public.decisions(user_id);
 
 -- ─── Hucha (savings jar) ──────────────────────────────────────────────────────
