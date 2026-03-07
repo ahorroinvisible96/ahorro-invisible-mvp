@@ -115,7 +115,9 @@ class Analytics {
         props: eventProps,
         timestamp: new Date().toISOString()
       });
-      localStorage.setItem("analyticsEvents", JSON.stringify(events));
+      const MAX_EVENTS = 200;
+      const trimmed = events.length > MAX_EVENTS ? events.slice(events.length - MAX_EVENTS) : events;
+      localStorage.setItem("analyticsEvents", JSON.stringify(trimmed));
     } catch (err) {
       console.error("Error al guardar evento:", err);
     }

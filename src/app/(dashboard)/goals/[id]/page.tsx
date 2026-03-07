@@ -6,8 +6,9 @@ import { analytics } from '@/services/analytics';
 import {
   buildSummary,
   storeUpdateGoal,
-  storeArchiveGoal,
+  storeArchiveGoalSafe,
   storeSetPrimaryGoal,
+  storeListActiveGoals,
   DAILY_QUESTIONS,
 } from '@/services/dashboardStore';
 import type { Goal, DailyDecision } from '@/types/Dashboard';
@@ -31,6 +32,9 @@ export default function GoalDetailPage({ params }: { params: { id: string } }) {
   const [horizonMonths, setHorizonMonths] = useState('');
   const [editErr, setEditErr] = useState('');
   const [loading, setLoading] = useState(true);
+  const [showArchiveModal, setShowArchiveModal] = useState(false);
+  const [archiveDest, setArchiveDest] = useState<string>('hucha');
+  const [otherGoals, setOtherGoals] = useState<{ id: string; title: string }[]>([]);
 
   const refresh = () => {
     const summary = buildSummary('30d');
@@ -87,10 +91,17 @@ export default function GoalDetailPage({ params }: { params: { id: string } }) {
     refresh();
   };
 
-  const handleArchive = () => {
-    if (!window.confirm(`¿Archivar "${goal?.title}"?`)) return;
-    storeArchiveGoal(params.id);
+  const openArchiveModal = () => {
+    const active = storeListActiveGoals().filter((g) => g.id !== params.id);
+    setOtherGoals(active);
+    setArchiveDest(active.length > 0 ? active[0].id : 'hucha');
+    setShowArchiveModal(true);
+  };
+
+  const handleConfirmArchive = () => {
+    storeArchiveGoalSafe(params.id, archiveDest);
     analytics.goalArchived(params.id, goal?.isPrimary ?? false);
+    setShowArchiveModal(false);
     router.push('/goals');
   };
 
@@ -190,7 +201,7 @@ export default function GoalDetailPage({ params }: { params: { id: string } }) {
                   <button onClick={handleSetPrimary} style={{ fontSize: 13, padding: '8px 14px', border: '1px solid #bfdbfe', background: '#eff6ff', color: '#1d4ed8', borderRadius: 9, cursor: 'pointer', fontWeight: 600 }}>Hacer principal</button>
                 )}
                 {!goal.archived && (
-                  <button onClick={handleArchive} style={{ fontSize: 13, padding: '8px 14px', border: '1px solid #fecaca', background: 'transparent', color: '#dc2626', borderRadius: 9, cursor: 'pointer' }}>Archivar</button>
+                  <button onClick={openArchiveModal} style={{ fontSize: 13, padding: '8px 14px', border: '1px solid #fecaca', background: 'transparent', color: '#dc2626', borderRadius: 9, cursor: 'pointer' }}>Archivar</button>
                 )}
               </div>
             </div>
@@ -239,6 +250,45 @@ export default function GoalDetailPage({ params }: { params: { id: string } }) {
                   </div>
                 );
               })}
+            </div>
+          </div>
+        )}
+
+        {/* Modal de archivar */}
+        {showArchiveModal && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: 16 }}>
+            <div style={{ background: '#fff', borderRadius: 20, padding: '28px 24px', width: '100%', maxWidth: 400, boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+              <h3 style={{ fontSize: 17, fontWeight: 700, color: '#111827', marginBottom: 6 }}>Archivar objetivo</h3>
+              <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 20 }}>
+                {goal && goal.currentAmount > 0
+                  ? `¿Dónde quieres transferir el saldo de ${formatEUR(goal.currentAmount)}?`
+                  : '¿Confirmas que quieres archivar este objetivo?'}
+              </p>
+              {goal && goal.currentAmount > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
+                  <button
+                    onClick={() => setArchiveDest('hucha')}
+                    style={{ padding: '12px 16px', borderRadius: 10, border: `2px solid ${archiveDest === 'hucha' ? '#2563eb' : '#e5e7eb'}`, background: archiveDest === 'hucha' ? '#eff6ff' : '#fff', textAlign: 'left', cursor: 'pointer' }}
+                  >
+                    <div style={{ fontSize: 13, fontWeight: 600, color: archiveDest === 'hucha' ? '#1d4ed8' : '#374151' }}>🏦 Enviar a la Hucha</div>
+                    <div style={{ fontSize: 12, color: '#9ca3af' }}>Guarda el saldo para usarlo después</div>
+                  </button>
+                  {otherGoals.map((g) => (
+                    <button
+                      key={g.id}
+                      onClick={() => setArchiveDest(g.id)}
+                      style={{ padding: '12px 16px', borderRadius: 10, border: `2px solid ${archiveDest === g.id ? '#2563eb' : '#e5e7eb'}`, background: archiveDest === g.id ? '#eff6ff' : '#fff', textAlign: 'left', cursor: 'pointer' }}
+                    >
+                      <div style={{ fontSize: 13, fontWeight: 600, color: archiveDest === g.id ? '#1d4ed8' : '#374151' }}>🎯 {g.title}</div>
+                      <div style={{ fontSize: 12, color: '#9ca3af' }}>Transferir saldo a este objetivo</div>
+                    </button>
+                  ))}
+                </div>
+              )}
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button onClick={() => setShowArchiveModal(false)} style={{ flex: 1, padding: '11px 0', background: '#f9fafb', border: '1.5px solid #e5e7eb', borderRadius: 10, cursor: 'pointer', fontSize: 14, color: '#374151' }}>Cancelar</button>
+                <button onClick={handleConfirmArchive} style={{ flex: 1, padding: '11px 0', background: '#dc2626', border: 'none', borderRadius: 10, cursor: 'pointer', fontSize: 14, fontWeight: 700, color: '#fff' }}>Archivar</button>
+              </div>
             </div>
           </div>
         )}

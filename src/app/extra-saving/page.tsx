@@ -4,18 +4,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { analytics } from "@/services/analytics";
-
-interface Goal {
-  id: string;
-  title: string;
-  target_amount: number;
-  current_amount: number;
-  time_horizon_months: number | null;
-  is_primary: boolean;
-  archived: boolean;
-  created_at: string;
-  updated_at: string;
-}
+import { storeAddExtraSaving, storeListActiveGoals } from "@/services/dashboardStore";
+import type { Goal } from "@/types/Dashboard";
 
 export default function ExtraSavingPage() {
   const router = useRouter();
@@ -25,141 +15,62 @@ export default function ExtraSavingPage() {
   const [note, setNote] = useState<string>("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  
+
   useEffect(() => {
-    // Establecer el nombre de la pantalla para analytics
     analytics.setScreen('extra_saving');
-    
-    // Verificar autenticación
+
     const isAuthenticated = localStorage.getItem("isAuthenticated");
     if (isAuthenticated !== "true") {
       router.replace("/signup");
       return;
     }
-    
-    // Verificar onboarding
+
     const hasCompletedOnboarding = localStorage.getItem("hasCompletedOnboarding");
     if (hasCompletedOnboarding !== "true") {
       router.replace("/onboarding");
       return;
     }
-    
-    // Cargar datos
-    loadData();
-    
-    // Registrar evento de inicio de acción extra
+
+    const active = storeListActiveGoals();
+    if (active.length === 0) {
+      router.replace("/goals");
+      return;
+    }
+
+    setGoals(active);
+    const primary = active.find((g) => g.isPrimary) ?? active[0];
+    setSelectedGoalId(primary.id);
+    setIsLoading(false);
+
     analytics.extraSavingStarted('impact');
   }, [router]);
-  
-  const loadData = async () => {
-    try {
-      setIsLoading(true);
-      
-      // Cargar objetivos
-      const storedGoals = localStorage.getItem("goals");
-      if (!storedGoals || JSON.parse(storedGoals).filter((g: Goal) => !g.archived).length === 0) {
-        // Redirigir a crear objetivo si no hay objetivos activos
-        console.log("EVENT: system_redirect", { destination: "create_goal" });
-        router.replace("/goals/new");
-        return;
-      }
-      
-      const parsedGoals = JSON.parse(storedGoals);
-      const activeGoals = parsedGoals.filter((goal: Goal) => !goal.archived);
-      setGoals(activeGoals);
-      
-      // Seleccionar objetivo principal por defecto
-      const primaryGoal = activeGoals.find((goal: Goal) => goal.is_primary);
-      if (primaryGoal) {
-        setSelectedGoalId(primaryGoal.id);
-      } else if (activeGoals.length > 0) {
-        setSelectedGoalId(activeGoals[0].id);
-      }
-      
-    } catch (error) {
-      console.error("Error al cargar datos:", error);
-      setError("No se pudieron cargar los objetivos. Intenta de nuevo.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    
-    // Validaciones
+
     if (!selectedGoalId) {
       setError("Selecciona un objetivo");
       return;
     }
-    
+
     if (!amount || amount <= 0) {
       setError("Ingresa una cantidad válida");
       return;
     }
-    
+
     try {
-      // Generar ID único para la acción extra
-      const extraSavingId = `extra_${Date.now()}`;
       const today = new Date().toISOString().split('T')[0];
-      
-      // Crear objeto de acción extra
-      const newExtraSaving = {
-        id: extraSavingId,
-        date: today,
-        goal_id: selectedGoalId,
-        amount,
-        note: note.trim() || null,
-        created_at: new Date().toISOString()
-      };
-      
-      // Guardar en localStorage
-      const storedExtraSavings = localStorage.getItem("extraSavings");
-      const extraSavings = storedExtraSavings ? JSON.parse(storedExtraSavings) : [];
-      extraSavings.unshift(newExtraSaving);
-      localStorage.setItem("extraSavings", JSON.stringify(extraSavings));
-      
-      // Actualizar el objetivo
-      const storedGoals = localStorage.getItem("goals");
-      if (storedGoals) {
-        const goals = JSON.parse(storedGoals);
-        const updatedGoals = goals.map((goal: Goal) => {
-          if (goal.id === selectedGoalId) {
-            return {
-              ...goal,
-              current_amount: goal.current_amount + amount,
-              updated_at: new Date().toISOString()
-            };
-          }
-          return goal;
-        });
-        
-        localStorage.setItem("goals", JSON.stringify(updatedGoals));
-      }
-      
-      // Registrar evento de acción extra enviada
-      analytics.extraSavingSubmitted(
-        today,
-        selectedGoalId,
-        amount,
-        note.length
-      );
-      
-      // Redirigir al dashboard
+
+      storeAddExtraSaving(note.trim() || 'Ahorro extra', amount, selectedGoalId);
+
+      analytics.extraSavingSubmitted(today, selectedGoalId, amount, note.length);
+
       router.push("/dashboard");
-      
-    } catch (error) {
-      console.error("Error al guardar acción extra:", error);
+    } catch (err) {
+      const today = new Date().toISOString().split('T')[0];
       setError("No se pudo guardar. Intenta de nuevo.");
-      
-      // Registrar evento de error
-      analytics.extraSavingError(
-        new Date().toISOString().split('T')[0],
-        selectedGoalId || '',
-        "LOCAL_STORAGE_ERROR",
-        String(error)
-      );
+      analytics.extraSavingError(today, selectedGoalId || '', "STORE_ERROR", String(err));
     }
   };
   
@@ -216,7 +127,7 @@ export default function ExtraSavingPage() {
                 <option value="" disabled>Selecciona un objetivo</option>
                 {goals.map((goal) => (
                   <option key={goal.id} value={goal.id}>
-                    {goal.title} {goal.is_primary ? "(Principal)" : ""}
+                    {goal.title} {goal.isPrimary ? "(Principal)" : ""}
                   </option>
                 ))}
               </select>
