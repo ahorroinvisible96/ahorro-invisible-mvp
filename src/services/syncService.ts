@@ -166,3 +166,23 @@ export function hasLocalDataToMigrate(): boolean {
     return (store.goals?.length > 0 || store.decisions?.length > 0);
   } catch { return false; }
 }
+
+// ─── Guardar perfil en Supabase al registrarse ────────────────────────────────
+export async function saveUserProfileToSupabase(
+  userId: string,
+  name: string,
+): Promise<{ success: boolean; error?: string }> {
+  if (!isSupabaseConfigured || !supabase) {
+    return { success: false, error: 'Supabase no está configurado' };
+  }
+  try {
+    const { error } = await supabase.from('user_profiles').upsert(
+      { id: userId, name: name.trim() },
+      { onConflict: 'id' },
+    );
+    if (error) return { success: false, error: error.message };
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: String(err) };
+  }
+}

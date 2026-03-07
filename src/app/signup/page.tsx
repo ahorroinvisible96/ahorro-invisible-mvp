@@ -9,6 +9,7 @@ import { analytics } from "@/services/analytics";
 import { storeInitUser } from "@/services/dashboardStore";
 import { authSignUp } from "@/services/authService";
 import { isSupabaseConfigured } from "@/lib/supabase";
+import { saveUserProfileToSupabase } from "@/services/syncService";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -57,6 +58,10 @@ export default function SignupPage() {
         setError(authErr ?? "No se pudo crear la cuenta.");
         analytics.signupError("AUTH_ERROR", authErr ?? "unknown");
         return;
+      }
+      // Guardar perfil en Supabase si el usuario es real (no localStorage)
+      if (user.id !== 'local') {
+        await saveUserProfileToSupabase(user.id, name).catch(() => null);
       }
       storeInitUser(name.trim(), email.trim());
       analytics.signupSuccess();
