@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { analytics } from "@/services/analytics";
 import { storeAddExtraSaving, storeListActiveGoals } from "@/services/dashboardStore";
-import { syncDecisionToSupabase, syncGoalToSupabase } from "@/services/syncService";
+import { pushLocalDataToSupabase } from "@/services/syncService";
 import type { Goal } from "@/types/Dashboard";
 
 export default function ExtraSavingPage() {
@@ -64,36 +64,13 @@ export default function ExtraSavingPage() {
       const today = new Date().toISOString().split('T')[0];
       const now = new Date().toISOString();
 
-      const summary = storeAddExtraSaving(note.trim() || 'Ahorro extra', amount, selectedGoalId);
+      storeAddExtraSaving(note.trim() || 'Ahorro extra', amount, selectedGoalId);
 
       analytics.extraSavingSubmitted(today, selectedGoalId, amount, note.length);
 
-      // Sync a Supabase en background — leer la decisión real que el store acaba de persistir
+      // Sync completo a Supabase
       const userId = localStorage.getItem('supabaseUserId');
-      if (userId) {
-        try {
-          const raw = localStorage.getItem('ahorro_invisible_dashboard_v1');
-          if (raw) {
-            const store = JSON.parse(raw);
-            const realDecision = (store.decisions as Array<{
-              id: string; date: string; questionId: string; answerKey: string;
-              goalId: string; deltaAmount: number; monthlyProjection: number;
-              yearlyProjection: number; createdAt: string;
-            }>)
-              .filter(d => d.questionId === 'extra_saving' && d.date === today && d.goalId === selectedGoalId)
-              .slice(-1)[0];
-            if (realDecision) {
-              syncDecisionToSupabase(userId, realDecision).catch(() => null);
-            }
-            const updatedGoal = (store.goals as Array<{
-              id: string; title: string; targetAmount: number; currentAmount: number;
-              horizonMonths: number; isPrimary: boolean; archived: boolean;
-              createdAt: string; updatedAt: string;
-            }>).find(g => g.id === selectedGoalId);
-            if (updatedGoal) syncGoalToSupabase(userId, updatedGoal).catch(() => null);
-          }
-        } catch { /* silent */ }
-      }
+      if (userId) pushLocalDataToSupabase(userId).catch(() => null);
 
       router.push("/dashboard");
     } catch (err) {

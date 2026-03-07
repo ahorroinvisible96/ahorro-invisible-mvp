@@ -5,6 +5,7 @@ import "./globals.css";
 import "@/styles/tokens/index.css"; // Importar tokens CSS
 import ThemeInit from '@/components/providers/ThemeInit';
 import PostHogProvider from '@/components/providers/PostHogProvider';
+import SyncProvider from '@/components/providers/SyncProvider';
 import { Analytics } from "@vercel/analytics/next";
 
 const geistSans = Geist({
@@ -38,7 +39,9 @@ export default function RootLayout({
       >
         {/* Inicializa el tema en el cliente */}
         <ThemeInit />
-        <PostHogProvider>{children}</PostHogProvider>
+        <PostHogProvider>
+          <SyncProvider>{children}</SyncProvider>
+        </PostHogProvider>
         <Analytics />
       </body>
     </html>
