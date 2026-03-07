@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
-import { pushLocalDataToSupabase, hasLocalDataToMigrate } from "@/services/syncService";
+import { pushLocalDataToSupabase, pullDataFromSupabase, hasLocalDataToMigrate } from "@/services/syncService";
 
 export default function AuthCallbackPage() {
   const router = useRouter();
@@ -22,10 +22,16 @@ export default function AuthCallbackPage() {
       localStorage.setItem("userEmail", user.email ?? "");
       localStorage.setItem("userName", user.user_metadata?.name ?? "");
       localStorage.setItem("supabaseUserId", user.id);
+      // Cookie para middleware
+      const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toUTCString();
+      document.cookie = `ai_auth=1; path=/; expires=${expires}; SameSite=Lax`;
 
-      // Auto-migrate local data to Supabase on first sign-in
       if (hasLocalDataToMigrate()) {
-        await pushLocalDataToSupabase(user.id).catch(() => { /* silent */ });
+        await pushLocalDataToSupabase(user.id).catch(() => null);
+      } else {
+        await pullDataFromSupabase(user.id).catch(() => null);
+        if (user.user_metadata?.name) localStorage.setItem("userName", user.user_metadata.name);
+        localStorage.setItem("hasCompletedOnboarding", "true");
       }
 
       const done = localStorage.getItem("hasCompletedOnboarding");

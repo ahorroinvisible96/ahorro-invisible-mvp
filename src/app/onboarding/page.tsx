@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/Progress/Progress";
 import { OptionButton } from "@/components/ui/OptionButton";
 import { analytics } from "@/services/analytics";
 import { storeUpdateIncome, storeUpdateUserName, storeUpdateMoneyFeeling } from "@/services/dashboardStore";
+import { pushLocalDataToSupabase } from "@/services/syncService";
 import type { IncomeRange } from "@/types/Dashboard";
 
 export default function OnboardingPage() {
@@ -122,7 +123,11 @@ export default function OnboardingPage() {
       
       // Registrar evento de onboarding completado
       analytics.onboardingCompleted();
-      
+
+      // Sincronizar perfil a Supabase (fire-and-forget)
+      const userId = localStorage.getItem('supabaseUserId');
+      if (userId) pushLocalDataToSupabase(userId).catch(() => null);
+
       // Redirigir a crear objetivo (marcado como onboarding)
       router.push("/goals/new?source=onboarding");
     } catch (err) {

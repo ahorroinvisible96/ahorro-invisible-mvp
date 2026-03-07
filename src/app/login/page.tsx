@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { analytics } from "@/services/analytics";
 import { authSignIn, authSendMagicLink } from "@/services/authService";
 import { isSupabaseConfigured } from "@/lib/supabase";
-import { hasLocalDataToMigrate, pushLocalDataToSupabase } from "@/services/syncService";
+import { hasLocalDataToMigrate, pushLocalDataToSupabase, pullDataFromSupabase } from "@/services/syncService";
 
 type Mode = "password" | "magic";
 
@@ -57,9 +57,16 @@ export default function LoginPage() {
       return;
     }
 
-    // Sincronizar datos locales a Supabase si los hay (migración automática)
-    if (isSupabaseConfigured && user.id !== "local" && hasLocalDataToMigrate()) {
-      pushLocalDataToSupabase(user.id).catch(() => { /* silent */ });
+    if (isSupabaseConfigured && user.id !== "local") {
+      if (hasLocalDataToMigrate()) {
+        // Hay datos locales → push a Supabase (migración)
+        pushLocalDataToSupabase(user.id).catch(() => null);
+      } else {
+        // Sin datos locales → pull desde Supabase (nuevo dispositivo / localStorage limpio)
+        await pullDataFromSupabase(user.id).catch(() => null);
+        if (user.name) localStorage.setItem("userName", user.name);
+        localStorage.setItem("hasCompletedOnboarding", "true");
+      }
     }
 
     const done = localStorage.getItem("hasCompletedOnboarding");

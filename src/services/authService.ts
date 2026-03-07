@@ -2,6 +2,17 @@
 
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
+// ─── Cookie de sesión (leída por middleware Next.js) ──────────────────────────
+function setAuthCookie() {
+  if (typeof document === 'undefined') return;
+  const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toUTCString();
+  document.cookie = `ai_auth=1; path=/; expires=${expires}; SameSite=Lax`;
+}
+function clearAuthCookie() {
+  if (typeof document === 'undefined') return;
+  document.cookie = 'ai_auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
+}
+
 export type AuthUser = {
   id: string;
   email: string;
@@ -23,6 +34,7 @@ export async function authSignUp(
     localStorage.setItem('isAuthenticated', 'true');
     localStorage.setItem('userEmail', email);
     localStorage.setItem('userName', name);
+    setAuthCookie();
     return { user: { id: 'local', email, name }, error: null };
   }
 
@@ -39,6 +51,7 @@ export async function authSignUp(
   localStorage.setItem('userEmail', email);
   localStorage.setItem('userName', name);
   localStorage.setItem('supabaseUserId', data.user.id);
+  setAuthCookie();
 
   return { user: { id: data.user.id, email: data.user.email!, name }, error: null };
 }
@@ -52,6 +65,7 @@ export async function authSignIn(
     const storedEmail = localStorage.getItem('userEmail');
     if (storedEmail && storedEmail === email) {
       localStorage.setItem('isAuthenticated', 'true');
+      setAuthCookie();
       return {
         user: { id: 'local', email, name: localStorage.getItem('userName') ?? '' },
         error: null,
@@ -69,6 +83,7 @@ export async function authSignIn(
   localStorage.setItem('userEmail', data.user.email!);
   localStorage.setItem('userName', data.user.user_metadata?.name ?? '');
   localStorage.setItem('supabaseUserId', data.user.id);
+  setAuthCookie();
 
   return {
     user: { id: data.user.id, email: data.user.email!, name: data.user.user_metadata?.name },
@@ -99,6 +114,7 @@ export async function authSignOut(): Promise<void> {
   ['isAuthenticated', 'userEmail', 'userName', 'hasCompletedOnboarding', 'supabaseUserId'].forEach(
     (k) => localStorage.removeItem(k),
   );
+  clearAuthCookie();
 }
 
 // ─── Current user ─────────────────────────────────────────────────────────────
