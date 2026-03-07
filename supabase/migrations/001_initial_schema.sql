@@ -17,7 +17,7 @@ create table if not exists public.user_profiles (
 );
 alter table public.user_profiles enable row level security;
 create policy "Users can manage own profile" on public.user_profiles
-  for all using (auth.uid() = id);
+  for all using (auth.uid() = id) with check (auth.uid() = id);
 
 -- ─── Goals ───────────────────────────────────────────────────────────────────
 create table if not exists public.goals (
@@ -34,7 +34,7 @@ create table if not exists public.goals (
 );
 alter table public.goals enable row level security;
 create policy "Users can manage own goals" on public.goals
-  for all using (auth.uid() = user_id);
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 create index if not exists goals_user_id_idx on public.goals(user_id);
 create index if not exists goals_user_active_idx on public.goals(user_id) where not archived;
@@ -54,8 +54,9 @@ create table if not exists public.decisions (
 );
 alter table public.decisions enable row level security;
 create policy "Users can manage own decisions" on public.decisions
-  for all using (auth.uid() = user_id);
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
+-- Solo 1 decisión diaria por usuario (no aplica a extra_saving ni grace_day)
 create unique index if not exists decisions_user_date_idx on public.decisions(user_id, date)
   where question_id not in ('grace_day', 'extra_saving');
 create index if not exists decisions_user_id_idx on public.decisions(user_id);
@@ -68,7 +69,7 @@ create table if not exists public.hucha (
 );
 alter table public.hucha enable row level security;
 create policy "Users can manage own hucha" on public.hucha
-  for all using (auth.uid() = user_id);
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 -- ─── Push subscriptions ───────────────────────────────────────────────────────
 create table if not exists public.push_subscriptions (

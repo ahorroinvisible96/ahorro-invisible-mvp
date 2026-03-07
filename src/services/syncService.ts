@@ -9,8 +9,20 @@ export async function pushLocalDataToSupabase(
   userId: string,
 ): Promise<{ success: boolean; migrated: number; error?: string }> {
   if (!isSupabaseConfigured || !supabase) {
-    return { success: false, migrated: 0, error: 'Supabase no está configurado.' };
+    return { success: false, migrated: 0, error: 'Supabase no configurado.' };
   }
+
+  // Verificar sesión activa; si expiró, refrescar
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      const { error: refreshErr } = await supabase.auth.refreshSession();
+      if (refreshErr) {
+        console.error('[sync] Sin sesión válida, sync abortado:', refreshErr.message);
+        return { success: false, migrated: 0, error: 'Sin sesión activa' };
+      }
+    }
+  } catch (e) { console.error('[sync] Error verificando sesión:', e); }
 
   let raw: string | null = null;
   try { raw = localStorage.getItem(STORAGE_KEY); } catch { /* SSR */ }
@@ -27,17 +39,19 @@ export async function pushLocalDataToSupabase(
   try { store = JSON.parse(raw); } catch { return { success: false, migrated: 0, error: 'JSON parse error' }; }
 
   let migrated = 0;
+  const now = new Date().toISOString();
 
   // 1. Perfil
   try {
     const { error } = await supabase.from('user_profiles').upsert(
-      { id: userId, name: store.userName ?? null, money_feeling: store.moneyFeeling ?? null, income_range: store.incomeRange ?? null, updated_at: new Date().toISOString() },
+      { id: userId, name: store.userName ?? null, money_feeling: store.moneyFeeling ?? null, income_range: store.incomeRange ?? null, updated_at: now },
       { onConflict: 'id' },
     );
-    if (error) console.error('[sync] user_profiles error:', error.message, error.details);
+    if (error) console.error('[sync] user_profiles:', error.code, error.message);
+    else migrated += 1;
   } catch (e) { console.error('[sync] user_profiles exception:', e); }
 
-  // 2. Goals — upsert en batch, log si falla
+  // 2. Goals — upsert uno a uno para aislar errores
   if (store.goals?.length) {
     const goals = (store.goals as Record<string, unknown>[])
       .filter(g => g.id && g.title)
@@ -50,19 +64,20 @@ export async function pushLocalDataToSupabase(
         horizon_months: Number(g.horizonMonths ?? 12),
         is_primary: Boolean(g.isPrimary),
         archived: Boolean(g.archived),
-        created_at: (g.createdAt as string) || new Date().toISOString(),
-        updated_at: (g.updatedAt as string) || new Date().toISOString(),
+        created_at: (g.createdAt as string) || now,
+        updated_at: (g.updatedAt as string) || now,
       }));
-    if (goals.length) {
+
+    for (const goal of goals) {
       try {
-        const { error } = await supabase.from('goals').upsert(goals, { onConflict: 'id' });
-        if (error) { console.error('[sync] goals error:', error.message, error.details, goals); }
-        else { migrated += goals.length; }
-      } catch (e) { console.error('[sync] goals exception:', e); }
+        const { error } = await supabase.from('goals').upsert(goal, { onConflict: 'id' });
+        if (error) console.error('[sync] goal:', error.code, error.message, goal.id);
+        else migrated += 1;
+      } catch (e) { console.error('[sync] goal exception:', e); }
     }
   }
 
-  // 3. Decisions — upsert de una en una para evitar fallos en batch por constraint
+  // 3. Decisions — upsert una a una; si falla por FK de goal_id, reintentar sin goal_id
   if (store.decisions?.length) {
     const decisions = (store.decisions as Record<string, unknown>[])
       .filter(d => d.id && d.questionId !== 'grace_day' && d.date)
@@ -76,14 +91,26 @@ export async function pushLocalDataToSupabase(
         delta_amount: Number(d.deltaAmount ?? 0),
         monthly_projection: Number(d.monthlyProjection ?? 0),
         yearly_projection: Number(d.yearlyProjection ?? 0),
-        created_at: (d.createdAt as string) || new Date().toISOString(),
+        created_at: (d.createdAt as string) || now,
       }));
 
     for (const dec of decisions) {
       try {
         const { error } = await supabase.from('decisions').upsert(dec, { onConflict: 'id' });
-        if (error) { console.error('[sync] decision error:', error.message, error.details, dec); }
-        else { migrated += 1; }
+        if (error) {
+          // 23503 = FK violation (goal_id no existe en goals aún) → reintentar sin goal_id
+          if (error.code === '23503') {
+            const { error: err2 } = await supabase
+              .from('decisions')
+              .upsert({ ...dec, goal_id: null }, { onConflict: 'id' });
+            if (err2) console.error('[sync] decision retry sin goal_id:', err2.code, err2.message, dec.id);
+            else migrated += 1;
+          } else {
+            console.error('[sync] decision:', error.code, error.message, dec.id, dec.question_id, dec.date);
+          }
+        } else {
+          migrated += 1;
+        }
       } catch (e) { console.error('[sync] decision exception:', e); }
     }
   }
@@ -95,11 +122,12 @@ export async function pushLocalDataToSupabase(
         { user_id: userId, balance: Number(store.hucha.balance ?? 0), entries: store.hucha.entries ?? [] },
         { onConflict: 'user_id' },
       );
-      if (error) console.error('[sync] hucha error:', error.message);
+      if (error) console.error('[sync] hucha:', error.code, error.message);
     } catch (e) { console.error('[sync] hucha exception:', e); }
   }
 
-  try { localStorage.setItem('supabase_last_sync', new Date().toISOString()); } catch { /* SSR */ }
+  try { localStorage.setItem('supabase_last_sync', now); } catch { /* SSR */ }
+  console.log(`[sync] completado: ${migrated} registros`);
   return { success: true, migrated };
 }
 
