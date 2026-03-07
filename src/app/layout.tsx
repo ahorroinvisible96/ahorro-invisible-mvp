@@ -6,7 +6,6 @@ import "@/styles/tokens/index.css"; // Importar tokens CSS
 import ThemeInit from '@/components/providers/ThemeInit';
 import PostHogProvider from '@/components/providers/PostHogProvider';
 import SyncProvider from '@/components/providers/SyncProvider';
-import { InstallPrompt } from '@/components/pwa/InstallPrompt';
 import { Analytics } from "@vercel/analytics/next";
 
 const geistSans = Geist({
@@ -42,7 +41,6 @@ export default function RootLayout({
         <ThemeInit />
         <PostHogProvider>
           <SyncProvider>{children}</SyncProvider>
-          <InstallPrompt />
         </PostHogProvider>
         <Analytics />
       </body>
