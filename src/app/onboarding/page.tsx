@@ -123,8 +123,8 @@ export default function OnboardingPage() {
       // Registrar evento de onboarding completado
       analytics.onboardingCompleted();
       
-      // Redirigir a crear objetivo
-      router.push("/goals/new");
+      // Redirigir a crear objetivo (marcado como onboarding)
+      router.push("/goals/new?source=onboarding");
     } catch (err) {
       console.error("Error al guardar datos:", err);
     }

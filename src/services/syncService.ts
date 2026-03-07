@@ -41,10 +41,52 @@ export async function pushLocalDataToSupabase(
   let migrated = 0;
   const now = new Date().toISOString();
 
-  // 1. Perfil
+  // ─ Calcular métricas analíticas desde el store local ─────────────────────
+  const decisions = (store.decisions ?? []) as Record<string, unknown>[];
+  const dailyDecisions = decisions.filter(d => d.questionId !== 'extra_saving' && d.questionId !== 'grace_day');
+  const extraDecisions = decisions.filter(d => d.questionId === 'extra_saving');
+  const totalSaved = decisions.reduce((s, d) => s + Number(d.deltaAmount ?? 0), 0);
+  const dailySaved = dailyDecisions.reduce((s, d) => s + Number(d.deltaAmount ?? 0), 0);
+  const extraSaved = extraDecisions.reduce((s, d) => s + Number(d.deltaAmount ?? 0), 0);
+  const activeDates = new Set(dailyDecisions.map(d => d.date as string));
+  const activeDaysCount = activeDates.size;
+  const lastActiveAt = dailyDecisions.length
+    ? [...activeDates].sort().slice(-1)[0] + 'T23:59:59Z'
+    : null;
+
+  // Calcular streak actual (días consecutivos con decisión diaria)
+  const today = new Date().toISOString().split('T')[0];
+  let streakCurrent = 0;
+  {
+    let cursor = new Date(today);
+    while (true) {
+      const dateStr = cursor.toISOString().split('T')[0];
+      if (!activeDates.has(dateStr)) break;
+      streakCurrent++;
+      cursor.setDate(cursor.getDate() - 1);
+    }
+  }
+
+  // 1. Perfil + analytics
   try {
     const { error } = await supabase.from('user_profiles').upsert(
-      { id: userId, name: store.userName ?? null, money_feeling: store.moneyFeeling ?? null, income_range: store.incomeRange ?? null, updated_at: now },
+      {
+        id: userId,
+        name: store.userName ?? null,
+        money_feeling: store.moneyFeeling ?? null,
+        income_range: store.incomeRange ?? null,
+        updated_at: now,
+        streak_current: streakCurrent,
+        streak_max: streakCurrent,
+        total_saved: totalSaved,
+        daily_saved: dailySaved,
+        extra_saved: extraSaved,
+        decisions_count: dailyDecisions.length,
+        extra_savings_count: extraDecisions.length,
+        goals_created_count: (store.goals ?? []).length,
+        active_days_count: activeDaysCount,
+        last_active_at: lastActiveAt,
+      },
       { onConflict: 'id' },
     );
     if (error) console.error('[sync] user_profiles:', error.code, error.message);
@@ -66,6 +108,8 @@ export async function pushLocalDataToSupabase(
         archived: Boolean(g.archived),
         created_at: (g.createdAt as string) || now,
         updated_at: (g.updatedAt as string) || now,
+        source: (g.source as string) || 'dashboard',
+        completed_at: (g.completedAt as string) || null,
       }));
 
     for (const goal of goals) {

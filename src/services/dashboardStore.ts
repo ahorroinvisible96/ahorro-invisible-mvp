@@ -11,6 +11,10 @@ import type {
 // ─── Clave de persistencia ───────────────────────────────────────────────────
 const STORAGE_KEY = 'ahorro_invisible_dashboard_v1';
 
+// ─── Helper: distinguir decisión diaria de ahorro extra / grace day ─────────
+const isDaily = (d: DailyDecision) =>
+  d.questionId !== 'extra_saving' && d.questionId !== 'grace_day';
+
 // ─── Motor económico ─────────────────────────────────────────────────────────
 export const DAILY_DECISION_RULES: DailyDecisionRule[] = [
   // ─ Originales ────────────────────────────────────────────────────────────
@@ -242,16 +246,17 @@ function persistStore(state: StoreState): void {
 
 // ─── Lógica interna ───────────────────────────────────────────────────────────
 function computeStreak(decisions: DailyDecision[]): number {
-  if (decisions.length === 0) return 0;
+  const daily = decisions.filter(isDaily);
+  if (daily.length === 0) return 0;
   const today = new Date().toISOString().split('T')[0];
-  const hasToday = decisions.some((d) => d.date === today);
+  const hasToday = daily.some((d) => d.date === today);
   let streak = 0;
   let cursor = new Date(hasToday ? today : (() => {
     const d = new Date(today); d.setDate(d.getDate() - 1); return d.toISOString().split('T')[0];
   })());
   while (true) {
     const dateStr = cursor.toISOString().split('T')[0];
-    const found = decisions.some((d) => d.date === dateStr);
+    const found = daily.some((d) => d.date === dateStr);
     if (!found) break;
     streak++;
     cursor.setDate(cursor.getDate() - 1);
@@ -298,7 +303,7 @@ export function buildSummary(range: '7d' | '30d' | '90d' = '30d'): DashboardSumm
   const primaryGoal =
     activeGoals.find((g) => g.isPrimary) ?? activeGoals[0] ?? null;
 
-  const todayDecision = state.decisions.find((d) => d.date === today) ?? null;
+  const todayDecision = state.decisions.find((d) => d.date === today && isDaily(d)) ?? null;
   const evolutionPoints = buildEvolutionPoints(state.decisions, range);
 
   // Velocidad media de ahorro (últimos 30 días)
@@ -326,8 +331,8 @@ export function buildSummary(range: '7d' | '30d' | '90d' = '30d'): DashboardSumm
 
   // ─ Streak recovery ─────────────────────────────────────────────────────────
   const yesterday = new Date(Date.now() - 86_400_000).toISOString().split('T')[0];
-  const hadYesterdayDecision = state.decisions.some(d => d.date === yesterday);
-  const streakBrokeYesterday = streak === 0 && !hadYesterdayDecision && state.decisions.length > 0;
+  const hadYesterdayDecision = state.decisions.some(d => d.date === yesterday && isDaily(d));
+  const streakBrokeYesterday = streak === 0 && !hadYesterdayDecision && state.decisions.filter(isDaily).length > 0;
   const currentMonth = new Date().toISOString().slice(0, 7);
   const graceAvailable = (state.graceUsedMonth ?? '') !== currentMonth;
 
@@ -373,7 +378,7 @@ export function storeUpdateIncome(
 }
 
 export function storeCreateGoal(
-  data: Pick<Goal, 'title' | 'targetAmount' | 'currentAmount' | 'horizonMonths'> & { isPrimary?: boolean },
+  data: Pick<Goal, 'title' | 'targetAmount' | 'currentAmount' | 'horizonMonths'> & { isPrimary?: boolean; source?: 'onboarding' | 'dashboard' },
   currentRange: '7d' | '30d' | '90d' = '30d',
 ): DashboardSummary {
   const state = loadStore();
@@ -383,16 +388,19 @@ export function storeCreateGoal(
   if (shouldBePrimary) {
     state.goals = state.goals.map((g) => ({ ...g, isPrimary: false, updatedAt: now }));
   }
+  const initAmount = data.currentAmount ?? 0;
   state.goals.push({
     id: `goal_${Date.now()}`,
     title: data.title,
     targetAmount: data.targetAmount,
-    currentAmount: data.currentAmount ?? 0,
+    currentAmount: initAmount,
     horizonMonths: data.horizonMonths,
     isPrimary: shouldBePrimary,
     archived: false,
     createdAt: now,
     updatedAt: now,
+    source: data.source ?? 'dashboard',
+    completedAt: initAmount >= data.targetAmount && data.targetAmount > 0 ? now : null,
   });
   persistStore(state);
   return buildSummary(currentRange);
@@ -535,14 +543,14 @@ export function storeResetDecision(
   const state = loadStore();
   const today = new Date().toISOString().split('T')[0];
   const now = new Date().toISOString();
-  const todayDec = state.decisions.find((d) => d.date === today);
+  const todayDec = state.decisions.find((d) => d.date === today && isDaily(d));
   if (todayDec) {
     const goal = state.goals.find((g) => g.id === todayDec.goalId);
     if (goal) {
       goal.currentAmount = Math.max(0, goal.currentAmount - todayDec.deltaAmount);
       goal.updatedAt = now;
     }
-    state.decisions = state.decisions.filter((d) => d.date !== today);
+    state.decisions = state.decisions.filter((d) => !(d.date === today && isDaily(d)));
     persistStore(state);
   }
   return buildSummary(currentRange);
@@ -572,6 +580,9 @@ export function storeAddExtraSaving(
   if (goal) {
     goal.currentAmount += amount;
     goal.updatedAt = now;
+    if (!goal.completedAt && goal.currentAmount >= goal.targetAmount && goal.targetAmount > 0) {
+      goal.completedAt = now;
+    }
   }
   persistStore(state);
   return buildSummary(currentRange);
@@ -756,7 +767,7 @@ export function storeExportData(): string {
 
 export function storeGetDailyForDate(date: string): { status: 'pending' | 'completed'; decisionId: string | null } {
   const state = loadStore();
-  const found = state.decisions.find((d) => d.date === date) ?? null;
+  const found = state.decisions.find((d) => d.date === date && isDaily(d)) ?? null;
   return {
     status: found ? 'completed' : 'pending',
     decisionId: found?.id ?? null,
@@ -829,7 +840,7 @@ export function storeSubmitDecision(
   const state = loadStore();
   const today = new Date().toISOString().split('T')[0];
 
-  if (state.decisions.some((d) => d.date === today)) {
+  if (state.decisions.some((d) => d.date === today && isDaily(d))) {
     return buildSummary(currentRange);
   }
 

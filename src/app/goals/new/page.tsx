@@ -1,13 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { storeCreateGoal, storeListActiveGoals } from "@/services/dashboardStore";
 import { analytics } from "@/services/analytics";
 import { pushLocalDataToSupabase } from "@/services/syncService";
 
-export default function CreateGoalPage() {
+function CreateGoalInner() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const goalSource = (searchParams.get('source') === 'onboarding' ? 'onboarding' : 'dashboard') as 'onboarding' | 'dashboard';
   const [title, setTitle] = useState("");
   const [targetAmount, setTargetAmount] = useState("");
   const [horizonMonths, setHorizonMonths] = useState("12");
@@ -58,7 +60,7 @@ export default function CreateGoalPage() {
 
     try {
       const isFirst = storeListActiveGoals().length === 0;
-      const summary = storeCreateGoal({ title: title.trim(), targetAmount: amount, currentAmount: 0, horizonMonths: months });
+      const summary = storeCreateGoal({ title: title.trim(), targetAmount: amount, currentAmount: 0, horizonMonths: months, source: goalSource });
       const newGoal = summary.goals.filter(g => !g.archived).slice(-1)[0];
       analytics.goalCreated(newGoal?.id ?? `goal_${Date.now()}`, isFirst, amount, months);
       if (isFirst) analytics.firstGoalCreated(newGoal?.id ?? `goal_${Date.now()}`, amount, months);
@@ -278,5 +280,13 @@ export default function CreateGoalPage() {
 
       </div>
     </main>
+  );
+}
+
+export default function CreateGoalPage() {
+  return (
+    <Suspense fallback={null}>
+      <CreateGoalInner />
+    </Suspense>
   );
 }

@@ -10,6 +10,8 @@ export type Goal = {
   archived: boolean;
   createdAt: string;
   updatedAt: string;
+  source?: 'onboarding' | 'dashboard';
+  completedAt?: string | null;
 };
 
 export type DailyStatus = 'pending' | 'completed';
