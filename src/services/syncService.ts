@@ -142,13 +142,24 @@ export async function pushLocalDataToSupabase(
       try {
         const { error } = await supabase.from('decisions').upsert(dec, { onConflict: 'id' });
         if (error) {
-          // 23503 = FK violation (goal_id no existe en goals aún) → reintentar sin goal_id
           if (error.code === '23503') {
-            const { error: err2 } = await supabase
-              .from('decisions')
-              .upsert({ ...dec, goal_id: null }, { onConflict: 'id' });
-            if (err2) console.error('[sync] decision retry sin goal_id:', err2.code, err2.message, dec.id);
+            const { error: err2 } = await supabase.from('decisions').upsert({ ...dec, goal_id: null }, { onConflict: 'id' });
+            if (err2) console.error('[sync] decision FK retry:', err2.code, err2.message, dec.id);
             else migrated += 1;
+          } else if (error.code === '23505' && error.message.includes('decisions_user_date_idx')) {
+            // Fila con mismo (user_id, date) y distinto id → reemplazar
+            await supabase.from('decisions').delete()
+              .eq('user_id', userId)
+              .eq('date', dec.date as string)
+              .neq('question_id', 'extra_saving')
+              .neq('question_id', 'grace_day');
+            const { error: err2 } = await supabase.from('decisions').insert(dec);
+            if (err2) {
+              if (err2.code === '23503') {
+                const { error: err3 } = await supabase.from('decisions').insert({ ...dec, goal_id: null });
+                if (!err3) migrated += 1;
+              } else { console.error('[sync] decision re-insert loop:', err2.code, err2.message, dec.id); }
+            } else { migrated += 1; }
           } else {
             console.error('[sync] decision:', error.code, error.message, dec.id, dec.question_id, dec.date);
           }
@@ -309,6 +320,7 @@ export async function syncDecisionToSupabase(
   },
 ): Promise<{ ok: boolean; error?: string }> {
   if (!isSupabaseConfigured || !supabase) return { ok: false, error: 'no_supabase' };
+  const db = supabase;
   const userId = await getSessionUserId();
   if (!userId) { console.error('[sync] syncDecisionToSupabase: sin sesión'); return { ok: false, error: 'no_session' }; }
 
@@ -325,13 +337,36 @@ export async function syncDecisionToSupabase(
     created_at: decision.createdAt,
   };
 
+  const tryUpsert = async (r: typeof row) => db.from('decisions').upsert(r, { onConflict: 'id' });
+
   try {
-    const { error } = await supabase.from('decisions').upsert(row, { onConflict: 'id' });
+    const { error } = await tryUpsert(row);
     if (error) {
       if (error.code === '23503') {
         // FK violation: goal_id no existe aún → reintentar sin goal_id
-        const { error: err2 } = await supabase.from('decisions').upsert({ ...row, goal_id: null }, { onConflict: 'id' });
-        if (err2) { console.error('[sync] syncDecisionToSupabase retry:', err2.code, err2.message); return { ok: false, error: err2.message }; }
+        const { error: err2 } = await tryUpsert({ ...row, goal_id: null });
+        if (err2) { console.error('[sync] decision FK retry:', err2.code, err2.message); return { ok: false, error: err2.message }; }
+        return { ok: true };
+      }
+      if (error.code === '23505' && error.message.includes('decisions_user_date_idx')) {
+        // Ya existe una decisión diaria para este user+date con distinto id (localStorage reseteado)
+        // → borrar la fila obsoleta y re-insertar
+        await db.from('decisions')
+          .delete()
+          .eq('user_id', userId)
+          .eq('date', row.date)
+          .neq('question_id', 'extra_saving')
+          .neq('question_id', 'grace_day');
+        const { error: err2 } = await db.from('decisions').insert(row);
+        if (err2) {
+          if (err2.code === '23503') {
+            const { error: err3 } = await db.from('decisions').insert({ ...row, goal_id: null });
+            if (err3) { console.error('[sync] decision re-insert FK:', err3.code, err3.message); return { ok: false, error: err3.message }; }
+            return { ok: true };
+          }
+          console.error('[sync] decision re-insert:', err2.code, err2.message);
+          return { ok: false, error: err2.message };
+        }
         return { ok: true };
       }
       console.error('[sync] syncDecisionToSupabase error:', error.code, error.message, decision.id);
