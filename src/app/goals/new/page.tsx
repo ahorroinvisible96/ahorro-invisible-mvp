@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { storeCreateGoal } from "@/services/dashboardStore";
+import { storeCreateGoal, storeListActiveGoals } from "@/services/dashboardStore";
 import { analytics } from "@/services/analytics";
 
 export default function CreateGoalPage() {
@@ -24,13 +24,22 @@ export default function CreateGoalPage() {
     if (isAuthenticated !== "true") { router.replace("/signup"); return; }
     const hasCompletedOnboarding = localStorage.getItem("hasCompletedOnboarding");
     if (hasCompletedOnboarding !== "true") { router.replace("/onboarding"); return; }
-    // Prelllenar el nombre con el tipo de objetivo elegido en el onboarding
+    // Prellenar nombre y cantidad sugerida según tipo de objetivo del onboarding
+    const GOAL_TYPE_AMOUNTS: Record<string, number> = {
+      travel:    3000,
+      emergency: 3000,
+      purchase:  2000,
+      freedom:   10000,
+    };
     try {
       const onbRaw = localStorage.getItem("onboardingData");
       if (onbRaw) {
         const onb = JSON.parse(onbRaw);
         if (onb.goalType && GOAL_TYPE_LABELS[onb.goalType]) {
           setTitle(GOAL_TYPE_LABELS[onb.goalType]);
+        }
+        if (onb.goalType && GOAL_TYPE_AMOUNTS[onb.goalType]) {
+          setTargetAmount(String(GOAL_TYPE_AMOUNTS[onb.goalType]));
         }
       }
     } catch { /* fallthrough */ }
@@ -47,8 +56,11 @@ export default function CreateGoalPage() {
     if (!horizonMonths || isNaN(months) || months < 1) { setError("El horizonte debe ser al menos 1 mes."); return; }
 
     try {
-      storeCreateGoal({ title: title.trim(), targetAmount: amount, currentAmount: 0, horizonMonths: months });
-      analytics.goalCreated(`goal_${Date.now()}`, true, amount, months);
+      const isFirst = storeListActiveGoals().length === 0;
+      const newGoal = storeCreateGoal({ title: title.trim(), targetAmount: amount, currentAmount: 0, horizonMonths: months });
+      const newId = `goal_${Date.now()}`;
+      analytics.goalCreated(newId, isFirst, amount, months);
+      if (isFirst) analytics.firstGoalCreated(newId, amount, months);
       router.push("/dashboard");
     } catch (err) {
       setError("No se pudo guardar. Intenta de nuevo.");

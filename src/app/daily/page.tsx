@@ -66,31 +66,59 @@ export default function DailyPage() {
     if (!question || !selectedAnswer || !selectedGoalId) return;
     setPhase('confirming');
     analytics.dailyAnswerSubmitted(today, question.questionId, selectedAnswer, selectedGoalId, goals.find(g => g.id === selectedGoalId)?.isPrimary ?? false);
+    const isFirstDecision = (() => {
+      try {
+        const raw = localStorage.getItem('ahorro_invisible_dashboard_v1');
+        if (!raw) return true;
+        const s = JSON.parse(raw);
+        return (s.decisions?.length ?? 0) === 0;
+      } catch { return false; }
+    })();
     const summary = storeSubmitDecision(question.questionId, selectedAnswer, selectedGoalId);
     const dec = summary.daily.decisionId;
     setCompletedDecisionId(dec);
     analytics.dailyCompleted(today, dec ?? '', question.questionId, selectedAnswer, selectedGoalId, true, undefined, undefined, goals.find(g => g.id === selectedGoalId)?.isPrimary ?? false);
+    if (isFirstDecision) analytics.firstDailyCompleted(today, dec ?? '', question.questionId, selectedAnswer, selectedGoalId);
     router.push(`/impact/${dec}`);
+  };
+
+  const handleSkip = () => {
+    if (question && !selectedAnswer) analytics.dailySkipped(today, question.questionId);
+    router.push('/dashboard');
   };
 
   const rule = question && selectedAnswer
     ? DAILY_DECISION_RULES.find(r => r.questionId === question.questionId && r.answerKey === selectedAnswer)
     : null;
 
+  const DARK = {
+    page: '#0f172a',
+    card: '#1e293b',
+    cardBorder: 'rgba(51,65,85,0.6)',
+    textPrimary: '#f1f5f9',
+    textSecondary: 'rgba(148,163,184,0.85)',
+    textMuted: 'rgba(148,163,184,0.5)',
+    border: 'rgba(51,65,85,0.55)',
+    selectedBg: 'rgba(37,99,235,0.18)',
+    selectedBorder: '#2563eb',
+    progressTrack: 'rgba(51,65,85,0.6)',
+    green: { bg: 'rgba(22,163,74,0.12)', border: 'rgba(22,163,74,0.3)', text: '#4ade80', label: '#86efac' },
+  };
+
   if (phase === 'loading') {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f9fafb' }}>
-        <span style={{ color: '#9ca3af', fontSize: 14 }}>Cargando...</span>
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: DARK.page }}>
+        <span style={{ color: DARK.textMuted, fontSize: 14 }}>Cargando...</span>
       </div>
     );
   }
 
   if (phase === 'no-goals') {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#f9fafb', padding: 24 }}>
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: DARK.page, padding: 24 }}>
         <div style={{ fontSize: 48, marginBottom: 16 }}>🎯</div>
-        <h2 style={{ fontSize: 18, fontWeight: 700, color: '#111827', marginBottom: 8, textAlign: 'center' }}>Crea un objetivo primero</h2>
-        <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 24, textAlign: 'center' }}>Necesitas al menos un objetivo activo para registrar tu decisión diaria.</p>
+        <h2 style={{ fontSize: 18, fontWeight: 700, color: DARK.textPrimary, marginBottom: 8, textAlign: 'center' }}>Crea un objetivo primero</h2>
+        <p style={{ fontSize: 14, color: DARK.textSecondary, marginBottom: 24, textAlign: 'center' }}>Necesitas al menos un objetivo activo para registrar tu decisión diaria.</p>
         <button onClick={() => router.push('/dashboard')} style={{ padding: '12px 24px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: 12, cursor: 'pointer', fontWeight: 600, fontSize: 14 }}>
           Ir al dashboard
         </button>
@@ -100,17 +128,17 @@ export default function DailyPage() {
 
   if (phase === 'completed' || phase === 'confirming') {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#f9fafb', padding: 24 }}>
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: DARK.page, padding: 24 }}>
         <div style={{ fontSize: 56, marginBottom: 16 }}>✅</div>
-        <h2 style={{ fontSize: 20, fontWeight: 700, color: '#111827', marginBottom: 8, textAlign: 'center' }}>¡Decisión registrada!</h2>
-        <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 24, textAlign: 'center' }}>Ya tomaste tu decisión de hoy. Vuelve mañana.</p>
+        <h2 style={{ fontSize: 20, fontWeight: 700, color: DARK.textPrimary, marginBottom: 8, textAlign: 'center' }}>¡Decisión registrada!</h2>
+        <p style={{ fontSize: 14, color: DARK.textSecondary, marginBottom: 24, textAlign: 'center' }}>Ya tomaste tu decisión de hoy. Vuelve mañana.</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%', maxWidth: 300 }}>
           {completedDecisionId && (
             <button onClick={() => router.push(`/impact/${completedDecisionId}`)} style={{ padding: '12px 0', background: '#2563eb', color: '#fff', border: 'none', borderRadius: 12, cursor: 'pointer', fontWeight: 600, fontSize: 14 }}>
               Ver impacto
             </button>
           )}
-          <button onClick={() => router.push('/dashboard')} style={{ padding: '12px 0', background: 'transparent', border: '1.5px solid #e5e7eb', borderRadius: 12, cursor: 'pointer', fontWeight: 500, fontSize: 14, color: '#374151' }}>
+          <button onClick={() => router.push('/dashboard')} style={{ padding: '12px 0', background: 'transparent', border: `1.5px solid ${DARK.border}`, borderRadius: 12, cursor: 'pointer', fontWeight: 500, fontSize: 14, color: DARK.textSecondary }}>
             Volver al dashboard
           </button>
         </div>
@@ -121,16 +149,16 @@ export default function DailyPage() {
   if (!question) return null;
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f9fafb', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '32px 16px' }}>
+    <div style={{ minHeight: '100vh', background: DARK.page, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '32px 16px' }}>
       <div style={{ width: '100%', maxWidth: 480 }}>
-        <button onClick={() => router.push('/dashboard')} style={{ background: 'none', border: 'none', color: '#6b7280', fontSize: 13, cursor: 'pointer', marginBottom: 24, padding: 0 }}>
+        <button onClick={handleSkip} style={{ background: 'none', border: 'none', color: DARK.textSecondary, fontSize: 13, cursor: 'pointer', marginBottom: 24, padding: 0 }}>
           ← Dashboard
         </button>
 
         {/* Pregunta */}
-        <div style={{ background: '#fff', borderRadius: 20, padding: '28px 24px', boxShadow: '0 1px 10px rgba(0,0,0,0.06)', marginBottom: 16 }}>
-          <p style={{ fontSize: 11, fontWeight: 700, color: '#9ca3af', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 12 }}>Decisión del día</p>
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: '#111827', lineHeight: 1.35, marginBottom: 0 }}>{question.text}</h1>
+        <div style={{ background: DARK.card, borderRadius: 20, padding: '28px 24px', border: `1px solid ${DARK.cardBorder}`, marginBottom: 16 }}>
+          <p style={{ fontSize: 11, fontWeight: 700, color: DARK.textMuted, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 12 }}>Decisión del día</p>
+          <h1 style={{ fontSize: 22, fontWeight: 700, color: DARK.textPrimary, lineHeight: 1.35, marginBottom: 0 }}>{question.text}</h1>
         </div>
 
         {/* Respuestas */}
@@ -143,8 +171,8 @@ export default function DailyPage() {
                 key={ans.key}
                 onClick={() => handleSelectAnswer(ans.key)}
                 style={{
-                  background: isSelected ? '#eff6ff' : '#fff',
-                  border: `2px solid ${isSelected ? '#2563eb' : '#e5e7eb'}`,
+                  background: isSelected ? DARK.selectedBg : DARK.card,
+                  border: `2px solid ${isSelected ? DARK.selectedBorder : DARK.cardBorder}`,
                   borderRadius: 14,
                   padding: '16px 20px',
                   cursor: 'pointer',
@@ -153,12 +181,12 @@ export default function DailyPage() {
                   justifyContent: 'space-between',
                   alignItems: 'center',
                   transition: 'all 0.12s',
-                  boxShadow: isSelected ? '0 0 0 3px rgba(37,99,235,0.12)' : 'none',
+                  boxShadow: isSelected ? '0 0 0 3px rgba(37,99,235,0.15)' : 'none',
                 }}
               >
-                <span style={{ fontSize: 15, fontWeight: 600, color: isSelected ? '#1d4ed8' : '#111827' }}>{ans.label}</span>
+                <span style={{ fontSize: 15, fontWeight: 600, color: isSelected ? '#93c5fd' : DARK.textPrimary }}>{ans.label}</span>
                 {ans.savingsHint && (
-                  <span style={{ fontSize: 12, fontWeight: 700, color: '#16a34a', background: '#f0fdf4', padding: '3px 8px', borderRadius: 20, flexShrink: 0, marginLeft: 12 }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: DARK.green.text, background: DARK.green.bg, padding: '3px 8px', borderRadius: 20, flexShrink: 0, marginLeft: 12 }}>
                     {ans.savingsHint}
                   </span>
                 )}
@@ -169,23 +197,23 @@ export default function DailyPage() {
 
         {/* Impacto estimado */}
         {rule && rule.immediateDelta > 0 && (
-          <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 14, padding: '14px 20px', marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ background: DARK.green.bg, border: `1px solid ${DARK.green.border}`, borderRadius: 14, padding: '14px 20px', marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
-              <p style={{ fontSize: 12, fontWeight: 700, color: '#166534', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 }}>Impacto estimado</p>
-              <p style={{ fontSize: 13, color: '#374151' }}>Mensual: <strong>{formatEUR(rule.monthlyProjection)}</strong> · Anual: <strong>{formatEUR(rule.yearlyProjection)}</strong></p>
+              <p style={{ fontSize: 12, fontWeight: 700, color: DARK.green.label, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 }}>Impacto estimado</p>
+              <p style={{ fontSize: 13, color: DARK.textSecondary }}>Mensual: <strong style={{ color: DARK.green.text }}>{formatEUR(rule.monthlyProjection)}</strong> · Anual: <strong style={{ color: DARK.green.text }}>{formatEUR(rule.yearlyProjection)}</strong></p>
             </div>
-            <span style={{ fontSize: 20, fontWeight: 800, color: '#16a34a' }}>+{formatEUR(rule.immediateDelta)}</span>
+            <span style={{ fontSize: 20, fontWeight: 800, color: DARK.green.text }}>+{formatEUR(rule.immediateDelta)}</span>
           </div>
         )}
 
         {/* Selector de objetivo */}
         {goals.length > 1 && (
           <div style={{ marginBottom: 16 }}>
-            <label style={{ fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 8, display: 'block' }}>Asignar a objetivo</label>
+            <label style={{ fontSize: 13, fontWeight: 600, color: DARK.textSecondary, marginBottom: 8, display: 'block' }}>Asignar a objetivo</label>
             <select
               value={selectedGoalId}
               onChange={(e) => setSelectedGoalId(e.target.value)}
-              style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #e5e7eb', borderRadius: 10, fontSize: 14, color: '#111827', background: '#fff', cursor: 'pointer' }}
+              style={{ width: '100%', padding: '10px 14px', border: `1.5px solid ${DARK.border}`, borderRadius: 10, fontSize: 14, color: DARK.textPrimary, background: DARK.card, cursor: 'pointer' }}
             >
               {goals.map((g) => (
                 <option key={g.id} value={g.id}>{g.title}{g.isPrimary ? ' (principal)' : ''}</option>
@@ -201,8 +229,8 @@ export default function DailyPage() {
           style={{
             width: '100%',
             padding: '15px 0',
-            background: selectedAnswer ? '#2563eb' : '#e5e7eb',
-            color: selectedAnswer ? '#fff' : '#9ca3af',
+            background: selectedAnswer ? '#2563eb' : 'rgba(51,65,85,0.5)',
+            color: selectedAnswer ? '#fff' : DARK.textMuted,
             border: 'none',
             borderRadius: 14,
             fontSize: 15,

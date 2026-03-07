@@ -206,6 +206,15 @@ class Analytics {
     });
   }
 
+  // Primer objetivo creado (momento de activación)
+  firstGoalCreated(goalId: string, targetAmount: number, horizonMonths: number) {
+    this.track('first_goal_created', {
+      goal_id: goalId,
+      goal_target_amount: targetAmount,
+      goal_time_horizon_months: horizonMonths,
+    });
+  }
+
   // Error al crear objetivo
   goalCreateError(errorCode: string, errorMessage: string) {
     this.track('goal_create_error', {
@@ -301,6 +310,22 @@ class Analytics {
       yearly_delta: yearlyDelta,
       is_primary_goal: isPrimaryGoal
     });
+  }
+
+  // Primera decisión completada (activación clave)
+  firstDailyCompleted(date: string, decisionId: string, questionId: string, answerKey: string, goalId: string) {
+    this.track('first_daily_completed', {
+      date,
+      decision_id: decisionId,
+      question_id: questionId,
+      answer_key: answerKey,
+      goal_id: goalId,
+    });
+  }
+
+  // Usuario sale de la pantalla diaria sin responder
+  dailySkipped(date: string, questionId: string) {
+    this.track('daily_skipped', { date, question_id: questionId });
   }
 
   // Error al enviar decisión diaria

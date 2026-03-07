@@ -31,7 +31,7 @@ function DailyDecisionModalWrapper({ onClose }: { onClose: () => void }) {
             submitDecision(qId, aKey, goalId, customAmount);
           }}
           onGoToImpact={(id) => { onClose(); router.push(`/impact/${id}`); }}
-          onCreateGoal={() => { onClose(); createGoal({ title: 'Nuevo objetivo', targetAmount: 1000, horizonMonths: 12 }); }}
+          onCreateGoal={() => { onClose(); router.push('/goals/new'); }}
           onResetDecision={() => { resetDecision(); }}
           onAddExtraSaving={(s) => { addExtraSaving(s); }}
           onGoToHistory={() => { onClose(); router.push('/history'); }}

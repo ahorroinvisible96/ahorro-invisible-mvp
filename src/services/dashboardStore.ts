@@ -152,8 +152,11 @@ function persistStore(state: StoreState): void {
 function computeStreak(decisions: DailyDecision[]): number {
   if (decisions.length === 0) return 0;
   const today = new Date().toISOString().split('T')[0];
+  const hasToday = decisions.some((d) => d.date === today);
   let streak = 0;
-  let cursor = new Date(today);
+  let cursor = new Date(hasToday ? today : (() => {
+    const d = new Date(today); d.setDate(d.getDate() - 1); return d.toISOString().split('T')[0];
+  })());
   while (true) {
     const dateStr = cursor.toISOString().split('T')[0];
     const found = decisions.some((d) => d.date === dateStr);

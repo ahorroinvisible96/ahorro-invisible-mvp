@@ -87,10 +87,26 @@ También puedes desplegar directamente desde GitHub:
 3. Configura las variables de entorno si es necesario
 4. Despliega
 
+## North Star Metric (NSM)
+
+**`daily_completed` con racha ≥ 7 días consecutivos.**
+
+El evento primario es `daily_completed` — registrado cada vez que el usuario completa su decisión diaria. El indicador de retención es mantener una racha de 7 días o más, que correlaciona con la formación del hábito.
+
+Eventos de activación clave (por orden de funnel):
+1. `signup_success` — creación de cuenta
+2. `first_goal_created` — primer objetivo definido (activación real)
+3. `first_daily_completed` — primera decisión completada (hábito iniciado)
+4. `daily_completed` × 7 días → racha de 7 (hábito consolidado)
+
+Eventos de alerta:
+- `daily_skipped` — usuario abre la app pero no responde
+- `streak_broken` — racha interrumpida (pendiente de implementar)
+
 ## Notas importantes
 
 - Este MVP utiliza localStorage para simular la persistencia de datos
-- Los eventos de analytics se registran en la consola
-- La aplicación sigue estrictamente los requisitos definidos en el Sync Pack
+- Los eventos de analytics se registran en la consola y se guardan en `localStorage["analyticsEvents"]` (máx. 200 entradas FIFO)
 - El sistema de diseño está implementado con CSS Modules y variables CSS
-- La aplicación es responsive y soporta temas claro y oscuro
+- La aplicación es responsive y usa tema oscuro consistente en todas las páginas
+- Persistencia: clave `ahorro_invisible_dashboard_v1` en localStorage
