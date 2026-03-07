@@ -68,24 +68,31 @@ export default function ExtraSavingPage() {
 
       analytics.extraSavingSubmitted(today, selectedGoalId, amount, note.length);
 
-      // Sync a Supabase en background
+      // Sync a Supabase en background — leer la decisión real que el store acaba de persistir
       const userId = localStorage.getItem('supabaseUserId');
       if (userId) {
-        const decisionId = `extra_${Date.now()}`;
-        syncDecisionToSupabase(userId, {
-          id: decisionId,
-          date: today,
-          questionId: 'extra_saving',
-          answerKey: note.trim() || 'Ahorro extra',
-          goalId: selectedGoalId,
-          deltaAmount: amount,
-          monthlyProjection: 0,
-          yearlyProjection: 0,
-          createdAt: now,
-        }).catch(() => null);
-        // Sync goal actualizado
-        const updatedGoal = summary.goals.find(g => g.id === selectedGoalId);
-        if (updatedGoal) syncGoalToSupabase(userId, updatedGoal).catch(() => null);
+        try {
+          const raw = localStorage.getItem('ahorro_invisible_dashboard_v1');
+          if (raw) {
+            const store = JSON.parse(raw);
+            const realDecision = (store.decisions as Array<{
+              id: string; date: string; questionId: string; answerKey: string;
+              goalId: string; deltaAmount: number; monthlyProjection: number;
+              yearlyProjection: number; createdAt: string;
+            }>)
+              .filter(d => d.questionId === 'extra_saving' && d.date === today && d.goalId === selectedGoalId)
+              .slice(-1)[0];
+            if (realDecision) {
+              syncDecisionToSupabase(userId, realDecision).catch(() => null);
+            }
+            const updatedGoal = (store.goals as Array<{
+              id: string; title: string; targetAmount: number; currentAmount: number;
+              horizonMonths: number; isPrimary: boolean; archived: boolean;
+              createdAt: string; updatedAt: string;
+            }>).find(g => g.id === selectedGoalId);
+            if (updatedGoal) syncGoalToSupabase(userId, updatedGoal).catch(() => null);
+          }
+        } catch { /* silent */ }
       }
 
       router.push("/dashboard");

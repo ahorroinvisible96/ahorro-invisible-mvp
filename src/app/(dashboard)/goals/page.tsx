@@ -17,6 +17,7 @@ import {
   storeReactivateGoal,
   storeDeleteGoalPermanent,
 } from '@/services/dashboardStore';
+import { syncGoalToSupabase } from '@/services/syncService';
 import type { Goal, Hucha } from '@/types/Dashboard';
 
 function formatEUR(n: number) {
@@ -311,13 +312,22 @@ export default function GoalsPage() {
       storeTransferFromHucha(newGoal.id, hucha.balance);
     }
     analytics.goalCreated(newGoal?.id ?? '', summary.goals.filter(g => !g.archived).length === 1, data.targetAmount, data.horizonMonths);
+    // Sync goal a Supabase en background
+    const userId = localStorage.getItem('supabaseUserId');
+    if (userId && newGoal) syncGoalToSupabase(userId, newGoal).catch(() => null);
     setModalMode(null);
     refresh();
   };
 
   const handleEdit = (data: { title: string; targetAmount: number; horizonMonths: number; applyHucha: boolean }) => {
     if (!editingGoal) return;
-    storeUpdateGoal(editingGoal.id, { title: data.title, targetAmount: data.targetAmount, horizonMonths: data.horizonMonths });
+    const summary = storeUpdateGoal(editingGoal.id, { title: data.title, targetAmount: data.targetAmount, horizonMonths: data.horizonMonths });
+    // Sync goal actualizado a Supabase en background
+    const userId = localStorage.getItem('supabaseUserId');
+    if (userId) {
+      const updated = summary.goals.find(g => g.id === editingGoal.id);
+      if (updated) syncGoalToSupabase(userId, updated).catch(() => null);
+    }
     setModalMode(null);
     setEditingGoal(null);
     refresh();
