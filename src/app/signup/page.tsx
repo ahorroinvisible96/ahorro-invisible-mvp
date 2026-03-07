@@ -7,6 +7,8 @@ import { Card } from "@/components/ui/Card/Card";
 import { FormInput } from "@/components/ui/FormInput";
 import { analytics } from "@/services/analytics";
 import { storeInitUser } from "@/services/dashboardStore";
+import { authSignUp } from "@/services/authService";
+import { isSupabaseConfigured } from "@/lib/supabase";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -39,49 +41,31 @@ export default function SignupPage() {
     analytics.signupStarted();
   }, [router]);
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const [loading, setLoading] = useState(false);
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    
-    // Validaciones
-    if (!email) {
-      setError("Revisa el email.");
-      analytics.signupError("VALIDATION_ERROR", "Revisa el email.", "email");
-      return;
-    }
-    
-    if (!name) {
-      setError("Escribe tu nombre.");
-      analytics.signupError("VALIDATION_ERROR", "Escribe tu nombre.", "name");
-      return;
-    }
-    
-    if (!password || password.length < 8) {
-      setError("Usa al menos 8 caracteres.");
-      analytics.signupError("VALIDATION_ERROR", "Usa al menos 8 caracteres.", "password");
-      return;
-    }
-    
+
+    if (!email) { analytics.signupError("VALIDATION_ERROR", "Revisa el email.", "email"); setError("Revisa el email."); return; }
+    if (!name)  { analytics.signupError("VALIDATION_ERROR", "Escribe tu nombre.", "name"); setError("Escribe tu nombre."); return; }
+    if (!password || password.length < 8) { analytics.signupError("VALIDATION_ERROR", "Usa al menos 8 caracteres.", "password"); setError("Usa al menos 8 caracteres."); return; }
+
+    setLoading(true);
     try {
-      // Guardar datos del usuario en localStorage (claves legacy)
-      localStorage.setItem("userName", name);
-      localStorage.setItem("userEmail", email);
-      localStorage.setItem("isAuthenticated", "true");
-      
-      // Inicializar el store con nombre y email reales
+      const { user, error: authErr } = await authSignUp(email, password, name);
+      if (authErr || !user) {
+        setError(authErr ?? "No se pudo crear la cuenta.");
+        analytics.signupError("AUTH_ERROR", authErr ?? "unknown");
+        return;
+      }
       storeInitUser(name.trim(), email.trim());
-      
-      // Registrar evento de signup exitoso
       analytics.signupSuccess();
-      
-      // Redirigir al onboarding
       router.push("/onboarding");
     } catch (err) {
-      console.error("Error al registrar usuario:", err);
       setError("No se pudo crear la cuenta. Intenta de nuevo.");
-      
-      // Registrar evento de error
       analytics.signupError("LOCAL_STORAGE_ERROR", String(err));
+    } finally {
+      setLoading(false);
     }
   };
   
@@ -354,17 +338,18 @@ export default function SignupPage() {
 
                 <button
                   type="submit"
+                  disabled={loading}
                   style={{
                     width: '100%', padding: '13px 0', marginTop: 4,
-                    background: 'linear-gradient(90deg, #a855f7, #2563eb)',
+                    background: loading ? 'rgba(168,85,247,0.4)' : 'linear-gradient(90deg, #a855f7, #2563eb)',
                     border: 'none', borderRadius: 10,
                     color: '#fff', fontSize: 15, fontWeight: 700,
-                    cursor: 'pointer', fontFamily: 'inherit',
+                    cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
                     boxShadow: '0 4px 14px rgba(168,85,247,0.35)',
                     transition: 'all 200ms ease',
                   }}
                 >
-                  Crear cuenta →
+                  {loading ? 'Creando cuenta...' : (isSupabaseConfigured ? 'Crear cuenta →' : 'Empezar →')}
                 </button>
 
               </form>
@@ -375,9 +360,9 @@ export default function SignupPage() {
                 lineHeight: 1.5,
               }}>
                 Al registrarte aceptas nuestros{' '}
-                <a href="#" style={{ color: '#a78bfa', textDecoration: 'none' }}>Términos de servicio</a>
+                <a href="/terms" style={{ color: '#a78bfa', textDecoration: 'none' }}>Términos de servicio</a>
                 {' '}y{' '}
-                <a href="#" style={{ color: '#a78bfa', textDecoration: 'none' }}>Política de privacidad</a>
+                <a href="/privacy" style={{ color: '#a78bfa', textDecoration: 'none' }}>Política de privacidad</a>
               </p>
             </div>
 

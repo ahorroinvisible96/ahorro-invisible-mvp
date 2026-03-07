@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import "@/styles/tokens/index.css"; // Importar tokens CSS
 import ThemeInit from '@/components/providers/ThemeInit';
+import PostHogProvider from '@/components/providers/PostHogProvider';
 import { Analytics } from "@vercel/analytics/next";
 
 const geistSans = Geist({
@@ -37,7 +38,7 @@ export default function RootLayout({
       >
         {/* Inicializa el tema en el cliente */}
         <ThemeInit />
-        {children}
+        <PostHogProvider>{children}</PostHogProvider>
         <Analytics />
       </body>
     </html>

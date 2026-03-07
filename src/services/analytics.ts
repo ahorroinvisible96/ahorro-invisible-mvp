@@ -56,7 +56,8 @@ type ScreenName =
   | 'goal_detail'
   | 'history'
   | 'profile'
-  | 'settings';
+  | 'settings'
+  | 'login';
 
 // Clase principal de Analytics
 class Analytics {
@@ -102,11 +103,16 @@ class Analytics {
       timestamp: new Date().toISOString()
     };
     
-    // En un entorno real, aquí se enviarían los datos a un servicio de analytics
-    // Para el MVP, solo los mostramos en la consola
     console.log(`EVENT: ${eventName}`, eventProps);
-    
-    // También se podrían guardar localmente para análisis posterior
+
+    // PostHog (si está configurado)
+    if (typeof window !== 'undefined') {
+      try {
+        const { posthogCapture } = require('@/lib/posthog') as typeof import('@/lib/posthog');
+        posthogCapture(eventName, eventProps);
+      } catch { /* fallthrough */ }
+    }
+
     try {
       const storedEvents = localStorage.getItem("analyticsEvents") || "[]";
       const events = JSON.parse(storedEvents);
