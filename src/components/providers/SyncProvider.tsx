@@ -1,10 +1,33 @@
 "use client";
 
 import { useEffect } from "react";
-import { pushLocalDataToSupabase } from "@/services/syncService";
-import { isSupabaseConfigured } from "@/lib/supabase";
+import { pushLocalDataToSupabase, pullDataFromSupabase } from "@/services/syncService";
+import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 
 export default function SyncProvider({ children }: { children: React.ReactNode }) {
+  // Restaurar sesión si iOS limpió localStorage pero Supabase tiene sesión activa
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabase) return;
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session?.user) return;
+      const isAuth = localStorage.getItem('isAuthenticated');
+      if (isAuth === 'true') return; // Ya está restaurado
+      // iOS limpió localStorage → restaurar datos de sesión y de usuario
+      localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('userEmail', session.user.email ?? '');
+      localStorage.setItem('userName', session.user.user_metadata?.name ?? '');
+      localStorage.setItem('supabaseUserId', session.user.id);
+      localStorage.setItem('hasCompletedOnboarding', 'true');
+      // Refrescar cookie de autenticación
+      const remember = localStorage.getItem('rememberMe') === 'true';
+      const days = remember ? 90 : 30;
+      const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
+      document.cookie = `ai_auth=1; path=/; expires=${expires}; SameSite=Lax`;
+      // Restaurar datos del usuario desde Supabase
+      await pullDataFromSupabase(session.user.id).catch(() => null);
+    });
+  }, []);
+
   useEffect(() => {
     if (!isSupabaseConfigured) return;
 

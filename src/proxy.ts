@@ -31,7 +31,7 @@ export function proxy(request: NextRequest) {
   const authCookie = request.cookies.get('ai_auth');
   if (!authCookie?.value) {
     const url = request.nextUrl.clone();
-    url.pathname = '/signup';
+    url.pathname = '/login';
     return NextResponse.redirect(url);
   }
 

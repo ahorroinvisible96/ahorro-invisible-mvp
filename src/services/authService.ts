@@ -3,9 +3,9 @@
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
 // ─── Cookie de sesión (leída por middleware Next.js) ──────────────────────────
-function setAuthCookie() {
+function setAuthCookie(days = 30) {
   if (typeof document === 'undefined') return;
-  const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toUTCString();
+  const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
   document.cookie = `ai_auth=1; path=/; expires=${expires}; SameSite=Lax`;
 }
 function clearAuthCookie() {
@@ -60,12 +60,13 @@ export async function authSignUp(
 export async function authSignIn(
   email: string,
   password: string,
+  remember = true,
 ): Promise<AuthResult> {
   if (!isSupabaseConfigured || !supabase) {
     const storedEmail = localStorage.getItem('userEmail');
     if (storedEmail && storedEmail === email) {
       localStorage.setItem('isAuthenticated', 'true');
-      setAuthCookie();
+      setAuthCookie(remember ? 90 : 7);
       return {
         user: { id: 'local', email, name: localStorage.getItem('userName') ?? '' },
         error: null,
@@ -83,7 +84,8 @@ export async function authSignIn(
   localStorage.setItem('userEmail', data.user.email!);
   localStorage.setItem('userName', data.user.user_metadata?.name ?? '');
   localStorage.setItem('supabaseUserId', data.user.id);
-  setAuthCookie();
+  if (remember) localStorage.setItem('rememberMe', 'true');
+  setAuthCookie(remember ? 90 : 7);
 
   return {
     user: { id: data.user.id, email: data.user.email!, name: data.user.user_metadata?.name },

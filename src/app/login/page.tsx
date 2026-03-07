@@ -14,6 +14,7 @@ export default function LoginPage() {
   const [mode, setMode] = useState<Mode>("password");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [remember, setRemember] = useState(true);
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
   const [loading, setLoading] = useState(false);
@@ -49,7 +50,7 @@ export default function LoginPage() {
     if (!password) { setError("Introduce tu contraseña."); return; }
 
     setLoading(true);
-    const { user, error: authErr } = await authSignIn(email, password);
+    const { user, error: authErr } = await authSignIn(email, password, remember);
     setLoading(false);
 
     if (authErr || !user) {
@@ -188,6 +189,30 @@ export default function LoginPage() {
                       onFocus={(e) => { e.target.style.borderColor = "rgba(168,85,247,0.5)"; }}
                       onBlur={(e) => { e.target.style.borderColor = "rgba(51,65,85,0.55)"; }} />
                   </div>
+                )}
+
+                {mode === "password" && (
+                  <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", userSelect: "none" }}>
+                    <div
+                      onClick={() => setRemember((r) => !r)}
+                      style={{
+                        width: 18, height: 18, borderRadius: 5, flexShrink: 0,
+                        background: remember ? "linear-gradient(135deg,#a855f7,#2563eb)" : "rgba(15,23,42,0.6)",
+                        border: remember ? "none" : "1px solid rgba(51,65,85,0.55)",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        transition: "all 180ms",
+                      }}
+                    >
+                      {remember && (
+                        <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+                          <polyline points="2,6 5,9 10,3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      )}
+                    </div>
+                    <span style={{ fontSize: 13, color: "rgba(148,163,184,0.8)", fontWeight: 500 }}>
+                      Recuérdame en este dispositivo
+                    </span>
+                  </label>
                 )}
 
                 <button type="submit" disabled={loading}
