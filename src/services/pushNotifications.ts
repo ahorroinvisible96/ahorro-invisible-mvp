@@ -139,6 +139,31 @@ export async function sendPushViaServer(payload: {
   }
 }
 
+// ─── Milestone push notification ─────────────────────────────────────────────
+export async function sendMilestonePush(milestoneAmount: number): Promise<void> {
+  if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return;
+  if (Notification.permission !== 'granted') return;
+
+  const formatted = new Intl.NumberFormat('es-ES', {
+    style: 'currency', currency: 'EUR', maximumFractionDigits: 0,
+  }).format(milestoneAmount);
+
+  const messages: Record<number, string> = {
+    50:   `¡Primer hito! Has ahorrado ${formatted}. Cada euro cuenta. 🌱`,
+    100:  `¡${formatted} ahorrados! Estás construyendo un hábito real. 💪`,
+    500:  `¡${formatted}! Eso ya es un colchón de emergencia. 🛡️`,
+    1000: `¡${formatted} ahorrados! Llevas un año de decisiones inteligentes. 🏆`,
+  };
+  const body = messages[milestoneAmount] ?? `¡Has superado los ${formatted} ahorrados! 🎉`;
+
+  await sendPushViaServer({
+    title: '🎯 Nuevo hito alcanzado',
+    body,
+    url: '/dashboard',
+    tag: `milestone-${milestoneAmount}`,
+  });
+}
+
 // ─── Save subscription to Supabase ───────────────────────────────────────────
 export async function savePushSubscriptionToSupabase(userId: string): Promise<void> {
   const reg = await navigator.serviceWorker.getRegistration('/');

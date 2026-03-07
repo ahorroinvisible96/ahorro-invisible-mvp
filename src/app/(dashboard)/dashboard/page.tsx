@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { analytics } from '@/services/analytics';
 import { useDashboardSummary } from '@/hooks/useDashboardSummary';
 import { storeArchiveGoalSafe, storeGetGoalBalance, storeTransferFromHucha, storeUseGraceDay, storeMarkMilestoneSeen } from '@/services/dashboardStore';
+import { sendMilestonePush } from '@/services/pushNotifications';
 import { SavingsBadge } from '@/components/hucha/SavingsBadge';
 import { SavingsModal } from '@/components/hucha/SavingsModal';
 import { HeaderStatusBarWidget } from '@/components/dashboard/HeaderStatusBarWidget';
@@ -430,7 +431,10 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!summary) return;
-    if (summary.newMilestone && !activeMilestone) setActiveMilestone(summary.newMilestone);
+    if (summary.newMilestone && !activeMilestone) {
+      setActiveMilestone(summary.newMilestone);
+      sendMilestonePush(summary.newMilestone).catch(() => null);
+    }
     if (summary.streakBrokeYesterday && summary.graceAvailable && !lastStreakShown) {
       setShowStreakRecovery(true);
       setLastStreakShown(true);
