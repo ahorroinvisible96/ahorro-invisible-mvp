@@ -369,6 +369,31 @@ export default function SignupPage() {
                 {' '}y{' '}
                 <a href="/privacy" style={{ color: '#a78bfa', textDecoration: 'none' }}>Política de privacidad</a>
               </p>
+
+              {/* Separador */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 24 }}>
+                <div style={{ flex: 1, height: 1, background: 'rgba(51,65,85,0.5)' }} />
+                <span style={{ fontSize: 12, color: 'rgba(100,116,139,0.5)' }}>¿Ya tienes cuenta?</span>
+                <div style={{ flex: 1, height: 1, background: 'rgba(51,65,85,0.5)' }} />
+              </div>
+
+              <button
+                onClick={() => router.push('/login')}
+                style={{
+                  width: '100%', marginTop: 12, padding: '13px 0',
+                  background: 'rgba(30,41,59,0.5)',
+                  border: '1px solid rgba(51,65,85,0.5)',
+                  borderRadius: 10,
+                  color: 'rgba(203,213,225,0.85)',
+                  fontSize: 14, fontWeight: 600,
+                  cursor: 'pointer', fontFamily: 'inherit',
+                  transition: 'all 180ms ease',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(168,85,247,0.4)'; e.currentTarget.style.color = '#c4b5fd'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(51,65,85,0.5)'; e.currentTarget.style.color = 'rgba(203,213,225,0.85)'; }}
+              >
+                Iniciar sesión →
+              </button>
             </div>
 
             <p style={{
