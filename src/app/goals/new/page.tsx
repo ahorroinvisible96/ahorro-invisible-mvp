@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { storeCreateGoal, storeListActiveGoals } from "@/services/dashboardStore";
 import { analytics } from "@/services/analytics";
+import { syncGoalToSupabase } from "@/services/syncService";
 
 export default function CreateGoalPage() {
   const router = useRouter();
@@ -46,7 +47,7 @@ export default function CreateGoalPage() {
     analytics.goalCreateStarted("goals_new_page");
   }, [router]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     if (!title.trim()) { setError("Ponle un nombre a tu objetivo."); return; }
@@ -57,10 +58,15 @@ export default function CreateGoalPage() {
 
     try {
       const isFirst = storeListActiveGoals().length === 0;
-      const newGoal = storeCreateGoal({ title: title.trim(), targetAmount: amount, currentAmount: 0, horizonMonths: months });
-      const newId = `goal_${Date.now()}`;
-      analytics.goalCreated(newId, isFirst, amount, months);
-      if (isFirst) analytics.firstGoalCreated(newId, amount, months);
+      const summary = storeCreateGoal({ title: title.trim(), targetAmount: amount, currentAmount: 0, horizonMonths: months });
+      const newGoal = summary.goals.filter(g => !g.archived).slice(-1)[0];
+      analytics.goalCreated(newGoal?.id ?? `goal_${Date.now()}`, isFirst, amount, months);
+      if (isFirst) analytics.firstGoalCreated(newGoal?.id ?? `goal_${Date.now()}`, amount, months);
+      // Sync goal a Supabase en background
+      const userId = localStorage.getItem('supabaseUserId');
+      if (userId && newGoal) {
+        syncGoalToSupabase(userId, newGoal).catch(() => null);
+      }
       router.push("/dashboard");
     } catch (err) {
       setError("No se pudo guardar. Intenta de nuevo.");

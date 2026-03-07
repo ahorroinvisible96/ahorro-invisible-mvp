@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { analytics } from "@/services/analytics";
 import { storeAddExtraSaving, storeListActiveGoals } from "@/services/dashboardStore";
+import { syncDecisionToSupabase, syncGoalToSupabase } from "@/services/syncService";
 import type { Goal } from "@/types/Dashboard";
 
 export default function ExtraSavingPage() {
@@ -45,7 +46,7 @@ export default function ExtraSavingPage() {
     analytics.extraSavingStarted('impact');
   }, [router]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
@@ -61,10 +62,31 @@ export default function ExtraSavingPage() {
 
     try {
       const today = new Date().toISOString().split('T')[0];
+      const now = new Date().toISOString();
 
-      storeAddExtraSaving(note.trim() || 'Ahorro extra', amount, selectedGoalId);
+      const summary = storeAddExtraSaving(note.trim() || 'Ahorro extra', amount, selectedGoalId);
 
       analytics.extraSavingSubmitted(today, selectedGoalId, amount, note.length);
+
+      // Sync a Supabase en background
+      const userId = localStorage.getItem('supabaseUserId');
+      if (userId) {
+        const decisionId = `extra_${Date.now()}`;
+        syncDecisionToSupabase(userId, {
+          id: decisionId,
+          date: today,
+          questionId: 'extra_saving',
+          answerKey: note.trim() || 'Ahorro extra',
+          goalId: selectedGoalId,
+          deltaAmount: amount,
+          monthlyProjection: 0,
+          yearlyProjection: 0,
+          createdAt: now,
+        }).catch(() => null);
+        // Sync goal actualizado
+        const updatedGoal = summary.goals.find(g => g.id === selectedGoalId);
+        if (updatedGoal) syncGoalToSupabase(userId, updatedGoal).catch(() => null);
+      }
 
       router.push("/dashboard");
     } catch (err) {

@@ -10,6 +10,7 @@ import {
   storeListActiveGoals,
   DAILY_DECISION_RULES,
 } from "@/services/dashboardStore";
+import { syncDecisionToSupabase, syncGoalToSupabase } from "@/services/syncService";
 import type { Goal } from "@/types/Dashboard";
 
 type Phase = 'loading' | 'no-goals' | 'completed' | 'pending' | 'confirming' | 'error';
@@ -79,6 +80,24 @@ export default function DailyPage() {
     setCompletedDecisionId(dec);
     analytics.dailyCompleted(today, dec ?? '', question.questionId, selectedAnswer, selectedGoalId, true, undefined, undefined, goals.find(g => g.id === selectedGoalId)?.isPrimary ?? false);
     if (isFirstDecision) analytics.firstDailyCompleted(today, dec ?? '', question.questionId, selectedAnswer, selectedGoalId);
+    // Sync decisión y goal a Supabase en background
+    const userId = localStorage.getItem('supabaseUserId');
+    if (userId && dec) {
+      const rule = DAILY_DECISION_RULES.find(r => r.questionId === question.questionId && r.answerKey === selectedAnswer);
+      syncDecisionToSupabase(userId, {
+        id: dec,
+        date: today,
+        questionId: question.questionId,
+        answerKey: selectedAnswer,
+        goalId: selectedGoalId,
+        deltaAmount: rule?.immediateDelta ?? 0,
+        monthlyProjection: rule?.monthlyProjection ?? 0,
+        yearlyProjection: rule?.yearlyProjection ?? 0,
+        createdAt: new Date().toISOString(),
+      }).catch(() => null);
+      const updatedGoal = summary.goals.find(g => g.id === selectedGoalId);
+      if (updatedGoal) syncGoalToSupabase(userId, updatedGoal).catch(() => null);
+    }
     router.push(`/impact/${dec}`);
   };
 

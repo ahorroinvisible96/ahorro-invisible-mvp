@@ -167,6 +167,93 @@ export function hasLocalDataToMigrate(): boolean {
   } catch { return false; }
 }
 
+// ─── Sync en tiempo real: goal → Supabase ────────────────────────────────────
+export async function syncGoalToSupabase(
+  userId: string,
+  goal: {
+    id: string; title: string; targetAmount: number; currentAmount: number;
+    horizonMonths: number; isPrimary: boolean; archived: boolean;
+    createdAt: string; updatedAt: string;
+  },
+): Promise<void> {
+  if (!isSupabaseConfigured || !supabase) return;
+  try {
+    await supabase.from('goals').upsert({
+      id: goal.id,
+      user_id: userId,
+      title: goal.title,
+      target_amount: goal.targetAmount,
+      current_amount: goal.currentAmount,
+      horizon_months: goal.horizonMonths,
+      is_primary: goal.isPrimary,
+      archived: goal.archived,
+      created_at: goal.createdAt,
+      updated_at: goal.updatedAt,
+    }, { onConflict: 'id' });
+  } catch (err) {
+    console.warn('[sync] syncGoalToSupabase error:', err);
+  }
+}
+
+// ─── Sync en tiempo real: decision → Supabase ────────────────────────────────
+export async function syncDecisionToSupabase(
+  userId: string,
+  decision: {
+    id: string; date: string; questionId: string; answerKey: string;
+    goalId?: string | null; deltaAmount: number;
+    monthlyProjection: number; yearlyProjection: number; createdAt: string;
+  },
+): Promise<void> {
+  if (!isSupabaseConfigured || !supabase) return;
+  try {
+    await supabase.from('decisions').upsert({
+      id: decision.id,
+      user_id: userId,
+      date: decision.date,
+      question_id: decision.questionId,
+      answer_key: decision.answerKey,
+      goal_id: decision.goalId ?? null,
+      delta_amount: decision.deltaAmount,
+      monthly_projection: decision.monthlyProjection,
+      yearly_projection: decision.yearlyProjection,
+      created_at: decision.createdAt,
+    }, { onConflict: 'id' });
+  } catch (err) {
+    console.warn('[sync] syncDecisionToSupabase error:', err);
+  }
+}
+
+// ─── Sync en tiempo real: hucha → Supabase ───────────────────────────────────
+export async function syncHuchaToSupabase(
+  userId: string,
+  balance: number,
+  entries: unknown[],
+): Promise<void> {
+  if (!isSupabaseConfigured || !supabase) return;
+  try {
+    await supabase.from('hucha').upsert(
+      { user_id: userId, balance, entries },
+      { onConflict: 'user_id' },
+    );
+  } catch (err) {
+    console.warn('[sync] syncHuchaToSupabase error:', err);
+  }
+}
+
+// ─── Sync completo del store local → Supabase (on-demand) ────────────────────
+export async function syncAllToSupabase(userId: string): Promise<void> {
+  if (!isSupabaseConfigured || !supabase) return;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const store = JSON.parse(raw);
+    await pushLocalDataToSupabase(userId);
+    localStorage.setItem('supabase_last_sync', new Date().toISOString());
+  } catch (err) {
+    console.warn('[sync] syncAllToSupabase error:', err);
+  }
+}
+
 // ─── Guardar perfil en Supabase al registrarse ────────────────────────────────
 export async function saveUserProfileToSupabase(
   userId: string,
