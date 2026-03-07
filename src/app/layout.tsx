@@ -20,7 +20,17 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Ahorro Invisible - Ahorra de forma inteligente",
-  description: "Plataforma para ahorrar dinero de forma inteligente y automática",
+  description: "Toma mejores decisiones de ahorro cada día. Registra, visualiza y mejora tus hábitos financieros.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Ahorro Invisible",
+  },
+  formatDetection: { telephone: false },
+  other: {
+    "mobile-web-app-capable": "yes",
+  },
 };
 
 export default function RootLayout({
@@ -31,8 +41,10 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+        <meta name="theme-color" content="#2563eb" />
         <link rel="icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/api/icon?size=180" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

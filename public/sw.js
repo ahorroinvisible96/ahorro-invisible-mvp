@@ -8,7 +8,7 @@ const OFFLINE_URL = '/';
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) =>
-      cache.addAll([OFFLINE_URL, '/manifest.json'])
+      cache.addAll([OFFLINE_URL])
     )
   );
   self.skipWaiting();
@@ -40,8 +40,8 @@ self.addEventListener('push', (event) => {
   const title = data.title || 'Ahorro Invisible ⚡';
   const options = {
     body: data.body || '¿Ya registraste tu decisión de hoy?',
-    icon: data.icon || '/icon-192.png',
-    badge: '/icon-96.png',
+    icon: data.icon || '/api/icon?size=192',
+    badge: '/api/icon?size=96',
     tag: data.tag || 'daily-reminder',
     data: { url: data.url || '/daily' },
     requireInteraction: false,
