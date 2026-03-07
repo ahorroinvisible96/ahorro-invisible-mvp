@@ -114,3 +114,46 @@ export function scheduleLocalReminder(): void {
 export function cancelLocalReminder(): void {
   if (_reminderTimer) { clearTimeout(_reminderTimer); _reminderTimer = null; }
 }
+
+// ─── Send push via server-side API ───────────────────────────────────────────
+export async function sendPushViaServer(payload: {
+  title: string;
+  body: string;
+  url?: string;
+  tag?: string;
+}): Promise<boolean> {
+  const reg = await navigator.serviceWorker.getRegistration('/');
+  if (!reg) return false;
+  const subscription = await reg.pushManager.getSubscription();
+  if (!subscription) return false;
+
+  try {
+    const res = await fetch('/api/push/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ subscription: subscription.toJSON(), payload }),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+// ─── Save subscription to Supabase ───────────────────────────────────────────
+export async function savePushSubscriptionToSupabase(userId: string): Promise<void> {
+  const reg = await navigator.serviceWorker.getRegistration('/');
+  if (!reg) return;
+  const subscription = await reg.pushManager.getSubscription();
+  if (!subscription) return;
+
+  try {
+    const { supabase, isSupabaseConfigured } = await import('@/lib/supabase');
+    if (!isSupabaseConfigured || !supabase) return;
+    await supabase.from('push_subscriptions').upsert({
+      user_id: userId,
+      subscription: subscription.toJSON(),
+    }, { onConflict: 'user_id' });
+  } catch (err) {
+    console.warn('[push] Could not save subscription to Supabase:', err);
+  }
+}

@@ -11,6 +11,7 @@ import {
   cancelLocalReminder,
   registerServiceWorker,
   subscribeToPush,
+  savePushSubscriptionToSupabase,
 } from '@/services/pushNotifications';
 
 export function SettingsNotificationsWidget(): React.ReactElement {
@@ -54,6 +55,12 @@ export function SettingsNotificationsWidget(): React.ReactElement {
     // Register SW and subscribe to push
     await registerServiceWorker();
     await subscribeToPush().catch(() => null);
+
+    // Save subscription to Supabase if user is logged in
+    const userId = localStorage.getItem('supabaseUserId');
+    if (userId) {
+      await savePushSubscriptionToSupabase(userId).catch(() => null);
+    }
 
     // Schedule local daily reminder at 8pm
     scheduleLocalReminder();
