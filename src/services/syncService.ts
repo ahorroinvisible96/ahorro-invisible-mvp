@@ -252,18 +252,33 @@ export function hasLocalDataToMigrate(): boolean {
   } catch { return false; }
 }
 
+// ─── Helper: obtener userId real de la sesión activa ─────────────────────────
+async function getSessionUserId(): Promise<string | null> {
+  if (!isSupabaseConfigured || !supabase) return null;
+  try {
+    let { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      const { data } = await supabase.auth.refreshSession();
+      session = data.session;
+    }
+    return session?.user?.id ?? null;
+  } catch { return null; }
+}
+
 // ─── Sync en tiempo real: goal → Supabase ────────────────────────────────────
 export async function syncGoalToSupabase(
-  userId: string,
   goal: {
     id: string; title: string; targetAmount: number; currentAmount: number;
     horizonMonths: number; isPrimary: boolean; archived: boolean;
     createdAt: string; updatedAt: string;
+    source?: string; completedAt?: string | null;
   },
-): Promise<void> {
-  if (!isSupabaseConfigured || !supabase) return;
+): Promise<{ ok: boolean; error?: string }> {
+  if (!isSupabaseConfigured || !supabase) return { ok: false, error: 'no_supabase' };
+  const userId = await getSessionUserId();
+  if (!userId) { console.error('[sync] syncGoalToSupabase: sin sesión'); return { ok: false, error: 'no_session' }; }
   try {
-    await supabase.from('goals').upsert({
+    const { error } = await supabase.from('goals').upsert({
       id: goal.id,
       user_id: userId,
       title: goal.title,
@@ -274,69 +289,83 @@ export async function syncGoalToSupabase(
       archived: goal.archived,
       created_at: goal.createdAt,
       updated_at: goal.updatedAt,
+      source: goal.source ?? 'dashboard',
+      completed_at: goal.completedAt ?? null,
     }, { onConflict: 'id' });
+    if (error) { console.error('[sync] syncGoalToSupabase error:', error.code, error.message); return { ok: false, error: error.message }; }
+    return { ok: true };
   } catch (err) {
-    console.warn('[sync] syncGoalToSupabase error:', err);
+    console.error('[sync] syncGoalToSupabase exception:', err);
+    return { ok: false, error: String(err) };
   }
 }
 
 // ─── Sync en tiempo real: decision → Supabase ────────────────────────────────
 export async function syncDecisionToSupabase(
-  userId: string,
   decision: {
     id: string; date: string; questionId: string; answerKey: string;
     goalId?: string | null; deltaAmount: number;
     monthlyProjection: number; yearlyProjection: number; createdAt: string;
   },
-): Promise<void> {
-  if (!isSupabaseConfigured || !supabase) return;
+): Promise<{ ok: boolean; error?: string }> {
+  if (!isSupabaseConfigured || !supabase) return { ok: false, error: 'no_supabase' };
+  const userId = await getSessionUserId();
+  if (!userId) { console.error('[sync] syncDecisionToSupabase: sin sesión'); return { ok: false, error: 'no_session' }; }
+
+  const row = {
+    id: decision.id,
+    user_id: userId,
+    date: decision.date,
+    question_id: decision.questionId,
+    answer_key: decision.answerKey,
+    goal_id: decision.goalId ?? null,
+    delta_amount: decision.deltaAmount,
+    monthly_projection: decision.monthlyProjection,
+    yearly_projection: decision.yearlyProjection,
+    created_at: decision.createdAt,
+  };
+
   try {
-    await supabase.from('decisions').upsert({
-      id: decision.id,
-      user_id: userId,
-      date: decision.date,
-      question_id: decision.questionId,
-      answer_key: decision.answerKey,
-      goal_id: decision.goalId ?? null,
-      delta_amount: decision.deltaAmount,
-      monthly_projection: decision.monthlyProjection,
-      yearly_projection: decision.yearlyProjection,
-      created_at: decision.createdAt,
-    }, { onConflict: 'id' });
+    const { error } = await supabase.from('decisions').upsert(row, { onConflict: 'id' });
+    if (error) {
+      if (error.code === '23503') {
+        // FK violation: goal_id no existe aún → reintentar sin goal_id
+        const { error: err2 } = await supabase.from('decisions').upsert({ ...row, goal_id: null }, { onConflict: 'id' });
+        if (err2) { console.error('[sync] syncDecisionToSupabase retry:', err2.code, err2.message); return { ok: false, error: err2.message }; }
+        return { ok: true };
+      }
+      console.error('[sync] syncDecisionToSupabase error:', error.code, error.message, decision.id);
+      return { ok: false, error: error.message };
+    }
+    return { ok: true };
   } catch (err) {
-    console.warn('[sync] syncDecisionToSupabase error:', err);
+    console.error('[sync] syncDecisionToSupabase exception:', err);
+    return { ok: false, error: String(err) };
   }
 }
 
 // ─── Sync en tiempo real: hucha → Supabase ───────────────────────────────────
 export async function syncHuchaToSupabase(
-  userId: string,
   balance: number,
   entries: unknown[],
 ): Promise<void> {
   if (!isSupabaseConfigured || !supabase) return;
+  const userId = await getSessionUserId();
+  if (!userId) return;
   try {
-    await supabase.from('hucha').upsert(
+    const { error } = await supabase.from('hucha').upsert(
       { user_id: userId, balance, entries },
       { onConflict: 'user_id' },
     );
+    if (error) console.error('[sync] syncHuchaToSupabase error:', error.code, error.message);
   } catch (err) {
-    console.warn('[sync] syncHuchaToSupabase error:', err);
+    console.error('[sync] syncHuchaToSupabase exception:', err);
   }
 }
 
 // ─── Sync completo del store local → Supabase (on-demand) ────────────────────
 export async function syncAllToSupabase(userId: string): Promise<void> {
-  if (!isSupabaseConfigured || !supabase) return;
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return;
-    const store = JSON.parse(raw);
-    await pushLocalDataToSupabase(userId);
-    localStorage.setItem('supabase_last_sync', new Date().toISOString());
-  } catch (err) {
-    console.warn('[sync] syncAllToSupabase error:', err);
-  }
+  await pushLocalDataToSupabase(userId);
 }
 
 // ─── Guardar perfil en Supabase al registrarse ────────────────────────────────

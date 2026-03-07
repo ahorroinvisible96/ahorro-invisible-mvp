@@ -17,7 +17,7 @@ import {
   storeReactivateGoal,
   storeDeleteGoalPermanent,
 } from '@/services/dashboardStore';
-import { pushLocalDataToSupabase } from '@/services/syncService';
+import { pushLocalDataToSupabase, syncGoalToSupabase } from '@/services/syncService';
 import type { Goal, Hucha } from '@/types/Dashboard';
 
 function formatEUR(n: number) {
@@ -305,14 +305,16 @@ export default function GoalsPage() {
     setLoading(false);
   }, [router]);
 
-  const handleCreate = (data: { title: string; targetAmount: number; horizonMonths: number; applyHucha: boolean }) => {
+  const handleCreate = async (data: { title: string; targetAmount: number; horizonMonths: number; applyHucha: boolean }) => {
     const summary = storeCreateGoal({ title: data.title, targetAmount: data.targetAmount, horizonMonths: data.horizonMonths, currentAmount: 0 });
     const newGoal = summary.goals.filter(g => !g.archived).slice(-1)[0];
     if (data.applyHucha && newGoal && hucha.balance > 0) {
       storeTransferFromHucha(newGoal.id, hucha.balance);
     }
     analytics.goalCreated(newGoal?.id ?? '', summary.goals.filter(g => !g.archived).length === 1, data.targetAmount, data.horizonMonths);
-    // Sync completo a Supabase en background
+    // Sync directo e inmediato del goal nuevo
+    if (newGoal) syncGoalToSupabase(newGoal).catch(() => null);
+    // Full sync en background como catch-all
     const userId = localStorage.getItem('supabaseUserId');
     if (userId) pushLocalDataToSupabase(userId).catch(() => null);
     setModalMode(null);
@@ -321,8 +323,11 @@ export default function GoalsPage() {
 
   const handleEdit = (data: { title: string; targetAmount: number; horizonMonths: number; applyHucha: boolean }) => {
     if (!editingGoal) return;
-    storeUpdateGoal(editingGoal.id, { title: data.title, targetAmount: data.targetAmount, horizonMonths: data.horizonMonths });
-    // Sync completo a Supabase en background
+    const summary = storeUpdateGoal(editingGoal.id, { title: data.title, targetAmount: data.targetAmount, horizonMonths: data.horizonMonths });
+    const updatedGoal = summary.goals.find(g => g.id === editingGoal.id);
+    // Sync directo del goal editado
+    if (updatedGoal) syncGoalToSupabase(updatedGoal).catch(() => null);
+    // Full sync en background
     const userId = localStorage.getItem('supabaseUserId');
     if (userId) pushLocalDataToSupabase(userId).catch(() => null);
     setModalMode(null);

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { analytics } from "@/services/analytics";
 import { storeAddExtraSaving, storeListActiveGoals } from "@/services/dashboardStore";
-import { pushLocalDataToSupabase } from "@/services/syncService";
+import { pushLocalDataToSupabase, syncDecisionToSupabase, syncGoalToSupabase } from "@/services/syncService";
 import type { Goal } from "@/types/Dashboard";
 
 export default function ExtraSavingPage() {
@@ -68,11 +68,25 @@ export default function ExtraSavingPage() {
 
       analytics.extraSavingSubmitted(today, selectedGoalId, amount, note.length);
 
-      // Sync completo a Supabase
-      const userId = localStorage.getItem('supabaseUserId');
-      if (userId) pushLocalDataToSupabase(userId).catch(() => null);
+      // Sync directo e inmediato: solo el registro nuevo + goal actualizado
+      try {
+        const raw = localStorage.getItem('ahorro_invisible_dashboard_v1');
+        if (raw) {
+          const store = JSON.parse(raw);
+          const newExtra = [...(store.decisions ?? [])].reverse()
+            .find((d: Record<string, unknown>) => d.questionId === 'extra_saving');
+          const updatedGoal = store.goals?.find((g: Record<string, unknown>) => g.id === selectedGoalId);
+          await Promise.all([
+            newExtra ? syncDecisionToSupabase(newExtra) : Promise.resolve(),
+            updatedGoal ? syncGoalToSupabase(updatedGoal) : Promise.resolve(),
+          ]);
+        }
+      } catch { /* no bloquear navegación */ }
 
       router.push("/dashboard");
+      // Full sync en background como catch-all
+      const userId = localStorage.getItem('supabaseUserId');
+      if (userId) pushLocalDataToSupabase(userId).catch(() => null);
     } catch (err) {
       const today = new Date().toISOString().split('T')[0];
       setError("No se pudo guardar. Intenta de nuevo.");

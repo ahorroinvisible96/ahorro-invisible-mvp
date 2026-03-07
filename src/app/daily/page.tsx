@@ -10,7 +10,7 @@ import {
   storeListActiveGoals,
   DAILY_DECISION_RULES,
 } from "@/services/dashboardStore";
-import { pushLocalDataToSupabase } from "@/services/syncService";
+import { pushLocalDataToSupabase, syncDecisionToSupabase, syncGoalToSupabase } from "@/services/syncService";
 import type { Goal } from "@/types/Dashboard";
 
 type Phase = 'loading' | 'no-goals' | 'completed' | 'pending' | 'confirming' | 'error';
@@ -63,7 +63,7 @@ export default function DailyPage() {
     analytics.dailyAnswerSelected(today, question?.questionId ?? '', key);
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (!question || !selectedAnswer || !selectedGoalId) return;
     setPhase('confirming');
     analytics.dailyAnswerSubmitted(today, question.questionId, selectedAnswer, selectedGoalId, goals.find(g => g.id === selectedGoalId)?.isPrimary ?? false);
@@ -80,10 +80,25 @@ export default function DailyPage() {
     setCompletedDecisionId(dec);
     analytics.dailyCompleted(today, dec ?? '', question.questionId, selectedAnswer, selectedGoalId, true, undefined, undefined, goals.find(g => g.id === selectedGoalId)?.isPrimary ?? false);
     if (isFirstDecision) analytics.firstDailyCompleted(today, dec ?? '', question.questionId, selectedAnswer, selectedGoalId);
-    // Sync completo a Supabase en background
+
+    // Sync directo e inmediato: solo el registro nuevo (1-2 llamadas, ~400ms)
+    try {
+      const raw = localStorage.getItem('ahorro_invisible_dashboard_v1');
+      if (raw) {
+        const store = JSON.parse(raw);
+        const newDec = store.decisions?.find((d: Record<string, unknown>) => d.id === dec);
+        const updatedGoal = store.goals?.find((g: Record<string, unknown>) => g.id === selectedGoalId);
+        await Promise.all([
+          newDec ? syncDecisionToSupabase(newDec) : Promise.resolve(),
+          updatedGoal ? syncGoalToSupabase(updatedGoal) : Promise.resolve(),
+        ]);
+      }
+    } catch { /* no bloquear navegación */ }
+
+    router.push(`/impact/${dec}`);
+    // Full sync en background como catch-all
     const userId = localStorage.getItem('supabaseUserId');
     if (userId) pushLocalDataToSupabase(userId).catch(() => null);
-    router.push(`/impact/${dec}`);
   };
 
   const handleSkip = () => {

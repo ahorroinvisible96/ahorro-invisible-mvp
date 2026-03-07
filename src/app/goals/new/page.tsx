@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { storeCreateGoal, storeListActiveGoals } from "@/services/dashboardStore";
 import { analytics } from "@/services/analytics";
-import { pushLocalDataToSupabase } from "@/services/syncService";
+import { pushLocalDataToSupabase, syncGoalToSupabase } from "@/services/syncService";
 
 function CreateGoalInner() {
   const router = useRouter();
@@ -64,10 +64,12 @@ function CreateGoalInner() {
       const newGoal = summary.goals.filter(g => !g.archived).slice(-1)[0];
       analytics.goalCreated(newGoal?.id ?? `goal_${Date.now()}`, isFirst, amount, months);
       if (isFirst) analytics.firstGoalCreated(newGoal?.id ?? `goal_${Date.now()}`, amount, months);
-      // Sync completo a Supabase en background
+      // Sync directo e inmediato del goal nuevo
+      if (newGoal) await syncGoalToSupabase(newGoal);
+      router.push("/dashboard");
+      // Full sync en background como catch-all
       const userId = localStorage.getItem('supabaseUserId');
       if (userId) pushLocalDataToSupabase(userId).catch(() => null);
-      router.push("/dashboard");
     } catch (err) {
       setError("No se pudo guardar. Intenta de nuevo.");
       analytics.goalCreateError("save_failed", String(err));
