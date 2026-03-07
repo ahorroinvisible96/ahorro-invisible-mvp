@@ -27,9 +27,15 @@ function EmptyState({ onCreateGoal }: { onCreateGoal: () => void }): React.React
   );
 }
 
+function formatEURCompact(n: number): string {
+  if (n >= 1000) return `${(n / 1000).toFixed(1).replace('.0', '')}k€`;
+  return `${Math.round(n)}€`;
+}
+
 export function PrimaryGoalHeroWidget({
   goal,
   estimatedMonthsRemaining,
+  avgMonthlySavings,
   dailyCompleted,
   onCreateGoal,
   onOpenGoal,
@@ -117,13 +123,15 @@ export function PrimaryGoalHeroWidget({
             {/* Info box */}
             {!d.isCompleted ? (
               <div className={styles.infoBox}>
-                <span className={styles.infoIcon}>✦</span>
+                <span className={styles.infoIcon}>✶</span>
                 <div>
                   <p className={styles.infoText}>
                     Te faltan <strong>{formatEUR(d.remainingAmount)}</strong>.
-                    {estimatedMonthsRemaining != null && (
-                      <> ETA: <strong>{estimatedMonthsRemaining} mes{estimatedMonthsRemaining !== 1 ? 'es' : ''}</strong>.</>
-                    )}
+                    {avgMonthlySavings != null && avgMonthlySavings > 0 ? (
+                      <> A este ritmo (<strong>{formatEURCompact(avgMonthlySavings)}/mes</strong>) llegas en <strong>{estimatedMonthsRemaining ?? '?'} mes{estimatedMonthsRemaining !== 1 ? 'es' : ''}</strong>.</>
+                    ) : estimatedMonthsRemaining != null ? (
+                      <> ETA estimado: <strong>{estimatedMonthsRemaining} mes{estimatedMonthsRemaining !== 1 ? 'es' : ''}</strong>.</>
+                    ) : null}
                   </p>
                 </div>
               </div>

@@ -66,4 +66,7 @@ export type DashboardSummary = {
   streak: number;
   totalSaved: number;
   hucha: Hucha;
+  newMilestone: number | null;
+  streakBrokeYesterday: boolean;
+  graceAvailable: boolean;
 };

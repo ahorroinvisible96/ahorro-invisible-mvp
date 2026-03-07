@@ -50,5 +50,8 @@ export function getMockDashboardSummary(range: '7d' | '30d' | '90d' = '30d'): Da
     streak: 0,
     totalSaved: 650,
     hucha: { balance: 0, entries: [] },
+    newMilestone: null,
+    streakBrokeYesterday: false,
+    graceAvailable: true,
   };
 }

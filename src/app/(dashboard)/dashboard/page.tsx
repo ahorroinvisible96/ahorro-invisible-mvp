@@ -6,7 +6,7 @@ import type { ExtraSaving } from '@/components/dashboard/DailyDecisionWidget/Dai
 import { useRouter } from 'next/navigation';
 import { analytics } from '@/services/analytics';
 import { useDashboardSummary } from '@/hooks/useDashboardSummary';
-import { storeArchiveGoalSafe, storeGetGoalBalance, storeTransferFromHucha } from '@/services/dashboardStore';
+import { storeArchiveGoalSafe, storeGetGoalBalance, storeTransferFromHucha, storeUseGraceDay, storeMarkMilestoneSeen } from '@/services/dashboardStore';
 import { SavingsBadge } from '@/components/hucha/SavingsBadge';
 import { SavingsModal } from '@/components/hucha/SavingsModal';
 import { HeaderStatusBarWidget } from '@/components/dashboard/HeaderStatusBarWidget';
@@ -250,6 +250,58 @@ function ExtraSavingDashboardModal({
   );
 }
 
+function MilestoneModal({ milestone, onClose }: { milestone: number; onClose: () => void }): React.ReactElement {
+  const EMOJIS: Record<number, string> = { 50: '🌱', 100: '⭐', 500: '🏆', 1000: '💎', 2000: '🚀', 5000: '👑' };
+  return (
+    <div style={DS.overlay} onClick={onClose}>
+      <div style={{ ...DS.box, textAlign: 'center', alignItems: 'center' }} onClick={e => e.stopPropagation()}>
+        <div style={{ fontSize: 64, lineHeight: 1, marginBottom: 8 }}>{EMOJIS[milestone] ?? '🎉'}</div>
+        <h2 style={{ fontSize: 22, fontWeight: 800, color: '#f1f5f9', margin: '0 0 6px' }}>¡Hito alcanzado!</h2>
+        <p style={{ fontSize: 16, color: 'rgba(148,163,184,0.9)', margin: '0 0 4px' }}>
+          Has ahorrado más de <strong style={{ color: '#4ade80' }}>€{milestone}</strong>
+        </p>
+        <p style={{ fontSize: 13, color: 'rgba(148,163,184,0.6)', margin: '0 0 20px' }}>La constancia está dando sus frutos. ¡Sigue así!</p>
+        <button
+          onClick={onClose}
+          style={{ padding: '13px 32px', background: 'linear-gradient(90deg,#16a34a,#15803d)', border: 'none', borderRadius: 12, color: '#fff', fontSize: 15, fontWeight: 700, cursor: 'pointer', width: '100%' }}
+        >
+          ¡Gracias! Seguir ahorrando
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function StreakRecoveryModal({ lastStreak, onUseGrace, onDismiss }: { lastStreak: number; onUseGrace: () => void; onDismiss: () => void }): React.ReactElement {
+  return (
+    <div style={DS.overlay} onClick={onDismiss}>
+      <div style={{ ...DS.box, alignItems: 'stretch' }} onClick={e => e.stopPropagation()}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h2 style={{ fontSize: 18, fontWeight: 700, color: '#f1f5f9', margin: 0 }}>🔥 Tu racha se rompió</h2>
+          <button style={DS.btnClose} onClick={onDismiss}>✕</button>
+        </div>
+        <div style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 12, padding: '12px 14px' }}>
+          <p style={{ fontSize: 14, color: '#fbbf24', margin: 0 }}>
+            Llevabas <strong>{lastStreak} día{lastStreak !== 1 ? 's' : ''}</strong> consecutivos. Ayer te lo saltaste.
+          </p>
+        </div>
+        <p style={{ fontSize: 13, color: 'rgba(148,163,184,0.8)', margin: 0, lineHeight: 1.6 }}>
+          Tienes 1 <strong>día de gracia</strong> disponible este mes. Úsalo para recuperar tu racha automáticamente.
+        </p>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button style={{ ...DS.btnCancel, flex: 1 }} onClick={onDismiss}>Dejar ir la racha</button>
+          <button
+            style={{ flex: 2, padding: '11px 0', border: 'none', borderRadius: 12, background: 'linear-gradient(90deg,#f59e0b,#d97706)', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}
+            onClick={onUseGrace}
+          >
+            🔥 Usar día de gracia
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function CreateGoalModal({
   onSave,
   onClose,
@@ -334,6 +386,9 @@ export default function DashboardPage() {
   const [archivingGoal, setArchivingGoal] = useState<Goal | null>(null);
   const [showExtraSaving, setShowExtraSaving] = useState(false);
   const [showHuchaModal, setShowHuchaModal] = useState(false);
+  const [activeMilestone, setActiveMilestone] = useState<number | null>(null);
+  const [showStreakRecovery, setShowStreakRecovery] = useState(false);
+  const [lastStreakShown, setLastStreakShown] = useState(false);
   const {
     summary,
     loading,
@@ -370,6 +425,15 @@ export default function DashboardPage() {
       !!summary.incomeRange,
     );
   }, [summary?.daily.status]);
+
+  useEffect(() => {
+    if (!summary) return;
+    if (summary.newMilestone && !activeMilestone) setActiveMilestone(summary.newMilestone);
+    if (summary.streakBrokeYesterday && summary.graceAvailable && !lastStreakShown) {
+      setShowStreakRecovery(true);
+      setLastStreakShown(true);
+    }
+  }, [summary?.newMilestone, summary?.streakBrokeYesterday]);
 
   if (loading || !summary) {
     return (
@@ -427,6 +491,19 @@ export default function DashboardPage() {
 
   return (
     <div className={styles.page}>
+      {activeMilestone && (
+        <MilestoneModal
+          milestone={activeMilestone}
+          onClose={() => { storeMarkMilestoneSeen(activeMilestone); setActiveMilestone(null); refresh(); }}
+        />
+      )}
+      {showStreakRecovery && summary && (
+        <StreakRecoveryModal
+          lastStreak={summary.streak}
+          onUseGrace={() => { storeUseGraceDay(); setShowStreakRecovery(false); refresh(); }}
+          onDismiss={() => setShowStreakRecovery(false)}
+        />
+      )}
       {showCreateGoal && (
         <CreateGoalModal
           onSave={handleSaveGoal}
@@ -482,6 +559,7 @@ export default function DashboardPage() {
           <PrimaryGoalHeroWidget
             goal={summary.primaryGoal}
             estimatedMonthsRemaining={summary.estimatedMonthsRemaining}
+            avgMonthlySavings={summary.avgMonthlySavings}
             dailyCompleted={summary.daily.status === 'completed'}
             onCreateGoal={handleCreateGoal}
             onOpenGoal={(id) => router.push(`/goals/${id}`)}

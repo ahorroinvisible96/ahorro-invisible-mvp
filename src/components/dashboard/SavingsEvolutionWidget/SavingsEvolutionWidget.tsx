@@ -124,11 +124,20 @@ export function SavingsEvolutionWidget({
           </div>
         </div>
 
-        {/* ── Total acumulado ── */}
-        <div className={styles.totalSection} style={{ cursor: collapsed ? 'pointer' : 'default' }} onClick={collapsed ? toggle : undefined}>
-          <div className={styles.totalAmount}>{formatCurrency(totalAmount)}</div>
-          <div className={styles.totalLabel}>Acumulado en {getRangeDays(selectedRange)}d</div>
-        </div>
+        {/* ── Total acumulado (solo si hay datos reales) ── */}
+        {evolution?.mode !== 'demo' && (
+          <div className={styles.totalSection} style={{ cursor: collapsed ? 'pointer' : 'default' }} onClick={collapsed ? toggle : undefined}>
+            <div className={styles.totalAmount}>{formatCurrency(totalAmount)}</div>
+            <div className={styles.totalLabel}>Acumulado en {getRangeDays(selectedRange)}d</div>
+          </div>
+        )}
+        {evolution?.mode === 'demo' && !collapsed && (
+          <div className={styles.totalSection}>
+            <div style={{ fontSize: 13, color: 'rgba(148,163,184,0.7)', lineHeight: 1.5 }}>
+              Aquí verás tu curva de ahorro cuando completes tu primera decisión diaria. 📈
+            </div>
+          </div>
+        )}
 
         {/* ── Gráfico o estado vacío ── */}
         {!collapsed && (

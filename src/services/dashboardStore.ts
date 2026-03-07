@@ -13,16 +13,53 @@ const STORAGE_KEY = 'ahorro_invisible_dashboard_v1';
 
 // ─── Motor económico ─────────────────────────────────────────────────────────
 export const DAILY_DECISION_RULES: DailyDecisionRule[] = [
-  { category: 'consumo',      questionId: 'coffee',       answerKey: 'no',        immediateDelta: 3,  monthlyProjection: 60,  yearlyProjection: 720,  impactType: 'avoided' },
-  { category: 'consumo',      questionId: 'coffee',       answerKey: 'yes',       immediateDelta: 0,  monthlyProjection: 0,   yearlyProjection: 0,    impactType: 'real' },
-  { category: 'food',         questionId: 'delivery',     answerKey: 'no',        immediateDelta: 8,  monthlyProjection: 120, yearlyProjection: 1440, impactType: 'avoided' },
-  { category: 'food',         questionId: 'delivery',     answerKey: 'yes',       immediateDelta: 0,  monthlyProjection: 0,   yearlyProjection: 0,    impactType: 'real' },
-  { category: 'transport',    questionId: 'transport',    answerKey: 'public',    immediateDelta: 5,  monthlyProjection: 80,  yearlyProjection: 960,  impactType: 'optimization' },
-  { category: 'transport',    questionId: 'transport',    answerKey: 'car',       immediateDelta: 0,  monthlyProjection: 0,   yearlyProjection: 0,    impactType: 'real' },
-  { category: 'consumo',      questionId: 'impulse',      answerKey: 'avoided',   immediateDelta: 15, monthlyProjection: 150, yearlyProjection: 1800, impactType: 'avoided' },
-  { category: 'consumo',      questionId: 'impulse',      answerKey: 'bought',    immediateDelta: 0,  monthlyProjection: 0,   yearlyProjection: 0,    impactType: 'real' },
-  { category: 'subscription', questionId: 'subscription', answerKey: 'cancelled', immediateDelta: 0,  monthlyProjection: 12,  yearlyProjection: 144,  impactType: 'optimization' },
-  { category: 'subscription', questionId: 'subscription', answerKey: 'kept',      immediateDelta: 0,  monthlyProjection: 0,   yearlyProjection: 0,    impactType: 'real' },
+  // ─ Originales ────────────────────────────────────────────────────────────
+  { category: 'consumo',      questionId: 'coffee',          answerKey: 'no',        immediateDelta: 3,  monthlyProjection: 60,  yearlyProjection: 720,  impactType: 'avoided' },
+  { category: 'consumo',      questionId: 'coffee',          answerKey: 'yes',       immediateDelta: 0,  monthlyProjection: 0,   yearlyProjection: 0,    impactType: 'real' },
+  { category: 'food',         questionId: 'delivery',        answerKey: 'no',        immediateDelta: 8,  monthlyProjection: 120, yearlyProjection: 1440, impactType: 'avoided' },
+  { category: 'food',         questionId: 'delivery',        answerKey: 'yes',       immediateDelta: 0,  monthlyProjection: 0,   yearlyProjection: 0,    impactType: 'real' },
+  { category: 'transport',    questionId: 'transport',       answerKey: 'public',    immediateDelta: 5,  monthlyProjection: 80,  yearlyProjection: 960,  impactType: 'optimization' },
+  { category: 'transport',    questionId: 'transport',       answerKey: 'car',       immediateDelta: 0,  monthlyProjection: 0,   yearlyProjection: 0,    impactType: 'real' },
+  { category: 'consumo',      questionId: 'impulse',         answerKey: 'avoided',   immediateDelta: 15, monthlyProjection: 150, yearlyProjection: 1800, impactType: 'avoided' },
+  { category: 'consumo',      questionId: 'impulse',         answerKey: 'bought',    immediateDelta: 0,  monthlyProjection: 0,   yearlyProjection: 0,    impactType: 'real' },
+  { category: 'subscription', questionId: 'subscription',    answerKey: 'cancelled', immediateDelta: 0,  monthlyProjection: 12,  yearlyProjection: 144,  impactType: 'optimization' },
+  { category: 'subscription', questionId: 'subscription',    answerKey: 'kept',      immediateDelta: 0,  monthlyProjection: 0,   yearlyProjection: 0,    impactType: 'real' },
+  // ─ Hogar ─────────────────────────────────────────────────────────────────
+  { category: 'hogar',        questionId: 'hogar_energy',    answerKey: 'yes',       immediateDelta: 2,  monthlyProjection: 40,  yearlyProjection: 480,  impactType: 'avoided' },
+  { category: 'hogar',        questionId: 'hogar_energy',    answerKey: 'no',        immediateDelta: 0,  monthlyProjection: 0,   yearlyProjection: 0,    impactType: 'real' },
+  { category: 'hogar',        questionId: 'hogar_water',     answerKey: 'yes',       immediateDelta: 3,  monthlyProjection: 50,  yearlyProjection: 600,  impactType: 'avoided' },
+  { category: 'hogar',        questionId: 'hogar_water',     answerKey: 'no',        immediateDelta: 0,  monthlyProjection: 0,   yearlyProjection: 0,    impactType: 'real' },
+  { category: 'hogar',        questionId: 'hogar_meal_plan', answerKey: 'yes',       immediateDelta: 15, monthlyProjection: 60,  yearlyProjection: 720,  impactType: 'optimization' },
+  { category: 'hogar',        questionId: 'hogar_meal_plan', answerKey: 'no',        immediateDelta: 0,  monthlyProjection: 0,   yearlyProjection: 0,    impactType: 'real' },
+  { category: 'hogar',        questionId: 'hogar_heating',   answerKey: 'yes',       immediateDelta: 5,  monthlyProjection: 30,  yearlyProjection: 360,  impactType: 'optimization' },
+  { category: 'hogar',        questionId: 'hogar_heating',   answerKey: 'no',        immediateDelta: 0,  monthlyProjection: 0,   yearlyProjection: 0,    impactType: 'real' },
+  // ─ Salud ──────────────────────────────────────────────────────────────────
+  { category: 'salud',        questionId: 'salud_lunch',     answerKey: 'yes',       immediateDelta: 8,  monthlyProjection: 160, yearlyProjection: 1920, impactType: 'avoided' },
+  { category: 'salud',        questionId: 'salud_lunch',     answerKey: 'no',        immediateDelta: 0,  monthlyProjection: 0,   yearlyProjection: 0,    impactType: 'real' },
+  { category: 'salud',        questionId: 'salud_exercise',  answerKey: 'free',      immediateDelta: 7,  monthlyProjection: 30,  yearlyProjection: 360,  impactType: 'avoided' },
+  { category: 'salud',        questionId: 'salud_exercise',  answerKey: 'gym',       immediateDelta: 0,  monthlyProjection: 0,   yearlyProjection: 0,    impactType: 'real' },
+  { category: 'salud',        questionId: 'salud_generic',   answerKey: 'generic',   immediateDelta: 8,  monthlyProjection: 24,  yearlyProjection: 288,  impactType: 'avoided' },
+  { category: 'salud',        questionId: 'salud_generic',   answerKey: 'brand',     immediateDelta: 0,  monthlyProjection: 0,   yearlyProjection: 0,    impactType: 'real' },
+  // ─ Ocio ───────────────────────────────────────────────────────────────────
+  { category: 'ocio',         questionId: 'ocio_streaming',  answerKey: 'home',      immediateDelta: 10, monthlyProjection: 40,  yearlyProjection: 480,  impactType: 'avoided' },
+  { category: 'ocio',         questionId: 'ocio_streaming',  answerKey: 'out',       immediateDelta: 0,  monthlyProjection: 0,   yearlyProjection: 0,    impactType: 'real' },
+  { category: 'ocio',         questionId: 'ocio_bar',        answerKey: 'home',      immediateDelta: 7,  monthlyProjection: 112, yearlyProjection: 1344, impactType: 'avoided' },
+  { category: 'ocio',         questionId: 'ocio_bar',        answerKey: 'bar',       immediateDelta: 0,  monthlyProjection: 0,   yearlyProjection: 0,    impactType: 'real' },
+  { category: 'ocio',         questionId: 'ocio_library',    answerKey: 'free',      immediateDelta: 12, monthlyProjection: 24,  yearlyProjection: 288,  impactType: 'avoided' },
+  { category: 'ocio',         questionId: 'ocio_library',    answerKey: 'bought',    immediateDelta: 0,  monthlyProjection: 0,   yearlyProjection: 0,    impactType: 'real' },
+  // ─ Tecnología ─────────────────────────────────────────────────────────────
+  { category: 'tech',         questionId: 'tech_apps',       answerKey: 'avoided',   immediateDelta: 5,  monthlyProjection: 15,  yearlyProjection: 180,  impactType: 'avoided' },
+  { category: 'tech',         questionId: 'tech_apps',       answerKey: 'bought',    immediateDelta: 0,  monthlyProjection: 0,   yearlyProjection: 0,    impactType: 'real' },
+  { category: 'tech',         questionId: 'tech_gadget',     answerKey: 'resisted',  immediateDelta: 20, monthlyProjection: 40,  yearlyProjection: 480,  impactType: 'avoided' },
+  { category: 'tech',         questionId: 'tech_gadget',     answerKey: 'bought',    immediateDelta: 0,  monthlyProjection: 0,   yearlyProjection: 0,    impactType: 'real' },
+  // ─ Transporte alternativo ─────────────────────────────────────────────────
+  { category: 'transport',    questionId: 'transport_alt',   answerKey: 'alt',       immediateDelta: 6,  monthlyProjection: 96,  yearlyProjection: 1152, impactType: 'optimization' },
+  { category: 'transport',    questionId: 'transport_alt',   answerKey: 'car',       immediateDelta: 0,  monthlyProjection: 0,   yearlyProjection: 0,    impactType: 'real' },
+  { category: 'transport',    questionId: 'transport_share', answerKey: 'shared',    immediateDelta: 8,  monthlyProjection: 64,  yearlyProjection: 768,  impactType: 'optimization' },
+  { category: 'transport',    questionId: 'transport_share', answerKey: 'alone',     immediateDelta: 0,  monthlyProjection: 0,   yearlyProjection: 0,    impactType: 'real' },
+  // ─ Impulso online ─────────────────────────────────────────────────────────
+  { category: 'consumo',      questionId: 'impulse_online',  answerKey: 'closed',    immediateDelta: 20, monthlyProjection: 80,  yearlyProjection: 960,  impactType: 'avoided' },
+  { category: 'consumo',      questionId: 'impulse_online',  answerKey: 'bought',    immediateDelta: 0,  monthlyProjection: 0,   yearlyProjection: 0,    impactType: 'real' },
 ];
 
 // ─── Preguntas diarias ────────────────────────────────────────────────────────
@@ -30,55 +67,105 @@ export type DailyQuestion = {
   questionId: string;
   text: string;
   answers: { key: string; label: string; savingsHint?: string }[];
+  tags?: string[];
 };
 
 export const DAILY_QUESTIONS: DailyQuestion[] = [
-  {
-    questionId: 'coffee',
+  // ─ Originales ────────────────────────────────────────────────────────────
+  { questionId: 'coffee',         tags: ['consumo', 'food'],
     text: '¿Compraste café o bebida fuera de casa hoy?',
-    answers: [
-      { key: 'no',  label: 'No, ahorré',   savingsHint: '+3€' },
-      { key: 'yes', label: 'Sí, lo compré' },
-    ],
-  },
-  {
-    questionId: 'delivery',
+    answers: [{ key: 'no', label: 'No, ahorré', savingsHint: '+3€' }, { key: 'yes', label: 'Sí, lo compré' }] },
+  { questionId: 'delivery',       tags: ['food', 'consumo'],
     text: '¿Pediste comida a domicilio hoy?',
-    answers: [
-      { key: 'no',  label: 'No, cociné en casa', savingsHint: '+8€' },
-      { key: 'yes', label: 'Sí, lo pedí' },
-    ],
-  },
-  {
-    questionId: 'transport',
+    answers: [{ key: 'no', label: 'No, cociné en casa', savingsHint: '+8€' }, { key: 'yes', label: 'Sí, lo pedí' }] },
+  { questionId: 'transport',      tags: ['transport'],
     text: '¿Cómo te movilizaste hoy?',
-    answers: [
-      { key: 'public', label: 'Transporte público', savingsHint: '+5€' },
-      { key: 'car',    label: 'Coche / taxi' },
-    ],
-  },
-  {
-    questionId: 'impulse',
+    answers: [{ key: 'public', label: 'Transporte público', savingsHint: '+5€' }, { key: 'car', label: 'Coche / taxi' }] },
+  { questionId: 'impulse',        tags: ['impulse', 'consumo'],
     text: '¿Evitaste una compra impulsiva hoy?',
-    answers: [
-      { key: 'avoided', label: 'Sí, lo evité', savingsHint: '+15€' },
-      { key: 'bought',  label: 'No, compré' },
-    ],
-  },
-  {
-    questionId: 'subscription',
+    answers: [{ key: 'avoided', label: 'Sí, lo evité', savingsHint: '+15€' }, { key: 'bought', label: 'No, compré' }] },
+  { questionId: 'subscription',   tags: ['subscription', 'tech'],
     text: '¿Revisaste tus suscripciones activas?',
-    answers: [
-      { key: 'cancelled', label: 'Cancelé una sin uso', savingsHint: '+12€/mes' },
-      { key: 'kept',      label: 'Las mantuve todas' },
-    ],
-  },
+    answers: [{ key: 'cancelled', label: 'Cancelé una sin uso', savingsHint: '+12€/mes' }, { key: 'kept', label: 'Las mantuve todas' }] },
+  // ─ Hogar ─────────────────────────────────────────────────────────────────
+  { questionId: 'hogar_energy',   tags: ['hogar'],
+    text: '¿Apagaste los electrodomésticos que no usabas al salir de casa hoy?',
+    answers: [{ key: 'yes', label: 'Sí, los apagué', savingsHint: '+2€' }, { key: 'no', label: 'No me acordé' }] },
+  { questionId: 'hogar_water',    tags: ['hogar'],
+    text: '¿Diste una ducha corta (menos de 5 minutos) hoy?',
+    answers: [{ key: 'yes', label: 'Sí, ducha rápida', savingsHint: '+3€' }, { key: 'no', label: 'Me duché largo' }] },
+  { questionId: 'hogar_meal_plan',tags: ['hogar', 'food'],
+    text: '¿Planificaste las comidas de esta semana para reducir desperdicios?',
+    answers: [{ key: 'yes', label: 'Sí, lo planiqué', savingsHint: '+15€' }, { key: 'no', label: 'No esta semana' }] },
+  { questionId: 'hogar_heating',  tags: ['hogar'],
+    text: '¿Ajustaste la temperatura del hogar para ahorrar en la factura de energía?',
+    answers: [{ key: 'yes', label: 'Sí, la ajusté', savingsHint: '+5€' }, { key: 'no', label: 'Lo dejé como estaba' }] },
+  // ─ Salud ──────────────────────────────────────────────────────────────────
+  { questionId: 'salud_lunch',    tags: ['salud', 'food'],
+    text: '¿Llevaste el almuerzo de casa al trabajo hoy?',
+    answers: [{ key: 'yes', label: 'Sí, lo traje', savingsHint: '+8€' }, { key: 'no', label: 'Comí fuera' }] },
+  { questionId: 'salud_exercise', tags: ['salud'],
+    text: '¿Hiciste ejercicio en casa o al aire libre en lugar de ir al gimnasio?',
+    answers: [{ key: 'free', label: 'Sí, sin pagar', savingsHint: '+7€' }, { key: 'gym', label: 'Fui al gimnasio' }] },
+  { questionId: 'salud_generic',  tags: ['salud', 'consumo'],
+    text: '¿Compraste medicamentos o productos genéricos en lugar de marcas?',
+    answers: [{ key: 'generic', label: 'Sí, genéricos', savingsHint: '+8€' }, { key: 'brand', label: 'Compré de marca' }] },
+  // ─ Ocio ───────────────────────────────────────────────────────────────────
+  { questionId: 'ocio_streaming', tags: ['ocio'],
+    text: '¿Elegiste ver contenido en casa en lugar de ir al cine o espectáculo?',
+    answers: [{ key: 'home', label: 'Sí, en casa', savingsHint: '+10€' }, { key: 'out', label: 'Salí' }] },
+  { questionId: 'ocio_bar',       tags: ['ocio', 'consumo'],
+    text: '¿Tomaste algo en casa en lugar de salir al bar o cafetería por la tarde?',
+    answers: [{ key: 'home', label: 'En casa', savingsHint: '+7€' }, { key: 'bar', label: 'Salí al bar' }] },
+  { questionId: 'ocio_library',   tags: ['ocio'],
+    text: '¿Usaste la biblioteca o contenido gratuito en lugar de comprar un libro?',
+    answers: [{ key: 'free', label: 'Sí, gratis', savingsHint: '+12€' }, { key: 'bought', label: 'Lo compré' }] },
+  // ─ Tecnología ─────────────────────────────────────────────────────────────
+  { questionId: 'tech_apps',      tags: ['tech', 'subscription'],
+    text: '¿Evitaste instalar una app de pago o nueva suscripción digital hoy?',
+    answers: [{ key: 'avoided', label: 'Sí, lo evité', savingsHint: '+5€' }, { key: 'bought', label: 'Me suscribí' }] },
+  { questionId: 'tech_gadget',    tags: ['tech', 'impulse'],
+    text: '¿Resististe la tentación de comprar un gadget o accesorio tecnológico?',
+    answers: [{ key: 'resisted', label: 'Sí, resistí', savingsHint: '+20€' }, { key: 'bought', label: 'Lo compré' }] },
+  // ─ Transporte alternativo ─────────────────────────────────────────────────
+  { questionId: 'transport_alt',  tags: ['transport'],
+    text: '¿Usaste bicicleta, patinete o fuiste andando en lugar del coche o taxi?',
+    answers: [{ key: 'alt', label: 'Sí, alternativa eco', savingsHint: '+6€' }, { key: 'car', label: 'Usé el coche' }] },
+  { questionId: 'transport_share',tags: ['transport'],
+    text: '¿Compartiste coche con alguien para ir al trabajo o hacer recados?',
+    answers: [{ key: 'shared', label: 'Sí, compartí', savingsHint: '+8€' }, { key: 'alone', label: 'Fui solo' }] },
+  // ─ Impulso online ─────────────────────────────────────────────────────────
+  { questionId: 'impulse_online', tags: ['impulse', 'consumo'],
+    text: '¿Cerraste un carrito de compra online sin finalizar la compra?',
+    answers: [{ key: 'closed', label: 'Sí, lo cerré', savingsHint: '+20€' }, { key: 'bought', label: 'Compré' }] },
 ];
 
-// Pregunta del día determinista (basada en día del año)
+// Pregunta del día personalizada según moneyFeeling del usuario
+const FEELING_TAGS: Record<string, string[]> = {
+  reactive:  ['food', 'consumo', 'impulse', 'transport'],
+  avoidant:  ['food', 'consumo', 'hogar', 'subscription'],
+  anxious:   ['hogar', 'salud', 'subscription', 'food'],
+};
+
 export function getTodayQuestion(): DailyQuestion {
-  const dayIndex = Math.floor(Date.now() / 86_400_000) % DAILY_QUESTIONS.length;
-  return DAILY_QUESTIONS[dayIndex];
+  let moneyFeeling: string | null = null;
+  if (typeof window !== 'undefined') {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) moneyFeeling = (JSON.parse(raw) as { moneyFeeling?: string }).moneyFeeling ?? null;
+      if (!moneyFeeling) {
+        const onbRaw = localStorage.getItem('onboardingData');
+        if (onbRaw) moneyFeeling = (JSON.parse(onbRaw) as { moneyFeeling?: string }).moneyFeeling ?? null;
+      }
+    } catch { /* fallthrough */ }
+  }
+  let pool = DAILY_QUESTIONS;
+  if (moneyFeeling && FEELING_TAGS[moneyFeeling]) {
+    const preferred = DAILY_QUESTIONS.filter(q => q.tags?.some(t => FEELING_TAGS[moneyFeeling!].includes(t)));
+    if (preferred.length >= 5) pool = preferred;
+  }
+  const dayIndex = Math.floor(Date.now() / 86_400_000) % pool.length;
+  return pool[dayIndex];
 }
 
 // ─── Forma interna del store ──────────────────────────────────────────────────
@@ -90,6 +177,8 @@ type StoreState = {
   goals: Goal[];
   decisions: DailyDecision[];
   hucha: Hucha;
+  seenMilestones: number[];
+  graceUsedMonth: string | null;
 };
 
 const SEED: StoreState = {
@@ -100,6 +189,8 @@ const SEED: StoreState = {
   goals: [],
   decisions: [],
   hucha: { balance: 0, entries: [] },
+  seenMilestones: [],
+  graceUsedMonth: null,
 };
 
 // ─── I/O localStorage ─────────────────────────────────────────────────────────
@@ -119,9 +210,10 @@ function loadStore(): StoreState {
         parsed.userEmail = localStorage.getItem('userEmail') ?? '';
       }
       // Migración: asegurar campo hucha
-      if (!parsed.hucha) {
-        parsed.hucha = { balance: 0, entries: [] };
-      }
+      if (!parsed.hucha) parsed.hucha = { balance: 0, entries: [] };
+      // Migración: asegurar campos de fase 2
+      if (!parsed.seenMilestones) parsed.seenMilestones = [];
+      if (parsed.graceUsedMonth === undefined) parsed.graceUsedMonth = null;
       return parsed;
     }
   } catch { /* fallthrough */ }
@@ -228,6 +320,17 @@ export function buildSummary(range: '7d' | '30d' | '90d' = '30d'): DashboardSumm
   const totalSaved = state.decisions.reduce((s, d) => s + d.deltaAmount, 0);
   const streak = computeStreak(state.decisions);
 
+  // ─ Milestones ──────────────────────────────────────────────────────────────
+  const MILESTONES = [50, 100, 500, 1000, 2000, 5000];
+  const newMilestone = MILESTONES.find(m => totalSaved >= m && !state.seenMilestones.includes(m)) ?? null;
+
+  // ─ Streak recovery ─────────────────────────────────────────────────────────
+  const yesterday = new Date(Date.now() - 86_400_000).toISOString().split('T')[0];
+  const hadYesterdayDecision = state.decisions.some(d => d.date === yesterday);
+  const streakBrokeYesterday = streak === 0 && !hadYesterdayDecision && state.decisions.length > 0;
+  const currentMonth = new Date().toISOString().slice(0, 7);
+  const graceAvailable = (state.graceUsedMonth ?? '') !== currentMonth;
+
   return {
     userName: state.userName,
     userEmail: state.userEmail,
@@ -252,6 +355,9 @@ export function buildSummary(range: '7d' | '30d' | '90d' = '30d'): DashboardSumm
     streak,
     totalSaved,
     hucha: state.hucha ?? { balance: 0, entries: [] },
+    newMilestone,
+    streakBrokeYesterday,
+    graceAvailable,
   };
 }
 
@@ -676,6 +782,41 @@ function incomeMultiplier(incomeRange: IncomeRange | null): number {
   if (mid < 4000) return 1.00;
   if (mid < 6000) return 1.15;
   return 1.30;
+}
+
+// ─── Día de gracia (streak recovery) ─────────────────────────────────────────
+export function storeUseGraceDay(
+  currentRange: '7d' | '30d' | '90d' = '30d',
+): DashboardSummary {
+  const state = loadStore();
+  const yesterday = new Date(Date.now() - 86_400_000).toISOString().split('T')[0];
+  const now = new Date().toISOString();
+  const currentMonth = new Date().toISOString().slice(0, 7);
+  if (state.decisions.some(d => d.date === yesterday)) return buildSummary(currentRange);
+  const primaryGoal = state.goals.find(g => !g.archived && g.isPrimary) ?? state.goals.find(g => !g.archived);
+  state.decisions.push({
+    id: `grace_${Date.now()}`,
+    date: yesterday,
+    questionId: 'grace_day',
+    answerKey: 'grace',
+    goalId: primaryGoal?.id ?? '',
+    deltaAmount: 0,
+    monthlyProjection: 0,
+    yearlyProjection: 0,
+    createdAt: now,
+  });
+  state.graceUsedMonth = currentMonth;
+  persistStore(state);
+  return buildSummary(currentRange);
+}
+
+// ─── Marcar hito celebrado ───────────────────────────────────────────────────
+export function storeMarkMilestoneSeen(milestone: number): void {
+  const state = loadStore();
+  if (!state.seenMilestones.includes(milestone)) {
+    state.seenMilestones.push(milestone);
+    persistStore(state);
+  }
 }
 
 export function storeSubmitDecision(
