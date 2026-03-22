@@ -32,7 +32,7 @@ export default function DailyPage() {
   useEffect(() => {
     analytics.setScreen('daily_question');
     const isAuthenticated = localStorage.getItem('isAuthenticated');
-    if (isAuthenticated !== 'true') { router.replace('/signup'); return; }
+    if (isAuthenticated !== 'true') { router.replace('/login'); return; }
     const hasOnboarding = localStorage.getItem('hasCompletedOnboarding');
     if (hasOnboarding !== 'true') { router.replace('/onboarding'); return; }
 

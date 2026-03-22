@@ -50,7 +50,7 @@ export default function HistoryPage() {
   useEffect(() => {
     analytics.setScreen('history');
     const isAuthenticated = localStorage.getItem('isAuthenticated');
-    if (isAuthenticated !== 'true') { router.replace('/signup'); return; }
+    if (isAuthenticated !== 'true') { router.replace('/login'); return; }
     analytics.historyViewed('sidebar');
   }, [router]);
 

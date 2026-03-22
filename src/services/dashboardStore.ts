@@ -7,9 +7,9 @@ import type {
   SavingsEvolutionPoint,
   Hucha,
 } from '@/types/Dashboard';
+import { STORAGE_KEY } from '@/lib/constants';
 
-// ─── Clave de persistencia ───────────────────────────────────────────────────
-const STORAGE_KEY = 'ahorro_invisible_dashboard_v1';
+// STORAGE_KEY importado desde @/lib/constants
 
 // ─── Helper: distinguir decisión diaria de ahorro extra / grace day ─────────
 const isDaily = (d: DailyDecision) =>

@@ -412,7 +412,7 @@ export default function DashboardPage() {
     analytics.setScreen('dashboard');
     if (typeof window !== 'undefined') {
       const isAuth = localStorage.getItem('isAuthenticated');
-      if (isAuth !== 'true') { router.replace('/signup'); return; }
+      if (isAuth !== 'true') { router.replace('/login'); return; }
       const hasOnboarding = localStorage.getItem('hasCompletedOnboarding');
       if (hasOnboarding !== 'true') { router.replace('/onboarding'); return; }
     }

@@ -300,7 +300,7 @@ export default function GoalsPage() {
   useEffect(() => {
     analytics.setScreen('goals');
     const isAuth = localStorage.getItem('isAuthenticated');
-    if (isAuth !== 'true') { router.replace('/signup'); return; }
+    if (isAuth !== 'true') { router.replace('/login'); return; }
     refresh();
     setLoading(false);
   }, [router]);

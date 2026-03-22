@@ -7,8 +7,8 @@ import { Card } from "@/components/ui/Card/Card";
 import { FormInput } from "@/components/ui/FormInput";
 import { analytics } from "@/services/analytics";
 import { storeInitUser } from "@/services/dashboardStore";
-import { authSignUp } from "@/services/authService";
-import { isSupabaseConfigured } from "@/lib/supabase";
+import { authSignUp, authSendMagicLink } from '@/services/authService';
+import { isSupabaseConfigured } from '@/lib/supabase';
 import { saveUserProfileToSupabase } from "@/services/syncService";
 
 export default function SignupPage() {
@@ -17,6 +17,8 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [emailVerificationSent, setEmailVerificationSent] = useState(false);
+  const [resendInfo, setResendInfo] = useState("");
   
   useEffect(() => {
     // Establecer el nombre de la pantalla para analytics
@@ -62,6 +64,11 @@ export default function SignupPage() {
       // Guardar perfil en Supabase si el usuario es real (no localStorage)
       if (user.id !== 'local') {
         await saveUserProfileToSupabase(user.id, name).catch(() => null);
+        storeInitUser(name.trim(), email.trim());
+        analytics.signupSuccess();
+        // Supabase requiere verificación de email → mostrar pantalla de confirmación
+        setEmailVerificationSent(true);
+        return;
       }
       storeInitUser(name.trim(), email.trim());
       analytics.signupSuccess();
@@ -98,6 +105,80 @@ export default function SignupPage() {
     letterSpacing: '0.06em',
     marginBottom: 6,
   };
+
+  async function handleResendVerification() {
+    setResendInfo('');
+    const { error: err } = await authSendMagicLink(email);
+    setResendInfo(err ? `Error: ${err}` : '✅ Email reenviado. Revisa tu bandeja de entrada.');
+  }
+
+  if (emailVerificationSent) {
+    return (
+      <div style={{
+        minHeight: '100vh', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)',
+        fontFamily: 'var(--font-geist-sans, Arial, sans-serif)', padding: '24px 16px',
+      }}>
+        <div style={{ width: '100%', maxWidth: 440, textAlign: 'center' }}>
+          <div style={{
+            borderRadius: 20, background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+            border: '1px solid rgba(51,65,85,0.6)', boxShadow: '0 25px 50px rgba(2,6,23,0.7)',
+            padding: '40px 32px',
+          }}>
+            <div style={{ fontSize: 56, marginBottom: 16 }}>✉️</div>
+            <h2 style={{ fontSize: 22, fontWeight: 800, color: '#f1f5f9', margin: '0 0 12px' }}>Verifica tu email</h2>
+            <p style={{ fontSize: 14, color: 'rgba(148,163,184,0.8)', lineHeight: 1.6, margin: '0 0 8px' }}>
+              Enviamos un enlace de confirmación a:
+            </p>
+            <p style={{ fontSize: 14, fontWeight: 700, color: '#a78bfa', margin: '0 0 24px', wordBreak: 'break-all' }}>
+              {email}
+            </p>
+            <div style={{
+              background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.2)',
+              borderRadius: 12, padding: '12px 16px', marginBottom: 24,
+            }}>
+              <p style={{ fontSize: 13, color: 'rgba(196,181,253,0.8)', margin: 0, lineHeight: 1.5 }}>
+                Haz clic en el enlace del email para activar tu cuenta. Luego inicia sesión normalmente.
+              </p>
+            </div>
+
+            {resendInfo && (
+              <div style={{
+                marginBottom: 16, padding: '10px 14px',
+                background: resendInfo.startsWith('Error') ? 'rgba(239,68,68,0.1)' : 'rgba(22,163,74,0.1)',
+                border: `1px solid ${resendInfo.startsWith('Error') ? 'rgba(239,68,68,0.3)' : 'rgba(22,163,74,0.3)'}`,
+                borderRadius: 10, fontSize: 13,
+                color: resendInfo.startsWith('Error') ? '#fca5a5' : '#4ade80',
+              }}>{resendInfo}</div>
+            )}
+
+            <button
+              onClick={() => router.push('/login')}
+              style={{
+                width: '100%', padding: '13px 0', marginBottom: 12,
+                background: 'linear-gradient(90deg, #a855f7, #2563eb)', border: 'none',
+                borderRadius: 10, color: '#fff', fontSize: 15, fontWeight: 700,
+                cursor: 'pointer', fontFamily: 'inherit',
+              }}
+            >
+              Ir al login →
+            </button>
+            <button
+              onClick={handleResendVerification}
+              style={{
+                width: '100%', padding: '11px 0',
+                background: 'rgba(30,41,59,0.5)', border: '1px solid rgba(51,65,85,0.5)',
+                borderRadius: 10, color: 'rgba(203,213,225,0.7)', fontSize: 13, fontWeight: 600,
+                cursor: 'pointer', fontFamily: 'inherit',
+              }}
+            >
+              ¿No recibiste el email? Reenviar
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{

@@ -8,6 +8,7 @@ const VAPID_PUBLIC_KEY     = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!;
 const VAPID_PRIVATE_KEY    = process.env.VAPID_PRIVATE_KEY!;
 const VAPID_SUBJECT        = process.env.VAPID_SUBJECT ?? 'mailto:ahorroinvisible@gmail.com';
 const CRON_SECRET          = process.env.CRON_SECRET;
+const APP_URL              = process.env.NEXT_PUBLIC_APP_URL ?? 'https://ahorro-invisible-mvp.vercel.app';
 
 if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
   webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
@@ -66,8 +67,8 @@ export async function GET(req: NextRequest) {
           title: 'Ahorro Invisible ⚡',
           body: '¿Ya registraste tu decisión de hoy? Solo tarda 10 segundos.',
           url: '/daily',
-          icon: '/icon-192.png',
-          badge: '/icon-96.png',
+          icon: `${APP_URL}/api/icon?size=192`,
+          badge: `${APP_URL}/api/icon?size=96`,
           tag: 'daily-reminder',
         }),
       );

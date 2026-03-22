@@ -101,8 +101,8 @@ export function scheduleLocalReminder(): void {
     if (dailyStatus === 'pending') {
       new Notification('Ahorro Invisible ⚡', {
         body: '¿Ya registraste tu decisión de hoy? Solo tarda 10 segundos.',
-        icon: '/icon-192.png',
-        badge: '/icon-96.png',
+        icon: '/api/icon?size=192',
+        badge: '/api/icon?size=96',
         tag: 'daily-reminder',
       });
     }

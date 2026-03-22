@@ -108,6 +108,19 @@ export async function authSendMagicLink(email: string): Promise<{ error: string 
   return { error: error?.message ?? null };
 }
 
+// ─── Reset password (forgot password) ────────────────────────────────────────
+export async function authResetPassword(email: string): Promise<{ error: string | null }> {
+  if (!isSupabaseConfigured || !supabase) {
+    return { error: 'Esta función requiere Supabase configurado.' };
+  }
+  const appUrl =
+    process.env.NEXT_PUBLIC_APP_URL ||
+    (typeof window !== 'undefined' ? window.location.origin : '');
+  const redirectTo = appUrl ? `${appUrl}/auth/callback` : undefined;
+  const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+  return { error: error?.message ?? null };
+}
+
 // ─── Sign out ─────────────────────────────────────────────────────────────────
 export async function authSignOut(): Promise<void> {
   if (isSupabaseConfigured && supabase) {

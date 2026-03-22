@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { analytics } from '@/services/analytics';
 import { storeResetAllData, storeExportData, buildSummary } from '@/services/dashboardStore';
+import { authSignOut } from '@/services/authService';
 import { SettingsMyDataWidget } from '@/components/settings/SettingsMyDataWidget/SettingsMyDataWidget';
 import { SettingsNotificationsWidget } from '@/components/settings/SettingsNotificationsWidget/SettingsNotificationsWidget';
 import { SettingsSessionWidget } from '@/components/settings/SettingsSessionWidget/SettingsSessionWidget';
@@ -19,7 +20,7 @@ export default function SettingsPage() {
   useEffect(() => {
     analytics.setScreen('settings');
     const isAuth = localStorage.getItem('isAuthenticated');
-    if (isAuth !== 'true') { router.replace('/signup'); return; }
+    if (isAuth !== 'true') { router.replace('/login'); return; }
     const summary = buildSummary('30d');
     setUserEmail(summary.userEmail);
     analytics.settingsViewed();
@@ -44,17 +45,15 @@ export default function SettingsPage() {
     router.replace('/onboarding');
   }, [router]);
 
-  const handleResetAll = useCallback(() => {
+  const handleResetAll = useCallback(async () => {
     storeResetAllData();
-    localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('hasCompletedOnboarding');
-    router.replace('/signup');
+    await authSignOut();
+    router.replace('/login');
   }, [router]);
 
-  const handleLogout = useCallback(() => {
-    localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('hasCompletedOnboarding');
-    router.replace('/signup');
+  const handleLogout = useCallback(async () => {
+    await authSignOut();
+    router.replace('/login');
   }, [router]);
 
   if (loading) {

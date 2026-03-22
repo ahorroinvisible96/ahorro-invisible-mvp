@@ -1,10 +1,13 @@
 "use client";
 
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { pushLocalDataToSupabase, pullDataFromSupabase } from "@/services/syncService";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 
 export default function SyncProvider({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+
   // Restaurar sesión si iOS limpió localStorage pero Supabase tiene sesión activa
   useEffect(() => {
     if (!isSupabaseConfigured || !supabase) return;
@@ -25,8 +28,10 @@ export default function SyncProvider({ children }: { children: React.ReactNode }
       document.cookie = `ai_auth=1; path=/; expires=${expires}; SameSite=Lax`;
       // Restaurar datos del usuario desde Supabase
       await pullDataFromSupabase(session.user.id).catch(() => null);
+      // Forzar re-evaluación de guardias de auth (critical for iOS PWA)
+      router.refresh();
     });
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     if (!isSupabaseConfigured) return;

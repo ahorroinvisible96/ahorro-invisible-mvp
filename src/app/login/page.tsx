@@ -3,11 +3,11 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { analytics } from "@/services/analytics";
-import { authSignIn, authSendMagicLink } from "@/services/authService";
+import { authSignIn, authSendMagicLink, authResetPassword } from "@/services/authService";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import { hasLocalDataToMigrate, pushLocalDataToSupabase, pullDataFromSupabase } from "@/services/syncService";
 
-type Mode = "password" | "magic";
+type Mode = "password" | "magic" | "reset";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -87,6 +87,19 @@ export default function LoginPage() {
     setInfo("✅ ¡Enviado! Revisa tu email y haz clic en el enlace para entrar.");
   }
 
+  async function handleResetPassword(e: React.FormEvent) {
+    e.preventDefault();
+    setError(""); setInfo("");
+    if (!email) { setError("Introduce tu email."); return; }
+
+    setLoading(true);
+    const { error: resetErr } = await authResetPassword(email);
+    setLoading(false);
+
+    if (resetErr) { setError(resetErr); return; }
+    setInfo("✅ Email enviado. Revisa tu bandeja de entrada y sigue las instrucciones para cambiar tu contraseña.");
+  }
+
   return (
     <div style={{
       minHeight: "100vh", width: "100%", display: "flex",
@@ -158,7 +171,7 @@ export default function LoginPage() {
               </p>
 
               {/* Mode toggle */}
-              {isSupabaseConfigured && (
+              {isSupabaseConfigured && mode !== "reset" && (
                 <div style={{ display: "flex", background: "rgba(15,23,42,0.6)", borderRadius: 10, padding: 3, marginBottom: 20, gap: 3 }}>
                   {(["password", "magic"] as Mode[]).map((m) => (
                     <button key={m} onClick={() => { setMode(m); setError(""); setInfo(""); }}
@@ -169,10 +182,22 @@ export default function LoginPage() {
                 </div>
               )}
 
+              {/* Header modo reset */}
+              {mode === "reset" && (
+                <div style={{ marginBottom: 20 }}>
+                  <button onClick={() => { setMode("password"); setError(""); setInfo(""); }}
+                    style={{ background: "none", border: "none", color: "rgba(148,163,184,0.6)", fontSize: 13, cursor: "pointer", padding: 0, marginBottom: 12 }}>
+                    ← Volver al login
+                  </button>
+                  <h3 style={{ fontSize: 16, fontWeight: 700, color: "#f1f5f9", margin: "0 0 4px" }}>Recuperar contraseña</h3>
+                  <p style={{ fontSize: 13, color: "rgba(148,163,184,0.6)", margin: 0 }}>Te enviaremos un enlace para restablecerla.</p>
+                </div>
+              )}
+
               {error && <div style={{ marginBottom: 16, padding: "10px 14px", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 10, fontSize: 13, color: "#fca5a5" }}>{error}</div>}
               {info  && <div style={{ marginBottom: 16, padding: "10px 14px", background: "rgba(22,163,74,0.1)", border: "1px solid rgba(22,163,74,0.3)", borderRadius: 10, fontSize: 13, color: "#4ade80" }}>{info}</div>}
 
-              <form onSubmit={mode === "password" ? handlePasswordLogin : handleMagicLink} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              <form onSubmit={mode === "password" ? handlePasswordLogin : mode === "magic" ? handleMagicLink : handleResetPassword} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                 <div>
                   <label style={labelStyle}>Email</label>
                   <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="tu@email.com" style={inputStyle}
@@ -184,6 +209,12 @@ export default function LoginPage() {
                   <div>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
                       <label style={{ ...labelStyle, marginBottom: 0 }}>Contraseña</label>
+                      {isSupabaseConfigured && (
+                        <button type="button" onClick={() => { setMode("reset"); setError(""); setInfo(""); }}
+                          style={{ background: "none", border: "none", color: "rgba(148,163,184,0.5)", fontSize: 12, cursor: "pointer", padding: 0, textDecoration: "underline" }}>
+                          ¿Olvidaste tu contraseña?
+                        </button>
+                      )}
                     </div>
                     <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Tu contraseña" style={inputStyle}
                       onFocus={(e) => { e.target.style.borderColor = "rgba(168,85,247,0.5)"; }}
@@ -217,7 +248,7 @@ export default function LoginPage() {
 
                 <button type="submit" disabled={loading}
                   style={{ width: "100%", padding: "13px 0", marginTop: 4, background: loading ? "rgba(168,85,247,0.4)" : "linear-gradient(90deg, #a855f7, #2563eb)", border: "none", borderRadius: 10, color: "#fff", fontSize: 15, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer", fontFamily: "inherit", boxShadow: "0 4px 14px rgba(168,85,247,0.35)", transition: "all 200ms" }}>
-                  {loading ? "Procesando..." : mode === "password" ? "Entrar →" : "Enviar magic link →"}
+                  {loading ? "Procesando..." : mode === "password" ? "Entrar →" : mode === "magic" ? "Enviar magic link →" : "Enviar instrucciones →"}
                 </button>
               </form>
 

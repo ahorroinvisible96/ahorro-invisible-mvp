@@ -1,8 +1,7 @@
 "use client";
 
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
-
-const STORAGE_KEY = 'ahorro_invisible_dashboard_v1';
+import { STORAGE_KEY } from '@/lib/constants';
 
 // ─── Push local data → Supabase ───────────────────────────────────────────────
 export async function pushLocalDataToSupabase(

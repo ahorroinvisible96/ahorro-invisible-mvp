@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { analytics } from '@/services/analytics';
 import { buildSummary, storeUpdateUserName, storeUpdateIncome } from '@/services/dashboardStore';
+import { authSignOut } from '@/services/authService';
 import type { IncomeRange } from '@/types/Dashboard';
 import { IncomeRangeWidget } from '@/components/dashboard/IncomeRangeWidget';
 import { ProfileInfoWidget } from '@/components/profile/ProfileInfoWidget/ProfileInfoWidget';
@@ -21,7 +22,7 @@ export default function ProfilePage() {
   useEffect(() => {
     analytics.setScreen('profile');
     const isAuth = localStorage.getItem('isAuthenticated');
-    if (isAuth !== 'true') { router.replace('/signup'); return; }
+    if (isAuth !== 'true') { router.replace('/login'); return; }
     const summary = buildSummary('30d');
     setUserName(summary.userName);
     setEmail(summary.userEmail);
@@ -41,10 +42,9 @@ export default function ProfilePage() {
     setIncomeRange(range);
   }, []);
 
-  const handleLogout = useCallback(() => {
-    localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('hasCompletedOnboarding');
-    router.replace('/signup');
+  const handleLogout = useCallback(async () => {
+    await authSignOut();
+    router.replace('/login');
   }, [router]);
 
   if (loading) {

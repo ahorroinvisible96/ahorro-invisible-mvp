@@ -22,8 +22,10 @@ export default function AuthCallbackPage() {
       localStorage.setItem("userEmail", user.email ?? "");
       localStorage.setItem("userName", user.user_metadata?.name ?? "");
       localStorage.setItem("supabaseUserId", user.id);
-      // Cookie para middleware
-      const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toUTCString();
+      // Cookie para middleware — respetar "Recuérdame" si existe
+      const remember = localStorage.getItem('rememberMe') === 'true';
+      const cookieDays = remember ? 90 : 30;
+      const expires = new Date(Date.now() + cookieDays * 24 * 60 * 60 * 1000).toUTCString();
       document.cookie = `ai_auth=1; path=/; expires=${expires}; SameSite=Lax`;
 
       if (hasLocalDataToMigrate()) {
