@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { buildSummary } from '@/services/dashboardStore';
+import { authSignOut } from '@/services/authService';
 import Sidebar from './Sidebar';
 import BottomNav from './BottomNav';
 import MainContent from './MainContent';
@@ -33,7 +34,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
     // Verificar autenticación
     const isAuthenticated = localStorage.getItem("isAuthenticated");
     if (isAuthenticated !== "true") {
-      router.replace("/signup");
+      router.replace("/login");
       return;
     }
     
@@ -48,12 +49,12 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
     loadUserName();
   }, [router, loadUserName]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     try {
       analytics.logoutClicked('sidebar');
-      localStorage.removeItem("isAuthenticated");
+      await authSignOut();
       analytics.logoutSuccess();
-      router.replace("/signup");
+      router.replace("/login");
     } catch (err) {
       console.error("Error al cerrar sesión:", err);
     }

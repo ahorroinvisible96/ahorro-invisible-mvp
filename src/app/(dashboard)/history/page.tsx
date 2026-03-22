@@ -137,7 +137,7 @@ export default function HistoryPage() {
         {filtered.length > 0 ? (
           <HistoryDecisionsListWidget
             decisions={filtered}
-            onOpenDecision={(id) => router.push(`/impact/${id}`)}
+            onOpenDecision={() => {}}
             onDeleteDecision={deleteDecision}
             onEditDecision={editDecision}
           />

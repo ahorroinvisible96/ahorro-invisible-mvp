@@ -10,13 +10,8 @@
   position: relative;
   border-radius: 14px;
   overflow: hidden;
-  cursor: pointer;
-  transition: transform 180ms ease, box-shadow 180ms ease;
-}
-
-.card:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 24px rgba(2, 6, 23, 0.5);
+  cursor: default;
+  transition: box-shadow 180ms ease;
 }
 
 .cardBg {

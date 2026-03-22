@@ -26,6 +26,7 @@ export default function DailyPage() {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [selectedGoalId, setSelectedGoalId] = useState<string>('');
+  const [customAmount, setCustomAmount] = useState<string>('');
   const [completedDecisionId, setCompletedDecisionId] = useState<string | null>(null);
   const today = new Date().toISOString().split('T')[0];
 
@@ -60,6 +61,7 @@ export default function DailyPage() {
   const handleSelectAnswer = (key: string) => {
     if (phase !== 'pending') return;
     setSelectedAnswer(key);
+    setCustomAmount('');
     analytics.dailyAnswerSelected(today, question?.questionId ?? '', key);
   };
 
@@ -75,7 +77,8 @@ export default function DailyPage() {
         return (s.decisions?.length ?? 0) === 0;
       } catch { return false; }
     })();
-    const summary = storeSubmitDecision(question.questionId, selectedAnswer, selectedGoalId);
+    const parsedCustom = customAmount ? parseFloat(customAmount) : undefined;
+    const summary = storeSubmitDecision(question.questionId, selectedAnswer, selectedGoalId, '30d', parsedCustom && parsedCustom > 0 ? parsedCustom : undefined);
     const dec = summary.daily.decisionId;
     setCompletedDecisionId(dec);
     analytics.dailyCompleted(today, dec ?? '', question.questionId, selectedAnswer, selectedGoalId, true, undefined, undefined, goals.find(g => g.id === selectedGoalId)?.isPrimary ?? false);
@@ -214,8 +217,33 @@ export default function DailyPage() {
           })}
         </div>
 
+        {/* Input importe personalizable (suscripciones, etc.) */}
+        {rule?.allowCustomAmount && selectedAnswer && (
+          <div style={{ background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.25)', borderRadius: 14, padding: '16px 20px', marginBottom: 16 }}>
+            <p style={{ fontSize: 12, fontWeight: 700, color: 'rgba(196,181,253,0.8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>¿Cuánto te costaba al mes?</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <input
+                type="number"
+                min="1"
+                step="0.5"
+                value={customAmount}
+                onChange={(e) => setCustomAmount(e.target.value)}
+                placeholder={String(rule.immediateDelta)}
+                style={{
+                  flex: 1, padding: '10px 14px', background: 'rgba(15,23,42,0.7)',
+                  border: '1px solid rgba(168,85,247,0.4)', borderRadius: 10,
+                  color: '#f1f5f9', fontSize: 15, fontWeight: 700, outline: 'none',
+                  textAlign: 'right',
+                }}
+              />
+              <span style={{ fontSize: 16, fontWeight: 700, color: 'rgba(196,181,253,0.8)', flexShrink: 0 }}>€/mes</span>
+            </div>
+            <p style={{ fontSize: 12, color: 'rgba(148,163,184,0.6)', marginTop: 6, marginBottom: 0 }}>Por defecto: {formatEUR(rule.immediateDelta)}/mes. Ajusta según tu suscripción real.</p>
+          </div>
+        )}
+
         {/* Impacto estimado */}
-        {rule && rule.immediateDelta > 0 && (
+        {rule && (rule.immediateDelta > 0 || (customAmount && parseFloat(customAmount) > 0)) && !rule.allowCustomAmount && (
           <div style={{ background: DARK.green.bg, border: `1px solid ${DARK.green.border}`, borderRadius: 14, padding: '14px 20px', marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <p style={{ fontSize: 12, fontWeight: 700, color: DARK.green.label, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 }}>Impacto estimado</p>
@@ -224,6 +252,21 @@ export default function DailyPage() {
             <span style={{ fontSize: 20, fontWeight: 800, color: DARK.green.text }}>+{formatEUR(rule.immediateDelta)}</span>
           </div>
         )}
+
+        {/* Impacto estimado (allowCustomAmount) */}
+        {rule?.allowCustomAmount && selectedAnswer && (() => {
+          const amt = customAmount ? parseFloat(customAmount) : rule.immediateDelta;
+          if (amt <= 0) return null;
+          return (
+            <div style={{ background: DARK.green.bg, border: `1px solid ${DARK.green.border}`, borderRadius: 14, padding: '14px 20px', marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <p style={{ fontSize: 12, fontWeight: 700, color: DARK.green.label, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 }}>Ahorro mensual</p>
+                <p style={{ fontSize: 13, color: DARK.textSecondary }}>Anual: <strong style={{ color: DARK.green.text }}>{formatEUR(amt * 12)}</strong></p>
+              </div>
+              <span style={{ fontSize: 20, fontWeight: 800, color: DARK.green.text }}>+{formatEUR(amt)}</span>
+            </div>
+          );
+        })()}
 
         {/* Selector de objetivo */}
         {goals.length > 1 && (

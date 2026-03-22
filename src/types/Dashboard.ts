@@ -24,6 +24,7 @@ export type DailyDecisionRule = {
   yearlyProjection: number;
   category: string;
   impactType: 'real' | 'avoided' | 'optimization';
+  allowCustomAmount?: boolean;
 };
 
 export type DailyDecision = {

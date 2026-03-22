@@ -114,11 +114,13 @@ function ArchiveModal({
   otherGoals,
   onConfirm,
   onClose,
+  onCreateNew,
 }: {
   goal: Goal;
   otherGoals: Goal[];
   onConfirm: (destination: string | 'hucha') => void;
   onClose: () => void;
+  onCreateNew?: () => void;
 }) {
   const hasOthers = otherGoals.length > 0;
   const [destination, setDestination] = useState<string>(hasOthers ? otherGoals[0].id : 'hucha');
@@ -157,11 +159,21 @@ function ArchiveModal({
                 </select>
               </div>
             ) : (
-              <div style={{ background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.25)', borderRadius: 12, padding: '12px 14px' }}>
-                <p style={{ fontSize: 13, color: '#fbbf24', margin: 0, fontWeight: 600 }}>🪣 Sin otros objetivos activos</p>
-                <p style={{ fontSize: 12, color: 'rgba(251,191,36,0.7)', margin: '4px 0 0' }}>
-                  El saldo se guardará en la <strong>Hucha</strong> hasta que crees un nuevo objetivo.
-                </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {onCreateNew && (
+                  <button
+                    onClick={onCreateNew}
+                    style={{ padding: '11px 0', border: 'none', borderRadius: 12, background: 'linear-gradient(90deg,#a855f7,#2563eb)', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}
+                  >
+                    + Crear nuevo objetivo y transferir
+                  </button>
+                )}
+                <div style={{ background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.25)', borderRadius: 12, padding: '12px 14px' }}>
+                  <p style={{ fontSize: 13, color: '#fbbf24', margin: 0, fontWeight: 600 }}>🪣 O guardar en la Hucha</p>
+                  <p style={{ fontSize: 12, color: 'rgba(251,191,36,0.7)', margin: '4px 0 0' }}>
+                    El saldo se guardará hasta que crees un nuevo objetivo.
+                  </p>
+                </div>
               </div>
             )}
           </div>
@@ -286,6 +298,7 @@ export default function GoalsPage() {
   const [modalMode, setModalMode] = useState<ModalMode | null>(null);
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
   const [archivingGoal, setArchivingGoal] = useState<Goal | null>(null);
+  const [pendingArchiveAfterCreate, setPendingArchiveAfterCreate] = useState<Goal | null>(null);
   const [deletingGoal, setDeletingGoal] = useState<Goal | null>(null);
   const [showHuchaModal, setShowHuchaModal] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -308,6 +321,11 @@ export default function GoalsPage() {
   const handleCreate = async (data: { title: string; targetAmount: number; horizonMonths: number; applyHucha: boolean }) => {
     const summary = storeCreateGoal({ title: data.title, targetAmount: data.targetAmount, horizonMonths: data.horizonMonths, currentAmount: 0 });
     const newGoal = summary.goals.filter(g => !g.archived).slice(-1)[0];
+    // Si hay un archive pendiente (venimos de ArchiveModal → Crear nuevo objetivo)
+    if (pendingArchiveAfterCreate && newGoal) {
+      storeArchiveGoalSafe(pendingArchiveAfterCreate.id, newGoal.id);
+      setPendingArchiveAfterCreate(null);
+    }
     if (data.applyHucha && newGoal && hucha.balance > 0) {
       storeTransferFromHucha(newGoal.id, hucha.balance);
     }
@@ -408,6 +426,11 @@ export default function GoalsPage() {
             otherGoals={activeGoals.filter(g => g.id !== archivingGoal.id)}
             onConfirm={handleArchiveConfirm}
             onClose={() => setArchivingGoal(null)}
+            onCreateNew={() => {
+              setPendingArchiveAfterCreate(archivingGoal);
+              setArchivingGoal(null);
+              setModalMode('create');
+            }}
           />
         )}
         {deletingGoal && (

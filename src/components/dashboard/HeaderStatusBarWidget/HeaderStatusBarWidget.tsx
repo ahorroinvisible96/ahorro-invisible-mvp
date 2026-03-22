@@ -31,6 +31,7 @@ export function HeaderStatusBarWidget({
   }, []);
 
   const initials = userName.trim().charAt(0).toUpperCase();
+  const firstName = userName.trim().split(' ')[0];
 
   return (
     <div className={styles.header}>
@@ -53,7 +54,7 @@ export function HeaderStatusBarWidget({
         {/* Texto */}
         <div className={styles.infoGroup}>
           <h1 className={styles.greeting}>
-            Hola, {userName}
+            Hola, {firstName}
             <span className={styles.waveEmoji} aria-hidden>👋</span>
           </h1>
           {streak > 0 && (

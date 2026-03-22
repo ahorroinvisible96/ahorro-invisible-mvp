@@ -26,7 +26,7 @@ export const DAILY_DECISION_RULES: DailyDecisionRule[] = [
   { category: 'transport',    questionId: 'transport',       answerKey: 'car',       immediateDelta: 0,  monthlyProjection: 0,   yearlyProjection: 0,    impactType: 'real' },
   { category: 'consumo',      questionId: 'impulse',         answerKey: 'avoided',   immediateDelta: 15, monthlyProjection: 150, yearlyProjection: 1800, impactType: 'avoided' },
   { category: 'consumo',      questionId: 'impulse',         answerKey: 'bought',    immediateDelta: 0,  monthlyProjection: 0,   yearlyProjection: 0,    impactType: 'real' },
-  { category: 'subscription', questionId: 'subscription',    answerKey: 'cancelled', immediateDelta: 0,  monthlyProjection: 12,  yearlyProjection: 144,  impactType: 'optimization' },
+  { category: 'subscription', questionId: 'subscription',    answerKey: 'cancelled', immediateDelta: 10, monthlyProjection: 10,  yearlyProjection: 120,  impactType: 'optimization', allowCustomAmount: true },
   { category: 'subscription', questionId: 'subscription',    answerKey: 'kept',      immediateDelta: 0,  monthlyProjection: 0,   yearlyProjection: 0,    impactType: 'real' },
   // ─ Hogar ─────────────────────────────────────────────────────────────────
   { category: 'hogar',        questionId: 'hogar_energy',    answerKey: 'yes',       immediateDelta: 2,  monthlyProjection: 40,  yearlyProjection: 480,  impactType: 'avoided' },

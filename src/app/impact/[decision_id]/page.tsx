@@ -29,7 +29,7 @@ export default function ImpactPage({ params }: { params: { decision_id: string }
   const load = useCallback(() => {
     try {
       const isAuthenticated = localStorage.getItem("isAuthenticated");
-      if (isAuthenticated !== "true") { router.replace("/signup"); return; }
+      if (isAuthenticated !== "true") { router.replace("/login"); return; }
 
       const raw = localStorage.getItem("ahorro_invisible_dashboard_v1");
       if (!raw) { setError(true); setLoading(false); return; }
