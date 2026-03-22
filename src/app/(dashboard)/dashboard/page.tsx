@@ -251,22 +251,35 @@ function ExtraSavingDashboardModal({
   );
 }
 
+const MILESTONE_TIERS: Record<number, { name: string; emoji: string; color: string; bg: string; border: string; msg: string }> = {
+  50:   { name: 'Bronce',    emoji: '🥉', color: '#cd7f32', bg: 'rgba(205,127,50,0.12)',  border: 'rgba(205,127,50,0.35)',  msg: '¡Tu primer gran paso! Los hábitos pequeños construyen futuros grandes.' },
+  100:  { name: 'Plata',     emoji: '🥈', color: '#c0c0c0', bg: 'rgba(192,192,192,0.12)', border: 'rgba(192,192,192,0.35)', msg: '¡Constancia comprobada! Estás construyendo el músculo del ahorro.' },
+  500:  { name: 'Oro',       emoji: '🥇', color: '#ffd700', bg: 'rgba(255,215,0,0.12)',   border: 'rgba(255,215,0,0.35)',   msg: '¡Medio millar de euros! Cada decisión consciente ha valido la pena.' },
+  1000: { name: 'Platino',   emoji: '💎', color: '#e5e4e2', bg: 'rgba(229,228,226,0.12)', border: 'rgba(229,228,226,0.35)', msg: '¡1.000€ ahorrados! Perteneces a una minoría que convierte intención en acción.' },
+  2000: { name: 'Esmeralda', emoji: '💚', color: '#50c878', bg: 'rgba(80,200,120,0.12)',  border: 'rgba(80,200,120,0.35)',  msg: '¡Extraordinario! 2.000€ demuestran que el ahorro invisible es muy real.' },
+  5000: { name: 'Diamante',  emoji: '👑', color: '#a78bfa', bg: 'rgba(167,139,250,0.12)', border: 'rgba(167,139,250,0.35)', msg: '¡Diamante! 5.000€ ahorrados con decisiones cotidianas. Eres un referente.' },
+};
+
 function MilestoneModal({ milestone, onClose }: { milestone: number; onClose: () => void }): React.ReactElement {
-  const EMOJIS: Record<number, string> = { 50: '🌱', 100: '⭐', 500: '🏆', 1000: '💎', 2000: '🚀', 5000: '👑' };
+  const tier = MILESTONE_TIERS[milestone] ?? { name: 'Logro', emoji: '🎉', color: '#4ade80', bg: 'rgba(74,222,128,0.1)', border: 'rgba(74,222,128,0.3)', msg: '¡Increíble progreso! Sigue así.' };
   return (
     <div style={DS.overlay} onClick={onClose}>
       <div style={{ ...DS.box, textAlign: 'center', alignItems: 'center' }} onClick={e => e.stopPropagation()}>
-        <div style={{ fontSize: 64, lineHeight: 1, marginBottom: 8 }}>{EMOJIS[milestone] ?? '🎉'}</div>
-        <h2 style={{ fontSize: 22, fontWeight: 800, color: '#f1f5f9', margin: '0 0 6px' }}>¡Hito alcanzado!</h2>
-        <p style={{ fontSize: 16, color: 'rgba(148,163,184,0.9)', margin: '0 0 4px' }}>
-          Has ahorrado más de <strong style={{ color: '#4ade80' }}>€{milestone}</strong>
+        {/* Badge de nivel */}
+        <div style={{ background: tier.bg, border: `1px solid ${tier.border}`, borderRadius: 20, padding: '6px 20px', marginBottom: 16, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 18 }}>{tier.emoji}</span>
+          <span style={{ fontSize: 14, fontWeight: 800, color: tier.color, letterSpacing: '0.06em', textTransform: 'uppercase' }}>{tier.name}</span>
+        </div>
+        <h2 style={{ fontSize: 22, fontWeight: 800, color: '#f1f5f9', margin: '0 0 8px' }}>¡Hito alcanzado!</h2>
+        <p style={{ fontSize: 28, fontWeight: 800, color: tier.color, margin: '0 0 12px' }}>
+          +{new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(milestone)}
         </p>
-        <p style={{ fontSize: 13, color: 'rgba(148,163,184,0.6)', margin: '0 0 20px' }}>La constancia está dando sus frutos. ¡Sigue así!</p>
+        <p style={{ fontSize: 14, color: 'rgba(148,163,184,0.8)', margin: '0 0 24px', lineHeight: 1.6 }}>{tier.msg}</p>
         <button
           onClick={onClose}
-          style={{ padding: '13px 32px', background: 'linear-gradient(90deg,#16a34a,#15803d)', border: 'none', borderRadius: 12, color: '#fff', fontSize: 15, fontWeight: 700, cursor: 'pointer', width: '100%' }}
+          style={{ padding: '13px 32px', background: `linear-gradient(90deg, ${tier.color}99, ${tier.color}cc)`, border: `1px solid ${tier.border}`, borderRadius: 12, color: '#fff', fontSize: 15, fontWeight: 700, cursor: 'pointer', width: '100%' }}
         >
-          ¡Gracias! Seguir ahorrando
+          {tier.emoji} ¡A por el siguiente nivel!
         </button>
       </div>
     </div>
