@@ -4,6 +4,9 @@
  */
 
 :root[data-theme="dark"] {
+  /* ── Patrón de fondo ── */
+  --pattern-line-color: rgba(255, 255, 255, 0.04);
+
   /* ── Fondos de página ── */
   --color-background-main: #0d0d14;
   --color-background-page: #0d0d14;

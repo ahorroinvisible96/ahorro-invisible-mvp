@@ -8,6 +8,9 @@
   --background: #f1f5f9;
   --foreground: #0f172a;
 
+  /* ── Patrón de fondo: desactivado en modo claro ── */
+  --pattern-line-color: transparent;
+
   /* ── Fondos de página ── */
   --color-background-main: #f1f5f9;
   --color-background-page: linear-gradient(160deg, #e2e8f0 0%, #f1f5f9 50%, #e8edf4 100%);
