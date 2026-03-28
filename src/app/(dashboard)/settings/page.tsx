@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { analytics } from '@/services/analytics';
 import { storeResetAllData, storeExportData, buildSummary } from '@/services/dashboardStore';
 import { authSignOut } from '@/services/authService';
+import { resetUserDataInSupabase } from '@/services/syncService';
 import { SettingsMyDataWidget } from '@/components/settings/SettingsMyDataWidget/SettingsMyDataWidget';
 import { SettingsNotificationsWidget } from '@/components/settings/SettingsNotificationsWidget/SettingsNotificationsWidget';
 import { SettingsSessionWidget } from '@/components/settings/SettingsSessionWidget/SettingsSessionWidget';
@@ -46,9 +47,13 @@ export default function SettingsPage() {
   }, [router]);
 
   const handleResetAll = useCallback(async () => {
+    // 1. Limpiar Supabase (si procede) — sin esperar, no bloquea
+    const userId = localStorage.getItem('supabaseUserId');
+    if (userId) resetUserDataInSupabase(userId).catch(() => null);
+    // 2. Limpiar localStorage (conserva auth)
     storeResetAllData();
-    await authSignOut();
-    router.replace('/login');
+    // 3. El usuario SIGUE autenticado → ir a onboarding
+    router.replace('/onboarding');
   }, [router]);
 
   const handleLogout = useCallback(async () => {

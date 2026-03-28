@@ -423,3 +423,28 @@ export async function saveUserProfileToSupabase(
     return { success: false, error: String(err) };
   }
 }
+
+// ─── Reset datos del usuario en Supabase (SIN eliminar la cuenta) ─────────────
+export async function resetUserDataInSupabase(
+  userId: string,
+): Promise<{ success: boolean; error?: string }> {
+  if (!isSupabaseConfigured || !supabase) return { success: true }; // solo local, ok
+
+  try {
+    // Borrar en paralelo: goals, decisions, analytics del usuario
+    const [goalsRes, decisionsRes, analyticsRes] = await Promise.all([
+      supabase.from('goals').delete().eq('user_id', userId),
+      supabase.from('daily_decisions').delete().eq('user_id', userId),
+      supabase.from('analytics_events').delete().eq('user_id', userId),
+    ]);
+
+    const errors = [goalsRes.error, decisionsRes.error, analyticsRes.error].filter(Boolean);
+    if (errors.length > 0) {
+      console.error('[sync] resetUserDataInSupabase errors:', errors);
+      return { success: false, error: errors.map((e) => e!.message).join('; ') };
+    }
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: String(err) };
+  }
+}

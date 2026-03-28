@@ -9,19 +9,19 @@ const getSystemTheme = (): 'light' | 'dark' => {
   if (typeof window !== 'undefined' && window.matchMedia) {
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   }
-  return 'light'; // Fallback a tema claro
+  return 'dark'; // Fallback: siempre oscuro
 };
 
 // Obtener el tema actual
 export const getTheme = (): Theme => {
-  if (typeof window === 'undefined') return 'light';
-  
+  if (typeof window === 'undefined') return 'dark';
+
   const storedTheme = localStorage.getItem('theme') as Theme | null;
-  
-  if (!storedTheme || storedTheme === 'system') {
-    return getSystemTheme();
-  }
-  
+
+  // Sin preferencia guardada → oscuro por defecto (no depender del sistema)
+  if (!storedTheme) return 'dark';
+  if (storedTheme === 'system') return getSystemTheme();
+
   return storedTheme;
 };
 

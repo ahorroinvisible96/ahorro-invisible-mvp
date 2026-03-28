@@ -4,6 +4,10 @@
  */
 
 :root[data-theme="light"] {
+  /* ── Variables base (body) ── */
+  --background: #f1f5f9;
+  --foreground: #0f172a;
+
   /* ── Fondos de página ── */
   --color-background-main: #f1f5f9;
   --color-background-page: linear-gradient(160deg, #e2e8f0 0%, #f1f5f9 50%, #e8edf4 100%);
@@ -139,4 +143,19 @@
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
   --shadow-blue-md: 0 4px 12px rgba(47, 99, 255, 0.15);
   --shadow-sidebar: 4px 0 24px rgba(0, 0, 0, 0.15);
+
+  /* ── Surfaces legacy ── */
+  --surface-card: #ffffff;
+  --surface-inner: #f8fafc;
+}
+
+/* ── Body: fondo sólido en modo claro ── */
+[data-theme="light"] body {
+  background-color: #f1f5f9;
+  color: #0f172a;
+}
+
+/* Quitar fondos transparentes heredados en páginas */
+[data-theme="light"] html {
+  background-color: #f1f5f9;
 }

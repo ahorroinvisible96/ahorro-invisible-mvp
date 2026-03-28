@@ -880,10 +880,29 @@ export function storeDeleteGoalPermanent(
   return buildSummary(currentRange);
 }
 
+// Claves de autenticación que se conservan tras el reset
+const AUTH_KEYS_TO_PRESERVE = ['isAuthenticated', 'userEmail', 'userName', 'supabaseUserId', 'rememberMe', 'theme'];
+
 export function storeResetAllData(): void {
   if (typeof window === 'undefined') return;
   try {
-    localStorage.removeItem(STORAGE_KEY);
+    // 1. Snapshot de claves auth a conservar
+    const preserved: Record<string, string> = {};
+    AUTH_KEYS_TO_PRESERVE.forEach((k) => {
+      const v = localStorage.getItem(k);
+      if (v !== null) preserved[k] = v;
+    });
+
+    // 2. Borrar todas las claves de app (incluye widget_collapse_*, sync timestamps, onboarding, etc.)
+    const keysToDelete: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && !AUTH_KEYS_TO_PRESERVE.includes(k)) keysToDelete.push(k);
+    }
+    keysToDelete.forEach((k) => localStorage.removeItem(k));
+
+    // 3. Restaurar claves auth
+    Object.entries(preserved).forEach(([k, v]) => localStorage.setItem(k, v));
   } catch { /* fallthrough */ }
 }
 

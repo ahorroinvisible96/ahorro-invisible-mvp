@@ -45,6 +45,19 @@ export default function RootLayout({
         <meta name="theme-color" content="#2563eb" />
         <link rel="icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" href="/api/icon?size=180" />
+        {/* Script síncrono: aplica data-theme antes de pintar (previene FOUC) */}
+        <script dangerouslySetInnerHTML={{ __html: `
+          try {
+            var t = localStorage.getItem('theme');
+            if (t === 'light') {
+              document.documentElement.setAttribute('data-theme', 'light');
+            } else {
+              document.documentElement.setAttribute('data-theme', 'dark');
+            }
+          } catch(e) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+          }
+        ` }} />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

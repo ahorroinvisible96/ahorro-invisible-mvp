@@ -192,3 +192,23 @@ body {
   color: var(--foreground);
   font-family: var(--font-geist-sans, Arial, sans-serif);
 }
+
+/* ── Modo claro: fondos sólidos en toda la jerarquía ── */
+[data-theme="light"] html,
+[data-theme="light"] body {
+  background-color: #f1f5f9;
+  color: #0f172a;
+}
+
+/* Páginas que usan fondo inline oscuro hardcodeado: neutralizar en light mode */
+[data-theme="light"] main[style*="background"] {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+/* Cards/widgets con fondo oscuro hardcodeado */
+[data-theme="light"] .page,
+[data-theme="light"] [class*="page"] {
+  background-color: #f1f5f9;
+  color: #0f172a;
+}
