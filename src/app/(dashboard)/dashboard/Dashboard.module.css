@@ -2,13 +2,18 @@
 
 /* ── Variable de espaciado ──────────────────────────────────────────── */
 :root {
-  --dashboard-section-gap: 24px;
+  --dashboard-section-gap: 20px;
 }
 
 /* ── Contenedor principal — mobile first ───────────────────────────── */
 .page {
   padding: 16px;
-  background-color: var(--color-background-main);
+  /* Gradiente sutil en la parte superior para conectar con el hero */
+  background: radial-gradient(
+    ellipse 80% 30% at 50% 0%,
+    rgba(79, 70, 229, 0.12) 0%,
+    var(--color-background-main) 60%
+  ), var(--color-background-main);
   min-height: 100vh;
   box-sizing: border-box;
   overflow-x: hidden;
@@ -25,7 +30,7 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--dashboard-section-gap);
-  margin-top: var(--dashboard-section-gap);
+  margin-top: 16px;
   width: 100%;
   box-sizing: border-box;
 }

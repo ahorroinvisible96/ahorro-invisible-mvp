@@ -90,7 +90,7 @@ export function PrimaryGoalHeroWidget({
           onClick={collapsed ? toggle : undefined}
         >
           <h2 className={styles.title} style={{ marginBottom: collapsed ? 0 : undefined }}>{goal.title}</h2>
-          {collapsed && <span style={{ fontSize: 20, fontWeight: 800, color: '#60a5fa', flexShrink: 0 }}>{d.progressPct}%</span>}
+          {collapsed && <span style={{ fontSize: 20, fontWeight: 800, color: 'rgba(255,255,255,0.9)', flexShrink: 0 }}>{d.progressPct}%</span>}
         </div>
 
         {/* Cuerpo colapsable */}
@@ -122,11 +122,11 @@ export function PrimaryGoalHeroWidget({
 
             {/* Sub-goal context: hacia meta final */}
             {goal.finalGoalAmount && goal.finalGoalAmount > goal.targetAmount && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.2)', borderRadius: 10, marginBottom: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.16)', borderRadius: 10, marginBottom: 10, backdropFilter: 'blur(10px)' }}>
                 <span style={{ fontSize: 14 }}>🗺️</span>
-                <p style={{ fontSize: 12, color: 'rgba(196,181,253,0.8)', margin: 0, lineHeight: 1.4 }}>
+                <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.75)', margin: 0, lineHeight: 1.4 }}>
                   Paso {(goal.subGoalIndex ?? 0) + 1} hacia tu objetivo final de{' '}
-                  <strong style={{ color: '#c4b5fd' }}>{formatEUR(goal.finalGoalAmount)}</strong>
+                  <strong style={{ color: '#ffffff' }}>{formatEUR(goal.finalGoalAmount)}</strong>
                 </p>
               </div>
             )}
