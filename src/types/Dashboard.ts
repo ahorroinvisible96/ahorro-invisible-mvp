@@ -12,6 +12,7 @@ export type Goal = {
   id: string;
   title: string;
   targetAmount: number;
+  finalGoalAmount?: number;
   currentAmount: number;
   horizonMonths: number;
   isPrimary: boolean;
@@ -20,6 +21,10 @@ export type Goal = {
   updatedAt: string;
   source?: 'onboarding' | 'dashboard';
   completedAt?: string | null;
+  startDate?: string;
+  targetDate?: string;
+  isUnrealistic?: boolean;
+  subGoalIndex?: number;
 };
 
 export type DailyStatus = 'pending' | 'completed';

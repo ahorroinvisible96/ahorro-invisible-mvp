@@ -120,6 +120,17 @@ export function PrimaryGoalHeroWidget({
               </div>
             </div>
 
+            {/* Sub-goal context: hacia meta final */}
+            {goal.finalGoalAmount && goal.finalGoalAmount > goal.targetAmount && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.2)', borderRadius: 10, marginBottom: 10 }}>
+                <span style={{ fontSize: 14 }}>🗺️</span>
+                <p style={{ fontSize: 12, color: 'rgba(196,181,253,0.8)', margin: 0, lineHeight: 1.4 }}>
+                  Paso {(goal.subGoalIndex ?? 0) + 1} hacia tu objetivo final de{' '}
+                  <strong style={{ color: '#c4b5fd' }}>{formatEUR(goal.finalGoalAmount)}</strong>
+                </p>
+              </div>
+            )}
+
             {/* Info box */}
             {!d.isCompleted ? (
               <div className={styles.infoBox}>

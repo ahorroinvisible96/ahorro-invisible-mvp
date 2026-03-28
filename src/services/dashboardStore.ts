@@ -347,12 +347,35 @@ function checkAdaptiveEvaluation(
     if (daysSinceFirst < 14) return null;
   }
   const current = state.savingsPercent ?? 6;
-  if (streak >= 7 && (intensity === 'high' || intensity === 'medium')) {
+
+  // Calcular % de completion del objetivo activo respecto al tiempo transcurrido
+  const primaryGoal = state.goals.find((g) => !g.archived && g.isPrimary) ?? state.goals.find((g) => !g.archived);
+  let completionScore: 'high' | 'medium' | 'low' = 'medium';
+  if (primaryGoal && primaryGoal.startDate && primaryGoal.targetDate) {
+    const start = new Date(primaryGoal.startDate + 'T12:00:00').getTime();
+    const end = new Date(primaryGoal.targetDate + 'T12:00:00').getTime();
+    const now = Date.now();
+    const totalDuration = end - start;
+    const elapsed = now - start;
+    const timeProgress = totalDuration > 0 ? Math.min(elapsed / totalDuration, 1) : 0;
+    const goalProgress = primaryGoal.targetAmount > 0 ? primaryGoal.currentAmount / primaryGoal.targetAmount : 0;
+    // Compare actual % achieved vs expected % for this time
+    const relativeProgress = timeProgress > 0 ? goalProgress / timeProgress : goalProgress;
+    if (relativeProgress >= 0.8) completionScore = 'high';
+    else if (relativeProgress >= 0.4) completionScore = 'medium';
+    else completionScore = 'low';
+  } else {
+    // Fallback: usar intensity + streak
+    if (streak >= 7 && (intensity === 'high' || intensity === 'medium')) completionScore = 'high';
+    else if (streak <= 2 && intensity === 'low') completionScore = 'low';
+  }
+
+  if (completionScore === 'high') {
     const next = Math.min(20, current + 2);
     if (next <= current) return null;
     return { type: 'increase', newPercent: next, message: 'Lo estás haciendo genial. Aumentemos un poco el ritmo para llegar antes a tu meta.' };
   }
-  if (streak <= 2 && intensity === 'low') {
+  if (completionScore === 'low') {
     const next = Math.max(1, current - 1);
     if (next >= current) return null;
     return { type: 'decrease', newPercent: next, message: 'Ajustemos tu objetivo para que sea más fácil mantener la constancia.' };
@@ -462,21 +485,37 @@ export function storeUpdateIncome(
 }
 
 export function storeCreateGoal(
-  data: Pick<Goal, 'title' | 'targetAmount' | 'currentAmount' | 'horizonMonths'> & { isPrimary?: boolean; source?: 'onboarding' | 'dashboard' },
+  data: Pick<Goal, 'title' | 'targetAmount' | 'currentAmount' | 'horizonMonths'> & {
+    isPrimary?: boolean;
+    source?: 'onboarding' | 'dashboard';
+    finalGoalAmount?: number;
+    isUnrealistic?: boolean;
+    startDate?: string;
+    targetDate?: string;
+    subGoalIndex?: number;
+  },
   currentRange: '7d' | '30d' | '90d' = '30d',
 ): DashboardSummary {
   const state = loadStore();
   const now = new Date().toISOString();
+  const today = new Date().toISOString().split('T')[0];
   const activeGoals = state.goals.filter((g) => !g.archived);
   const shouldBePrimary = data.isPrimary === true || activeGoals.length === 0;
   if (shouldBePrimary) {
     state.goals = state.goals.map((g) => ({ ...g, isPrimary: false, updatedAt: now }));
   }
   const initAmount = data.currentAmount ?? 0;
+  // Compute targetDate from horizonMonths if not provided
+  const targetDate = data.targetDate ?? (() => {
+    const d = new Date();
+    d.setMonth(d.getMonth() + data.horizonMonths);
+    return d.toISOString().split('T')[0];
+  })();
   state.goals.push({
     id: `goal_${Date.now()}`,
     title: data.title,
     targetAmount: data.targetAmount,
+    finalGoalAmount: data.finalGoalAmount,
     currentAmount: initAmount,
     horizonMonths: data.horizonMonths,
     isPrimary: shouldBePrimary,
@@ -485,6 +524,10 @@ export function storeCreateGoal(
     updatedAt: now,
     source: data.source ?? 'dashboard',
     completedAt: initAmount >= data.targetAmount && data.targetAmount > 0 ? now : null,
+    startDate: data.startDate ?? today,
+    targetDate,
+    isUnrealistic: data.isUnrealistic ?? false,
+    subGoalIndex: data.subGoalIndex ?? 0,
   });
   persistStore(state);
   return buildSummary(currentRange);
@@ -915,6 +958,28 @@ export function storeMarkMilestoneSeen(milestone: number): void {
 }
 
 // ─── Sistema adaptativo: funciones públicas ───────────────────────────────────
+export function checkGoalRealism(
+  targetAmount: number,
+  horizonMonths: number,
+  incomeRange: IncomeRange | null,
+  savingsPercent: number,
+): {
+  isUnrealistic: boolean;
+  estimatedMonths: number;
+  requiredMonthly: number;
+  recommendedMonthly: number;
+  suggestedAmount: number;
+  suggestedHorizonMonths: number;
+} {
+  const incomeMid = incomeRange ? (incomeRange.min + incomeRange.max) / 2 : 1500;
+  const recommendedMonthly = Math.max(1, Math.round(incomeMid * savingsPercent / 100));
+  const estimatedMonths = Math.ceil(targetAmount / recommendedMonthly);
+  const requiredMonthly = horizonMonths > 0 ? Math.ceil(targetAmount / horizonMonths) : targetAmount;
+  const isUnrealistic = estimatedMonths > 3 || requiredMonthly > recommendedMonthly * 1.2;
+  const suggestedAmount = Math.round(recommendedMonthly * 2);
+  return { isUnrealistic, estimatedMonths, requiredMonthly, recommendedMonthly, suggestedAmount, suggestedHorizonMonths: 2 };
+}
+
 export function computeInitialGoalSuggestion(
   incomeRange: IncomeRange | null,
   profile: SavingsProfile | null,

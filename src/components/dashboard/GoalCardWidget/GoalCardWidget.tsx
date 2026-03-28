@@ -115,6 +115,11 @@ export function GoalCardWidget({
             <span className={styles.goalTitle}>{goal.title}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }} onClick={e => e.stopPropagation()}>
+            {goal.isUnrealistic && goal.finalGoalAmount && (
+              <div style={{ background: 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.35)', borderRadius: 20, padding: '2px 8px', fontSize: 10, fontWeight: 700, color: '#a78bfa', letterSpacing: '0.05em' }}>
+                PASO {(goal.subGoalIndex ?? 0) + 1}
+              </div>
+            )}
             {goal.isPrimary && (
               <div className={styles.primaryBadge}><StarIcon /><span>PRINCIPAL</span></div>
             )}
