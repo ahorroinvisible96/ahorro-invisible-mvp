@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { storeCreateGoal, storeListActiveGoals } from "@/services/dashboardStore";
+import { storeCreateGoal, storeListActiveGoals, computeInitialGoalSuggestion, buildSummary } from "@/services/dashboardStore";
 import { analytics } from "@/services/analytics";
 import { pushLocalDataToSupabase, syncGoalToSupabase } from "@/services/syncService";
 
@@ -14,6 +14,7 @@ function CreateGoalInner() {
   const [targetAmount, setTargetAmount] = useState("");
   const [horizonMonths, setHorizonMonths] = useState("12");
   const [error, setError] = useState("");
+  const [suggestion, setSuggestion] = useState<{ monthly: number; target: number; horizonMonths: number } | null>(null);
 
   const GOAL_TYPE_LABELS: Record<string, string> = {
     travel:    'Viaje',
@@ -24,26 +25,17 @@ function CreateGoalInner() {
 
   useEffect(() => {
     const isAuthenticated = localStorage.getItem("isAuthenticated");
-    if (isAuthenticated !== "true") { router.replace("/signup"); return; }
+    if (isAuthenticated !== "true") { router.replace("/login"); return; }
     const hasCompletedOnboarding = localStorage.getItem("hasCompletedOnboarding");
     if (hasCompletedOnboarding !== "true") { router.replace("/onboarding"); return; }
-    // Prellenar nombre y cantidad sugerida según tipo de objetivo del onboarding
-    const GOAL_TYPE_AMOUNTS: Record<string, number> = {
-      travel:    3000,
-      emergency: 3000,
-      purchase:  2000,
-      freedom:   10000,
-    };
+    // Calcular sugerencia adaptativa basada en perfil
     try {
-      const onbRaw = localStorage.getItem("onboardingData");
-      if (onbRaw) {
-        const onb = JSON.parse(onbRaw);
-        if (onb.goalType && GOAL_TYPE_LABELS[onb.goalType]) {
-          setTitle(GOAL_TYPE_LABELS[onb.goalType]);
-        }
-        if (onb.goalType && GOAL_TYPE_AMOUNTS[onb.goalType]) {
-          setTargetAmount(String(GOAL_TYPE_AMOUNTS[onb.goalType]));
-        }
+      const summary = buildSummary('30d');
+      const sug = computeInitialGoalSuggestion(summary.incomeRange, summary.savingsProfile);
+      if (sug) {
+        setSuggestion(sug);
+        if (!targetAmount) setTargetAmount(String(sug.target));
+        if (!horizonMonths || horizonMonths === '12') setHorizonMonths(String(sug.horizonMonths));
       }
     } catch { /* fallthrough */ }
     analytics.goalCreateStarted("goals_new_page");
@@ -183,6 +175,16 @@ function CreateGoalInner() {
           }}>
             Será tu referencia diaria. Puedes editarlo en cualquier momento.
           </p>
+
+          {/* Sugerencia adaptativa */}
+          {suggestion && goalSource === 'onboarding' && (
+            <div style={{ marginBottom: 20, padding: '12px 14px', background: 'rgba(168,85,247,0.1)', border: '1px solid rgba(168,85,247,0.3)', borderRadius: 12 }}>
+              <p style={{ fontSize: 12, fontWeight: 700, color: 'rgba(196,181,253,0.9)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>💡 Sugerido para tu perfil</p>
+              <p style={{ fontSize: 13, color: 'rgba(196,181,253,0.75)', margin: 0 }}>
+                Con tus ingresos puedes ahorrar ~<strong style={{ color: '#c4b5fd' }}>{new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(suggestion.monthly)}/mes</strong>. Meta inicial: <strong style={{ color: '#c4b5fd' }}>{new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(suggestion.target)}</strong> en {suggestion.horizonMonths} {suggestion.horizonMonths === 1 ? 'mes' : 'meses'}. Puedes ajustarlo.
+              </p>
+            </div>
+          )}
 
           {/* Error */}
           {error && (

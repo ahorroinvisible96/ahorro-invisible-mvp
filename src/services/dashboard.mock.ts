@@ -53,5 +53,10 @@ export function getMockDashboardSummary(range: '7d' | '30d' | '90d' = '30d'): Da
     newMilestone: null,
     streakBrokeYesterday: false,
     graceAvailable: true,
+    savingsProfile: 'medium',
+    savingsPercent: 6,
+    goalPercentMilestone: null,
+    adaptiveEvaluation: null,
+    lowActivityAlert: false,
   };
 }

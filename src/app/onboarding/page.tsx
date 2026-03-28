@@ -2,14 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Card } from "@/components/ui/Card/Card";
-import { Button } from "@/components/ui/Button/Button";
-import { Progress } from "@/components/ui/Progress/Progress";
-import { OptionButton } from "@/components/ui/OptionButton";
 import { analytics } from "@/services/analytics";
-import { storeUpdateIncome, storeUpdateUserName, storeUpdateMoneyFeeling } from "@/services/dashboardStore";
+import { storeUpdateIncome, storeUpdateUserName, storeSetSavingsProfile } from "@/services/dashboardStore";
+import type { SavingsProfile, IncomeRange } from "@/types/Dashboard";
 import { pushLocalDataToSupabase } from "@/services/syncService";
-import type { IncomeRange } from "@/types/Dashboard";
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -18,8 +14,7 @@ export default function OnboardingPage() {
   
   // Respuestas de onboarding
   const [incomeRange, setIncomeRange] = useState("");
-  const [moneyFeeling, setMoneyFeeling] = useState("");
-  const [goalType, setGoalType] = useState("");
+  const [financialMargin, setFinancialMargin] = useState("");
   
   useEffect(() => {
     // Establecer el nombre de la pantalla para analytics
@@ -49,29 +44,11 @@ export default function OnboardingPage() {
   }, [router, step]);
   
   const handleNext = () => {
-    // Validar que haya seleccionado una opción
-    if (step === 1 && !incomeRange) {
-      return;
-    } else if (step === 2 && !moneyFeeling) {
-      return;
-    } else if (step === 3 && !goalType) {
-      return;
-    }
-    
-    // Guardar respuesta actual
-    if (step === 1) {
-      localStorage.setItem("onboarding_income_range", incomeRange);
-      analytics.onboardingQuestionAnswered(1, "onb_income_range", incomeRange);
-    } else if (step === 2) {
-      localStorage.setItem("onboarding_money_feeling", moneyFeeling);
-      analytics.onboardingQuestionAnswered(2, "onb_money_feeling", moneyFeeling);
-    } else if (step === 3) {
-      localStorage.setItem("onboarding_goal_type", goalType);
-      analytics.onboardingQuestionAnswered(3, "onb_goal_type", goalType);
-    }
-    
-    // Avanzar al siguiente paso o completar
-    if (step < 3) {
+    if (step === 1 && !incomeRange) return;
+    if (step === 2 && !financialMargin) return;
+    if (step === 1) analytics.onboardingQuestionAnswered(1, "onb_income_range", incomeRange);
+    if (step === 2) analytics.onboardingQuestionAnswered(2, "onb_financial_margin", financialMargin);
+    if (step < 2) {
       setStep(step + 1);
     } else {
       handleComplete();
@@ -84,15 +61,20 @@ export default function OnboardingPage() {
     }
   };
   
-  // Convierte el string del selector de ingresos a IncomeRange { min, max, currency }
   function incomeStringToRange(value: string): IncomeRange | null {
     switch (value) {
-      case 'below_1000': return { min: 0,    max: 1000, currency: 'EUR' };
-      case '1000_2000':  return { min: 1000, max: 2000, currency: 'EUR' };
-      case '2000_3500':  return { min: 2000, max: 3500, currency: 'EUR' };
-      case 'above_3500': return { min: 3500, max: 6000, currency: 'EUR' };
+      case 'below_800':  return { min: 0,    max: 800,  currency: 'EUR' };
+      case '800_1200':   return { min: 800,  max: 1200, currency: 'EUR' };
+      case '1200_2000':  return { min: 1200, max: 2000, currency: 'EUR' };
+      case 'above_2000': return { min: 2000, max: 6000, currency: 'EUR' };
       default: return null;
     }
+  }
+
+  function marginToProfile(margin: string): SavingsProfile {
+    if (margin === 'struggle') return 'low';
+    if (margin === 'save') return 'high';
+    return 'medium';
   }
 
   const handleComplete = () => {
@@ -105,18 +87,19 @@ export default function OnboardingPage() {
       const storedName = localStorage.getItem("userName");
       if (storedName) storeUpdateUserName(storedName);
 
-      // 2. Convertir y persistir el rango de ingresos en el store
+      // 2. Rango de ingresos
       const incomeObj = incomeStringToRange(incomeRange);
       if (incomeObj) storeUpdateIncome(incomeObj);
 
-      // 3. Persistir relación con el dinero en el store
-      if (moneyFeeling) storeUpdateMoneyFeeling(moneyFeeling);
+      // 3. Perfil de ahorro basado en margen financiero
+      const profile = marginToProfile(financialMargin);
+      storeSetSavingsProfile(profile);
 
-      // 3. Guardar datos completos del onboarding para referencia
+      // 4. Guardar datos del onboarding para referencia
       const onboardingData = {
         incomeRange,
-        moneyFeeling,
-        goalType,
+        financialMargin,
+        savingsProfile: profile,
         completedAt: new Date().toISOString()
       };
       localStorage.setItem("onboardingData", JSON.stringify(onboardingData));
@@ -136,41 +119,33 @@ export default function OnboardingPage() {
   };
   
   const STEP_META = [
-    { icon: '💰', label: 'INGRESOS',  question: '¿En qué rango están tus ingresos mensuales?' },
-    { icon: '🧠', label: 'PERFIL',    question: '¿Cómo describirías tu relación con el dinero?' },
-    { icon: '🎯', label: 'OBJETIVO',  question: '¿Qué tipo de objetivo te gustaría alcanzar primero?' },
+    { icon: '💰', label: 'INGRESOS', question: '¿En qué rango están tus ingresos mensuales?' },
+    { icon: '🎯', label: 'PERFIL',   question: '¿Cómo te sientes con tu margen para ahorrar?' },
   ];
 
   const STEP_OPTIONS = [
     [
-      { value: 'below_1000', label: 'Menos de 1.000€',        sub: 'Ingresos hasta 1.000€/mes' },
-      { value: '1000_2000',  label: 'Entre 1.000€ y 2.000€', sub: 'Rango medio-bajo' },
-      { value: '2000_3500',  label: 'Entre 2.000€ y 3.500€', sub: 'Rango medio' },
-      { value: 'above_3500', label: 'Más de 3.500€',          sub: 'Rango medio-alto' },
+      { value: 'below_800',  label: 'Menos de 800€',    sub: 'Ingresos hasta 800€/mes' },
+      { value: '800_1200',   label: '800€ – 1.200€',    sub: 'Rango bajo-medio' },
+      { value: '1200_2000',  label: '1.200€ – 2.000€',  sub: 'Rango medio' },
+      { value: 'above_2000', label: 'Más de 2.000€',    sub: 'Rango medio-alto o alto' },
     ],
     [
-      { value: 'reactive',  label: 'Reactiva',      sub: 'Gasto sin pensar mucho' },
-      { value: 'avoidant',  label: 'Evitativa',     sub: 'Prefiero no mirar mis finanzas' },
-      { value: 'anxious',   label: 'Ansiosa',        sub: 'Me preocupo constantemente' },
-      { value: 'planning',  label: 'Planificadora',  sub: 'Intento organizarme' },
-    ],
-    [
-      { value: 'travel',    label: 'Viaje',                  sub: 'Escapadas, aventuras, escapadas' },
-      { value: 'emergency', label: 'Fondo de emergencia',    sub: 'Colchón para imprevistos' },
-      { value: 'purchase',  label: 'Compra importante',      sub: 'Coche, tecnología, hogar...' },
-      { value: 'freedom',   label: 'Libertad financiera',    sub: 'Independencia económica' },
+      { value: 'struggle', label: 'Me cuesta llegar a fin de mes', sub: 'El ahorro es difícil ahora mismo' },
+      { value: 'get_by',   label: 'Me defiendo pero ahorro poco',  sub: 'Tengo algo de margen' },
+      { value: 'save',     label: 'Suelo ahorrar dinero',           sub: 'Tengo buen control financiero' },
     ],
   ];
 
-  const currentValues = [incomeRange, moneyFeeling, goalType];
-  const currentSetters = [setIncomeRange, setMoneyFeeling, setGoalType];
+  const currentValues = [incomeRange, financialMargin];
+  const currentSetters = [setIncomeRange, setFinancialMargin];
   const meta = STEP_META[step - 1];
   const options = STEP_OPTIONS[step - 1];
   const selected = currentValues[step - 1];
   const setSelected = currentSetters[step - 1];
 
   const isDisabled = !selected;
-  const pct = Math.round((step / 3) * 100);
+  const pct = Math.round((step / 2) * 100);
 
   return (
     <main style={{
@@ -230,7 +205,7 @@ export default function OnboardingPage() {
           <div style={{ marginBottom: 28 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                {[1, 2, 3].map((s) => (
+                {[1, 2].map((s) => (
                   <div key={s} style={{
                     width: s === step ? 28 : 8,
                     height: 8,
@@ -279,7 +254,7 @@ export default function OnboardingPage() {
               color: 'rgba(148,163,184,0.7)',
               letterSpacing: '0.1em',
               textTransform: 'uppercase',
-            }}>PASO {step} DE 3 · {meta.label}</span>
+            }}>PASO {step} DE 2 · {meta.label}</span>
           </div>
 
           <h2 style={{
@@ -380,7 +355,7 @@ export default function OnboardingPage() {
                 boxShadow: isDisabled ? 'none' : '0 4px 14px rgba(168,85,247,0.35)',
               }}
             >
-              {step < 3 ? 'Siguiente →' : 'Empezar 🚀'}
+              {step < 2 ? 'Siguiente →' : 'Empezar 🚀'}
             </button>
           </div>
 

@@ -6,7 +6,7 @@ import type { ExtraSaving } from '@/components/dashboard/DailyDecisionWidget/Dai
 import { useRouter } from 'next/navigation';
 import { analytics } from '@/services/analytics';
 import { useDashboardSummary } from '@/hooks/useDashboardSummary';
-import { storeArchiveGoalSafe, storeGetGoalBalance, storeTransferFromHucha, storeUseGraceDay, storeMarkMilestoneSeen } from '@/services/dashboardStore';
+import { storeArchiveGoalSafe, storeGetGoalBalance, storeTransferFromHucha, storeUseGraceDay, storeMarkMilestoneSeen, storeMarkGoalPercentMilestone, storeAcknowledgeAdaptiveEvaluation } from '@/services/dashboardStore';
 import { sendMilestonePush } from '@/services/pushNotifications';
 import { SavingsBadge } from '@/components/hucha/SavingsBadge';
 import { SavingsModal } from '@/components/hucha/SavingsModal';
@@ -251,6 +251,38 @@ function ExtraSavingDashboardModal({
   );
 }
 
+// ── Modal: hito % de objetivo ─────────────────────────────────────────────────
+const GOAL_PCT_DATA: Record<number, { emoji: string; color: string; bg: string; border: string; msg: string }> = {
+  25:  { emoji: '🌱', color: '#60a5fa', bg: 'rgba(96,165,250,0.1)',  border: 'rgba(96,165,250,0.3)',  msg: '¡Primer cuarto completado! Cada pequeña decisión suma.' },
+  50:  { emoji: '⚡', color: '#fbbf24', bg: 'rgba(251,191,36,0.1)',  border: 'rgba(251,191,36,0.3)',  msg: '¡A mitad de camino! La constancia ya es un hábito en ti.' },
+  75:  { emoji: '🚀', color: '#a78bfa', bg: 'rgba(167,139,250,0.1)', border: 'rgba(167,139,250,0.3)', msg: '¡75%! El final está muy cerca. ¡No te detengas ahora!' },
+  100: { emoji: '🏆', color: '#4ade80', bg: 'rgba(74,222,128,0.1)',  border: 'rgba(74,222,128,0.3)',  msg: '¡META ALCANZADA! Has convertido el ahorro en un hábito real.' },
+};
+
+function GoalPercentMilestoneModal({
+  goalTitle, percent, onClose,
+}: { goalTitle: string; percent: 25 | 50 | 75 | 100; onClose: () => void }): React.ReactElement {
+  const d = GOAL_PCT_DATA[percent];
+  return (
+    <div style={DS.overlay} onClick={onClose}>
+      <div style={{ ...DS.box, textAlign: 'center', alignItems: 'center' }} onClick={(e) => e.stopPropagation()}>
+        <div style={{ fontSize: 64, lineHeight: 1, marginBottom: 4 }}>{d.emoji}</div>
+        <div style={{ background: d.bg, border: `1px solid ${d.border}`, borderRadius: 20, padding: '4px 18px', marginBottom: 12, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 14, fontWeight: 800, color: d.color }}>{percent}% completado</span>
+        </div>
+        <h2 style={{ fontSize: 19, fontWeight: 800, color: '#f1f5f9', margin: '0 0 6px', lineHeight: 1.3 }}>{goalTitle}</h2>
+        <p style={{ fontSize: 14, color: 'rgba(148,163,184,0.8)', margin: '0 0 24px', lineHeight: 1.6 }}>{d.msg}</p>
+        <button
+          onClick={onClose}
+          style={{ padding: '13px 0', background: `linear-gradient(90deg, ${d.color}99, ${d.color}cc)`, border: `1px solid ${d.border}`, borderRadius: 12, color: '#fff', fontSize: 15, fontWeight: 700, cursor: 'pointer', width: '100%' }}
+        >
+          {d.emoji} Seguir ahorrando
+        </button>
+      </div>
+    </div>
+  );
+}
+
 const MILESTONE_TIERS: Record<number, { name: string; emoji: string; color: string; bg: string; border: string; msg: string }> = {
   50:   { name: 'Bronce',    emoji: '🥉', color: '#cd7f32', bg: 'rgba(205,127,50,0.12)',  border: 'rgba(205,127,50,0.35)',  msg: '¡Tu primer gran paso! Los hábitos pequeños construyen futuros grandes.' },
   100:  { name: 'Plata',     emoji: '🥈', color: '#c0c0c0', bg: 'rgba(192,192,192,0.12)', border: 'rgba(192,192,192,0.35)', msg: '¡Constancia comprobada! Estás construyendo el músculo del ahorro.' },
@@ -405,6 +437,9 @@ export default function DashboardPage() {
   const [lastStreakShown, setLastStreakShown] = useState(false);
   const [streakAtRisk, setStreakAtRisk] = useState(false);
   const [streakAlertDismissed, setStreakAlertDismissed] = useState(false);
+  const [activeGoalMilestone, setActiveGoalMilestone] = useState<{ goalId: string; goalTitle: string; percent: 25 | 50 | 75 | 100 } | null>(null);
+  const [showAdaptiveBanner, setShowAdaptiveBanner] = useState(false);
+  const [lowActivityDismissed, setLowActivityDismissed] = useState(false);
   const {
     summary,
     loading,
@@ -448,11 +483,16 @@ export default function DashboardPage() {
       setActiveMilestone(summary.newMilestone);
       sendMilestonePush(summary.newMilestone).catch(() => null);
     }
+    if (summary.goalPercentMilestone && !activeGoalMilestone) {
+      setActiveGoalMilestone(summary.goalPercentMilestone);
+    }
+    if (summary.adaptiveEvaluation && !showAdaptiveBanner) {
+      setShowAdaptiveBanner(true);
+    }
     if (summary.streakBrokeYesterday && summary.graceAvailable && !lastStreakShown) {
       setShowStreakRecovery(true);
       setLastStreakShown(true);
     }
-    // Alerta "racha en riesgo": después de las 18:00, decisión pendiente y racha activa
     if (
       summary.streak > 0 &&
       summary.daily.status === 'pending' &&
@@ -463,7 +503,7 @@ export default function DashboardPage() {
     } else {
       setStreakAtRisk(false);
     }
-  }, [summary?.newMilestone, summary?.streakBrokeYesterday, summary?.streak, summary?.daily.status, streakAlertDismissed]);
+  }, [summary?.newMilestone, summary?.goalPercentMilestone?.goalId, summary?.adaptiveEvaluation?.type, summary?.streakBrokeYesterday, summary?.streak, summary?.daily.status, streakAlertDismissed]);
 
   if (loading || !summary) {
     return (
@@ -527,6 +567,13 @@ export default function DashboardPage() {
           onClose={() => { storeMarkMilestoneSeen(activeMilestone); setActiveMilestone(null); refresh(); }}
         />
       )}
+      {activeGoalMilestone && (
+        <GoalPercentMilestoneModal
+          goalTitle={activeGoalMilestone.goalTitle}
+          percent={activeGoalMilestone.percent}
+          onClose={() => { storeMarkGoalPercentMilestone(activeGoalMilestone.goalId, activeGoalMilestone.percent); setActiveGoalMilestone(null); refresh(); }}
+        />
+      )}
       {showStreakRecovery && summary && (
         <StreakRecoveryModal
           lastStreak={summary.streak}
@@ -586,6 +633,52 @@ export default function DashboardPage() {
       <div className={styles.grid}>
         {/* Columna izquierda */}
         <div className={styles.mainCol}>
+
+          {/* Banner: evaluación adaptativa (ajuste de ritmo) */}
+          {showAdaptiveBanner && summary.adaptiveEvaluation && (
+            <div style={{ background: summary.adaptiveEvaluation.type === 'increase' ? 'rgba(34,197,94,0.08)' : 'rgba(251,191,36,0.08)', border: `1px solid ${summary.adaptiveEvaluation.type === 'increase' ? 'rgba(34,197,94,0.25)' : 'rgba(251,191,36,0.25)'}`, borderRadius: 14, padding: '14px 16px', marginBottom: 16 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: summary.adaptiveEvaluation.type === 'increase' ? '#4ade80' : '#fbbf24', margin: '0 0 4px' }}>
+                    {summary.adaptiveEvaluation.type === 'increase' ? '📈 Propuesta de ajuste' : '🎯 Ajuste de objetivo'}
+                  </p>
+                  <p style={{ fontSize: 13, color: 'rgba(148,163,184,0.85)', margin: '0 0 12px', lineHeight: 1.5 }}>
+                    {summary.adaptiveEvaluation.message}
+                  </p>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button
+                      onClick={() => { storeAcknowledgeAdaptiveEvaluation(summary.adaptiveEvaluation!.newPercent); setShowAdaptiveBanner(false); refresh(); }}
+                      style={{ padding: '8px 14px', border: 'none', borderRadius: 10, background: summary.adaptiveEvaluation.type === 'increase' ? '#16a34a' : '#d97706', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}
+                    >
+                      Aplicar ({summary.adaptiveEvaluation.newPercent}%)
+                    </button>
+                    <button
+                      onClick={() => { storeAcknowledgeAdaptiveEvaluation(); setShowAdaptiveBanner(false); }}
+                      style={{ padding: '8px 14px', border: '1px solid rgba(51,65,85,0.5)', borderRadius: 10, background: 'transparent', color: 'rgba(148,163,184,0.7)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
+                    >
+                      Ahora no
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Banner: anti-abandono */}
+          {summary.lowActivityAlert && !lowActivityDismissed && (
+            <div style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.25)', borderRadius: 14, padding: '14px 16px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 14 }}>
+              <span style={{ fontSize: 28, flexShrink: 0 }}>💪</span>
+              <div style={{ flex: 1 }}>
+                <p style={{ fontSize: 13, fontWeight: 700, color: '#818cf8', margin: '0 0 2px' }}>Llevas unos días sin registrar</p>
+                <p style={{ fontSize: 12, color: 'rgba(148,163,184,0.7)', margin: 0 }}>Solo necesitas una decisión hoy para retomar el hábito.</p>
+              </div>
+              <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+                <button onClick={() => router.push('/daily')} style={{ padding: '8px 12px', border: 'none', borderRadius: 10, background: '#4f46e5', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>Decidir →</button>
+                <button onClick={() => setLowActivityDismissed(true)} style={{ padding: '8px 10px', border: '1px solid rgba(51,65,85,0.5)', borderRadius: 10, background: 'transparent', color: 'rgba(148,163,184,0.6)', fontSize: 12, cursor: 'pointer' }}>✕</button>
+              </div>
+            </div>
+          )}
+
           {/* Banner: racha en riesgo */}
           {streakAtRisk && (
             <div style={{

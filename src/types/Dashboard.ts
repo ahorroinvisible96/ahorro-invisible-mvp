@@ -1,5 +1,13 @@
 export type IncomeRange = { min: number; max: number; currency: 'EUR' };
 
+export type SavingsProfile = 'low' | 'medium' | 'high';
+
+export type AdaptiveEvaluation = {
+  type: 'increase' | 'maintain' | 'decrease';
+  newPercent: number;
+  message: string;
+};
+
 export type Goal = {
   id: string;
   title: string;
@@ -72,4 +80,9 @@ export type DashboardSummary = {
   newMilestone: number | null;
   streakBrokeYesterday: boolean;
   graceAvailable: boolean;
+  savingsProfile: SavingsProfile | null;
+  savingsPercent: number;
+  goalPercentMilestone: { goalId: string; goalTitle: string; percent: 25 | 50 | 75 | 100 } | null;
+  adaptiveEvaluation: AdaptiveEvaluation | null;
+  lowActivityAlert: boolean;
 };

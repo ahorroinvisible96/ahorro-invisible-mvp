@@ -6,6 +6,8 @@ import type {
   DashboardSummary,
   SavingsEvolutionPoint,
   Hucha,
+  SavingsProfile,
+  AdaptiveEvaluation,
 } from '@/types/Dashboard';
 import { STORAGE_KEY } from '@/lib/constants';
 
@@ -172,7 +174,7 @@ export function getTodayQuestion(): DailyQuestion {
   return pool[dayIndex];
 }
 
-// ─── Forma interna del store ──────────────────────────────────────────────────
+// ─── Forma interna del store ────────────────────────────────────────────
 type StoreState = {
   userName: string;
   userEmail: string;
@@ -183,6 +185,10 @@ type StoreState = {
   hucha: Hucha;
   seenMilestones: number[];
   graceUsedMonth: string | null;
+  savingsProfile: SavingsProfile | null;
+  savingsPercent: number;
+  goalPercentMilestonesSeen: Record<string, number[]>;
+  lastAdaptiveEvaluation: string | null;
 };
 
 const SEED: StoreState = {
@@ -195,6 +201,10 @@ const SEED: StoreState = {
   hucha: { balance: 0, entries: [] },
   seenMilestones: [],
   graceUsedMonth: null,
+  savingsProfile: null,
+  savingsPercent: 6,
+  goalPercentMilestonesSeen: {},
+  lastAdaptiveEvaluation: null,
 };
 
 // ─── I/O localStorage ─────────────────────────────────────────────────────────
@@ -218,6 +228,11 @@ function loadStore(): StoreState {
       // Migración: asegurar campos de fase 2
       if (!parsed.seenMilestones) parsed.seenMilestones = [];
       if (parsed.graceUsedMonth === undefined) parsed.graceUsedMonth = null;
+      // Migración: sistema adaptativo
+      if (parsed.savingsProfile === undefined) parsed.savingsProfile = null;
+      if (!parsed.savingsPercent) parsed.savingsPercent = 6;
+      if (!parsed.goalPercentMilestonesSeen) parsed.goalPercentMilestonesSeen = {};
+      if (parsed.lastAdaptiveEvaluation === undefined) parsed.lastAdaptiveEvaluation = null;
       return parsed;
     }
   } catch { /* fallthrough */ }
@@ -295,6 +310,56 @@ function buildEvolutionPoints(
   });
 }
 
+// ─── Helpers: sistema adaptativo ─────────────────────────────────────────────
+function checkGoalPercentMilestone(
+  state: StoreState,
+): { goalId: string; goalTitle: string; percent: 25 | 50 | 75 | 100 } | null {
+  const PCTS: (25 | 50 | 75 | 100)[] = [25, 50, 75, 100];
+  for (const goal of state.goals.filter((g) => !g.archived && g.targetAmount > 0)) {
+    const progress = goal.currentAmount / goal.targetAmount;
+    const seen = state.goalPercentMilestonesSeen?.[goal.id] ?? [];
+    for (const milestone of PCTS) {
+      if (progress >= milestone / 100 && !seen.includes(milestone)) {
+        return { goalId: goal.id, goalTitle: goal.title, percent: milestone };
+      }
+    }
+  }
+  return null;
+}
+
+function checkAdaptiveEvaluation(
+  state: StoreState,
+  streak: number,
+  intensity: 'low' | 'medium' | 'high' | 'unknown',
+): AdaptiveEvaluation | null {
+  if (!state.savingsProfile) return null;
+  const daily = state.decisions.filter(isDaily);
+  if (daily.length === 0) return null;
+  const last = state.lastAdaptiveEvaluation;
+  if (last) {
+    const daysSince = Math.floor((Date.now() - new Date(last + 'T12:00:00').getTime()) / 86_400_000);
+    if (daysSince < 14) return null;
+  } else {
+    const sorted = [...daily].sort((a, b) => a.date.localeCompare(b.date));
+    const first = sorted[0]?.date;
+    if (!first) return null;
+    const daysSinceFirst = Math.floor((Date.now() - new Date(first + 'T12:00:00').getTime()) / 86_400_000);
+    if (daysSinceFirst < 14) return null;
+  }
+  const current = state.savingsPercent ?? 6;
+  if (streak >= 7 && (intensity === 'high' || intensity === 'medium')) {
+    const next = Math.min(20, current + 2);
+    if (next <= current) return null;
+    return { type: 'increase', newPercent: next, message: 'Lo estás haciendo genial. Aumentemos un poco el ritmo para llegar antes a tu meta.' };
+  }
+  if (streak <= 2 && intensity === 'low') {
+    const next = Math.max(1, current - 1);
+    if (next >= current) return null;
+    return { type: 'decrease', newPercent: next, message: 'Ajustemos tu objetivo para que sea más fácil mantener la constancia.' };
+  }
+  return null;
+}
+
 // ─── API pública: lectura ─────────────────────────────────────────────────────
 export function buildSummary(range: '7d' | '30d' | '90d' = '30d'): DashboardSummary {
   const state = loadStore();
@@ -324,6 +389,20 @@ export function buildSummary(range: '7d' | '30d' | '90d' = '30d'): DashboardSumm
 
   const totalSaved = state.decisions.reduce((s, d) => s + d.deltaAmount, 0);
   const streak = computeStreak(state.decisions);
+  const intensity = computeIntensity(state.decisions);
+
+  // Adaptive helpers
+  const goalPercentMilestone = checkGoalPercentMilestone(state);
+  const adaptiveEvaluation = checkAdaptiveEvaluation(state, streak, intensity);
+  const last3 = [0, 1, 2].map((i) => {
+    const d = new Date(Date.now() - i * 86_400_000);
+    return d.toISOString().split('T')[0];
+  });
+  const dailyDecisions = state.decisions.filter(isDaily);
+  const lowActivityAlert =
+    dailyDecisions.length > 0 &&
+    activeGoals.length > 0 &&
+    !last3.some((date) => dailyDecisions.some((d) => d.date === date));
 
   // ─ Milestones ──────────────────────────────────────────────────────────────
   const MILESTONES = [50, 100, 500, 1000, 2000, 5000];
@@ -354,7 +433,7 @@ export function buildSummary(range: '7d' | '30d' | '90d' = '30d'): DashboardSumm
       mode: evolutionPoints.length > 0 ? 'live' : 'demo',
       points: evolutionPoints,
     },
-    intensity: computeIntensity(state.decisions),
+    intensity,
     avgMonthlySavings,
     estimatedMonthsRemaining,
     streak,
@@ -363,6 +442,11 @@ export function buildSummary(range: '7d' | '30d' | '90d' = '30d'): DashboardSumm
     newMilestone,
     streakBrokeYesterday,
     graceAvailable,
+    savingsProfile: state.savingsProfile ?? null,
+    savingsPercent: state.savingsPercent ?? 6,
+    goalPercentMilestone,
+    adaptiveEvaluation,
+    lowActivityAlert,
   };
 }
 
@@ -828,6 +912,50 @@ export function storeMarkMilestoneSeen(milestone: number): void {
     state.seenMilestones.push(milestone);
     persistStore(state);
   }
+}
+
+// ─── Sistema adaptativo: funciones públicas ───────────────────────────────────
+export function computeInitialGoalSuggestion(
+  incomeRange: IncomeRange | null,
+  profile: SavingsProfile | null,
+): { monthly: number; target: number; horizonMonths: number } | null {
+  if (!incomeRange || !profile) return null;
+  const mid = (incomeRange.min + incomeRange.max) / 2;
+  const PERCENTS: Record<SavingsProfile, number> = { low: 0.03, medium: 0.06, high: 0.12 };
+  const monthly = Math.round(mid * PERCENTS[profile]);
+  if (monthly <= 0) return null;
+  const target = Math.round(monthly * 2);
+  const horizonMonths = Math.max(1, Math.ceil(target / monthly));
+  return { monthly, target, horizonMonths };
+}
+
+export function storeSetSavingsProfile(
+  profile: SavingsProfile,
+  currentRange: '7d' | '30d' | '90d' = '30d',
+): DashboardSummary {
+  const state = loadStore();
+  const PERCENTS: Record<SavingsProfile, number> = { low: 3, medium: 6, high: 12 };
+  state.savingsProfile = profile;
+  state.savingsPercent = PERCENTS[profile];
+  persistStore(state);
+  return buildSummary(currentRange);
+}
+
+export function storeMarkGoalPercentMilestone(goalId: string, percent: number): void {
+  const state = loadStore();
+  if (!state.goalPercentMilestonesSeen) state.goalPercentMilestonesSeen = {};
+  if (!state.goalPercentMilestonesSeen[goalId]) state.goalPercentMilestonesSeen[goalId] = [];
+  if (!state.goalPercentMilestonesSeen[goalId].includes(percent)) {
+    state.goalPercentMilestonesSeen[goalId].push(percent);
+    persistStore(state);
+  }
+}
+
+export function storeAcknowledgeAdaptiveEvaluation(newPercent?: number): void {
+  const state = loadStore();
+  state.lastAdaptiveEvaluation = new Date().toISOString().split('T')[0];
+  if (newPercent !== undefined) state.savingsPercent = newPercent;
+  persistStore(state);
 }
 
 export function storeSubmitDecision(
