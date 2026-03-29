@@ -647,6 +647,7 @@ export default function DashboardPage() {
             }}
             onAddExtraSaving={() => setShowExtraSaving(true)}
             onGoToHistory={() => router.push('/history')}
+            onEditGoal={(id) => handleEditGoal(id)}
             variant="header"
           />
         </div>
@@ -773,28 +774,28 @@ export default function DashboardPage() {
             <GoalsSectionWidget
               goalsCount={activeGoals.length}
               onCreateGoal={handleCreateGoal}
-            />
-
-            <div className={styles.goalsList}>
-              {activeGoals.map((goal) => (
-                <GoalCardWidget
-                  key={goal.id}
-                  goal={goal}
-                  onOpenGoal={(id) => router.push(`/goals/${id}`)}
-                  onArchiveGoal={handleArchiveRequest}
-                  onSetPrimary={setPrimaryGoal}
-                  onEditGoal={handleEditGoal}
-                />
-              ))}
-              {activeGoals.length === 0 && (
-                <p className={styles.emptyGoals}>
-                  No tienes objetivos aún.{' '}
-                  <button className={styles.emptyGoalsLink} onClick={handleCreateGoal}>
-                    Crear objetivo →
-                  </button>
-                </p>
-              )}
-            </div>
+            >
+              <div className={styles.goalsList}>
+                {activeGoals.map((goal) => (
+                  <GoalCardWidget
+                    key={goal.id}
+                    goal={goal}
+                    onOpenGoal={(id) => router.push(`/goals/${id}`)}
+                    onArchiveGoal={handleArchiveRequest}
+                    onSetPrimary={setPrimaryGoal}
+                    onEditGoal={handleEditGoal}
+                  />
+                ))}
+                {activeGoals.length === 0 && (
+                  <p className={styles.emptyGoals}>
+                    No tienes objetivos aún.{' '}
+                    <button className={styles.emptyGoalsLink} onClick={handleCreateGoal}>
+                      Crear objetivo →
+                    </button>
+                  </p>
+                )}
+              </div>
+            </GoalsSectionWidget>
           </div>
 
           {/* Columna derecha */}

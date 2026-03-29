@@ -10,6 +10,7 @@ export type PrimaryGoalHeroProps = {
   onGoToDailyDecision: () => void;
   onAddExtraSaving: () => void;
   onGoToHistory: () => void;
+  onEditGoal?: (goalId: string) => void;
   variant?: 'default' | 'header';
 };
 

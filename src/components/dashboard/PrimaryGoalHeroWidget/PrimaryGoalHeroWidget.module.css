@@ -144,6 +144,14 @@
   text-transform: uppercase;
   white-space: nowrap;
   flex-shrink: 0;
+  cursor: pointer;
+  transition: background 150ms ease, border-color 150ms ease;
+  font-family: inherit;
+}
+
+.horizonChip:hover {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.35);
 }
 
 /* ── Title ── */
