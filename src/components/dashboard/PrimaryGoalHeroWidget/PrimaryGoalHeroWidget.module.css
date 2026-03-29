@@ -50,6 +50,21 @@
   z-index: 0;
 }
 
+/* ── Header variant: completamente transparente, sin contenedor visual ── */
+.wrapperHeader {
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  border: none !important;
+  outline: none !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
+}
+
+.wrapperHeader::after {
+  display: none !important;
+}
+
 /* Brillo diagonal sutil (textura) */
 .wrapper::after {
   content: '';

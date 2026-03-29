@@ -623,7 +623,7 @@ export default function DashboardPage() {
         />
       )}
 
-      {/* ══ ZONA HEADER: degradado púrpura — perfil + decisión diaria ══ */}
+      {/* ══ ZONA HEADER: degradado púrpura — perfil + objetivo principal ══ */}
       <div className={styles.headerZone}>
         <div className={styles.headerProfile}>
           <HeaderStatusBarWidget
@@ -634,15 +634,18 @@ export default function DashboardPage() {
           />
         </div>
         <div className={styles.headerDaily}>
-          <DailyDecisionWidget
-            daily={summary.daily}
-            primaryGoal={summary.primaryGoal}
-            allGoals={activeGoals}
-            onSubmitDecision={submitDecision}
-            onGoToImpact={(id) => router.push(`/impact/${id}`)}
+          <PrimaryGoalHeroWidget
+            goal={summary.primaryGoal}
+            estimatedMonthsRemaining={summary.estimatedMonthsRemaining}
+            avgMonthlySavings={summary.avgMonthlySavings}
+            dailyCompleted={summary.daily.status === 'completed'}
             onCreateGoal={handleCreateGoal}
-            onResetDecision={resetDecision}
-            onAddExtraSaving={addExtraSaving}
+            onOpenGoal={(id) => router.push(`/goals/${id}`)}
+            onGoToDailyDecision={() => {
+              const el = document.getElementById('daily-decision-widget');
+              el?.scrollIntoView({ behavior: 'smooth' });
+            }}
+            onAddExtraSaving={() => setShowExtraSaving(true)}
             onGoToHistory={() => router.push('/history')}
             variant="header"
           />
@@ -741,19 +744,19 @@ export default function DashboardPage() {
               </div>
             )}
 
-            <PrimaryGoalHeroWidget
-              goal={summary.primaryGoal}
-              estimatedMonthsRemaining={summary.estimatedMonthsRemaining}
-              avgMonthlySavings={summary.avgMonthlySavings}
-              dailyCompleted={summary.daily.status === 'completed'}
-              onCreateGoal={handleCreateGoal}
-              onOpenGoal={(id) => router.push(`/goals/${id}`)}
-              onGoToDailyDecision={() => {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              onAddExtraSaving={() => setShowExtraSaving(true)}
-              onGoToHistory={() => router.push('/history')}
-            />
+            <div id="daily-decision-widget">
+              <DailyDecisionWidget
+                daily={summary.daily}
+                primaryGoal={summary.primaryGoal}
+                allGoals={activeGoals}
+                onSubmitDecision={submitDecision}
+                onGoToImpact={(id) => router.push(`/impact/${id}`)}
+                onCreateGoal={handleCreateGoal}
+                onResetDecision={resetDecision}
+                onAddExtraSaving={addExtraSaving}
+                onGoToHistory={() => router.push('/history')}
+              />
+            </div>
 
             <SavingsEvolutionWidget
               evolution={summary.savingsEvolution}

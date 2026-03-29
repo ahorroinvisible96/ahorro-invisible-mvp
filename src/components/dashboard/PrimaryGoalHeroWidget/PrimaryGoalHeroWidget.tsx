@@ -42,7 +42,9 @@ export function PrimaryGoalHeroWidget({
   onGoToDailyDecision,
   onAddExtraSaving,
   onGoToHistory,
+  variant = 'default',
 }: PrimaryGoalHeroProps): React.ReactElement {
+  const isHeader = variant === 'header';
   const [mounted, setMounted] = useState(false);
   const { collapsed, toggle } = useWidgetCollapse('primary_goal', false);
 
@@ -58,9 +60,9 @@ export function PrimaryGoalHeroWidget({
   const progressWidth = mounted ? d.progressPct : 0;
 
   return (
-    <div className={styles.wrapper}>
-      <div className={styles.blurBlue} />
-      <div className={styles.blurPurple} />
+    <div className={`${styles.wrapper} ${isHeader ? styles.wrapperHeader : ''}`}>
+      {!isHeader && <div className={styles.blurBlue} />}
+      {!isHeader && <div className={styles.blurPurple} />}
 
       <div className={styles.card}>
         {/* Header — siempre visible, chevron a la derecha */}
