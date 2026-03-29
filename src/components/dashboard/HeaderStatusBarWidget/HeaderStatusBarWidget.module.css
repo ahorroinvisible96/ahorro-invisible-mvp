@@ -5,8 +5,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 24px;
-  padding: 16px 0 8px;
+  margin-bottom: 0;
+  padding: 0 0 4px;
   overflow: hidden;
 }
 

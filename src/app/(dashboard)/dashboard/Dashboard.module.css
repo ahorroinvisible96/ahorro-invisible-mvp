@@ -3,34 +3,100 @@
 /* ── Variable de espaciado ──────────────────────────────────────────── */
 :root {
   --dashboard-section-gap: 20px;
+  --header-zone-padding-h: 20px;
+  --header-zone-padding-v: 24px;
 }
 
-/* ── Contenedor principal — mobile first ───────────────────────────── */
+/* ── Contenedor principal — rompe el padding del container para zonas full-width ─ */
 .page {
-  padding: 16px;
-  /* Gradiente sutil en la parte superior para conectar con el hero */
-  background: radial-gradient(
-    ellipse 80% 30% at 50% 0%,
-    rgba(79, 70, 229, 0.12) 0%,
-    var(--color-background-main) 60%
-  ), var(--color-background-main);
-  min-height: 100vh;
+  margin: -16px;
+  width: calc(100% + 32px);
+  min-height: calc(100vh - 32px);
   box-sizing: border-box;
   overflow-x: hidden;
-  max-width: 100%;
+  background: #08080f;
 }
 
 @media (min-width: 768px) {
   .page {
-    padding: 24px;
+    margin: -24px;
+    width: calc(100% + 48px);
+    min-height: calc(100vh - 48px);
   }
 }
 
+/* ══════════════════════════════════════════════════════════════════════
+   ZONA 1: HEADER — degradado púrpura oscuro → púrpura claro
+   Contiene: perfil de usuario + widget de objetivo diario
+   ══════════════════════════════════════════════════════════════════════ */
+.headerZone {
+  background: linear-gradient(160deg,
+    #1a0533 0%,
+    #2d0d52 30%,
+    #3b1270 60%,
+    #4a1a8a 100%
+  );
+  padding: var(--header-zone-padding-v) var(--header-zone-padding-h) 32px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Orbe decorativo superior-derecho */
+.headerZone::before {
+  content: '';
+  position: absolute;
+  top: -80px;
+  right: -60px;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: rgba(139, 92, 246, 0.25);
+  filter: blur(80px);
+  pointer-events: none;
+}
+
+/* Orbe decorativo inferior-izquierdo */
+.headerZone::after {
+  content: '';
+  position: absolute;
+  bottom: -60px;
+  left: -40px;
+  width: 250px;
+  height: 250px;
+  border-radius: 50%;
+  background: rgba(109, 40, 217, 0.3);
+  filter: blur(70px);
+  pointer-events: none;
+}
+
+/* ── Perfil dentro del header ── */
+.headerProfile {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 24px;
+}
+
+/* ── Widget diario dentro del header ── */
+.headerDaily {
+  position: relative;
+  z-index: 1;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   ZONA 2: CONTENIDO — fondo sólido oscuro, más denso que el header
+   Contiene: widgets funcionales (objetivos, evolución, motivación…)
+   ══════════════════════════════════════════════════════════════════════ */
+.contentZone {
+  background: #08080f;
+  padding: 24px var(--header-zone-padding-h);
+  min-height: 0;
+}
+
+/* ── Grid dentro del contenido ── */
 .grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--dashboard-section-gap);
-  margin-top: 16px;
   width: 100%;
   box-sizing: border-box;
 }
@@ -51,6 +117,13 @@
   display: flex;
   flex-direction: column;
   gap: var(--dashboard-section-gap);
+}
+
+@media (min-width: 768px) {
+  :root {
+    --header-zone-padding-h: 28px;
+    --header-zone-padding-v: 28px;
+  }
 }
 
 .goalsList {

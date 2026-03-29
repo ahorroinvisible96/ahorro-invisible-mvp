@@ -16,6 +16,7 @@ export type DailyDecisionWidgetProps = {
   onResetDecision?: () => void;
   onAddExtraSaving?: (saving: ExtraSaving) => void;
   onGoToHistory?: () => void;
+  variant?: 'default' | 'header';
 };
 
 export type DailyWidgetState = 'disabled' | 'pending' | 'completed' | 'error';

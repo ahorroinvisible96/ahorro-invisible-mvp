@@ -6,6 +6,21 @@
   background: var(--widget-bg);
 }
 
+/* ── Header variant: transparent, sin fondo propio ── */
+.wrapperHeader {
+  background: transparent;
+  border-radius: 0;
+  overflow: visible;
+}
+
+.cardHeader {
+  background: transparent;
+  border: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  padding: 0 0 4px;
+}
+
 .blurBlue {
   position: absolute;
   top: -50px;
@@ -69,12 +84,25 @@
   flex-shrink: 0;
 }
 
+/* On gradient background: frosted white badge */
+.iconBadgeHeader {
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
 .headerLabel {
   font-size: var(--widget-label-size, 11px);
   font-weight: var(--widget-label-weight, 700);
   color: var(--text-secondary, rgba(148, 163, 184, 0.75));
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+/* On gradient background: brighter label */
+.headerLabelOnGrad {
+  color: rgba(255, 255, 255, 0.7);
 }
 
 /* ── Badges de estado ── */

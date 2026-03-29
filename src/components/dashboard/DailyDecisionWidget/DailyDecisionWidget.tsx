@@ -105,12 +105,12 @@ function CoffeeIcon() {
   );
 }
 
-function WidgetHeader({ completed, collapsed, onToggle }: { completed: boolean; collapsed: boolean; onToggle: () => void }) {
+function WidgetHeader({ completed, collapsed, onToggle, isHeader }: { completed: boolean; collapsed: boolean; onToggle: () => void; isHeader?: boolean }) {
   return (
     <div className={styles.header}>
       <div className={styles.headerLeft}>
-        <div className={styles.iconBadge}><CoffeeIcon /></div>
-        <span className={styles.headerLabel}>DECISIÓN DIARIA</span>
+        <div className={`${styles.iconBadge} ${isHeader ? styles.iconBadgeHeader : ''}`}><CoffeeIcon /></div>
+        <span className={`${styles.headerLabel} ${isHeader ? styles.headerLabelOnGrad : ''}`}>DECISIÓN DIARIA</span>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         {completed ? (
@@ -139,7 +139,9 @@ export function DailyDecisionWidget({
   onResetDecision,
   onAddExtraSaving,
   onGoToHistory,
+  variant = 'default',
 }: DailyDecisionWidgetProps): React.ReactElement {
+  const isHeader = variant === 'header';
   const activeGoals = allGoals.filter((g) => !g.archived);
   const todayQuestion = getTodayQuestion();
   const { collapsed, toggle } = useWidgetCollapse('daily_decision', false);
@@ -198,11 +200,11 @@ export function DailyDecisionWidget({
   if (daily.status === 'completed') {
     return (
       <>
-        <div className={styles.wrapper}>
-          <div className={styles.blurBlue} />
-          <div className={styles.blurPurple} />
-          <div className={styles.card}>
-            <WidgetHeader completed collapsed={collapsed} onToggle={toggle} />
+        <div className={`${styles.wrapper} ${isHeader ? styles.wrapperHeader : ''}`}>
+          {!isHeader && <div className={styles.blurBlue} />}
+          {!isHeader && <div className={styles.blurPurple} />}
+          <div className={`${styles.card} ${isHeader ? styles.cardHeader : ''}`}>
+            <WidgetHeader completed collapsed={collapsed} onToggle={toggle} isHeader={isHeader} />
             {!collapsed && (
               <>
                 <h2 className={styles.title}>¡Decisión tomada hoy!</h2>
@@ -294,12 +296,12 @@ export function DailyDecisionWidget({
 
   // ── Render ───────────────────────────────────────────────────────────────
   return (
-    <div className={styles.wrapper}>
-      <div className={styles.blurBlue} />
-      <div className={styles.blurPurple} />
-      <div className={styles.card}>
+    <div className={`${styles.wrapper} ${isHeader ? styles.wrapperHeader : ''}`}>
+      {!isHeader && <div className={styles.blurBlue} />}
+      {!isHeader && <div className={styles.blurPurple} />}
+      <div className={`${styles.card} ${isHeader ? styles.cardHeader : ''}`}>
 
-        <WidgetHeader completed={confirmed} collapsed={collapsed} onToggle={toggle} />
+        <WidgetHeader completed={confirmed} collapsed={collapsed} onToggle={toggle} isHeader={isHeader} />
 
         {!collapsed && <h2 className={styles.title}>{todayQuestion.text}</h2>}
         {collapsed && (

@@ -623,181 +623,187 @@ export default function DashboardPage() {
         />
       )}
 
-      <HeaderStatusBarWidget
-        userName={summary.userName}
-        streak={summary.streak ?? 0}
-        onOpenProfile={() => router.push('/profile')}
-        onOpenSettings={() => router.push('/settings')}
-      />
+      {/* ══ ZONA HEADER: degradado púrpura — perfil + decisión diaria ══ */}
+      <div className={styles.headerZone}>
+        <div className={styles.headerProfile}>
+          <HeaderStatusBarWidget
+            userName={summary.userName}
+            streak={summary.streak ?? 0}
+            onOpenProfile={() => router.push('/profile')}
+            onOpenSettings={() => router.push('/settings')}
+          />
+        </div>
+        <div className={styles.headerDaily}>
+          <DailyDecisionWidget
+            daily={summary.daily}
+            primaryGoal={summary.primaryGoal}
+            allGoals={activeGoals}
+            onSubmitDecision={submitDecision}
+            onGoToImpact={(id) => router.push(`/impact/${id}`)}
+            onCreateGoal={handleCreateGoal}
+            onResetDecision={resetDecision}
+            onAddExtraSaving={addExtraSaving}
+            onGoToHistory={() => router.push('/history')}
+            variant="header"
+          />
+        </div>
+      </div>
 
-      <div className={styles.grid}>
-        {/* Columna izquierda */}
-        <div className={styles.mainCol}>
+      {/* ══ ZONA CONTENIDO: fondo oscuro sólido — widgets funcionales ══ */}
+      <div className={styles.contentZone}>
+        <div className={styles.grid}>
+          {/* Columna izquierda */}
+          <div className={styles.mainCol}>
 
-          {/* Banner: evaluación adaptativa (ajuste de ritmo) */}
-          {showAdaptiveBanner && summary.adaptiveEvaluation && (
-            <div style={{ background: summary.adaptiveEvaluation.type === 'increase' ? 'rgba(34,197,94,0.08)' : 'rgba(251,191,36,0.08)', border: `1px solid ${summary.adaptiveEvaluation.type === 'increase' ? 'rgba(34,197,94,0.25)' : 'rgba(251,191,36,0.25)'}`, borderRadius: 14, padding: '14px 16px', marginBottom: 16 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 13, fontWeight: 700, color: summary.adaptiveEvaluation.type === 'increase' ? '#4ade80' : '#fbbf24', margin: '0 0 4px' }}>
-                    {summary.adaptiveEvaluation.type === 'increase' ? '📈 Propuesta de ajuste' : '🎯 Ajuste de objetivo'}
-                  </p>
-                  <p style={{ fontSize: 13, color: 'rgba(148,163,184,0.85)', margin: '0 0 12px', lineHeight: 1.5 }}>
-                    {summary.adaptiveEvaluation.message}
-                  </p>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <button
-                      onClick={() => { storeAcknowledgeAdaptiveEvaluation(summary.adaptiveEvaluation!.newPercent); setShowAdaptiveBanner(false); refresh(); }}
-                      style={{ padding: '8px 14px', border: 'none', borderRadius: 10, background: summary.adaptiveEvaluation.type === 'increase' ? '#16a34a' : '#d97706', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}
-                    >
-                      Aplicar ({summary.adaptiveEvaluation.newPercent}%)
-                    </button>
-                    <button
-                      onClick={() => { storeAcknowledgeAdaptiveEvaluation(); setShowAdaptiveBanner(false); }}
-                      style={{ padding: '8px 14px', border: '1px solid rgba(51,65,85,0.5)', borderRadius: 10, background: 'transparent', color: 'rgba(148,163,184,0.7)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
-                    >
-                      Ahora no
-                    </button>
+            {/* Banner: evaluación adaptativa (ajuste de ritmo) */}
+            {showAdaptiveBanner && summary.adaptiveEvaluation && (
+              <div style={{ background: summary.adaptiveEvaluation.type === 'increase' ? 'rgba(34,197,94,0.08)' : 'rgba(251,191,36,0.08)', border: `1px solid ${summary.adaptiveEvaluation.type === 'increase' ? 'rgba(34,197,94,0.25)' : 'rgba(251,191,36,0.25)'}`, borderRadius: 14, padding: '14px 16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: summary.adaptiveEvaluation.type === 'increase' ? '#4ade80' : '#fbbf24', margin: '0 0 4px' }}>
+                      {summary.adaptiveEvaluation.type === 'increase' ? '📈 Propuesta de ajuste' : '🎯 Ajuste de objetivo'}
+                    </p>
+                    <p style={{ fontSize: 13, color: 'rgba(148,163,184,0.85)', margin: '0 0 12px', lineHeight: 1.5 }}>
+                      {summary.adaptiveEvaluation.message}
+                    </p>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button
+                        onClick={() => { storeAcknowledgeAdaptiveEvaluation(summary.adaptiveEvaluation!.newPercent); setShowAdaptiveBanner(false); refresh(); }}
+                        style={{ padding: '8px 14px', border: 'none', borderRadius: 10, background: summary.adaptiveEvaluation.type === 'increase' ? '#16a34a' : '#d97706', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}
+                      >
+                        Aplicar ({summary.adaptiveEvaluation.newPercent}%)
+                      </button>
+                      <button
+                        onClick={() => { storeAcknowledgeAdaptiveEvaluation(); setShowAdaptiveBanner(false); }}
+                        style={{ padding: '8px 14px', border: '1px solid rgba(51,65,85,0.5)', borderRadius: 10, background: 'transparent', color: 'rgba(148,163,184,0.7)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
+                      >
+                        Ahora no
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Banner: anti-abandono */}
-          {summary.lowActivityAlert && !lowActivityDismissed && (
-            <div style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.25)', borderRadius: 14, padding: '14px 16px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 14 }}>
-              <span style={{ fontSize: 28, flexShrink: 0 }}>💪</span>
-              <div style={{ flex: 1 }}>
-                <p style={{ fontSize: 13, fontWeight: 700, color: '#818cf8', margin: '0 0 2px' }}>Llevas unos días sin registrar</p>
-                <p style={{ fontSize: 12, color: 'rgba(148,163,184,0.7)', margin: 0 }}>Solo necesitas una decisión hoy para retomar el hábito.</p>
-              </div>
-              <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-                <button onClick={() => router.push('/daily')} style={{ padding: '8px 12px', border: 'none', borderRadius: 10, background: '#4f46e5', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>Decidir →</button>
-                <button onClick={() => setLowActivityDismissed(true)} style={{ padding: '8px 10px', border: '1px solid rgba(51,65,85,0.5)', borderRadius: 10, background: 'transparent', color: 'rgba(148,163,184,0.6)', fontSize: 12, cursor: 'pointer' }}>✕</button>
-              </div>
-            </div>
-          )}
-
-          {/* Banner: racha en riesgo */}
-          {streakAtRisk && (
-            <div style={{
-              background: 'rgba(245,158,11,0.1)',
-              border: '1px solid rgba(245,158,11,0.35)',
-              borderRadius: 14,
-              padding: '14px 18px',
-              marginBottom: 16,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: 12,
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <span style={{ fontSize: 22 }}>⚡</span>
-                <div>
-                  <p style={{ fontSize: 14, fontWeight: 700, color: '#fcd34d', margin: 0 }}>
-                    Tu racha de {summary.streak} días está en riesgo
-                  </p>
-                  <p style={{ fontSize: 12, color: 'rgba(252,211,77,0.7)', margin: '2px 0 0' }}>
-                    Completa tu decisión antes de medianoche
-                  </p>
+            {/* Banner: anti-abandono */}
+            {summary.lowActivityAlert && !lowActivityDismissed && (
+              <div style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.25)', borderRadius: 14, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 14 }}>
+                <span style={{ fontSize: 28, flexShrink: 0 }}>💪</span>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: '#818cf8', margin: '0 0 2px' }}>Llevas unos días sin registrar</p>
+                  <p style={{ fontSize: 12, color: 'rgba(148,163,184,0.7)', margin: 0 }}>Solo necesitas una decisión hoy para retomar el hábito.</p>
+                </div>
+                <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+                  <button onClick={() => router.push('/daily')} style={{ padding: '8px 12px', border: 'none', borderRadius: 10, background: '#4f46e5', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>Decidir →</button>
+                  <button onClick={() => setLowActivityDismissed(true)} style={{ padding: '8px 10px', border: '1px solid rgba(51,65,85,0.5)', borderRadius: 10, background: 'transparent', color: 'rgba(148,163,184,0.6)', fontSize: 12, cursor: 'pointer' }}>✕</button>
                 </div>
               </div>
-              <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-                <button
-                  onClick={() => router.push('/daily')}
-                  style={{ padding: '7px 14px', background: 'rgba(245,158,11,0.3)', border: '1px solid rgba(245,158,11,0.5)', borderRadius: 8, color: '#fcd34d', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}
-                >
-                  Decidir ahora
-                </button>
-                <button
-                  onClick={() => { setStreakAtRisk(false); setStreakAlertDismissed(true); }}
-                  style={{ padding: '7px 10px', background: 'transparent', border: 'none', color: 'rgba(252,211,77,0.5)', fontSize: 16, cursor: 'pointer' }}
-                  aria-label="Cerrar alerta"
-                >
-                  ✕
-                </button>
+            )}
+
+            {/* Banner: racha en riesgo */}
+            {streakAtRisk && (
+              <div style={{
+                background: 'rgba(245,158,11,0.1)',
+                border: '1px solid rgba(245,158,11,0.35)',
+                borderRadius: 14,
+                padding: '14px 18px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 12,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <span style={{ fontSize: 22 }}>⚡</span>
+                  <div>
+                    <p style={{ fontSize: 14, fontWeight: 700, color: '#fcd34d', margin: 0 }}>
+                      Tu racha de {summary.streak} días está en riesgo
+                    </p>
+                    <p style={{ fontSize: 12, color: 'rgba(252,211,77,0.7)', margin: '2px 0 0' }}>
+                      Completa tu decisión antes de medianoche
+                    </p>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+                  <button
+                    onClick={() => router.push('/daily')}
+                    style={{ padding: '7px 14px', background: 'rgba(245,158,11,0.3)', border: '1px solid rgba(245,158,11,0.5)', borderRadius: 8, color: '#fcd34d', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}
+                  >
+                    Decidir ahora
+                  </button>
+                  <button
+                    onClick={() => { setStreakAtRisk(false); setStreakAlertDismissed(true); }}
+                    style={{ padding: '7px 10px', background: 'transparent', border: 'none', color: 'rgba(252,211,77,0.5)', fontSize: 16, cursor: 'pointer' }}
+                    aria-label="Cerrar alerta"
+                  >
+                    ✕
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          <PrimaryGoalHeroWidget
-            goal={summary.primaryGoal}
-            estimatedMonthsRemaining={summary.estimatedMonthsRemaining}
-            avgMonthlySavings={summary.avgMonthlySavings}
-            dailyCompleted={summary.daily.status === 'completed'}
-            onCreateGoal={handleCreateGoal}
-            onOpenGoal={(id) => router.push(`/goals/${id}`)}
-            onGoToDailyDecision={() => {
-              const el = document.getElementById('daily-decision-widget');
-              el?.scrollIntoView({ behavior: 'smooth' });
-            }}
-            onAddExtraSaving={() => setShowExtraSaving(true)}
-            onGoToHistory={() => router.push('/history')}
-          />
-
-          <div id="daily-decision-widget">
-            <DailyDecisionWidget
-              daily={summary.daily}
-              primaryGoal={summary.primaryGoal}
-              allGoals={activeGoals}
-              onSubmitDecision={submitDecision}
-              onGoToImpact={(id) => router.push(`/impact/${id}`)}
+            <PrimaryGoalHeroWidget
+              goal={summary.primaryGoal}
+              estimatedMonthsRemaining={summary.estimatedMonthsRemaining}
+              avgMonthlySavings={summary.avgMonthlySavings}
+              dailyCompleted={summary.daily.status === 'completed'}
               onCreateGoal={handleCreateGoal}
-              onResetDecision={resetDecision}
-              onAddExtraSaving={addExtraSaving}
+              onOpenGoal={(id) => router.push(`/goals/${id}`)}
+              onGoToDailyDecision={() => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              onAddExtraSaving={() => setShowExtraSaving(true)}
               onGoToHistory={() => router.push('/history')}
             />
+
+            <SavingsEvolutionWidget
+              evolution={summary.savingsEvolution}
+              onChangeRange={changeRange}
+              onGoToDailyQuestion={() => router.push('/daily')}
+            />
+
+            <SavingsBadge
+              balance={summary.hucha.balance}
+              hasActiveGoals={activeGoals.length > 0}
+              onClick={() => setShowHuchaModal(true)}
+            />
+
+            <GoalsSectionWidget
+              goalsCount={activeGoals.length}
+              onCreateGoal={handleCreateGoal}
+            />
+
+            <div className={styles.goalsList}>
+              {activeGoals.map((goal) => (
+                <GoalCardWidget
+                  key={goal.id}
+                  goal={goal}
+                  onOpenGoal={(id) => router.push(`/goals/${id}`)}
+                  onArchiveGoal={handleArchiveRequest}
+                  onSetPrimary={setPrimaryGoal}
+                  onEditGoal={handleEditGoal}
+                />
+              ))}
+              {activeGoals.length === 0 && (
+                <p className={styles.emptyGoals}>
+                  No tienes objetivos aún.{' '}
+                  <button className={styles.emptyGoalsLink} onClick={handleCreateGoal}>
+                    Crear objetivo →
+                  </button>
+                </p>
+              )}
+            </div>
           </div>
 
-          <SavingsEvolutionWidget
-            evolution={summary.savingsEvolution}
-            onChangeRange={changeRange}
-            onGoToDailyQuestion={() => router.push('/daily')}
-          />
-
-          <SavingsBadge
-            balance={summary.hucha.balance}
-            hasActiveGoals={activeGoals.length > 0}
-            onClick={() => setShowHuchaModal(true)}
-          />
-
-          <GoalsSectionWidget
-            goalsCount={activeGoals.length}
-            onCreateGoal={handleCreateGoal}
-          />
-
-          <div className={styles.goalsList}>
-            {activeGoals.map((goal) => (
-              <GoalCardWidget
-                key={goal.id}
-                goal={goal}
-                onOpenGoal={(id) => router.push(`/goals/${id}`)}
-                onArchiveGoal={handleArchiveRequest}
-                onSetPrimary={setPrimaryGoal}
-                onEditGoal={handleEditGoal}
-              />
-            ))}
-            {activeGoals.length === 0 && (
-              <p className={styles.emptyGoals}>
-                No tienes objetivos aún.{' '}
-                <button className={styles.emptyGoalsLink} onClick={handleCreateGoal}>
-                  Crear objetivo →
-                </button>
-              </p>
-            )}
+          {/* Columna derecha */}
+          <div className={styles.sideCol}>
+            <MotivationCardWidget
+              intensity={summary.intensity}
+              streak={summary.streak ?? 0}
+              totalSaved={summary.totalSaved ?? 0}
+              moneyFeeling={summary.moneyFeeling}
+              onAdjustRules={() => router.push('/settings')}
+            />
           </div>
-        </div>
-
-        {/* Columna derecha */}
-        <div className={styles.sideCol}>
-          <MotivationCardWidget
-            intensity={summary.intensity}
-            streak={summary.streak ?? 0}
-            totalSaved={summary.totalSaved ?? 0}
-            moneyFeeling={summary.moneyFeeling}
-            onAdjustRules={() => router.push('/settings')}
-          />
         </div>
       </div>
     </div>
