@@ -311,6 +311,23 @@ export async function syncGoalToSupabase(
   }
 }
 
+// ─── Eliminar objetivo definitivamente de Supabase ───────────────────────────
+export async function deleteGoalFromSupabase(
+  goalId: string,
+): Promise<{ ok: boolean; error?: string }> {
+  if (!isSupabaseConfigured || !supabase) return { ok: false, error: 'no_supabase' };
+  const userId = await getSessionUserId();
+  if (!userId) { console.error('[sync] deleteGoalFromSupabase: sin sesión'); return { ok: false, error: 'no_session' }; }
+  try {
+    const { error } = await supabase.from('goals').delete().eq('id', goalId).eq('user_id', userId);
+    if (error) { console.error('[sync] deleteGoalFromSupabase error:', error.code, error.message); return { ok: false, error: error.message }; }
+    return { ok: true };
+  } catch (err) {
+    console.error('[sync] deleteGoalFromSupabase exception:', err);
+    return { ok: false, error: String(err) };
+  }
+}
+
 // ─── Sync en tiempo real: decision → Supabase ────────────────────────────────
 export async function syncDecisionToSupabase(
   decision: {

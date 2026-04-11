@@ -18,7 +18,7 @@ import {
   storeReactivateGoal,
   storeDeleteGoalPermanent,
 } from '@/services/dashboardStore';
-import { pushLocalDataToSupabase, syncGoalToSupabase } from '@/services/syncService';
+import { pushLocalDataToSupabase, syncGoalToSupabase, deleteGoalFromSupabase } from '@/services/syncService';
 import type { Goal, Hucha, DashboardSummary } from '@/types/Dashboard';
 
 function formatEUR(n: number) {
@@ -391,7 +391,9 @@ export default function GoalsPage() {
 
   const handleDeleteConfirm = (destination: string | 'hucha' | null) => {
     if (!deletingGoal) return;
-    storeDeleteGoalPermanent(deletingGoal.id, destination);
+    const goalId = deletingGoal.id;
+    storeDeleteGoalPermanent(goalId, destination);
+    deleteGoalFromSupabase(goalId).catch(() => null);
     setDeletingGoal(null);
     refresh();
   };
