@@ -141,7 +141,7 @@ export default function GoalDetailPage({ params }: { params: { id: string } }) {
 
   return (
     <div style={{ minHeight: '100vh', background: D.page, padding: '24px 16px' }}>
-      <div style={{ maxWidth: 560, margin: '0 auto' }}>
+      <div>
 
         {/* Nav */}
         <button onClick={() => router.push('/goals')} style={{ background: 'none', border: 'none', color: D.ts, fontSize: 13, cursor: 'pointer', padding: 0, marginBottom: 20 }}>← Mis objetivos</button>
