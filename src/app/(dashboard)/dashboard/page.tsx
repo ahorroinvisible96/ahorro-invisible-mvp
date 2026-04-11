@@ -15,6 +15,7 @@ import { HeaderStatusBarWidget } from '@/components/dashboard/HeaderStatusBarWid
 import { DailyDecisionWidget } from '@/components/dashboard/DailyDecisionWidget';
 import { SavingsEvolutionWidget } from '@/components/dashboard/SavingsEvolutionWidget';
 import { MotivationCardWidget } from '@/components/dashboard/MotivationCardWidget';
+import { PrimaryGoalHeroWidget } from '@/components/dashboard/PrimaryGoalHeroWidget';
 import styles from './Dashboard.module.css';
 
 // ── Estilos dark glassmorphism compartidos ────────────────────────────────────
@@ -631,6 +632,24 @@ export default function DashboardPage() {
               streak={summary.streak ?? 0}
               onOpenProfile={() => router.push('/profile')}
               onOpenSettings={() => router.push('/settings')}
+            />
+          </div>
+          <div className={styles.headerDaily}>
+            <PrimaryGoalHeroWidget
+              goal={summary.primaryGoal}
+              estimatedMonthsRemaining={summary.estimatedMonthsRemaining}
+              avgMonthlySavings={summary.avgMonthlySavings}
+              dailyCompleted={summary.daily.status === 'completed'}
+              onCreateGoal={handleCreateGoal}
+              onOpenGoal={(id) => router.push(`/goals/${id}`)}
+              onGoToDailyDecision={() => {
+                const el = document.getElementById('daily-decision-widget');
+                el?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              onAddExtraSaving={() => setShowExtraSaving(true)}
+              onGoToHistory={() => router.push('/history')}
+              onEditGoal={(id) => handleEditGoal(id)}
+              variant="header"
             />
           </div>
         </div>
