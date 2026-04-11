@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { analytics } from '@/services/analytics';
 import { useDashboardSummary } from '@/hooks/useDashboardSummary';
 import { storeArchiveGoalSafe, storeGetGoalBalance, storeTransferFromHucha, storeUseGraceDay, storeMarkMilestoneSeen, storeMarkGoalPercentMilestone, storeAcknowledgeAdaptiveEvaluation } from '@/services/dashboardStore';
+import { syncGoalToSupabase } from '@/services/syncService';
 import { sendMilestonePush } from '@/services/pushNotifications';
 import { SavingsBadge } from '@/components/hucha/SavingsBadge';
 import { SavingsModal } from '@/components/hucha/SavingsModal';
@@ -555,6 +556,7 @@ export default function DashboardPage() {
     if (!archivingGoal) return;
     storeArchiveGoalSafe(archivingGoal.id, destination);
     analytics.goalArchived(archivingGoal.id, archivingGoal.isPrimary);
+    syncGoalToSupabase({ ...archivingGoal, archived: true, currentAmount: 0 }).catch(() => null);
     setArchivingGoal(null);
     refresh();
   };

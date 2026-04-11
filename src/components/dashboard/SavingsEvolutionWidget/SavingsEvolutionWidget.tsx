@@ -231,6 +231,7 @@ export function SavingsEvolutionWidget({
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(
     goals?.[0]?.id ?? null
   );
+  const [goalDropdownOpen, setGoalDropdownOpen] = useState(false);
   const { collapsed, toggle } = useWidgetCollapse('savings_evolution', true);
 
   useEffect(() => {
@@ -388,17 +389,37 @@ export function SavingsEvolutionWidget({
             {/* ── Tab: Mis objetivos ── */}
             {activeTab === 'goals' && (
               <>
-                {/* Selector de objetivo */}
-                <div className={styles.goalSelector}>
-                  {activeGoalList.map((goal) => (
-                    <button
-                      key={goal.id}
-                      className={`${styles.goalPill} ${selectedGoalId === goal.id ? styles.goalPillActive : ''}`}
-                      onClick={() => setSelectedGoalId(goal.id)}
+                {/* Selector de objetivo — dropdown */}
+                <div className={styles.goalDropdownWrap}>
+                  <button
+                    className={styles.goalDropdownTrigger}
+                    onClick={() => setGoalDropdownOpen((o) => !o)}
+                  >
+                    <span className={styles.goalDropdownLabel}>
+                      {selectedGoal?.title ?? 'Selecciona un objetivo'}
+                    </span>
+                    <svg
+                      width="14" height="14" viewBox="0 0 24 24"
+                      fill="none" stroke="currentColor" strokeWidth="2"
+                      strokeLinecap="round" strokeLinejoin="round"
+                      style={{ transform: goalDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 180ms ease', flexShrink: 0 }}
                     >
-                      {goal.title}
-                    </button>
-                  ))}
+                      <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                  </button>
+                  {goalDropdownOpen && (
+                    <div className={styles.goalDropdownList}>
+                      {activeGoalList.map((g) => (
+                        <button
+                          key={g.id}
+                          className={`${styles.goalDropdownItem} ${selectedGoalId === g.id ? styles.goalDropdownItemActive : ''}`}
+                          onClick={() => { setSelectedGoalId(g.id); setGoalDropdownOpen(false); }}
+                        >
+                          {g.title}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {selectedGoal && (

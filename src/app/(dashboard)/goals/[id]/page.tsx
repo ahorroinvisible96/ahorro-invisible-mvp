@@ -11,6 +11,7 @@ import {
   storeListActiveGoals,
   DAILY_QUESTIONS,
 } from '@/services/dashboardStore';
+import { syncGoalToSupabase } from '@/services/syncService';
 import type { Goal, DailyDecision } from '@/types/Dashboard';
 
 function formatEUR(n: number) {
@@ -99,8 +100,10 @@ export default function GoalDetailPage({ params }: { params: { id: string } }) {
   };
 
   const handleConfirmArchive = () => {
+    if (!goal) return;
     storeArchiveGoalSafe(params.id, archiveDest);
-    analytics.goalArchived(params.id, goal?.isPrimary ?? false);
+    analytics.goalArchived(params.id, goal.isPrimary);
+    syncGoalToSupabase({ ...goal, archived: true, currentAmount: 0 }).catch(() => null);
     setShowArchiveModal(false);
     router.push('/goals');
   };
