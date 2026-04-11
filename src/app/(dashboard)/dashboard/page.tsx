@@ -15,8 +15,6 @@ import { HeaderStatusBarWidget } from '@/components/dashboard/HeaderStatusBarWid
 import { DailyDecisionWidget } from '@/components/dashboard/DailyDecisionWidget';
 import { SavingsEvolutionWidget } from '@/components/dashboard/SavingsEvolutionWidget';
 import { MotivationCardWidget } from '@/components/dashboard/MotivationCardWidget';
-import { GoalsSectionWidget } from '@/components/dashboard/GoalsSectionWidget';
-import { GoalCardWidget } from '@/components/dashboard/GoalCardWidget';
 import styles from './Dashboard.module.css';
 
 // ── Estilos dark glassmorphism compartidos ────────────────────────────────────
@@ -780,31 +778,6 @@ export default function DashboardPage() {
               onClick={() => setShowHuchaModal(true)}
             />
 
-            <GoalsSectionWidget
-              goalsCount={activeGoals.length}
-              onCreateGoal={handleCreateGoal}
-            >
-              <div className={styles.goalsList}>
-                {activeGoals.map((goal) => (
-                  <GoalCardWidget
-                    key={goal.id}
-                    goal={goal}
-                    onOpenGoal={(id) => router.push(`/goals/${id}`)}
-                    onArchiveGoal={handleArchiveRequest}
-                    onSetPrimary={setPrimaryGoal}
-                    onEditGoal={handleEditGoal}
-                  />
-                ))}
-                {activeGoals.length === 0 && (
-                  <p className={styles.emptyGoals}>
-                    No tienes objetivos aún.{' '}
-                    <button className={styles.emptyGoalsLink} onClick={handleCreateGoal}>
-                      Crear objetivo →
-                    </button>
-                  </p>
-                )}
-              </div>
-            </GoalsSectionWidget>
           </div>
 
           {/* Columna derecha */}
