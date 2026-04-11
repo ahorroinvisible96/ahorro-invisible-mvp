@@ -448,14 +448,15 @@ export async function resetUserDataInSupabase(
   if (!isSupabaseConfigured || !supabase) return { success: true }; // solo local, ok
 
   try {
-    // Borrar en paralelo: goals, decisions, analytics del usuario
-    const [goalsRes, decisionsRes, analyticsRes] = await Promise.all([
+    // Borrar en paralelo: goals y decisions del usuario
+    // Nota: la tabla es 'decisions', no 'daily_decisions'. No existe 'analytics_events'.
+    const [goalsRes, decisionsRes, huchaRes] = await Promise.all([
       supabase.from('goals').delete().eq('user_id', userId),
-      supabase.from('daily_decisions').delete().eq('user_id', userId),
-      supabase.from('analytics_events').delete().eq('user_id', userId),
+      supabase.from('decisions').delete().eq('user_id', userId),
+      supabase.from('hucha').delete().eq('user_id', userId),
     ]);
 
-    const errors = [goalsRes.error, decisionsRes.error, analyticsRes.error].filter(Boolean);
+    const errors = [goalsRes.error, decisionsRes.error, huchaRes.error].filter(Boolean);
     if (errors.length > 0) {
       console.error('[sync] resetUserDataInSupabase errors:', errors);
       return { success: false, error: errors.map((e) => e!.message).join('; ') };

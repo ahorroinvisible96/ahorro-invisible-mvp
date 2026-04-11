@@ -630,8 +630,9 @@ export default function DashboardPage() {
             <HeaderStatusBarWidget
               userName={summary.userName}
               streak={summary.streak ?? 0}
+              totalSaved={summary.totalSaved ?? 0}
               onOpenProfile={() => router.push('/profile')}
-              onOpenSettings={() => router.push('/settings')}
+              onOpenMedalDetail={() => router.push('/profile?section=nivel')}
             />
           </div>
           <div className={styles.headerDaily}>

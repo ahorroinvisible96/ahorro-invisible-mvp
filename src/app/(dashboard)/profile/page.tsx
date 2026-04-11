@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { analytics } from '@/services/analytics';
 import { buildSummary, storeUpdateUserName, storeUpdateIncome } from '@/services/dashboardStore';
 import { authSignOut } from '@/services/authService';
@@ -16,6 +16,7 @@ import { CollapseChevron } from '@/components/dashboard/CollapsibleWidget/Collap
 
 export default function ProfilePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [userName, setUserName] = useState('');
   const [email, setEmail] = useState('');
   const [incomeRange, setIncomeRange] = useState<IncomeRange | null>(null);
@@ -23,6 +24,18 @@ export default function ProfilePage() {
   const [totalSaved, setTotalSaved] = useState(0);
   const [open, setOpen] = useState({ nivel: false, ingresos: false, info: false, accesos: false, cuenta: false });
   const toggle = (k: keyof typeof open) => setOpen(p => ({ ...p, [k]: !p[k] }));
+
+  // Auto-abrir el widget indicado por ?section=
+  useEffect(() => {
+    const section = searchParams.get('section');
+    if (section === 'nivel') {
+      setOpen(p => ({ ...p, nivel: true }));
+      // Scroll al widget tras un breve delay para que el DOM esté listo
+      setTimeout(() => {
+        document.getElementById('nivel-ahorro-widget')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 150);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     analytics.setScreen('profile');
@@ -84,7 +97,7 @@ export default function ProfilePage() {
       <div className={styles.widgetsStack}>
 
         {/* Widget 0: Nivel de ahorro */}
-        <div>
+        <div id="nivel-ahorro-widget">
           <div onClick={() => toggle('nivel')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 16px', background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(51,65,85,0.4)', borderRadius: 14, cursor: 'pointer', userSelect: 'none' }}>
             <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(241,245,249,0.9)' }}>🏆 Nivel de ahorro</span>
             <CollapseChevron collapsed={!open.nivel} onToggle={() => toggle('nivel')} />
