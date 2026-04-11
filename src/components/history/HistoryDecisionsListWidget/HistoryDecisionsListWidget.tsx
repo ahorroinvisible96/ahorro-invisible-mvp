@@ -6,6 +6,7 @@ import type { HistoryDecisionsListWidgetProps } from './HistoryDecisionsListWidg
 import styles from './HistoryDecisionsListWidget.module.css';
 import { useWidgetCollapse } from '@/hooks/useWidgetCollapse';
 import { CollapseChevron } from '@/components/dashboard/CollapsibleWidget/CollapsibleWidget';
+import { CloseIcon, EditIcon, TrashIcon, CalendarIcon, BarChartIcon } from '@/components/ui/AppIcons';
 
 function formatDate(dateString: string): string {
   return new Intl.DateTimeFormat('es-ES', {
@@ -40,9 +41,7 @@ function DeleteModal({
         <div className={styles.modalHeader}>
           <h3 className={styles.modalTitle}>¿Eliminar este ahorro?</h3>
           <button className={styles.modalClose} onClick={onClose}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
+            <CloseIcon size={14} />
           </button>
         </div>
         <p className={styles.modalText}>
@@ -88,9 +87,7 @@ function EditModal({
         <div className={styles.modalHeader}>
           <h3 className={styles.modalTitle}>Editar ahorro</h3>
           <button className={styles.modalClose} onClick={onClose}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
+            <CloseIcon size={14} />
           </button>
         </div>
 
@@ -163,10 +160,7 @@ export function HistoryDecisionsListWidget({
             background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)',
             color: '#818cf8', flexShrink: 0,
           }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
-              <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
-            </svg>
+            <BarChartIcon size={14} />
           </div>
           <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(241,245,249,0.9)', letterSpacing: '0.03em' }}>
             DECISIONES REGISTRADAS
@@ -194,12 +188,7 @@ export function HistoryDecisionsListWidget({
                 <div className={styles.leftCol}>
                   <div className={styles.badgeRow}>
                     <span className={styles.badgeDate}>
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                        <line x1="16" y1="2" x2="16" y2="6"/>
-                        <line x1="8" y1="2" x2="8" y2="6"/>
-                        <line x1="3" y1="10" x2="21" y2="10"/>
-                      </svg>
+                      <CalendarIcon size={10} />
                       {formatDate(d.date)}
                     </span>
                     {d.goalTitle && (
@@ -229,22 +218,14 @@ export function HistoryDecisionsListWidget({
                       title="Editar cantidad"
                       onClick={(e) => { e.stopPropagation(); setEditingId(d.id); }}
                     >
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                      </svg>
+                      <EditIcon size={13} />
                     </button>
                     <button
                       className={styles.btnDelete}
                       title="Eliminar ahorro"
                       onClick={(e) => { e.stopPropagation(); setDeletingId(d.id); }}
                     >
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="3 6 5 6 21 6"/>
-                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                        <path d="M10 11v6"/><path d="M14 11v6"/>
-                        <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-                      </svg>
+                      <TrashIcon size={13} />
                     </button>
                   </div>
                 </div>

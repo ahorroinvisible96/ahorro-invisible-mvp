@@ -9,35 +9,8 @@ import type { SavingsEvolutionWidgetProps } from './SavingsEvolutionWidget.types
 import styles from './SavingsEvolutionWidget.module.css';
 import { useWidgetCollapse } from '@/hooks/useWidgetCollapse';
 import { CollapseChevron } from '@/components/dashboard/CollapsibleWidget/CollapsibleWidget';
+import { TrendingUpIcon, BarChartIcon, ChevronRightIcon } from '@/components/ui/AppIcons';
 
-// ── Iconos SVG inline ────────────────────────────────────────────────────────
-function TrendingUpIcon() {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
-      <polyline points="17 6 23 6 23 12"/>
-    </svg>
-  );
-}
-
-function BarChart3Icon() {
-  return (
-    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="18" y1="20" x2="18" y2="10"/>
-      <line x1="12" y1="20" x2="12" y2="4"/>
-      <line x1="6" y1="20" x2="6" y2="14"/>
-    </svg>
-  );
-}
-
-function ArrowRightIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="5" y1="12" x2="19" y2="12"/>
-      <polyline points="12 5 19 12 12 19"/>
-    </svg>
-  );
-}
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function formatCurrency(value: number): string {
@@ -290,7 +263,7 @@ export function SavingsEvolutionWidget({
         {/* ── Header ── */}
         <div className={styles.header}>
           <div className={styles.headerLeft}>
-            <div className={styles.iconWrap}><TrendingUpIcon /></div>
+            <div className={styles.iconWrap}><TrendingUpIcon size={24} /></div>
             <span className={styles.title}>Evolución del ahorro</span>
           </div>
           <div className={styles.headerRight}>
@@ -386,12 +359,12 @@ export function SavingsEvolutionWidget({
                 </div>
               ) : (
                 <div className={styles.emptyState}>
-                  <div className={styles.emptyIconWrap}><BarChart3Icon /></div>
+                  <div className={styles.emptyIconWrap}><BarChartIcon size={32} /></div>
                   <p className={styles.emptyText}>Aún no hay datos para este período.</p>
                   {onGoToDailyQuestion && (
                     <button className={styles.emptyBtn} onClick={onGoToDailyQuestion}>
                       <span>Responder ahora</span>
-                      <span className={styles.emptyBtnArrow}><ArrowRightIcon /></span>
+                      <span className={styles.emptyBtnArrow}><ChevronRightIcon size={16} /></span>
                     </button>
                   )}
                 </div>
@@ -412,7 +385,7 @@ export function SavingsEvolutionWidget({
                     </span>
                     <svg
                       width="14" height="14" viewBox="0 0 24 24"
-                      fill="none" stroke="currentColor" strokeWidth="2"
+                      fill="none" stroke="currentColor" strokeWidth="1.5"
                       strokeLinecap="round" strokeLinejoin="round"
                       style={{ transform: goalDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 180ms ease', flexShrink: 0 }}
                     >

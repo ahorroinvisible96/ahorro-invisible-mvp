@@ -12,6 +12,7 @@ import { SettingsSessionWidget } from '@/components/settings/SettingsSessionWidg
 import { SettingsDangerZoneWidget } from '@/components/settings/SettingsDangerZoneWidget/SettingsDangerZoneWidget';
 import { SettingsHelpWidget } from '@/components/settings/SettingsHelpWidget/SettingsHelpWidget';
 import styles from './Settings.module.css';
+import { SettingsIcon } from '@/components/ui/AppIcons';
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -76,10 +77,7 @@ export default function SettingsPage() {
         <div className={styles.pageHeaderGlow} />
         <div className={styles.pageHeaderInner}>
           <div className={styles.pageIconWrap}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="3"/>
-              <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
-            </svg>
+            <SettingsIcon size={20} />
           </div>
           <div className={styles.pageTitles}>
             <h1 className={styles.pageTitle}>Configuración</h1>

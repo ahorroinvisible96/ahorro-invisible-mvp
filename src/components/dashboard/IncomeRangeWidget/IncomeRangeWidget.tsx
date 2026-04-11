@@ -6,6 +6,7 @@ import type { IncomeRangeWidgetProps } from './IncomeRangeWidget.types';
 import styles from './IncomeRangeWidget.module.css';
 import { useWidgetCollapse } from '@/hooks/useWidgetCollapse';
 import { CollapseChevron } from '@/components/dashboard/CollapsibleWidget/CollapsibleWidget';
+import { TrendingUpIcon, EditIcon, ChevronRightIcon, CloseIcon } from '@/components/ui/AppIcons';
 
 const SLIDER_MAX = 10000;
 const SLIDER_STEP = 100;
@@ -19,10 +20,9 @@ function formatCurrency(value: number): string {
   }).format(value);
 }
 
-// ── Iconos SVG inline ────────────────────────────────────────────────────────
 function WalletIcon({ size = 24 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/>
       <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/>
       <path d="M18 12a2 2 0 0 0 0 4h4v-4z"/>
@@ -30,36 +30,11 @@ function WalletIcon({ size = 24 }: { size?: number }) {
   );
 }
 
-function TrendingUpIcon() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
-      <polyline points="17 6 23 6 23 12"/>
-    </svg>
-  );
-}
-
 function ArrowRightIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <line x1="5" y1="12" x2="19" y2="12"/>
       <polyline points="12 5 19 12 12 19"/>
-    </svg>
-  );
-}
-
-function Edit2Icon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
-    </svg>
-  );
-}
-
-function XIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
     </svg>
   );
 }
@@ -169,7 +144,7 @@ export function IncomeRangeWidget({
                 <span className={styles.label}>Ingresos Mensuales</span>
                 {isConfigured && (
                   <span className={styles.configuredBadge}>
-                    <TrendingUpIcon /> Configurado
+                    <TrendingUpIcon size={12} /> Configurado
                   </span>
                 )}
               </div>
@@ -187,13 +162,13 @@ export function IncomeRangeWidget({
                     </div>
                     <span className={styles.revealHint}>
                       {revealed ? (
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
                           <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
                           <line x1="1" y1="1" x2="23" y2="23"/>
                         </svg>
                       ) : (
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                           <circle cx="12" cy="12" r="3"/>
                         </svg>
@@ -218,7 +193,7 @@ export function IncomeRangeWidget({
             {!collapsed && (
               <button className={styles.actionBtn} onClick={openDialog}>
                 {isConfigured ? (
-                  <><span className={styles.actionBtnIconEdit}><Edit2Icon /></span>Editar</>
+                  <><span className={styles.actionBtnIconEdit}><EditIcon size={14} /></span>Editar</>
                 ) : (
                   <>Configurar<span className={styles.actionBtnIconArrow}><ArrowRightIcon /></span></>
                 )}
@@ -251,7 +226,7 @@ export function IncomeRangeWidget({
                 <h2 className={styles.dialogTitle}>Configurar Ingresos Mensuales</h2>
               </div>
               <button className={styles.dialogClose} onClick={() => setIsDialogOpen(false)}>
-                <XIcon />
+                <CloseIcon size={16} />
               </button>
             </div>
 
