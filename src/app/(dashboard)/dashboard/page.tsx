@@ -14,7 +14,6 @@ import { SavingsModal } from '@/components/hucha/SavingsModal';
 import { HeaderStatusBarWidget } from '@/components/dashboard/HeaderStatusBarWidget';
 import { DailyDecisionWidget } from '@/components/dashboard/DailyDecisionWidget';
 import { SavingsEvolutionWidget } from '@/components/dashboard/SavingsEvolutionWidget';
-import { MotivationCardWidget } from '@/components/dashboard/MotivationCardWidget';
 import { PrimaryGoalHeroWidget } from '@/components/dashboard/PrimaryGoalHeroWidget';
 import styles from './Dashboard.module.css';
 
@@ -798,21 +797,11 @@ export default function DashboardPage() {
               onClick={() => setShowHuchaModal(true)}
             />
 
-          </div>
+          </div>{/* /mainCol */}
 
-          {/* Columna derecha */}
-          <div className={styles.sideCol}>
-            <MotivationCardWidget
-              intensity={summary.intensity}
-              streak={summary.streak ?? 0}
-              totalSaved={summary.totalSaved ?? 0}
-              moneyFeeling={summary.moneyFeeling}
-              onAdjustRules={() => router.push('/settings')}
-            />
-          </div>
-        </div>
-        </div>
-      </div>
+        </div>{/* /grid */}
+        </div>{/* /zoneInner */}
+      </div>{/* /contentZone */}
     </div>
   );
 }
