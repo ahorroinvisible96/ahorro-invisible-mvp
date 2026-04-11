@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { analytics } from '@/services/analytics';
 import { buildSummary, storeUpdateUserName, storeUpdateIncome } from '@/services/dashboardStore';
@@ -14,9 +14,24 @@ import styles from './Profile.module.css';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { CollapseChevron } from '@/components/dashboard/CollapsibleWidget/CollapsibleWidget';
 
+// ── Componente auxiliar: lee ?section= y abre el widget correspondiente ────────
+// Debe estar en Suspense porque usa useSearchParams (Next.js 16 requisito)
+function SectionOpener({ onOpen }: { onOpen: (section: string) => void }) {
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const section = searchParams.get('section');
+    if (section) {
+      onOpen(section);
+      setTimeout(() => {
+        document.getElementById(`${section}-ahorro-widget`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 150);
+    }
+  }, [searchParams, onOpen]);
+  return null;
+}
+
 export default function ProfilePage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [userName, setUserName] = useState('');
   const [email, setEmail] = useState('');
   const [incomeRange, setIncomeRange] = useState<IncomeRange | null>(null);
@@ -24,18 +39,10 @@ export default function ProfilePage() {
   const [totalSaved, setTotalSaved] = useState(0);
   const [open, setOpen] = useState({ nivel: false, ingresos: false, info: false, accesos: false, cuenta: false });
   const toggle = (k: keyof typeof open) => setOpen(p => ({ ...p, [k]: !p[k] }));
+  const handleSectionOpen = useCallback((section: string) => {
+    if (section in open) setOpen(p => ({ ...p, [section]: true }));
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Auto-abrir el widget indicado por ?section=
-  useEffect(() => {
-    const section = searchParams.get('section');
-    if (section === 'nivel') {
-      setOpen(p => ({ ...p, nivel: true }));
-      // Scroll al widget tras un breve delay para que el DOM esté listo
-      setTimeout(() => {
-        document.getElementById('nivel-ahorro-widget')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 150);
-    }
-  }, [searchParams]);
 
   useEffect(() => {
     analytics.setScreen('profile');
@@ -76,6 +83,11 @@ export default function ProfilePage() {
 
   return (
     <div className={styles.page}>
+      {/* Auto-abre widget según ?section= — requiere Suspense por useSearchParams */}
+      <Suspense fallback={null}>
+        <SectionOpener onOpen={handleSectionOpen} />
+      </Suspense>
+
       {/* ── Header ── */}
       <div className={styles.pageHeader}>
         <div className={styles.pageHeaderGlow} />
