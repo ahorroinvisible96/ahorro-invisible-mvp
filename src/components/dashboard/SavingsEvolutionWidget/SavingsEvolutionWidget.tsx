@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { analytics } from '@/services/analytics';
 import { storeGetGoalProgressPoints } from '@/services/dashboardStore';
 import type { GoalProgressPoint } from '@/services/dashboardStore';
@@ -232,7 +232,19 @@ export function SavingsEvolutionWidget({
     goals?.[0]?.id ?? null
   );
   const [goalDropdownOpen, setGoalDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const { collapsed, toggle } = useWidgetCollapse('savings_evolution', true);
+
+  useEffect(() => {
+    if (!goalDropdownOpen) return;
+    function handleOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setGoalDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleOutside);
+    return () => document.removeEventListener('mousedown', handleOutside);
+  }, [goalDropdownOpen]);
 
   useEffect(() => {
     if (evolution?.range) {
@@ -390,7 +402,7 @@ export function SavingsEvolutionWidget({
             {activeTab === 'goals' && (
               <>
                 {/* Selector de objetivo — dropdown */}
-                <div className={styles.goalDropdownWrap}>
+                <div className={styles.goalDropdownWrap} ref={dropdownRef}>
                   <button
                     className={styles.goalDropdownTrigger}
                     onClick={() => setGoalDropdownOpen((o) => !o)}
