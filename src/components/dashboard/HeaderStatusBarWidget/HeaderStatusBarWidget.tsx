@@ -66,7 +66,7 @@ export function HeaderStatusBarWidget({
       {/* ── Right: medalla + racha ── */}
       <div className={styles.actions}>
         <button
-          className={styles.iconBtn}
+          className={styles.medalBtn}
           onClick={onOpenMedalDetail}
           aria-label={`Nivel ${medalEmoji} · ${streak} días de racha`}
           title={`Nivel ${medalEmoji} · ${streak} días de racha`}
