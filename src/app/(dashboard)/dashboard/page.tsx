@@ -12,7 +12,6 @@ import { sendMilestonePush } from '@/services/pushNotifications';
 import { SavingsBadge } from '@/components/hucha/SavingsBadge';
 import { SavingsModal } from '@/components/hucha/SavingsModal';
 import { HeaderStatusBarWidget } from '@/components/dashboard/HeaderStatusBarWidget';
-import { PrimaryGoalHeroWidget } from '@/components/dashboard/PrimaryGoalHeroWidget';
 import { DailyDecisionWidget } from '@/components/dashboard/DailyDecisionWidget';
 import { SavingsEvolutionWidget } from '@/components/dashboard/SavingsEvolutionWidget';
 import { MotivationCardWidget } from '@/components/dashboard/MotivationCardWidget';
@@ -636,24 +635,6 @@ export default function DashboardPage() {
               onOpenSettings={() => router.push('/settings')}
             />
           </div>
-          <div className={styles.headerDaily}>
-            <PrimaryGoalHeroWidget
-              goal={summary.primaryGoal}
-              estimatedMonthsRemaining={summary.estimatedMonthsRemaining}
-              avgMonthlySavings={summary.avgMonthlySavings}
-              dailyCompleted={summary.daily.status === 'completed'}
-              onCreateGoal={handleCreateGoal}
-              onOpenGoal={(id) => router.push(`/goals/${id}`)}
-              onGoToDailyDecision={() => {
-                const el = document.getElementById('daily-decision-widget');
-                el?.scrollIntoView({ behavior: 'smooth' });
-              }}
-              onAddExtraSaving={() => setShowExtraSaving(true)}
-              onGoToHistory={() => router.push('/history')}
-              onEditGoal={(id) => handleEditGoal(id)}
-              variant="header"
-            />
-          </div>
         </div>
       </div>
 
@@ -770,6 +751,28 @@ export default function DashboardPage() {
               onGoToDailyQuestion={() => router.push('/daily')}
               goals={activeGoals}
             />
+
+            {/* ── Accesos rápidos a Objetivos ── */}
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button
+                onClick={() => router.push('/goals')}
+                style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px 16px', background: 'rgba(15,23,42,0.7)', border: '1px solid rgba(51,65,85,0.5)', borderRadius: 14, cursor: 'pointer', color: 'rgba(241,245,249,0.9)', fontSize: 14, fontWeight: 700 }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+                </svg>
+                Ver objetivos
+              </button>
+              <button
+                onClick={() => router.push('/goals')}
+                style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px 16px', background: 'linear-gradient(135deg, rgba(168,85,247,0.25), rgba(37,99,235,0.25))', border: '1px solid rgba(168,85,247,0.4)', borderRadius: 14, cursor: 'pointer', color: '#c4b5fd', fontSize: 14, fontWeight: 700 }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                Añadir objetivo
+              </button>
+            </div>
 
             <SavingsBadge
               balance={summary.hucha.balance}
