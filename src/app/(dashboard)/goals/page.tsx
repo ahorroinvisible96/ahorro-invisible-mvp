@@ -20,6 +20,7 @@ import {
 } from '@/services/dashboardStore';
 import { pushLocalDataToSupabase, syncGoalToSupabase, deleteGoalFromSupabase } from '@/services/syncService';
 import type { Goal, Hucha, DashboardSummary } from '@/types/Dashboard';
+import { CollapseChevron } from '@/components/dashboard/CollapsibleWidget/CollapsibleWidget';
 
 function formatEUR(n: number) {
   return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
@@ -300,6 +301,8 @@ export default function GoalsPage() {
   const [archivedGoals, setArchivedGoals] = useState<Goal[]>([]);
   const [hucha, setHucha] = useState<Hucha>({ balance: 0, entries: [] });
   const [showArchived, setShowArchived] = useState(false);
+  const [openSec, setOpenSec] = useState({ progreso: false, completados: false });
+  const toggleSec = (k: keyof typeof openSec) => setOpenSec(p => ({ ...p, [k]: !p[k] }));
   const [modalMode, setModalMode] = useState<ModalMode | null>(null);
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
   const [archivingGoal, setArchivingGoal] = useState<Goal | null>(null);
@@ -515,43 +518,50 @@ export default function GoalsPage() {
           <>
             {inProgressGoals.length > 0 && (
               <div style={{ marginTop: 20 }}>
-                {sectionLabel('En progreso', inProgressGoals.length)}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {inProgressGoals.map(g => (
-                    <GoalCard
-                      key={g.id}
-                      goal={g}
-                      onDetail={() => router.push(`/goals/${g.id}`)}
-                      onEdit={() => { setEditingGoal(g); setModalMode('edit'); }}
-                      onArchive={() => handleArchiveRequest(g.id)}
-                      onDelete={() => setDeletingGoal(g)}
-                      onSetPrimary={() => handleSetPrimary(g.id)}
-                    />
-                  ))}
+                <div onClick={() => toggleSec('progreso')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 16px', background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(51,65,85,0.4)', borderRadius: 14, cursor: 'pointer', userSelect: 'none', marginBottom: openSec.progreso ? 12 : 0 }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(241,245,249,0.9)' }}>🟢 En progreso ({inProgressGoals.length})</span>
+                  <CollapseChevron collapsed={!openSec.progreso} onToggle={() => toggleSec('progreso')} />
                 </div>
+                {openSec.progreso && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {inProgressGoals.map(g => (
+                      <GoalCard
+                        key={g.id}
+                        goal={g}
+                        onDetail={() => router.push(`/goals/${g.id}`)}
+                        onEdit={() => { setEditingGoal(g); setModalMode('edit'); }}
+                        onArchive={() => handleArchiveRequest(g.id)}
+                        onDelete={() => setDeletingGoal(g)}
+                        onSetPrimary={() => handleSetPrimary(g.id)}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
             {/* ── Completados ── */}
             {completedGoals.length > 0 && (
-              <div style={{ marginTop: 28 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-                  <span style={{ fontSize: 18 }}>🏆</span>
-                  {sectionLabel('Objetivos completados', completedGoals.length)}
+              <div style={{ marginTop: 16 }}>
+                <div onClick={() => toggleSec('completados')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 16px', background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(51,65,85,0.4)', borderRadius: 14, cursor: 'pointer', userSelect: 'none', marginBottom: openSec.completados ? 12 : 0 }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(241,245,249,0.9)' }}>🏆 Completados ({completedGoals.length})</span>
+                  <CollapseChevron collapsed={!openSec.completados} onToggle={() => toggleSec('completados')} />
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {completedGoals.map(g => (
-                    <GoalCard
-                      key={g.id}
-                      goal={g}
-                      onDetail={() => router.push(`/goals/${g.id}`)}
-                      onEdit={() => { setEditingGoal(g); setModalMode('edit'); }}
-                      onArchive={() => handleArchiveRequest(g.id)}
-                      onDelete={() => setDeletingGoal(g)}
-                      onSetPrimary={() => handleSetPrimary(g.id)}
-                    />
-                  ))}
-                </div>
+                {openSec.completados && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {completedGoals.map(g => (
+                      <GoalCard
+                        key={g.id}
+                        goal={g}
+                        onDetail={() => router.push(`/goals/${g.id}`)}
+                        onEdit={() => { setEditingGoal(g); setModalMode('edit'); }}
+                        onArchive={() => handleArchiveRequest(g.id)}
+                        onDelete={() => setDeletingGoal(g)}
+                        onSetPrimary={() => handleSetPrimary(g.id)}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </>

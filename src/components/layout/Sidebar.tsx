@@ -71,13 +71,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const isActive = (path: string) =>
     pathname === path || (path === '/dashboard' && pathname === '/');
 
-  const navLinks = [
-    { href: '/dashboard',  label: 'Dashboard', Icon: HomeIcon },
-    { href: '/profile',    label: 'Perfil',     Icon: UserIcon },
-    { href: '/history',    label: 'Historial',  Icon: ClockIcon },
-    { href: '/goals',     label: 'Objetivos',  Icon: TargetIcon },
-  ];
-
   return (
     <aside className={styles.sidebar}>
 
@@ -103,46 +96,39 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <nav className={styles.nav}>
         <span className={styles.navLabel}>NAVEGACIÓN</span>
 
-        {/* 1. Dashboard */}
-        <Link
-          href="/dashboard"
-          className={`${styles.navItem} ${isActive('/dashboard') ? styles.navItemActive : ''}`}
-        >
-          <span className={`${styles.navIcon} ${isActive('/dashboard') ? styles.navIconActive : ''}`}>
-            <HomeIcon />
-          </span>
-          <span className={styles.navText}>Dashboard</span>
+        {/* 1. Inicio */}
+        <Link href="/dashboard" className={`${styles.navItem} ${isActive('/dashboard') ? styles.navItemActive : ''}`}>
+          <span className={`${styles.navIcon} ${isActive('/dashboard') ? styles.navIconActive : ''}`}><HomeIcon /></span>
+          <span className={styles.navText}>Inicio</span>
           {isActive('/dashboard') && <span className={styles.activePip} />}
         </Link>
 
-        {/* 2. Decisión Diaria — abre modal */}
-        <button
-          className={`${styles.navItem} ${styles.navItemDailyBtn}`}
-          onClick={onOpenDailyDecision}
-        >
-          <span className={`${styles.navIcon} ${styles.navIconDaily}`}>
-            <BoltIcon />
-          </span>
+        {/* 2. Objetivos */}
+        <Link href="/goals" className={`${styles.navItem} ${isActive('/goals') ? styles.navItemActive : ''}`}>
+          <span className={`${styles.navIcon} ${isActive('/goals') ? styles.navIconActive : ''}`}><TargetIcon /></span>
+          <span className={styles.navText}>Objetivos</span>
+          {isActive('/goals') && <span className={styles.activePip} />}
+        </Link>
+
+        {/* 3. Decisión Diaria — abre modal */}
+        <button className={`${styles.navItem} ${styles.navItemDailyBtn}`} onClick={onOpenDailyDecision}>
+          <span className={`${styles.navIcon} ${styles.navIconDaily}`}><BoltIcon /></span>
           <span className={styles.navText}>Decisión Diaria</span>
         </button>
 
-        {/* 3-5. Resto de links */}
-        {navLinks.slice(1).map(({ href, label, Icon }) => {
-          const active = isActive(href);
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={`${styles.navItem} ${active ? styles.navItemActive : ''}`}
-            >
-              <span className={`${styles.navIcon} ${active ? styles.navIconActive : ''}`}>
-                <Icon />
-              </span>
-              <span className={styles.navText}>{label}</span>
-              {active && <span className={styles.activePip} />}
-            </Link>
-          );
-        })}
+        {/* 4. Historial */}
+        <Link href="/history" className={`${styles.navItem} ${isActive('/history') ? styles.navItemActive : ''}`}>
+          <span className={`${styles.navIcon} ${isActive('/history') ? styles.navIconActive : ''}`}><ClockIcon /></span>
+          <span className={styles.navText}>Historial</span>
+          {isActive('/history') && <span className={styles.activePip} />}
+        </Link>
+
+        {/* 5. Perfil */}
+        <Link href="/profile" className={`${styles.navItem} ${isActive('/profile') ? styles.navItemActive : ''}`}>
+          <span className={`${styles.navIcon} ${isActive('/profile') ? styles.navIconActive : ''}`}><UserIcon /></span>
+          <span className={styles.navText}>Perfil</span>
+          {isActive('/profile') && <span className={styles.activePip} />}
+        </Link>
       </nav>
 
       {/* ── Spacer ── */}

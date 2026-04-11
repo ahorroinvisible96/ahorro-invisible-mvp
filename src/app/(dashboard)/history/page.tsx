@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { analytics } from '@/services/analytics';
 import { useHistorySummary } from '@/hooks/useHistorySummary';
@@ -10,6 +10,7 @@ import { HistorySummaryWidget } from '@/components/history/HistorySummaryWidget/
 import { HistoryDecisionsListWidget } from '@/components/history/HistoryDecisionsListWidget/HistoryDecisionsListWidget';
 import { HistoryEmptyStateWidget } from '@/components/history/HistoryEmptyStateWidget/HistoryEmptyStateWidget';
 import styles from './History.module.css';
+import { CollapseChevron } from '@/components/dashboard/CollapsibleWidget/CollapsibleWidget';
 
 function exportCSV(decisions: HistoryDecisionItem[]): void {
   const header = ['Fecha', 'Categoría', 'Pregunta', 'Respuesta', 'Ahorro (€)', 'Objetivo', 'Proyección mensual (€)', 'Proyección anual (€)'];
@@ -62,6 +63,9 @@ export default function HistoryPage() {
     filters.range !== 'all' ||
     filters.goalId !== 'all' ||
     filters.category !== 'all';
+
+  const [open, setOpen] = useState({ filtros: false, resumen: false, lista: false });
+  const toggle = (k: keyof typeof open) => setOpen(p => ({ ...p, [k]: !p[k] }));
 
   if (loading) {
     return (
@@ -118,35 +122,39 @@ export default function HistoryPage() {
       <div className={styles.widgetsStack}>
 
         {/* Widget filtros */}
-        <HistoryFiltersWidget
-          filters={filters}
-          goals={goals}
-          categories={categories}
-          onChange={setFilters}
-        />
+        <div>
+          <div onClick={() => toggle('filtros')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 16px', background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(51,65,85,0.4)', borderRadius: 14, cursor: 'pointer', userSelect: 'none' }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(241,245,249,0.9)' }}>🔍 Filtros</span>
+            <CollapseChevron collapsed={!open.filtros} onToggle={() => toggle('filtros')} />
+          </div>
+          {open.filtros && <HistoryFiltersWidget filters={filters} goals={goals} categories={categories} onChange={setFilters} />}
+        </div>
 
         {/* Widget resumen — solo si hay resultados */}
         {filtered.length > 0 && (
-          <HistorySummaryWidget
-            count={filtered.length}
-            totalSaved={totalSaved}
-          />
+          <div>
+            <div onClick={() => toggle('resumen')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 16px', background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(51,65,85,0.4)', borderRadius: 14, cursor: 'pointer', userSelect: 'none' }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(241,245,249,0.9)' }}>📊 Resumen</span>
+              <CollapseChevron collapsed={!open.resumen} onToggle={() => toggle('resumen')} />
+            </div>
+            {open.resumen && <HistorySummaryWidget count={filtered.length} totalSaved={totalSaved} />}
+          </div>
         )}
 
         {/* Widget lista o estado vacío */}
-        {filtered.length > 0 ? (
-          <HistoryDecisionsListWidget
-            decisions={filtered}
-            onOpenDecision={() => {}}
-            onDeleteDecision={deleteDecision}
-            onEditDecision={editDecision}
-          />
-        ) : (
-          <HistoryEmptyStateWidget
-            hasFilters={hasActiveFilters}
-            onGoToDashboard={() => router.push('/dashboard')}
-          />
-        )}
+        <div>
+          <div onClick={() => toggle('lista')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 16px', background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(51,65,85,0.4)', borderRadius: 14, cursor: 'pointer', userSelect: 'none' }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(241,245,249,0.9)' }}>📅 Decisiones ({filtered.length})</span>
+            <CollapseChevron collapsed={!open.lista} onToggle={() => toggle('lista')} />
+          </div>
+          {open.lista && (
+            filtered.length > 0 ? (
+              <HistoryDecisionsListWidget decisions={filtered} onOpenDecision={() => {}} onDeleteDecision={deleteDecision} onEditDecision={editDecision} />
+            ) : (
+              <HistoryEmptyStateWidget hasFilters={hasActiveFilters} onGoToDashboard={() => router.push('/dashboard')} />
+            )
+          )}
+        </div>
 
       </div>
     </div>

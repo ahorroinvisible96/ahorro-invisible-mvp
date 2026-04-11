@@ -28,6 +28,24 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onOpenDailyDecision }) => 
         <span className={styles.label}>Inicio</span>
       </Link>
 
+      <Link href="/goals" className={`${styles.item} ${isActive('/goals') ? styles.itemActive : ''}`}>
+        <span className={styles.icon}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <circle cx="12" cy="12" r="6"/>
+            <circle cx="12" cy="12" r="2"/>
+          </svg>
+        </span>
+        <span className={styles.label}>Objetivos</span>
+      </Link>
+
+      {/* Botón central destacado — Decisión Diaria */}
+      <button className={styles.dailyBtn} onClick={onOpenDailyDecision} aria-label="Decisión Diaria">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+      </button>
+
       <Link href="/history" className={`${styles.item} ${isActive('/history') ? styles.itemActive : ''}`}>
         <span className={styles.icon}>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -38,13 +56,6 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onOpenDailyDecision }) => 
         <span className={styles.label}>Historial</span>
       </Link>
 
-      {/* Botón central destacado — Decisión Diaria */}
-      <button className={styles.dailyBtn} onClick={onOpenDailyDecision} aria-label="Decisión Diaria">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-        </svg>
-      </button>
-
       <Link href="/profile" className={`${styles.item} ${isActive('/profile') ? styles.itemActive : ''}`}>
         <span className={styles.icon}>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -53,17 +64,6 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onOpenDailyDecision }) => 
           </svg>
         </span>
         <span className={styles.label}>Perfil</span>
-      </Link>
-
-      <Link href="/goals" className={`${styles.item} ${isActive('/goals') ? styles.itemActive : ''}`}>
-        <span className={styles.icon}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10"/>
-            <circle cx="12" cy="12" r="6"/>
-            <circle cx="12" cy="12" r="2"/>
-          </svg>
-        </span>
-        <span className={styles.label}>Objetivos</span>
       </Link>
 
     </nav>
