@@ -34,9 +34,8 @@
 }
 
 .container {
-  max-width: var(--app-max-width);
-  margin: 0 auto;
-  /* Móvil: padding lateral consistente */
+  width: 100%;
+  /* Padding lateral consistente en todos los dispositivos */
   padding: 16px;
   box-sizing: border-box;
 }

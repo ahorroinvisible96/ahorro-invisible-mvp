@@ -406,7 +406,7 @@ export default function GoalsPage() {
 
   if (loading || !summary) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#020617' }}>
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <span style={{ color: 'rgba(148,163,184,0.6)', fontSize: 14 }}>Cargando objetivos...</span>
       </div>
     );
@@ -422,7 +422,7 @@ export default function GoalsPage() {
   );
 
   return (
-    <div style={{ minHeight: '100vh', background: '#020617', paddingBottom: 80 }}>
+    <div style={{ minHeight: '100vh', paddingBottom: 80 }}>
 
       {/* ── Modals ── */}
       {modalMode && (

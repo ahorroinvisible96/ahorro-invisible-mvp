@@ -127,12 +127,12 @@ export default function GoalDetailPage({ params }: { params: { id: string } }) {
   };
 
   if (loading) {
-    return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: D.page }}><span style={{ color: D.tm }}>Cargando...</span></div>;
+    return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ color: D.tm }}>Cargando...</span></div>;
   }
 
   if (!goal) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: D.page, padding: 24 }}>
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
         <p style={{ color: D.ts, fontSize: 14, marginBottom: 16 }}>Objetivo no encontrado.</p>
         <button onClick={() => router.push('/goals')} style={{ padding: '10px 20px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight: 600 }}>Ver objetivos</button>
       </div>
@@ -140,7 +140,7 @@ export default function GoalDetailPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: D.page, padding: '24px 0' }}>
+    <div style={{ minHeight: '100vh', padding: '24px 0' }}>
       <div>
 
         {/* Nav */}

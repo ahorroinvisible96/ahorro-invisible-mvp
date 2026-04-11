@@ -92,12 +92,10 @@
   min-height: 0;
 }
 
-/* ── Wrapper interior: centra el contenido al mismo ancho que el resto de páginas ── */
+/* ── Wrapper interior: padding consistente igual al container ── */
 .zoneInner {
-  max-width: var(--app-max-width);
-  margin: 0 auto;
-  padding: 0 16px;
   width: 100%;
+  padding: 0 16px;
   box-sizing: border-box;
 }
 
