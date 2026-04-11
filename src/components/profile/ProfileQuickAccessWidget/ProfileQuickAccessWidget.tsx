@@ -5,6 +5,7 @@ import type { ProfileQuickAccessWidgetProps } from './ProfileQuickAccessWidget.t
 import styles from './ProfileQuickAccessWidget.module.css';
 import { useWidgetCollapse } from '@/hooks/useWidgetCollapse';
 import { CollapseChevron } from '@/components/dashboard/CollapsibleWidget/CollapsibleWidget';
+import { TargetIcon, BarChartIcon, SettingsIcon, ChevronRightIcon, FileIcon } from '@/components/ui/AppIcons';
 
 export function ProfileQuickAccessWidget({
   onGoToSettings,
@@ -17,35 +18,19 @@ export function ProfileQuickAccessWidget({
       label: 'Mis objetivos',
       onClick: onGoToGoals,
       iconClass: styles.itemIconGreen,
-      icon: (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
-        </svg>
-      ),
+      icon: <TargetIcon size={16} />,
     },
     {
       label: 'Historial de ahorro',
       onClick: onGoToHistory,
       iconClass: styles.itemIconBlue,
-      icon: (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-          <polyline points="14 2 14 8 20 8"/>
-          <line x1="16" y1="13" x2="8" y2="13"/>
-          <line x1="16" y1="17" x2="8" y2="17"/>
-        </svg>
-      ),
+      icon: <BarChartIcon size={16} />,
     },
     {
       label: 'Configuración avanzada',
       onClick: onGoToSettings,
       iconClass: styles.itemIconPurple,
-      icon: (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="3"/>
-          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
-        </svg>
-      ),
+      icon: <SettingsIcon size={16} />,
     },
   ];
 
@@ -58,10 +43,7 @@ export function ProfileQuickAccessWidget({
       <div className={styles.content}>
         <div className={styles.header}>
           <div className={styles.iconWrap}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
-              <polyline points="13 2 13 9 20 9"/>
-            </svg>
+            <FileIcon size={16} />
           </div>
           <h2 className={styles.title} style={{ flex: 1 }}>Accesos rápidos</h2>
           <CollapseChevron collapsed={collapsed} onToggle={toggle} />
@@ -77,9 +59,7 @@ export function ProfileQuickAccessWidget({
                 <span className={styles.itemLabel}>{item.label}</span>
               </div>
               <span className={styles.chevron}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="9 18 15 12 9 6"/>
-                </svg>
+                <ChevronRightIcon size={16} />
               </span>
             </button>
           ))}

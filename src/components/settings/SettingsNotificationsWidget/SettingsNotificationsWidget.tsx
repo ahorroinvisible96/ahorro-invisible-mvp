@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import styles from './SettingsNotificationsWidget.module.css';
 import { useWidgetCollapse } from '@/hooks/useWidgetCollapse';
 import { CollapseChevron } from '@/components/dashboard/CollapsibleWidget/CollapsibleWidget';
+import { BellIcon } from '@/components/ui/AppIcons';
 import {
   getNotificationPermission,
   requestNotificationPermission,
@@ -91,10 +92,7 @@ export function SettingsNotificationsWidget(): React.ReactElement {
       <div className={styles.content}>
         <div className={styles.header}>
           <div className={styles.iconWrap}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-            </svg>
+            <BellIcon size={16} />
           </div>
           <h2 className={styles.title} style={{ flex: 1 }}>Notificaciones</h2>
           <CollapseChevron collapsed={collapsed} onToggle={toggle} />

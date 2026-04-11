@@ -5,6 +5,7 @@ import type { ProfileAccountWidgetProps } from './ProfileAccountWidget.types';
 import styles from './ProfileAccountWidget.module.css';
 import { useWidgetCollapse } from '@/hooks/useWidgetCollapse';
 import { CollapseChevron } from '@/components/dashboard/CollapsibleWidget/CollapsibleWidget';
+import { UserIcon, LogoutIcon } from '@/components/ui/AppIcons';
 
 export function ProfileAccountWidget({
   email,
@@ -20,10 +21,7 @@ export function ProfileAccountWidget({
       <div className={styles.content}>
         <div className={styles.header}>
           <div className={styles.iconWrap}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-              <circle cx="12" cy="7" r="4"/>
-            </svg>
+            <UserIcon size={16} />
           </div>
           <h2 className={styles.title} style={{ flex: 1 }}>Cuenta</h2>
           {collapsed && email && <span style={{ fontSize: 12, color: 'rgba(148,163,184,0.6)', marginRight: 8 }}>{email}</span>}
@@ -40,11 +38,7 @@ export function ProfileAccountWidget({
             <div className={styles.divider} />
             <button className={styles.logoutBtn} onClick={onLogout}>
               <span className={styles.logoutIcon}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                  <polyline points="16 17 21 12 16 7"/>
-                  <line x1="21" y1="12" x2="9" y2="12"/>
-                </svg>
+                <LogoutIcon size={14} />
               </span>
               Cerrar sesión
             </button>

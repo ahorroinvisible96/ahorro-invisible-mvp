@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import styles from './SettingsHelpWidget.module.css';
 import { useWidgetCollapse } from '@/hooks/useWidgetCollapse';
 import { CollapseChevron } from '@/components/dashboard/CollapsibleWidget/CollapsibleWidget';
+import { HelpIcon, ChevronDownIcon } from '@/components/ui/AppIcons';
 
 const FAQS = [
   {
@@ -45,11 +46,7 @@ export function SettingsHelpWidget(): React.ReactElement {
       <div className={styles.content}>
         <div className={styles.header}>
           <div className={styles.iconWrap}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10"/>
-              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
-              <line x1="12" y1="17" x2="12.01" y2="17"/>
-            </svg>
+            <HelpIcon size={16} />
           </div>
           <h2 className={styles.title} style={{ flex: 1 }}>Ayuda y FAQs</h2>
           <CollapseChevron collapsed={collapsed} onToggle={toggleCollapse} />
@@ -61,9 +58,7 @@ export function SettingsHelpWidget(): React.ReactElement {
               <button className={styles.faqQuestion} onClick={() => toggle(i)}>
                 <span className={styles.faqQuestionText}>{faq.q}</span>
                 <span className={`${styles.faqChevron} ${openIndex === i ? styles.faqChevronOpen : ''}`}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="6 9 12 15 18 9"/>
-                  </svg>
+                  <ChevronDownIcon size={14} />
                 </span>
               </button>
               {openIndex === i && (
