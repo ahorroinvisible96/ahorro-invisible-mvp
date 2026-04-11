@@ -38,6 +38,7 @@
   /* Padding lateral consistente en todos los dispositivos */
   padding: 16px;
   box-sizing: border-box;
+  background: var(--color-background-page);
 }
 
 @media (min-width: 768px) {
