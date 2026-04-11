@@ -140,7 +140,7 @@ export default function GoalDetailPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: D.page, padding: '24px 16px' }}>
+    <div style={{ minHeight: '100vh', background: D.page, padding: '24px 0' }}>
       <div>
 
         {/* Nav */}

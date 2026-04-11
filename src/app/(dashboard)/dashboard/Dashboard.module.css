@@ -36,7 +36,7 @@
     #3b1270 60%,
     #4a1a8a 100%
   );
-  padding: var(--header-zone-padding-v) var(--header-zone-padding-h) 32px;
+  padding: var(--header-zone-padding-v) 0 32px;
   position: relative;
   overflow: hidden;
 }
@@ -88,8 +88,23 @@
    ══════════════════════════════════════════════════════════════════════ */
 .contentZone {
   background: #08080f;
-  padding: 24px var(--header-zone-padding-h);
+  padding: 24px 0;
   min-height: 0;
+}
+
+/* ── Wrapper interior: centra el contenido al mismo ancho que el resto de páginas ── */
+.zoneInner {
+  max-width: var(--app-max-width);
+  margin: 0 auto;
+  padding: 0 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .zoneInner {
+    padding: 0 24px;
+  }
 }
 
 /* ── Grid dentro del contenido ── */

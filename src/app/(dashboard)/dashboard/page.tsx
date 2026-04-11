@@ -627,36 +627,39 @@ export default function DashboardPage() {
 
       {/* ══ ZONA HEADER: degradado púrpura — perfil + objetivo principal ══ */}
       <div className={styles.headerZone}>
-        <div className={styles.headerProfile}>
-          <HeaderStatusBarWidget
-            userName={summary.userName}
-            streak={summary.streak ?? 0}
-            onOpenProfile={() => router.push('/profile')}
-            onOpenSettings={() => router.push('/settings')}
-          />
-        </div>
-        <div className={styles.headerDaily}>
-          <PrimaryGoalHeroWidget
-            goal={summary.primaryGoal}
-            estimatedMonthsRemaining={summary.estimatedMonthsRemaining}
-            avgMonthlySavings={summary.avgMonthlySavings}
-            dailyCompleted={summary.daily.status === 'completed'}
-            onCreateGoal={handleCreateGoal}
-            onOpenGoal={(id) => router.push(`/goals/${id}`)}
-            onGoToDailyDecision={() => {
-              const el = document.getElementById('daily-decision-widget');
-              el?.scrollIntoView({ behavior: 'smooth' });
-            }}
-            onAddExtraSaving={() => setShowExtraSaving(true)}
-            onGoToHistory={() => router.push('/history')}
-            onEditGoal={(id) => handleEditGoal(id)}
-            variant="header"
-          />
+        <div className={styles.zoneInner}>
+          <div className={styles.headerProfile}>
+            <HeaderStatusBarWidget
+              userName={summary.userName}
+              streak={summary.streak ?? 0}
+              onOpenProfile={() => router.push('/profile')}
+              onOpenSettings={() => router.push('/settings')}
+            />
+          </div>
+          <div className={styles.headerDaily}>
+            <PrimaryGoalHeroWidget
+              goal={summary.primaryGoal}
+              estimatedMonthsRemaining={summary.estimatedMonthsRemaining}
+              avgMonthlySavings={summary.avgMonthlySavings}
+              dailyCompleted={summary.daily.status === 'completed'}
+              onCreateGoal={handleCreateGoal}
+              onOpenGoal={(id) => router.push(`/goals/${id}`)}
+              onGoToDailyDecision={() => {
+                const el = document.getElementById('daily-decision-widget');
+                el?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              onAddExtraSaving={() => setShowExtraSaving(true)}
+              onGoToHistory={() => router.push('/history')}
+              onEditGoal={(id) => handleEditGoal(id)}
+              variant="header"
+            />
+          </div>
         </div>
       </div>
 
       {/* ══ ZONA CONTENIDO: fondo oscuro sólido — widgets funcionales ══ */}
       <div className={styles.contentZone}>
+        <div className={styles.zoneInner}>
         <div className={styles.grid}>
           {/* Columna izquierda */}
           <div className={styles.mainCol}>
@@ -811,6 +814,7 @@ export default function DashboardPage() {
               onAdjustRules={() => router.push('/settings')}
             />
           </div>
+        </div>
         </div>
       </div>
     </div>

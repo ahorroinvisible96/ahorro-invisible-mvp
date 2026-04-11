@@ -483,7 +483,7 @@ export default function GoalsPage() {
       />
 
       {/* ── Contenido principal ── */}
-      <div style={{ padding: '24px 16px 0' }}>
+      <div style={{ padding: '24px 0 0' }}>
 
         {/* Header secundario */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
