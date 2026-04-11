@@ -55,14 +55,15 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onOpenDailyDecision }) => 
         <span className={styles.label}>Perfil</span>
       </Link>
 
-      <Link href="/settings" className={`${styles.item} ${isActive('/settings') ? styles.itemActive : ''}`}>
+      <Link href="/goals" className={`${styles.item} ${isActive('/goals') ? styles.itemActive : ''}`}>
         <span className={styles.icon}>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="3"/>
-            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
+            <circle cx="12" cy="12" r="10"/>
+            <circle cx="12" cy="12" r="6"/>
+            <circle cx="12" cy="12" r="2"/>
           </svg>
         </span>
-        <span className={styles.label}>Ajustes</span>
+        <span className={styles.label}>Objetivos</span>
       </Link>
 
     </nav>

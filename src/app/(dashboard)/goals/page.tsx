@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { analytics } from '@/services/analytics';
 import { SavingsBadge } from '@/components/hucha/SavingsBadge';
 import { SavingsModal } from '@/components/hucha/SavingsModal';
+import { PrimaryGoalHeroWidget } from '@/components/dashboard/PrimaryGoalHeroWidget';
 import {
   buildSummary,
   storeCreateGoal,
@@ -18,7 +19,7 @@ import {
   storeDeleteGoalPermanent,
 } from '@/services/dashboardStore';
 import { pushLocalDataToSupabase, syncGoalToSupabase } from '@/services/syncService';
-import type { Goal, Hucha } from '@/types/Dashboard';
+import type { Goal, Hucha, DashboardSummary } from '@/types/Dashboard';
 
 function formatEUR(n: number) {
   return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
@@ -251,39 +252,42 @@ function GoalCard({
   goal,
   onEdit,
   onArchive,
+  onDelete,
   onSetPrimary,
   onDetail,
 }: {
   goal: Goal;
   onEdit: () => void;
   onArchive: () => void;
+  onDelete: () => void;
   onSetPrimary: () => void;
   onDetail: () => void;
 }) {
   const p = pct(goal);
   const isCompleted = goal.currentAmount >= goal.targetAmount;
   return (
-    <div style={{ background: 'linear-gradient(135deg,#0f172a,#1e293b)', border: '1px solid rgba(51,65,85,0.4)', borderRadius: 16, padding: '18px 20px', cursor: 'pointer', boxShadow: '0 4px 12px rgba(2,6,23,0.4)' }} onClick={onDetail}>
+    <div style={{ background: 'linear-gradient(135deg,#0f172a,#1e293b)', border: goal.isPrimary ? '1px solid rgba(168,85,247,0.35)' : '1px solid rgba(51,65,85,0.4)', borderRadius: 16, padding: '18px 20px', cursor: 'pointer', boxShadow: goal.isPrimary ? '0 4px 16px rgba(168,85,247,0.12)' : '0 4px 12px rgba(2,6,23,0.4)' }} onClick={onDetail}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
             <span style={{ fontSize: 15, fontWeight: 700, color: '#f1f5f9', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{goal.title}</span>
-            {goal.isPrimary && <span style={{ fontSize: 10, fontWeight: 700, background: 'rgba(37,99,235,0.2)', color: '#60a5fa', padding: '2px 8px', borderRadius: 20, border: '1px solid rgba(37,99,235,0.3)', flexShrink: 0 }}>PRINCIPAL</span>}
+            {goal.isPrimary && <span style={{ fontSize: 10, fontWeight: 700, background: 'rgba(168,85,247,0.2)', color: '#c4b5fd', padding: '2px 8px', borderRadius: 20, border: '1px solid rgba(168,85,247,0.35)', flexShrink: 0 }}>⭐ PRINCIPAL</span>}
             {isCompleted && <span style={{ fontSize: 10, fontWeight: 700, background: 'rgba(22,163,74,0.15)', color: '#4ade80', padding: '2px 8px', borderRadius: 20, border: '1px solid rgba(22,163,74,0.3)', flexShrink: 0 }}>✓ COMPLETADO</span>}
           </div>
           <p style={{ fontSize: 13, color: 'rgba(148,163,184,0.7)', margin: 0 }}>{goal.horizonMonths} meses · {formatEUR(goal.currentAmount)} / {formatEUR(goal.targetAmount)}</p>
         </div>
-        <span style={{ fontSize: 15, fontWeight: 800, color: '#60a5fa', flexShrink: 0, marginLeft: 12 }}>{p}%</span>
+        <span style={{ fontSize: 15, fontWeight: 800, color: isCompleted ? '#4ade80' : '#60a5fa', flexShrink: 0, marginLeft: 12 }}>{p}%</span>
       </div>
       <div style={{ background: 'rgba(30,41,59,0.8)', borderRadius: 999, height: 5, overflow: 'hidden', marginBottom: 12 }}>
         <div style={{ width: `${p}%`, height: 5, background: isCompleted ? 'linear-gradient(90deg,#4ade80,#16a34a)' : 'linear-gradient(90deg,#a855f7,#2563eb)', borderRadius: 999 }} />
       </div>
-      <div style={{ display: 'flex', gap: 8 }} onClick={e => e.stopPropagation()}>
-        {!goal.isPrimary && !isCompleted && (
-          <button onClick={onSetPrimary} style={{ fontSize: 12, padding: '5px 10px', border: '1px solid rgba(37,99,235,0.35)', background: 'rgba(37,99,235,0.12)', color: '#60a5fa', borderRadius: 8, cursor: 'pointer', fontWeight: 600 }}>Principal</button>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }} onClick={e => e.stopPropagation()}>
+        {!goal.isPrimary && (
+          <button onClick={onSetPrimary} style={{ fontSize: 12, padding: '5px 10px', border: '1px solid rgba(168,85,247,0.35)', background: 'rgba(168,85,247,0.1)', color: '#c4b5fd', borderRadius: 8, cursor: 'pointer', fontWeight: 600 }}>⭐ Principal</button>
         )}
         <button onClick={onEdit} style={{ fontSize: 12, padding: '5px 10px', border: '1px solid rgba(51,65,85,0.5)', background: 'rgba(30,41,59,0.5)', color: 'rgba(203,213,225,0.8)', borderRadius: 8, cursor: 'pointer' }}>Editar</button>
-        <button onClick={onArchive} style={{ fontSize: 12, padding: '5px 10px', border: '1px solid rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.08)', color: '#f87171', borderRadius: 8, cursor: 'pointer' }}>Archivar</button>
+        <button onClick={onArchive} style={{ fontSize: 12, padding: '5px 10px', border: '1px solid rgba(251,191,36,0.3)', background: 'rgba(251,191,36,0.06)', color: '#fbbf24', borderRadius: 8, cursor: 'pointer' }}>Archivar</button>
+        <button onClick={onDelete} style={{ fontSize: 12, padding: '5px 10px', border: '1px solid rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.08)', color: '#f87171', borderRadius: 8, cursor: 'pointer' }}>Eliminar</button>
       </div>
     </div>
   );
@@ -291,6 +295,7 @@ function GoalCard({
 
 export default function GoalsPage() {
   const router = useRouter();
+  const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [activeGoals, setActiveGoals] = useState<Goal[]>([]);
   const [archivedGoals, setArchivedGoals] = useState<Goal[]>([]);
   const [hucha, setHucha] = useState<Hucha>({ balance: 0, entries: [] });
@@ -304,10 +309,11 @@ export default function GoalsPage() {
   const [loading, setLoading] = useState(true);
 
   const refresh = () => {
-    const summary = buildSummary('30d');
-    setActiveGoals(summary.goals.filter(g => !g.archived));
+    const s = buildSummary('30d');
+    setSummary(s);
+    setActiveGoals(s.goals.filter(g => !g.archived));
     setArchivedGoals(storeListArchivedGoals());
-    setHucha(summary.hucha);
+    setHucha(s.hucha);
   };
 
   useEffect(() => {
@@ -319,20 +325,18 @@ export default function GoalsPage() {
   }, [router]);
 
   const handleCreate = async (data: { title: string; targetAmount: number; horizonMonths: number; applyHucha: boolean }) => {
-    const summary = storeCreateGoal({ title: data.title, targetAmount: data.targetAmount, horizonMonths: data.horizonMonths, currentAmount: 0 });
-    const newGoal = summary.goals.filter(g => !g.archived).slice(-1)[0];
-    // Si hay un archive pendiente (venimos de ArchiveModal → Crear nuevo objetivo)
+    const s = storeCreateGoal({ title: data.title, targetAmount: data.targetAmount, horizonMonths: data.horizonMonths, currentAmount: 0 });
+    const newGoal = s.goals.filter(g => !g.archived).slice(-1)[0];
     if (pendingArchiveAfterCreate && newGoal) {
       storeArchiveGoalSafe(pendingArchiveAfterCreate.id, newGoal.id);
+      syncGoalToSupabase({ ...pendingArchiveAfterCreate, archived: true, currentAmount: 0 }).catch(() => null);
       setPendingArchiveAfterCreate(null);
     }
     if (data.applyHucha && newGoal && hucha.balance > 0) {
       storeTransferFromHucha(newGoal.id, hucha.balance);
     }
-    analytics.goalCreated(newGoal?.id ?? '', summary.goals.filter(g => !g.archived).length === 1, data.targetAmount, data.horizonMonths);
-    // Sync directo e inmediato del goal nuevo
+    analytics.goalCreated(newGoal?.id ?? '', s.goals.filter(g => !g.archived).length === 1, data.targetAmount, data.horizonMonths);
     if (newGoal) syncGoalToSupabase(newGoal).catch(() => null);
-    // Full sync en background como catch-all
     const userId = localStorage.getItem('supabaseUserId');
     if (userId) pushLocalDataToSupabase(userId).catch(() => null);
     setModalMode(null);
@@ -341,11 +345,9 @@ export default function GoalsPage() {
 
   const handleEdit = (data: { title: string; targetAmount: number; horizonMonths: number; applyHucha: boolean }) => {
     if (!editingGoal) return;
-    const summary = storeUpdateGoal(editingGoal.id, { title: data.title, targetAmount: data.targetAmount, horizonMonths: data.horizonMonths });
-    const updatedGoal = summary.goals.find(g => g.id === editingGoal.id);
-    // Sync directo del goal editado
+    const s = storeUpdateGoal(editingGoal.id, { title: data.title, targetAmount: data.targetAmount, horizonMonths: data.horizonMonths });
+    const updatedGoal = s.goals.find(g => g.id === editingGoal.id);
     if (updatedGoal) syncGoalToSupabase(updatedGoal).catch(() => null);
-    // Full sync en background
     const userId = localStorage.getItem('supabaseUserId');
     if (userId) pushLocalDataToSupabase(userId).catch(() => null);
     setModalMode(null);
@@ -363,6 +365,7 @@ export default function GoalsPage() {
     } else {
       storeArchiveGoalSafe(goalId, 'hucha');
       analytics.goalArchived(goalId, goal.isPrimary);
+      syncGoalToSupabase({ ...goal, archived: true, currentAmount: 0 }).catch(() => null);
       refresh();
     }
   };
@@ -371,6 +374,7 @@ export default function GoalsPage() {
     if (!archivingGoal) return;
     storeArchiveGoalSafe(archivingGoal.id, destination);
     analytics.goalArchived(archivingGoal.id, archivingGoal.isPrimary);
+    syncGoalToSupabase({ ...archivingGoal, archived: true, currentAmount: 0 }).catch(() => null);
     setArchivingGoal(null);
     refresh();
   };
@@ -398,7 +402,7 @@ export default function GoalsPage() {
     refresh();
   };
 
-  if (loading) {
+  if (loading || !summary) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#020617' }}>
         <span style={{ color: 'rgba(148,163,184,0.6)', fontSize: 14 }}>Cargando objetivos...</span>
@@ -406,95 +410,158 @@ export default function GoalsPage() {
     );
   }
 
+  const inProgressGoals = activeGoals.filter(g => g.currentAmount < g.targetAmount);
+  const completedGoals  = activeGoals.filter(g => g.currentAmount >= g.targetAmount);
+
+  const sectionLabel = (text: string, count: number) => (
+    <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(148,163,184,0.5)', textTransform: 'uppercase' as const, letterSpacing: '0.08em', margin: '0 0 12px' }}>
+      {text} <span style={{ color: 'rgba(148,163,184,0.35)' }}>({count})</span>
+    </p>
+  );
+
   return (
-    <div style={{ minHeight: '100vh', background: '#020617', padding: '24px 16px 80px' }}>
-      <div style={{ maxWidth: 600, margin: '0 auto' }}>
+    <div style={{ minHeight: '100vh', background: '#020617', paddingBottom: 80 }}>
 
-        {/* Modals */}
-        {modalMode && (
-          <GoalModal
-            mode={modalMode}
-            initial={modalMode === 'edit' ? editingGoal ?? undefined : undefined}
-            onSave={modalMode === 'create' ? handleCreate : handleEdit}
-            onClose={() => { setModalMode(null); setEditingGoal(null); }}
-            hucha={hucha}
-          />
-        )}
-        {archivingGoal && (
-          <ArchiveModal
-            goal={archivingGoal}
-            otherGoals={activeGoals.filter(g => g.id !== archivingGoal.id)}
-            onConfirm={handleArchiveConfirm}
-            onClose={() => setArchivingGoal(null)}
-            onCreateNew={() => {
-              setPendingArchiveAfterCreate(archivingGoal);
-              setArchivingGoal(null);
-              setModalMode('create');
-            }}
-          />
-        )}
-        {deletingGoal && (
-          <DeleteArchivedModal
-            goal={deletingGoal}
-            activeGoals={activeGoals}
-            onConfirm={handleDeleteConfirm}
-            onClose={() => setDeletingGoal(null)}
-          />
-        )}
-        <SavingsModal
-          isOpen={showHuchaModal && hucha.balance > 0}
-          onClose={() => setShowHuchaModal(false)}
-          balance={hucha.balance}
-          activeGoals={activeGoals}
-          onAssign={handleHuchaAssign}
-          onCreateGoal={() => { setShowHuchaModal(false); setModalMode('create'); }}
+      {/* ── Modals ── */}
+      {modalMode && (
+        <GoalModal
+          mode={modalMode}
+          initial={modalMode === 'edit' ? editingGoal ?? undefined : undefined}
+          onSave={modalMode === 'create' ? handleCreate : handleEdit}
+          onClose={() => { setModalMode(null); setEditingGoal(null); }}
+          hucha={hucha}
         />
+      )}
+      {archivingGoal && (
+        <ArchiveModal
+          goal={archivingGoal}
+          otherGoals={activeGoals.filter(g => g.id !== archivingGoal.id)}
+          onConfirm={handleArchiveConfirm}
+          onClose={() => setArchivingGoal(null)}
+          onCreateNew={() => {
+            setPendingArchiveAfterCreate(archivingGoal);
+            setArchivingGoal(null);
+            setModalMode('create');
+          }}
+        />
+      )}
+      {deletingGoal && (
+        <DeleteArchivedModal
+          goal={deletingGoal}
+          activeGoals={activeGoals}
+          onConfirm={handleDeleteConfirm}
+          onClose={() => setDeletingGoal(null)}
+        />
+      )}
+      <SavingsModal
+        isOpen={showHuchaModal && hucha.balance > 0}
+        onClose={() => setShowHuchaModal(false)}
+        balance={hucha.balance}
+        activeGoals={activeGoals}
+        onAssign={handleHuchaAssign}
+        onCreateGoal={() => { setShowHuchaModal(false); setModalMode('create'); }}
+      />
 
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-          <div>
-            <button onClick={() => router.push('/dashboard')} style={{ background: 'none', border: 'none', color: 'rgba(148,163,184,0.6)', fontSize: 13, cursor: 'pointer', padding: 0, marginBottom: 6 }}>← Dashboard</button>
-            <h1 style={{ fontSize: 22, fontWeight: 800, color: '#f1f5f9', margin: 0 }}>Mis Objetivos</h1>
-          </div>
-          <button onClick={() => setModalMode('create')} style={{ padding: '10px 18px', background: 'linear-gradient(90deg,#a855f7,#2563eb)', color: '#fff', border: 'none', borderRadius: 12, fontWeight: 700, fontSize: 14, cursor: 'pointer', boxShadow: '0 4px 14px rgba(168,85,247,0.35)' }}>
+      {/* ── Hero: objetivo principal (igual que en dashboard) ── */}
+      <PrimaryGoalHeroWidget
+        goal={summary.primaryGoal}
+        estimatedMonthsRemaining={summary.estimatedMonthsRemaining}
+        avgMonthlySavings={summary.avgMonthlySavings}
+        dailyCompleted={summary.daily.status === 'completed'}
+        onCreateGoal={() => setModalMode('create')}
+        onOpenGoal={(id) => router.push(`/goals/${id}`)}
+        onGoToDailyDecision={() => router.push('/daily')}
+        onAddExtraSaving={() => router.push('/extra-saving')}
+        onGoToHistory={() => router.push('/history')}
+        onEditGoal={(id) => {
+          const g = activeGoals.find(x => x.id === id);
+          if (g) { setEditingGoal(g); setModalMode('edit'); }
+        }}
+        variant="header"
+      />
+
+      {/* ── Contenido principal ── */}
+      <div style={{ maxWidth: 600, margin: '0 auto', padding: '24px 16px 0' }}>
+
+        {/* Header secundario */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+          <h2 style={{ fontSize: 18, fontWeight: 800, color: '#f1f5f9', margin: 0 }}>Mis Objetivos</h2>
+          <button
+            onClick={() => setModalMode('create')}
+            style={{ padding: '9px 16px', background: 'linear-gradient(90deg,#a855f7,#2563eb)', color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: 'pointer', boxShadow: '0 4px 12px rgba(168,85,247,0.3)' }}
+          >
             + Nuevo
           </button>
         </div>
 
-        {/* Badge Hucha — nuevo diseño */}
+        {/* Hucha badge */}
         <SavingsBadge
           balance={hucha.balance}
           hasActiveGoals={activeGoals.length > 0}
           onClick={() => setShowHuchaModal(true)}
         />
 
-        {/* Objetivos activos */}
+        {/* ── En progreso ── */}
         {activeGoals.length === 0 ? (
-          <div style={{ background: 'linear-gradient(135deg,#0f172a,#1e293b)', border: '1px solid rgba(51,65,85,0.4)', borderRadius: 16, padding: '40px 24px', textAlign: 'center' }}>
+          <div style={{ background: 'linear-gradient(135deg,#0f172a,#1e293b)', border: '1px solid rgba(51,65,85,0.4)', borderRadius: 16, padding: '40px 24px', textAlign: 'center', marginTop: 16 }}>
             <div style={{ fontSize: 48, marginBottom: 12 }}>🎯</div>
             <p style={{ fontSize: 15, fontWeight: 600, color: '#f1f5f9', marginBottom: 6 }}>Sin objetivos activos</p>
             <p style={{ fontSize: 13, color: 'rgba(148,163,184,0.6)', marginBottom: 20 }}>Crea tu primer objetivo para empezar a ahorrar.</p>
             <button onClick={() => setModalMode('create')} style={{ padding: '12px 24px', background: 'linear-gradient(90deg,#a855f7,#2563eb)', color: '#fff', border: 'none', borderRadius: 12, fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>Crear objetivo</button>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 }}>
-            {activeGoals.map(g => (
-              <GoalCard
-                key={g.id}
-                goal={g}
-                onDetail={() => router.push(`/goals/${g.id}`)}
-                onEdit={() => { setEditingGoal(g); setModalMode('edit'); }}
-                onArchive={() => handleArchiveRequest(g.id)}
-                onSetPrimary={() => handleSetPrimary(g.id)}
-              />
-            ))}
-          </div>
+          <>
+            {inProgressGoals.length > 0 && (
+              <div style={{ marginTop: 20 }}>
+                {sectionLabel('En progreso', inProgressGoals.length)}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {inProgressGoals.map(g => (
+                    <GoalCard
+                      key={g.id}
+                      goal={g}
+                      onDetail={() => router.push(`/goals/${g.id}`)}
+                      onEdit={() => { setEditingGoal(g); setModalMode('edit'); }}
+                      onArchive={() => handleArchiveRequest(g.id)}
+                      onDelete={() => setDeletingGoal(g)}
+                      onSetPrimary={() => handleSetPrimary(g.id)}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ── Completados ── */}
+            {completedGoals.length > 0 && (
+              <div style={{ marginTop: 28 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                  <span style={{ fontSize: 18 }}>🏆</span>
+                  {sectionLabel('Objetivos completados', completedGoals.length)}
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {completedGoals.map(g => (
+                    <GoalCard
+                      key={g.id}
+                      goal={g}
+                      onDetail={() => router.push(`/goals/${g.id}`)}
+                      onEdit={() => { setEditingGoal(g); setModalMode('edit'); }}
+                      onArchive={() => handleArchiveRequest(g.id)}
+                      onDelete={() => setDeletingGoal(g)}
+                      onSetPrimary={() => handleSetPrimary(g.id)}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
         )}
 
-        {/* Objetivos archivados */}
+        {/* ── Archivados ── */}
         {archivedGoals.length > 0 && (
-          <div>
-            <button onClick={() => setShowArchived(v => !v)} style={{ background: 'none', border: 'none', color: 'rgba(148,163,184,0.5)', fontSize: 13, cursor: 'pointer', marginBottom: 12, fontWeight: 600 }}>
+          <div style={{ marginTop: 28 }}>
+            <button
+              onClick={() => setShowArchived(v => !v)}
+              style={{ background: 'none', border: 'none', color: 'rgba(148,163,184,0.5)', fontSize: 13, cursor: 'pointer', marginBottom: 12, fontWeight: 600, padding: 0 }}
+            >
               {showArchived ? '▲' : '▼'} Archivados ({archivedGoals.length})
             </button>
             {showArchived && (
@@ -507,16 +574,10 @@ export default function GoalsPage() {
                     </div>
                     <p style={{ fontSize: 12, color: 'rgba(100,116,139,0.6)', margin: '0 0 10px' }}>{formatEUR(g.currentAmount)} / {formatEUR(g.targetAmount)}</p>
                     <div style={{ display: 'flex', gap: 8 }}>
-                      <button
-                        onClick={() => handleReactivate(g.id)}
-                        style={{ flex: 1, fontSize: 12, padding: '7px 0', border: '1px solid rgba(37,99,235,0.35)', background: 'rgba(37,99,235,0.12)', color: '#60a5fa', borderRadius: 8, cursor: 'pointer', fontWeight: 600 }}
-                      >
+                      <button onClick={() => handleReactivate(g.id)} style={{ flex: 1, fontSize: 12, padding: '7px 0', border: '1px solid rgba(37,99,235,0.35)', background: 'rgba(37,99,235,0.12)', color: '#60a5fa', borderRadius: 8, cursor: 'pointer', fontWeight: 600 }}>
                         ✓ Reactivar
                       </button>
-                      <button
-                        onClick={() => setDeletingGoal(g)}
-                        style={{ flex: 1, fontSize: 12, padding: '7px 0', border: '1px solid rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.08)', color: '#f87171', borderRadius: 8, cursor: 'pointer', fontWeight: 600 }}
-                      >
+                      <button onClick={() => setDeletingGoal(g)} style={{ flex: 1, fontSize: 12, padding: '7px 0', border: '1px solid rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.08)', color: '#f87171', borderRadius: 8, cursor: 'pointer', fontWeight: 600 }}>
                         🗑 Eliminar
                       </button>
                     </div>
@@ -526,6 +587,7 @@ export default function GoalsPage() {
             )}
           </div>
         )}
+
       </div>
     </div>
   );
