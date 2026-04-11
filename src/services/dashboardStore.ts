@@ -1092,3 +1092,52 @@ export function storeSubmitDecision(
   persistStore(state);
   return buildSummary(currentRange);
 }
+
+// ─── Progreso de objetivo: puntos para gráfica ───────────────────────────────
+export type GoalProgressPoint = {
+  day: number;
+  actual: number;
+  ideal: number;
+};
+
+export function storeGetGoalProgressPoints(goalId: string): GoalProgressPoint[] {
+  const state = loadStore();
+  const goal = state.goals.find((g) => g.id === goalId);
+  if (!goal) return [];
+
+  const start = new Date(goal.startDate ?? goal.createdAt);
+  start.setHours(0, 0, 0, 0);
+  const horizonDays = goal.horizonMonths * 30;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const daysElapsed = Math.max(
+    0,
+    Math.min(
+      Math.floor((today.getTime() - start.getTime()) / 86_400_000),
+      horizonDays,
+    ),
+  );
+
+  const byDay = new Map<number, number>();
+  for (const d of state.decisions) {
+    if (d.goalId !== goalId || d.deltaAmount <= 0) continue;
+    const dd = new Date(d.date);
+    dd.setHours(0, 0, 0, 0);
+    const offset = Math.floor((dd.getTime() - start.getTime()) / 86_400_000);
+    if (offset >= 0 && offset <= horizonDays) {
+      byDay.set(offset, (byDay.get(offset) ?? 0) + d.deltaAmount);
+    }
+  }
+
+  const pts: GoalProgressPoint[] = [{ day: 0, actual: 0, ideal: 0 }];
+  let cum = 0;
+  for (let d = 1; d <= daysElapsed; d++) {
+    cum += byDay.get(d) ?? 0;
+    pts.push({
+      day: d,
+      actual: Math.min(cum, goal.targetAmount),
+      ideal: (d / horizonDays) * goal.targetAmount,
+    });
+  }
+  return pts;
+}

@@ -1,4 +1,4 @@
-import type { SavingsEvolutionPoint } from '@/types/Dashboard';
+import type { SavingsEvolutionPoint, Goal } from '@/types/Dashboard';
 
 export type SavingsEvolutionData = {
   range: '7d' | '30d' | '90d';
@@ -9,4 +9,5 @@ export type SavingsEvolutionData = {
 export type SavingsEvolutionWidgetProps = {
   evolution: SavingsEvolutionData;
   onChangeRange: (range: '7d' | '30d' | '90d') => void;
+  goals?: Goal[];
 };

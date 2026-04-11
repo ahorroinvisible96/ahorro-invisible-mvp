@@ -763,6 +763,7 @@ export default function DashboardPage() {
               evolution={summary.savingsEvolution}
               onChangeRange={changeRange}
               onGoToDailyQuestion={() => router.push('/daily')}
+              goals={activeGoals}
             />
 
             <SavingsBadge
