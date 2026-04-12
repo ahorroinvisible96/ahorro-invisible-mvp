@@ -24,6 +24,24 @@ import {
   LogoutIcon,
 } from '@/components/ui/AppIcons';
 
+// ── Icono ojo inline (abre / cierra privacidad) ───────────────────────────────
+function EyeIcon({ open, size = 14 }: { open: boolean; size?: number }) {
+  return open ? (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M1 12S5 4 12 4s11 8 11 8-4 8-11 8S1 12 1 12z"/>
+      <circle cx="12" cy="12" r="3"/>
+    </svg>
+  ) : (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20C5 20 1 12 1 12a18.45 18.45 0 0 1 5.06-5.94"/>
+      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+      <line x1="1" y1="1" x2="23" y2="23"/>
+    </svg>
+  );
+}
+
 // ── Niveles de medalla ────────────────────────────────────────────────────────
 const MEDAL_TIERS = [
   { amount: 5000, Icon: CrownIcon,   color: '#FFD700', label: 'Corona'   },
@@ -88,15 +106,25 @@ function ListRow({
 // ── Página principal ──────────────────────────────────────────────────────────
 export default function ProfilePage() {
   const router = useRouter();
-  const [userName, setUserName]       = useState('');
-  const [email, setEmail]             = useState('');
-  const [incomeRange, setIncomeRange] = useState<IncomeRange | null>(null);
-  const [loading, setLoading]         = useState(true);
-  const [totalSaved, setTotalSaved]   = useState(0);
-  const [streak, setStreak]           = useState(0);
-  const [infoOpen, setInfoOpen]       = useState(false);
-  const [editingName, setEditingName] = useState('');
-  const [nameSaved, setNameSaved]     = useState(false);
+  const [userName, setUserName]         = useState('');
+  const [email, setEmail]               = useState('');
+  const [incomeRange, setIncomeRange]   = useState<IncomeRange | null>(null);
+  const [loading, setLoading]           = useState(true);
+  const [totalSaved, setTotalSaved]     = useState(0);
+  const [streak, setStreak]             = useState(0);
+  const [infoOpen, setInfoOpen]           = useState(false);
+  const [editingName, setEditingName]     = useState('');
+  const [nameSaved, setNameSaved]         = useState(false);
+  // Estado de privacidad de ingresos — persiste en localStorage
+  const [incomeVisible, setIncomeVisible] = useState(true);
+
+  const toggleIncomeVisibility = useCallback(() => {
+    setIncomeVisible(v => {
+      const next = !v;
+      localStorage.setItem('profile_income_visible', next ? '1' : '0');
+      return next;
+    });
+  }, []);
 
   const handleSectionOpen = useCallback((s: string) => {
     if (s === 'info') setInfoOpen(true);
@@ -113,6 +141,9 @@ export default function ProfilePage() {
     setTotalSaved(summary.totalSaved);
     setStreak(summary.streak ?? 0);
     setEditingName(summary.userName);
+    // Restaurar preferencia de privacidad
+    const savedVisible = localStorage.getItem('profile_income_visible');
+    if (savedVisible === '0') setIncomeVisible(false);
     analytics.profileViewed();
     setLoading(false);
   }, [router]);
@@ -145,6 +176,9 @@ export default function ProfilePage() {
   const medal = getMedal(totalSaved);
   const incomeStr = formatIncome(incomeRange);
 
+  // Muestra ingresos o blur
+  const incomeDisplay = incomeVisible ? incomeStr : '••••••';
+
   return (
     <div className={styles.page}>
       <Suspense fallback={null}>
@@ -168,20 +202,34 @@ export default function ProfilePage() {
         {/* Divisor */}
         <div className={styles.heroDivider} />
 
-        {/* Zona baja: ingresos + acción editar */}
+        {/* Zona baja: ingresos + controles */}
         <div className={styles.heroBottom}>
           <div className={styles.heroIncomeBlock}>
             <span className={styles.heroIncomeLabel}>INGRESOS MENSUALES</span>
-            <span className={styles.heroIncomeValue}>{incomeStr}</span>
+            <span className={`${styles.heroIncomeValue} ${!incomeVisible ? styles.heroIncomeBlur : ''}`}>
+              {incomeDisplay}
+            </span>
           </div>
-          <button
-            className={styles.heroEditPill}
-            onClick={() => setInfoOpen(true)}
-            aria-label="Editar ingresos"
-          >
-            <EditIcon size={12} />
-            Editar
-          </button>
+          <div className={styles.heroPills}>
+            {/* Toggle privacidad */}
+            <button
+              className={styles.heroIconPill}
+              onClick={toggleIncomeVisibility}
+              aria-label={incomeVisible ? 'Ocultar ingresos' : 'Mostrar ingresos'}
+              title={incomeVisible ? 'Ocultar' : 'Mostrar'}
+            >
+              <EyeIcon open={incomeVisible} size={13} />
+            </button>
+            {/* Editar */}
+            <button
+              className={styles.heroEditPill}
+              onClick={() => setInfoOpen(true)}
+              aria-label="Editar ingresos"
+            >
+              <EditIcon size={12} />
+              Editar
+            </button>
+          </div>
         </div>
 
       </header>
