@@ -5,10 +5,19 @@
 
 /* ── Página ── */
 .page {
-  background: #000000;
+  min-height: 100vh;                        /* Cubre pantalla completa siempre */
+  background: var(--color-background-page); /* Mismo fondo que el resto de la app */
+  padding: 0 0 80px;                        /* Espacio bottom nav — igual que History */
   box-sizing: border-box;
   overflow-x: hidden;
+  max-width: 100%;
   animation: pageFadeIn 300ms ease both;
+}
+
+@media (min-width: 768px) {
+  .page {
+    padding: 0 0 40px;
+  }
 }
 
 @keyframes pageFadeIn {
@@ -173,7 +182,7 @@
 
 /* ── CONTENIDO ────────────────────────────────────────────── */
 .content {
-  /* Sin padding lateral — el MainContent.container ya aplica 16px */
+  /* Sin padding lateral — el MainContent.container ya aplica 16px / 24px */
   padding-top: 20px;
   display: flex;
   flex-direction: column;
