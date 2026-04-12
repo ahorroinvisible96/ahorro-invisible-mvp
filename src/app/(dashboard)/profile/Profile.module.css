@@ -1,50 +1,369 @@
+/* ═══════════════════════════════════════════════════════════
+   PROFILE PAGE — Diseño Revolut/iOS
+   Monocromático · opacidades de blanco · acento violeta
+   ═══════════════════════════════════════════════════════════ */
+
 /* ── Página ── */
 .page {
   min-height: 100vh;
-  background: var(--color-background-page);
-  padding: 0 0 80px;
+  background: #000000;
   box-sizing: border-box;
   overflow-x: hidden;
-  max-width: 100%;
+  padding-bottom: 112px; /* espacio bottom nav */
+  animation: pageFadeIn 300ms ease both;
 }
 
-@media (min-width: 768px) {
-  .page {
-    padding: 0 0 40px;
-  }
+@keyframes pageFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
-/* ── Grid secundario: 2 widgets lado a lado ── */
-.secondaryGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  padding: 20px 0 0;
-  box-sizing: border-box;
-  width: 100%;
+/* ── HERO HEADER ─────────────────────────────────────────── */
+.hero {
+  background: #1a0533;
+  border-bottom-left-radius: 32px;
+  border-bottom-right-radius: 32px;
+  padding: 52px 24px 28px;
+  animation: heroSlideUp 400ms cubic-bezier(0.22,1,0.36,1) both;
 }
 
-/* Cada widget secundario en el grid */
-.secondaryCard {
-  min-width: 0; /* evita desbordamiento en grid */
-  overflow: hidden;
+@keyframes heroSlideUp {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-/* En pantallas muy pequeñas, apila verticalmente */
-@media (max-width: 380px) {
-  .secondaryGrid {
-    grid-template-columns: 1fr;
-  }
+/* Zona alta: avatar + saludo */
+.heroTop {
+  display: flex;
+  align-items: center;
+  gap: 14px;
 }
 
-/* ── Stack de widgets adicionales ── */
-.widgetsStack {
+.avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.09);
+  border: 1px solid rgba(255,255,255,0.14);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.80);
+  flex-shrink: 0;
+  letter-spacing: 0.5px;
+}
+
+.heroGreeting {
   display: flex;
   flex-direction: column;
+  gap: 2px;
+}
+
+.heroSub {
+  font-size: 12px;
+  color: rgba(255,255,255,0.45);
+  font-weight: 400;
+}
+
+.heroName {
+  font-size: 20px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.92);
+  letter-spacing: -0.2px;
+}
+
+/* Divisor */
+.heroDivider {
+  height: 1px;
+  background: rgba(255,255,255,0.07);
+  margin: 20px 0 18px;
+}
+
+/* Zona baja: ingresos + botón */
+.heroBottom {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
   gap: 12px;
-  padding: 12px 0 0;
-  box-sizing: border-box;
+}
+
+.heroIncomeBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.heroIncomeLabel {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.38);
+}
+
+.heroIncomeValue {
+  font-size: 26px;
+  font-weight: 300;
+  color: rgba(255,255,255,0.90);
+  letter-spacing: -0.5px;
+}
+
+.heroEditPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.60);
+  font-size: 12px;
+  font-weight: 400;
+  cursor: pointer;
+  transition: background 150ms ease;
+  flex-shrink: 0;
+  margin-bottom: 4px;
+}
+.heroEditPill:hover {
+  background: rgba(255,255,255,0.10);
+}
+
+/* ── CONTENIDO ────────────────────────────────────────────── */
+.content {
+  padding: 24px 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: contentSlideUp 450ms cubic-bezier(0.22,1,0.36,1) 80ms both;
+}
+
+@keyframes contentSlideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Etiqueta de sección ─── */
+.sectionLabel {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.28);
+  margin: 12px 4px 2px;
+  padding: 0;
+}
+.sectionLabel:first-child {
+  margin-top: 4px;
+}
+
+/* ── Tarjeta base (lista) ─── */
+.listCard {
+  background: #111111;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.06);
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+/* ── Fila de lista (estilo iOS Settings) ── */
+.listRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   width: 100%;
+  padding: 0 16px;
+  height: 56px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  cursor: pointer;
+  text-align: left;
+  transition: background 120ms ease;
+}
+.listRow:active,
+.listRow:hover {
+  background: rgba(255,255,255,0.03);
+}
+.listRowLast {
+  border-bottom: none;
+}
+
+.listRowIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.40);
+  flex-shrink: 0;
+}
+
+.listRowLabel {
+  font-size: 15px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.78);
+  flex: 1;
+  line-height: 1;
+}
+
+.listRowChevron {
+  color: rgba(255,255,255,0.20);
+  flex-shrink: 0;
+  transition: transform 200ms ease;
+}
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+/* ── MOTIVACIÓN ── */
+.motivationRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  height: 64px;
+}
+
+.motivationTexts {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.motivationSub {
+  font-size: 12px;
+  color: rgba(255,255,255,0.30);
+  font-weight: 400;
+}
+
+.streakPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(251,146,60,0.08);
+  border: 1px solid rgba(251,146,60,0.15);
+}
+
+.flameIcon {
+  color: #fb923c;
+}
+
+.streakNum {
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.78);
+}
+
+.streakUnit {
+  font-size: 11px;
+  color: rgba(255,255,255,0.28);
+  font-weight: 400;
+}
+
+/* ── CUERPO INFORMACIÓN PERSONAL ── */
+.infoBody {
+  padding: 0 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  animation: infoExpand 200ms ease both;
+}
+
+@keyframes infoExpand {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.infoRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  gap: 12px;
+}
+.infoRow:last-of-type {
+  border-bottom: none;
+}
+
+.infoLabel {
+  font-size: 13px;
+  color: rgba(255,255,255,0.32);
+  font-weight: 400;
+  flex-shrink: 0;
+}
+
+.infoValue {
+  font-size: 13px;
+  color: rgba(255,255,255,0.60);
+  font-weight: 400;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.infoInput {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(255,255,255,0.10);
+  color: rgba(255,255,255,0.78);
+  font-size: 13px;
+  font-weight: 400;
+  text-align: right;
+  flex: 1;
+  padding: 2px 0;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 150ms ease;
+}
+.infoInput:focus {
+  border-bottom-color: #7c3aed;
+}
+
+.saveBtn {
+  margin-top: 16px;
+  width: 100%;
+  padding: 13px 0;
+  border-radius: 12px;
+  background: #7c3aed;
+  color: rgba(255,255,255,0.92);
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: opacity 150ms ease;
+}
+.saveBtn:hover { opacity: 0.88; }
+.saveBtn:active { opacity: 0.75; }
+
+.logoutBtn {
+  margin-top: 8px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 12px 0;
+  border-radius: 12px;
+  background: transparent;
+  border: 1px solid rgba(248,113,113,0.20);
+  color: rgba(248,113,113,0.65);
+  font-size: 13px;
+  font-weight: 400;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+.logoutBtn:hover {
+  background: rgba(248,113,113,0.06);
+  color: rgba(248,113,113,0.85);
 }
 
 /* ── Loading ── */
@@ -53,6 +372,6 @@
   align-items: center;
   justify-content: center;
   height: 200px;
-  color: var(--color-text-label);
-  font-size: 14px;
+  color: rgba(255,255,255,0.30);
+  font-size: 13px;
 }
