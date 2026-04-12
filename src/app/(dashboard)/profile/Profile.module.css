@@ -14,70 +14,35 @@
   }
 }
 
-/* ── Header de página ── */
-.pageHeader {
-  position: relative;
-  padding: 28px 0 20px;
+/* ── Grid secundario: 2 widgets lado a lado ── */
+.secondaryGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 20px 0 0;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+/* Cada widget secundario en el grid */
+.secondaryCard {
+  min-width: 0; /* evita desbordamiento en grid */
   overflow: hidden;
 }
 
-.pageHeaderGlow {
-  position: absolute;
-  top: -40px;
-  left: -40px;
-  width: 200px;
-  height: 200px;
-  border-radius: 50%;
-  background: rgba(168, 85, 247, 0.1);
-  filter: blur(60px);
-  pointer-events: none;
+/* En pantallas muy pequeñas, apila verticalmente */
+@media (max-width: 380px) {
+  .secondaryGrid {
+    grid-template-columns: 1fr;
+  }
 }
 
-.pageHeaderInner {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.pageIconWrap {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #a855f7, #2563eb);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  flex-shrink: 0;
-  box-shadow: 0 4px 14px rgba(168, 85, 247, 0.4);
-}
-
-.pageTitles {
-  display: flex;
-  flex-direction: column;
-}
-
-.pageTitle {
-  font-size: 20px;
-  font-weight: 800;
-  color: var(--color-text-page-title);
-  margin: 0;
-  line-height: 1.2;
-}
-
-.pageSubtitle {
-  font-size: 13px;
-  color: var(--color-text-page-sub);
-  margin: 2px 0 0;
-}
-
-/* ── Stack de widgets ── */
+/* ── Stack de widgets adicionales ── */
 .widgetsStack {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 0;
+  padding: 12px 0 0;
   box-sizing: border-box;
   width: 100%;
 }

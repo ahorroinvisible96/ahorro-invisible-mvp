@@ -7,17 +7,17 @@ import { buildSummary, storeUpdateUserName, storeUpdateIncome } from '@/services
 import { authSignOut } from '@/services/authService';
 import type { IncomeRange } from '@/types/Dashboard';
 import { IncomeRangeWidget } from '@/components/dashboard/IncomeRangeWidget';
-import { MotivationCardWidget } from '@/components/dashboard/MotivationCardWidget';
-import { ProfileInfoWidget } from '@/components/profile/ProfileInfoWidget/ProfileInfoWidget';
+import { ProfileHeroWidget } from '@/components/profile/ProfileHeroWidget/ProfileHeroWidget';
 import { ProfileQuickAccessWidget } from '@/components/profile/ProfileQuickAccessWidget/ProfileQuickAccessWidget';
+import { MotivationCardWidget } from '@/components/dashboard/MotivationCardWidget';
 import { ProfileAccountWidget } from '@/components/profile/ProfileAccountWidget/ProfileAccountWidget';
+import { ProfileInfoWidget } from '@/components/profile/ProfileInfoWidget/ProfileInfoWidget';
 import styles from './Profile.module.css';
-import { UserIcon, SettingsIcon, ChevronRightIcon } from '@/components/ui/AppIcons';
-import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { CollapseChevron } from '@/components/dashboard/CollapsibleWidget/CollapsibleWidget';
+import { SettingsIcon, ChevronRightIcon } from '@/components/ui/AppIcons';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 // ── Componente auxiliar: lee ?section= y abre el widget correspondiente ────────
-// Debe estar en Suspense porque usa useSearchParams (Next.js 16 requisito)
 function SectionOpener({ onOpen }: { onOpen: (section: string) => void }) {
   const searchParams = useSearchParams();
   useEffect(() => {
@@ -39,8 +39,9 @@ export default function ProfilePage() {
   const [incomeRange, setIncomeRange] = useState<IncomeRange | null>(null);
   const [loading, setLoading] = useState(true);
   const [totalSaved, setTotalSaved] = useState(0);
-  const [open, setOpen] = useState({ ingresos: false, info: false, accesos: false, cuenta: false });
+  const [open, setOpen] = useState({ info: false, cuenta: false, ajustes: false });
   const toggle = (k: keyof typeof open) => setOpen(p => ({ ...p, [k]: !p[k] }));
+
   const handleSectionOpen = useCallback((section: string) => {
     if (section in open) setOpen(p => ({ ...p, [section]: true }));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -48,7 +49,6 @@ export default function ProfilePage() {
   const [streak, setStreak] = useState(0);
   const [moneyFeeling, setMoneyFeeling] = useState<string | null | undefined>(undefined);
   const [intensity, setIntensity] = useState<'high' | 'medium' | 'low' | 'unknown'>('unknown');
-
 
   useEffect(() => {
     analytics.setScreen('profile');
@@ -92,29 +92,40 @@ export default function ProfilePage() {
 
   return (
     <div className={styles.page}>
-      {/* Auto-abre widget según ?section= — requiere Suspense por useSearchParams */}
+      {/* Auto-abre widget según ?section= */}
       <Suspense fallback={null}>
         <SectionOpener onOpen={handleSectionOpen} />
       </Suspense>
 
-      {/* ── Header ── */}
-      <div className={styles.pageHeader}>
-        <div className={styles.pageHeaderGlow} />
-        <div className={styles.pageHeaderInner}>
-          <div className={styles.pageIconWrap}>
-            <UserIcon size={20} />
-          </div>
-          <div className={styles.pageTitles}>
-            <h1 className={styles.pageTitle}>Mi Perfil</h1>
-            <p className={styles.pageSubtitle}>Gestiona tu cuenta y preferencias</p>
-          </div>
+      {/* ── PARTE SUPERIOR: Hero widget — igual que PrimaryGoalHeroWidget en goals ── */}
+      <ProfileHeroWidget userName={userName} email={email} />
+
+      {/* ── PARTE INFERIOR: grid 2 columnas ── */}
+      <div className={styles.secondaryGrid}>
+
+        {/* Widget izquierdo: Ingresos mensuales */}
+        <div className={styles.secondaryCard}>
+          <IncomeRangeWidget
+            incomeRange={incomeRange}
+            onSaveIncomeRange={handleSaveIncomeRange}
+          />
         </div>
+
+        {/* Widget derecho: Accesos rápidos */}
+        <div className={styles.secondaryCard}>
+          <ProfileQuickAccessWidget
+            onGoToGoals={() => router.push('/goals')}
+            onGoToHistory={() => router.push('/history')}
+            onGoToSettings={() => router.push('/settings')}
+          />
+        </div>
+
       </div>
 
-      {/* ── Widgets ── */}
+      {/* ── WIDGETS OPCIONALES ADICIONALES ── */}
       <div className={styles.widgetsStack}>
 
-        {/* Widget 0: Motivación */}
+        {/* Motivación */}
         <MotivationCardWidget
           intensity={intensity}
           streak={streak}
@@ -123,43 +134,31 @@ export default function ProfilePage() {
           onAdjustRules={() => router.push('/settings')}
         />
 
-        {/* Widget 1: Ingresos mensuales */}
+        {/* Información personal */}
         <div>
-          <div onClick={() => toggle('ingresos')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 16px', background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(51,65,85,0.4)', borderRadius: 14, cursor: 'pointer', userSelect: 'none' }}>
-            <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(241,245,249,0.9)' }}>💰 Ingresos mensuales</span>
-            <CollapseChevron collapsed={!open.ingresos} onToggle={() => toggle('ingresos')} />
-          </div>
-          {open.ingresos && <IncomeRangeWidget incomeRange={incomeRange} onSaveIncomeRange={handleSaveIncomeRange} />}
-        </div>
-
-        {/* Widget 2: Información personal */}
-        <div>
-          <div onClick={() => toggle('info')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 16px', background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(51,65,85,0.4)', borderRadius: 14, cursor: 'pointer', userSelect: 'none' }}>
+          <div
+            onClick={() => toggle('info')}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 16px', background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(51,65,85,0.4)', borderRadius: 14, cursor: 'pointer', userSelect: 'none' }}
+          >
             <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(241,245,249,0.9)' }}>👤 Información personal</span>
             <CollapseChevron collapsed={!open.info} onToggle={() => toggle('info')} />
           </div>
           {open.info && <ProfileInfoWidget userName={userName} email={email} onSaveUserName={handleSaveUserName} />}
         </div>
 
-        {/* Widget 3: Accesos rápidos */}
+        {/* Mi cuenta */}
         <div>
-          <div onClick={() => toggle('accesos')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 16px', background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(51,65,85,0.4)', borderRadius: 14, cursor: 'pointer', userSelect: 'none' }}>
-            <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(241,245,249,0.9)' }}>⚡ Accesos rápidos</span>
-            <CollapseChevron collapsed={!open.accesos} onToggle={() => toggle('accesos')} />
-          </div>
-          {open.accesos && <ProfileQuickAccessWidget onGoToGoals={() => router.push('/goals')} onGoToHistory={() => router.push('/history')} onGoToSettings={() => router.push('/settings')} />}
-        </div>
-
-        {/* Widget 4: Cuenta */}
-        <div>
-          <div onClick={() => toggle('cuenta')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 16px', background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(51,65,85,0.4)', borderRadius: 14, cursor: 'pointer', userSelect: 'none' }}>
+          <div
+            onClick={() => toggle('cuenta')}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 16px', background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(51,65,85,0.4)', borderRadius: 14, cursor: 'pointer', userSelect: 'none' }}
+          >
             <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(241,245,249,0.9)' }}>🔐 Mi cuenta</span>
             <CollapseChevron collapsed={!open.cuenta} onToggle={() => toggle('cuenta')} />
           </div>
           {open.cuenta && <ProfileAccountWidget email={email} onLogout={handleLogout} />}
         </div>
 
-        {/* Widget 5: Ajustes */}
+        {/* Ajustes */}
         <button
           onClick={() => router.push('/settings')}
           style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '13px 16px', background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(51,65,85,0.4)', borderRadius: 14, cursor: 'pointer', textAlign: 'left' }}
@@ -171,7 +170,7 @@ export default function ProfilePage() {
           <ChevronRightIcon size={16} style={{ color: 'rgba(148,163,184,0.5)' }} />
         </button>
 
-        {/* Widget 6: Modo oscuro / claro */}
+        {/* Tema */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 16px', background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(51,65,85,0.4)', borderRadius: 14 }}>
           <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(241,245,249,0.9)' }}>🌙 Tema</span>
           <ThemeToggle />
