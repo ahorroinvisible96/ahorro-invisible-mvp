@@ -4,20 +4,28 @@ import React, { useEffect } from 'react';
 import { analytics } from '@/services/analytics';
 import type { HeaderStatusBarProps } from './HeaderStatusBarWidget.types';
 import styles from './HeaderStatusBarWidget.module.css';
+import { 
+  FlameIcon, 
+  SproutIcon, 
+  MedalIcon, 
+  DiamondIcon, 
+  CrownIcon, 
+  TrophyIcon 
+} from '@/components/ui/AppIcons';
 
 // ── Niveles de medalla (sincronizados con dashboard/page.tsx) ─────────────────
 const MEDAL_TIERS = [
-  { amount: 5000, emoji: '👑' },
-  { amount: 2000, emoji: '💚' },
-  { amount: 1000, emoji: '💎' },
-  { amount: 500,  emoji: '🥇' },
-  { amount: 100,  emoji: '🥈' },
-  { amount: 50,   emoji: '🥉' },
+  { amount: 5000, Icon: CrownIcon,   color: '#FFD700', label: 'Corona' },
+  { amount: 2000, Icon: TrophyIcon,  color: '#4ade80', label: 'Trofeo' },
+  { amount: 1000, Icon: DiamondIcon, color: '#60a5fa', label: 'Diamante' },
+  { amount: 500,  Icon: MedalIcon,   color: '#fbbf24', label: 'Oro' },
+  { amount: 100,  Icon: MedalIcon,   color: '#cbd5e1', label: 'Plata' },
+  { amount: 50,   Icon: MedalIcon,   color: '#cd7f32', label: 'Bronce' },
 ];
 
-function getMedalEmoji(totalSaved: number): string {
+function getMedalConfig(totalSaved: number) {
   const tier = MEDAL_TIERS.find(t => totalSaved >= t.amount);
-  return tier?.emoji ?? '🌱';
+  return tier ?? { amount: 0, Icon: SproutIcon, color: '#22c55e', label: 'Semilla' };
 }
 
 export function HeaderStatusBarWidget({
@@ -34,7 +42,7 @@ export function HeaderStatusBarWidget({
 
   const initials = userName.trim().charAt(0).toUpperCase();
   const firstName = userName.trim().split(' ')[0];
-  const medalEmoji = getMedalEmoji(totalSaved);
+  const medal = getMedalConfig(totalSaved);
 
   return (
     <div className={styles.header}>
@@ -68,13 +76,16 @@ export function HeaderStatusBarWidget({
         <button
           className={styles.medalBtn}
           onClick={onOpenMedalDetail}
-          aria-label={`Nivel ${medalEmoji} · ${streak} días de racha`}
-          title={`Nivel ${medalEmoji} · ${streak} días de racha`}
         >
           <span className={styles.medalStreakContent}>
-            <span className={styles.medalEmoji}>{medalEmoji}</span>
+            <span className={styles.medalIconWrap} style={{ color: medal.color }}>
+              <medal.Icon size={18} />
+            </span>
             {streak > 0 && (
-              <span className={styles.streakCount}>🔥{streak}</span>
+              <span className={styles.streakWrap}>
+                <FlameIcon size={14} className={styles.flameIcon} />
+                <span className={styles.streakCount}>{streak}</span>
+              </span>
             )}
           </span>
         </button>

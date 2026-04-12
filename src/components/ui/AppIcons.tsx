@@ -232,3 +232,61 @@ export const TrashIcon = ({ size = 24, className, style }: IconProps) => (
     <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
   </svg>
 );
+
+// ── Gamificación ──────────────────────────────────────────────────────────────
+
+/** Fuego: rachas / streaks */
+export const FlameIcon = ({ size = 24, className, style }: IconProps) => (
+  <svg {...base(size, style)} className={className}>
+    <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3 1.07.56 2 1.56 2 3a2.5 2.5 0 0 1-2.5 2.5z"/>
+    <path d="M12 2c1.7 1.3 3 3.5 3 6 0 4.1-3.4 7.5-7.5 7.5a7.5 7.5 0 0 1-1.2-.1c-.4-.1-.7.2-.6.6.6 2.3 2.7 4 5.3 4a6.5 6.5 0 0 0 5-10.7C15 7.5 13.5 5.5 12 2z"/>
+  </svg>
+);
+
+/** Brote: nivel inicial / semilla */
+export const SproutIcon = ({ size = 24, className, style }: IconProps) => (
+  <svg {...base(size, style)} className={className}>
+    <path d="M7 20h10"/>
+    <path d="M10 20c0-3.5 1.5-6.5 3-9"/>
+    <path d="M13 11c1-1.5 3-2 5-2"/>
+    <path d="M13 11c-1-1.5-3-2-5-2"/>
+    <path d="M13 11c1-1.5 1.5-4.5 1.5-6.5"/>
+  </svg>
+);
+
+/** Medalla: niveles bronce / plata / oro */
+export const MedalIcon = ({ size = 24, className, style }: IconProps) => (
+  <svg {...base(size, style)} className={className}>
+    <circle cx="12" cy="8" r="6"/>
+    <path d="M8.21 13.89L7 23l5-3 5 3-1.21-9.11"/>
+  </svg>
+);
+
+/** Diamante: nivel experto */
+export const DiamondIcon = ({ size = 24, className, style }: IconProps) => (
+  <svg {...base(size, style)} className={className}>
+    <path d="M6 3h12l4 6-10 12L2 9z"/>
+    <path d="M11 3L8 9l4 12 4-12-3-6"/>
+    <path d="M2.5 9h19"/>
+  </svg>
+);
+
+/** Corona: niveles máximos */
+export const CrownIcon = ({ size = 24, className, style }: IconProps) => (
+  <svg {...base(size, style)} className={className}>
+    <path d="M2 18h20l1-9-6 4-5-8-5 8-6-4z"/>
+    <path d="M7 14h10"/>
+  </svg>
+);
+
+/** Trofeo: logros globales */
+export const TrophyIcon = ({ size = 24, className, style }: IconProps) => (
+  <svg {...base(size, style)} className={className}>
+    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+    <path d="M4 22h16"/>
+    <path d="M10 14.66V17c0 .55.45 1 1 1h2c.55 0 1-.45 1-1v-2.34"/>
+    <path d="M12 18v4"/>
+    <path d="M6 4v7a6 6 0 0 0 12 0V4Z"/>
+  </svg>
+);
