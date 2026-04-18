@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { analytics } from '@/services/analytics';
 import { storeGetGoalProgressPoints } from '@/services/dashboardStore';
 import type { GoalProgressPoint } from '@/services/dashboardStore';
@@ -27,7 +27,7 @@ function formatCurrencyShort(value: number): string {
   return `${Math.round(value)}€`;
 }
 
-// ── Paleta de colores para el donut ───────────────────────────────────────────
+// ── Paleta de colores premium para el donut ─────────────────────────────────
 const DONUT_COLORS = [
   '#a855f7', // purple
   '#3b82f6', // blue
@@ -39,82 +39,141 @@ const DONUT_COLORS = [
   '#f97316', // orange
 ];
 
-// ── Donut chart — distribución por objetivos ──────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
+// ── DONUT CHART — Distribución interactiva por objetivos ──────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
 function GoalDonutChart({ goals }: { goals: Goal[] }) {
   const activeGoals = goals.filter((g) => !g.archived);
   const totalSaved  = activeGoals.reduce((sum, g) => sum + g.currentAmount, 0);
   const hasData     = totalSaved > 0;
+  const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
 
-  const CX = 100, CY = 100, R = 68;
-  const STROKE = 22;
-  const CI  = 2 * Math.PI * R; // circunferencia ≈ 427.26
-  const GAP = 5;               // px de hueco entre segmentos
+  const CX = 110, CY = 110, R = 76;
+  const STROKE = 26;
+  const CI = 2 * Math.PI * R;
+  const GAP = 6;
 
-  // Solo los objetivos con ahorro > 0 aparecen como segmentos
   const goalsWithSavings = activeGoals.filter((g) => g.currentAmount > 0);
 
-  let rotOffset = -90; // empezamos desde arriba
+  let rotOffset = -90;
   const segments = goalsWithSavings.map((g, i) => {
     const pct     = g.currentAmount / totalSaved;
     const dashLen = Math.max(0, pct * CI - (goalsWithSavings.length > 1 ? GAP : 0));
     const startRot = rotOffset;
+    const midAngle = rotOffset + (pct * 360) / 2;
     rotOffset += pct * 360;
-    return { goal: g, pct, dashLen, startRot, color: DONUT_COLORS[i % DONUT_COLORS.length] };
+    return {
+      goal: g,
+      pct,
+      dashLen,
+      startRot,
+      midAngle,
+      color: DONUT_COLORS[i % DONUT_COLORS.length],
+      originalIdx: activeGoals.indexOf(g),
+    };
   });
 
+  const handleSegmentClick = useCallback((idx: number) => {
+    setSelectedIdx((prev) => (prev === idx ? null : idx));
+  }, []);
+
+  // Datos del segmento seleccionado
+  const selectedSeg = selectedIdx !== null
+    ? segments.find((s) => s.originalIdx === selectedIdx) ?? null
+    : null;
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18 }}>
+    <div className={styles.donutSection}>
 
       {/* ── SVG Donut ── */}
-      <div style={{ position: 'relative', width: '100%', maxWidth: 200, margin: '0 auto' }}>
+      <div className={styles.donutContainer}>
         <svg
-          viewBox="0 0 200 200"
+          viewBox="0 0 220 220"
           width="100%"
-          style={{ display: 'block', filter: 'drop-shadow(0 0 20px rgba(168,85,247,0.12))' }}
+          className={styles.donutSvg}
         >
+          <defs>
+            {/* Glow filter para segmentos seleccionados */}
+            {segments.map((seg, i) => (
+              <filter key={i} id={`glow_${i}`} x="-40%" y="-40%" width="180%" height="180%">
+                <feGaussianBlur stdDeviation="4" result="blur" />
+                <feFlood floodColor={seg.color} floodOpacity="0.5" result="color" />
+                <feComposite in="color" in2="blur" operator="in" result="shadow" />
+                <feMerge>
+                  <feMergeNode in="shadow" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            ))}
+          </defs>
+
           {/* Anillo de fondo */}
           <circle
             cx={CX} cy={CY} r={R}
             fill="none"
-            stroke="rgba(51,65,85,0.22)"
+            stroke="rgba(51,65,85,0.18)"
             strokeWidth={STROKE}
           />
 
+          {/* Partículas decorativas de fondo */}
+          <circle cx="30"  cy="40"  r="1.5" fill="rgba(168,85,247,0.12)" />
+          <circle cx="190" cy="55"  r="1"   fill="rgba(59,130,246,0.10)" />
+          <circle cx="45"  cy="185" r="1.2" fill="rgba(236,72,153,0.10)" />
+          <circle cx="180" cy="175" r="1.8" fill="rgba(168,85,247,0.08)" />
+
           {/* Segmentos por objetivo */}
-          {segments.map((seg, i) => (
-            <circle
-              key={i}
-              cx={CX} cy={CY} r={R}
-              fill="none"
-              stroke={seg.color}
-              strokeWidth={STROKE}
-              strokeDasharray={`${seg.dashLen} ${CI}`}
-              strokeLinecap="butt"
-              transform={`rotate(${seg.startRot} ${CX} ${CY})`}
-              style={{ filter: `drop-shadow(0 0 5px ${seg.color}55)` }}
-            />
-          ))}
+          {segments.map((seg, i) => {
+            const isSelected = selectedIdx === seg.originalIdx;
+            // Offset hacia afuera cuando seleccionado
+            const rad = (seg.midAngle * Math.PI) / 180;
+            const offsetX = isSelected ? Math.cos(rad) * 7 : 0;
+            const offsetY = isSelected ? Math.sin(rad) * 7 : 0;
+
+            return (
+              <circle
+                key={i}
+                cx={CX + offsetX}
+                cy={CY + offsetY}
+                r={R}
+                fill="none"
+                stroke={seg.color}
+                strokeWidth={isSelected ? STROKE + 6 : STROKE}
+                strokeDasharray={`${seg.dashLen} ${CI}`}
+                strokeLinecap="butt"
+                transform={`rotate(${seg.startRot} ${CX + offsetX} ${CY + offsetY})`}
+                filter={isSelected ? `url(#glow_${i})` : undefined}
+                style={{
+                  cursor: 'pointer',
+                  transition: 'all 400ms cubic-bezier(0.34, 1.56, 0.64, 1)',
+                  opacity: selectedIdx !== null && !isSelected ? 0.35 : 1,
+                }}
+                onClick={() => handleSegmentClick(seg.originalIdx)}
+              />
+            );
+          })}
 
           {/* ── Centro: total ahorrado ── */}
           {hasData ? (
             <>
               <text
-                x={CX} y={CY - 10}
+                x={CX} y={CY - 14}
                 textAnchor="middle"
-                fontSize="8.5"
-                fill="rgba(148,163,184,0.5)"
+                fontSize="8"
+                fill="rgba(148,163,184,0.4)"
                 fontFamily="inherit"
-                letterSpacing="0.1em"
+                letterSpacing="0.14em"
+                fontWeight="600"
               >
                 TOTAL AHORRADO
               </text>
               <text
-                x={CX} y={CY + 9}
+                x={CX} y={CY + 12}
                 textAnchor="middle"
-                fontSize="19"
+                fontSize="24"
                 fontWeight="800"
                 fill="#f1f5f9"
                 fontFamily="inherit"
+                letterSpacing="-0.02em"
               >
                 {formatCurrencyShort(totalSaved)}
               </text>
@@ -125,18 +184,18 @@ function GoalDonutChart({ goals }: { goals: Goal[] }) {
                 x={CX} y={CY - 4}
                 textAnchor="middle"
                 fontSize="10"
-                fill="rgba(148,163,184,0.3)"
+                fill="rgba(148,163,184,0.25)"
                 fontFamily="inherit"
               >
                 Sin ahorros aún
               </text>
               <text
-                x={CX} y={CY + 12}
+                x={CX} y={CY + 14}
                 textAnchor="middle"
-                fontSize="13"
-                fill="rgba(148,163,184,0.2)"
+                fontSize="16"
+                fill="rgba(148,163,184,0.15)"
                 fontFamily="inherit"
-                fontWeight="600"
+                fontWeight="700"
               >
                 0 €
               </text>
@@ -145,45 +204,46 @@ function GoalDonutChart({ goals }: { goals: Goal[] }) {
         </svg>
       </div>
 
-      {/* ── Leyenda: un objetivo por línea ── */}
-      {activeGoals.length === 0 ? (
-        <p style={{ fontSize: 12, color: 'rgba(148,163,184,0.4)', textAlign: 'center', margin: 0 }}>
-          Crea un objetivo para ver la distribución
-        </p>
-      ) : (
-        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {/* ── Info contextual: solo aparece al seleccionar ── */}
+      {selectedSeg && (
+        <div className={styles.donutDetail}>
+          <div className={styles.donutDetailDot} style={{ background: selectedSeg.color, boxShadow: `0 0 12px ${selectedSeg.color}88` }} />
+          <div className={styles.donutDetailInfo}>
+            <span className={styles.donutDetailTitle}>{selectedSeg.goal.title}</span>
+            <div className={styles.donutDetailRow}>
+              <span className={styles.donutDetailAmount} style={{ color: selectedSeg.color }}>
+                {formatCurrency(selectedSeg.goal.currentAmount)}
+              </span>
+              <span className={styles.donutDetailPct}>
+                {Math.round(selectedSeg.pct * 100)}%
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Leyenda condensada: solo nombre + color (sin importes fijos) ── */}
+      {activeGoals.length > 0 && (
+        <div className={styles.donutLegend}>
           {activeGoals.map((g, i) => {
             const color = DONUT_COLORS[i % DONUT_COLORS.length];
-            const pct   = hasData ? Math.round((g.currentAmount / totalSaved) * 100) : 0;
+            const isSelected = selectedIdx === i;
             return (
-              <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{
-                  width: 10, height: 10, borderRadius: '50%',
-                  background: color, flexShrink: 0,
-                  boxShadow: `0 0 6px ${color}66`,
-                  opacity: g.currentAmount > 0 ? 1 : 0.3,
-                }} />
-                <span style={{
-                  flex: 1, fontSize: 12, color: g.currentAmount > 0 ? '#cbd5e1' : 'rgba(148,163,184,0.45)',
-                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                }}>
-                  {g.title}
-                </span>
-                <span style={{
-                  fontSize: 12, fontWeight: 700,
-                  color: g.currentAmount > 0 ? color : 'rgba(100,116,139,0.5)',
-                }}>
-                  {formatCurrencyShort(g.currentAmount)}
-                </span>
-                {hasData && (
-                  <span style={{
-                    fontSize: 10, color: 'rgba(148,163,184,0.4)',
-                    minWidth: 30, textAlign: 'right',
-                  }}>
-                    {pct}%
-                  </span>
-                )}
-              </div>
+              <button
+                key={g.id}
+                className={`${styles.donutLegendItem} ${isSelected ? styles.donutLegendItemActive : ''}`}
+                onClick={() => handleSegmentClick(i)}
+              >
+                <div
+                  className={styles.donutLegendDot}
+                  style={{
+                    background: color,
+                    boxShadow: isSelected ? `0 0 8px ${color}66` : 'none',
+                    opacity: g.currentAmount > 0 ? 1 : 0.3,
+                  }}
+                />
+                <span className={styles.donutLegendLabel}>{g.title}</span>
+              </button>
             );
           })}
         </div>
@@ -192,37 +252,64 @@ function GoalDonutChart({ goals }: { goals: Goal[] }) {
   );
 }
 
-// ── Goal Line Chart (progreso vs. ritmo ideal) ────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
+// ── GOAL LINE CHART — progreso vs. ritmo ideal (premium) ──────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
 function GoalLineChart({ points, goal }: { points: GoalProgressPoint[]; goal: Goal }) {
-  const W = 320, H = 180;
-  const PAD = { top: 16, right: 12, bottom: 28, left: 52 };
-  const CW  = W - PAD.left - PAD.right;
-  const CH  = H - PAD.top  - PAD.bottom;
+  const W = 340, H = 200;
+  const PAD = { top: 20, right: 16, bottom: 32, left: 52 };
+  const CW = W - PAD.left - PAD.right;
+  const CH = H - PAD.top  - PAD.bottom;
 
   const horizonDays = goal.horizonMonths * 30;
   const maxVal      = goal.targetAmount || 1;
   const safeId      = goal.id.replace(/[^a-zA-Z0-9]/g, '_');
-  const greenGradId = `green_${safeId}`;
-  const greenAreaId = `greenArea_${safeId}`;
 
   const xScale = (day: number) => PAD.left + (day / horizonDays) * CW;
-  const yScale = (val: number) => PAD.top  + CH - (val / maxVal)  * CH;
+  const yScale = (val: number) => PAD.top  + CH - (val / maxVal) * CH;
+  const yBottom = yScale(0);
 
+  // ===== Construir puntos de progreso =====
+  // IMPORTANTE: si solo hay un punto, lo anclarmos desde (0,0) para dibujar
+  // una línea ascendente real desde el primer registro
   const hasActualProgress = goal.currentAmount > 0 && points.length > 0;
 
-  const actualPts   = points.map((p) => ({ x: xScale(p.day), y: yScale(p.actual) }));
-  const polylineStr = actualPts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
-  const yBottom     = yScale(0);
+  let actualPts: { x: number; y: number }[] = [];
+  if (hasActualProgress) {
+    // Siempre empezamos desde el día 0, valor 0 para dibujar una línea correcta
+    const startPt = { x: xScale(0), y: yScale(0) };
+    const dataPts = points.map((p) => ({ x: xScale(p.day), y: yScale(p.actual) }));
+    // Si el primer punto de datos no es día 0, añadir el origen
+    if (points[0]?.day > 0) {
+      actualPts = [startPt, ...dataPts];
+    } else {
+      actualPts = dataPts;
+    }
+  }
 
+  const polylineStr = actualPts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+
+  // Smooth path para la línea de progreso (aspecto premium con curvas)
+  function buildSmoothPath(pts: { x: number; y: number }[]): string {
+    if (pts.length < 2) return '';
+    let d = `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
+    for (let i = 1; i < pts.length; i++) {
+      const prev = pts[i - 1];
+      const curr = pts[i];
+      const cpx = (prev.x + curr.x) / 2;
+      d += ` C ${cpx.toFixed(1)} ${prev.y.toFixed(1)}, ${cpx.toFixed(1)} ${curr.y.toFixed(1)}, ${curr.x.toFixed(1)} ${curr.y.toFixed(1)}`;
+    }
+    return d;
+  }
+
+  const smoothLine = buildSmoothPath(actualPts);
+
+  // Área bajo la curva (smooth) 
   const areaPath =
     actualPts.length > 1
-      ? [
-          `M ${actualPts[0].x.toFixed(1)} ${actualPts[0].y.toFixed(1)}`,
-          ...actualPts.slice(1).map((p) => `L ${p.x.toFixed(1)} ${p.y.toFixed(1)}`),
-          `L ${actualPts[actualPts.length - 1].x.toFixed(1)} ${yBottom.toFixed(1)}`,
-          `L ${actualPts[0].x.toFixed(1)} ${yBottom.toFixed(1)}`,
-          'Z',
-        ].join(' ')
+      ? smoothLine +
+        ` L ${actualPts[actualPts.length - 1].x.toFixed(1)} ${yBottom.toFixed(1)}` +
+        ` L ${actualPts[0].x.toFixed(1)} ${yBottom.toFixed(1)} Z`
       : '';
 
   const yRatios = [0, 0.25, 0.5, 0.75, 1.0];
@@ -236,82 +323,162 @@ function GoalLineChart({ points, goal }: { points: GoalProgressPoint[]; goal: Go
   }
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ display: 'block', overflow: 'visible' }}>
+    <svg
+      viewBox={`0 0 ${W} ${H}`}
+      width="100%"
+      className={styles.goalChart}
+    >
       <defs>
-        <linearGradient id={greenGradId} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%"   stopColor="#10b981" />
+        {/* Degradado para la línea de progreso (verde premium) */}
+        <linearGradient id={`gl_${safeId}`} x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%"   stopColor="#059669" />
+          <stop offset="40%"  stopColor="#10b981" />
           <stop offset="100%" stopColor="#34d399" />
         </linearGradient>
-        <linearGradient id={greenAreaId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stopColor="rgba(52,211,153,0.18)" />
+
+        {/* Área bajo la curva: degradado vertical elegante */}
+        <linearGradient id={`ga_${safeId}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stopColor="rgba(16,185,129,0.22)" />
+          <stop offset="50%"  stopColor="rgba(52,211,153,0.08)" />
           <stop offset="100%" stopColor="rgba(52,211,153,0.00)" />
+        </linearGradient>
+
+        {/* Glow para la línea de progreso */}
+        <filter id={`lineGlow_${safeId}`} x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
+          <feFlood floodColor="#10b981" floodOpacity="0.35" result="color" />
+          <feComposite in="color" in2="blur" operator="in" result="shadow" />
+          <feMerge>
+            <feMergeNode in="shadow" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+
+        {/* Glow para el punto de progreso actual */}
+        <radialGradient id={`dotGlow_${safeId}`} cx="50%" cy="50%" r="50%">
+          <stop offset="0%"   stopColor="rgba(34,197,94,0.6)" />
+          <stop offset="100%" stopColor="rgba(34,197,94,0)" />
+        </radialGradient>
+
+        {/* Glow para ritmo ideal */}
+        <linearGradient id={`idealGrad_${safeId}`} x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%"   stopColor="rgba(168,85,247,0.50)" />
+          <stop offset="100%" stopColor="rgba(139,92,246,0.35)" />
         </linearGradient>
       </defs>
 
-      {/* Grid lines */}
+      {/* Grid horizontal — líneas sutiles */}
       {yRatios.slice(1).map((r, i) => (
         <line key={i}
           x1={PAD.left} y1={yScale(maxVal * r)}
           x2={W - PAD.right} y2={yScale(maxVal * r)}
-          stroke="rgba(51,65,85,0.30)" strokeDasharray="4 3"
+          stroke="rgba(51,65,85,0.22)"
+          strokeDasharray="3 4"
         />
       ))}
+
       {/* Y labels */}
       {yRatios.map((r, i) => (
         <text key={i}
-          x={PAD.left - 6} y={yScale(maxVal * r) + 4}
-          textAnchor="end" fontSize="9" fill="rgba(148,163,184,0.65)" fontFamily="inherit"
+          x={PAD.left - 8} y={yScale(maxVal * r) + 4}
+          textAnchor="end" fontSize="9" fill="rgba(148,163,184,0.50)" fontFamily="inherit"
+          fontWeight="500"
         >
           {formatCurrencyShort(maxVal * r)}
         </text>
       ))}
+
       {/* X labels */}
       {xLabels.map((l, i) => (
         <text key={i}
-          x={l.x} y={H - 6}
-          textAnchor="middle" fontSize="9" fill="rgba(148,163,184,0.65)" fontFamily="inherit"
+          x={l.x} y={H - 8}
+          textAnchor="middle" fontSize="9" fill="rgba(148,163,184,0.50)" fontFamily="inherit"
+          fontWeight="500"
         >
           {l.month === 0 ? 'Inicio' : `${l.month}m`}
         </text>
       ))}
-      {/* Eje X */}
-      <line x1={PAD.left} y1={yBottom} x2={W - PAD.right} y2={yBottom} stroke="rgba(51,65,85,0.40)" />
 
-      {/* Ritmo ideal — siempre visible */}
+      {/* Eje X base */}
+      <line
+        x1={PAD.left} y1={yBottom}
+        x2={W - PAD.right} y2={yBottom}
+        stroke="rgba(51,65,85,0.30)"
+      />
+
+      {/* ── Ritmo ideal — línea discontinua morada ── */}
       <line
         x1={xScale(0)} y1={yScale(0)}
         x2={xScale(horizonDays)} y2={yScale(maxVal)}
-        stroke="rgba(168,85,247,0.45)"
-        strokeWidth="1.5"
-        strokeDasharray="6 4"
+        stroke={`url(#idealGrad_${safeId})`}
+        strokeWidth="2"
+        strokeDasharray="8 5"
+        strokeLinecap="round"
       />
 
-      {/* Tu progreso — solo cuando hay ahorros */}
+      {/* Punto meta al final del ritmo ideal */}
+      <circle
+        cx={xScale(horizonDays)} cy={yScale(maxVal)}
+        r="3" fill="none"
+        stroke="rgba(168,85,247,0.35)" strokeWidth="1.5"
+        strokeDasharray="3 2"
+      />
+
+      {/* ── Tu progreso — línea continua verde premium ── */}
       {hasActualProgress && areaPath && (
-        <path d={areaPath} fill={`url(#${greenAreaId})`} />
+        <path d={areaPath} fill={`url(#ga_${safeId})`} />
       )}
       {hasActualProgress && actualPts.length > 1 && (
-        <polyline
-          points={polylineStr}
+        <path
+          d={smoothLine}
           fill="none"
-          stroke={`url(#${greenGradId})`}
-          strokeWidth="2.5"
+          stroke={`url(#gl_${safeId})`}
+          strokeWidth="3"
           strokeLinecap="round"
           strokeLinejoin="round"
+          filter={`url(#lineGlow_${safeId})`}
         />
       )}
+
+      {/* Punto de progreso actual con resplandor */}
       {hasActualProgress && actualPts.length > 0 && (
-        <circle
-          cx={actualPts[actualPts.length - 1].x}
-          cy={actualPts[actualPts.length - 1].y}
-          r="4" fill="#22c55e" stroke="rgba(34,197,94,0.30)" strokeWidth="6"
-        />
+        <>
+          {/* Halo exterior */}
+          <circle
+            cx={actualPts[actualPts.length - 1].x}
+            cy={actualPts[actualPts.length - 1].y}
+            r="14"
+            fill={`url(#dotGlow_${safeId})`}
+          />
+          {/* Glow ring */}
+          <circle
+            cx={actualPts[actualPts.length - 1].x}
+            cy={actualPts[actualPts.length - 1].y}
+            r="7"
+            fill="none"
+            stroke="rgba(34,197,94,0.20)"
+            strokeWidth="2"
+            className={styles.pulsingDot}
+          />
+          {/* Punto sólido */}
+          <circle
+            cx={actualPts[actualPts.length - 1].x}
+            cy={actualPts[actualPts.length - 1].y}
+            r="4.5"
+            fill="#22c55e"
+            stroke="#0d9b4a"
+            strokeWidth="1"
+          />
+        </>
       )}
+
+      {/* Mensaje sin progreso */}
       {!hasActualProgress && (
         <text
           x={W / 2} y={H / 2 + 4}
           textAnchor="middle" fontSize="10"
-          fill="rgba(148,163,184,0.30)" fontFamily="inherit"
+          fill="rgba(148,163,184,0.25)" fontFamily="inherit"
+          fontWeight="500"
         >
           Tu línea verde aparecerá con el primer ahorro
         </text>
@@ -320,7 +487,9 @@ function GoalLineChart({ points, goal }: { points: GoalProgressPoint[]; goal: Go
   );
 }
 
-// ── Componente principal ──────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
+// ── COMPONENTE PRINCIPAL ──────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
 export function SavingsEvolutionWidget({
   evolution,
   onChangeRange,
@@ -361,7 +530,7 @@ export function SavingsEvolutionWidget({
   const activeGoalList = (goals ?? []).filter((g) => !g.archived);
   const allTimeSaved   = activeGoalList.reduce((sum, g) => sum + g.currentAmount, 0);
 
-  const selectedGoal: Goal | null  = activeGoalList.find((g) => g.id === selectedGoalId) ?? null;
+  const selectedGoal: Goal | null = activeGoalList.find((g) => g.id === selectedGoalId) ?? null;
   const goalPoints: GoalProgressPoint[] =
     activeTab === 'goals' && selectedGoalId
       ? storeGetGoalProgressPoints(selectedGoalId)
@@ -391,7 +560,7 @@ export function SavingsEvolutionWidget({
           </div>
         </div>
 
-        {/* ── Total acumulado (siempre visible) ── */}
+        {/* ── Total acumulado — versión premium ── */}
         <div
           className={styles.totalSection}
           style={{ cursor: collapsed ? 'pointer' : 'default' }}
@@ -422,7 +591,7 @@ export function SavingsEvolutionWidget({
               </div>
             )}
 
-            {/* ── Tab: Ahorro general — rosco por objetivos ── */}
+            {/* ── Tab: Ahorro general — donut interactivo ── */}
             {activeTab === 'general' && (
               <GoalDonutChart goals={activeGoalList} />
             )}
@@ -480,30 +649,32 @@ export function SavingsEvolutionWidget({
                       </span>
                     </div>
 
-                    {/* Gráfica */}
+                    {/* Gráfica premium */}
                     <div className={styles.lineChartWrap}>
                       <GoalLineChart points={goalPoints} goal={selectedGoal} />
                     </div>
 
-                    {/* Leyenda */}
+                    {/* Leyenda mejorada */}
                     <div className={styles.chartLegend}>
                       <div className={styles.legendItem}>
-                        <svg width="24" height="10" viewBox="0 0 24 10">
-                          <line x1="0" y1="5" x2="24" y2="5"
-                            stroke="rgba(168,85,247,0.55)" strokeWidth="1.5" strokeDasharray="5 3" />
+                        <svg width="28" height="12" viewBox="0 0 28 12">
+                          <line x1="0" y1="6" x2="28" y2="6"
+                            stroke="rgba(168,85,247,0.50)" strokeWidth="2" strokeDasharray="6 3"
+                            strokeLinecap="round" />
                         </svg>
                         <span className={styles.legendLabel}>Ritmo ideal</span>
                       </div>
                       <div className={styles.legendItem}>
-                        <svg width="24" height="10" viewBox="0 0 24 10">
+                        <svg width="28" height="12" viewBox="0 0 28 12">
                           <defs>
-                            <linearGradient id="lgd_green" x1="0" y1="0" x2="1" y2="0">
-                              <stop offset="0%"   stopColor="#10b981" />
+                            <linearGradient id="lgd_green_v2" x1="0" y1="0" x2="1" y2="0">
+                              <stop offset="0%"   stopColor="#059669" />
                               <stop offset="100%" stopColor="#34d399" />
                             </linearGradient>
                           </defs>
-                          <line x1="0" y1="5" x2="24" y2="5"
-                            stroke="url(#lgd_green)" strokeWidth="2.5" strokeLinecap="round" />
+                          <line x1="0" y1="6" x2="28" y2="6"
+                            stroke="url(#lgd_green_v2)" strokeWidth="3" strokeLinecap="round" />
+                          <circle cx="24" cy="6" r="2.5" fill="#22c55e" />
                         </svg>
                         <span className={styles.legendLabel}>Tu progreso</span>
                       </div>
