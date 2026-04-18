@@ -11,6 +11,7 @@ import { SettingsNotificationsWidget } from '@/components/settings/SettingsNotif
 import { SettingsSessionWidget } from '@/components/settings/SettingsSessionWidget/SettingsSessionWidget';
 import { SettingsDangerZoneWidget } from '@/components/settings/SettingsDangerZoneWidget/SettingsDangerZoneWidget';
 import { SettingsHelpWidget } from '@/components/settings/SettingsHelpWidget/SettingsHelpWidget';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import styles from './Settings.module.css';
 import { SettingsIcon } from '@/components/ui/AppIcons';
 
@@ -48,12 +49,9 @@ export default function SettingsPage() {
   }, [router]);
 
   const handleResetAll = useCallback(async () => {
-    // 1. Limpiar Supabase (si procede) — sin esperar, no bloquea
     const userId = localStorage.getItem('supabaseUserId');
     if (userId) resetUserDataInSupabase(userId).catch(() => null);
-    // 2. Limpiar localStorage (conserva auth)
     storeResetAllData();
-    // 3. El usuario SIGUE autenticado → ir a onboarding
     router.replace('/onboarding');
   }, [router]);
 
@@ -72,42 +70,94 @@ export default function SettingsPage() {
 
   return (
     <div className={styles.page}>
-      {/* ── Header ── */}
-      <div className={styles.pageHeader}>
-        <div className={styles.pageHeaderGlow} />
-        <div className={styles.pageHeaderInner}>
-          <div className={styles.pageIconWrap}>
-            <SettingsIcon size={20} />
-          </div>
-          <div className={styles.pageTitles}>
-            <h1 className={styles.pageTitle}>Configuración</h1>
-            <p className={styles.pageSubtitle}>Personaliza tu experiencia</p>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          ZONA 1 — HEADER PRINCIPAL (degradado azul, identidad de Configuración)
+          Contiene: icono + título + email de cuenta activa
+          ══════════════════════════════════════════════════════════════════════ */}
+      <div className={styles.headerZone}>
+        <div className={styles.zoneInner}>
+          <div className={styles.headerContent}>
+
+            {/* Icono + título */}
+            <div className={styles.headerTop}>
+              <div className={styles.headerIconWrap}>
+                <SettingsIcon size={22} />
+              </div>
+              <div className={styles.headerTitles}>
+                <span className={styles.headerSub}>Ajustes</span>
+                <h1 className={styles.headerTitle}>Configuración</h1>
+              </div>
+            </div>
+
+            {/* Divisor */}
+            <div className={styles.headerDivider} />
+
+            {/* Estado: email de cuenta */}
+            <div className={styles.headerStatusRow}>
+              <span className={styles.headerStatusLabel}>Cuenta activa</span>
+              <span className={styles.headerStatusValue}>{userEmail || '—'}</span>
+            </div>
+
           </div>
         </div>
       </div>
 
-      {/* ── Widgets ── */}
-      <div className={styles.widgetsStack}>
+      {/* ══════════════════════════════════════════════════════════════════════
+          ZONA 2 — CONTENIDO SECUNDARIO (fondo oscuro sólido)
+          Widgets de ajuste agrupados por categoría
+          ══════════════════════════════════════════════════════════════════════ */}
+      <div className={styles.contentZone}>
+        <div className={styles.zoneInner}>
+          <div className={styles.contentCol}>
 
-        {/* Widget 1: Mis datos */}
-        <SettingsMyDataWidget
-          onExport={handleExport}
-          onResetOnboarding={handleResetOnboarding}
-        />
+            {/* ─── Mis datos y privacidad ─── */}
+            <div className={styles.sectionGroup}>
+              <p className={styles.sectionLabel}>MIS DATOS</p>
+              <div className={styles.listCard}>
+                <SettingsMyDataWidget
+                  onExport={handleExport}
+                  onResetOnboarding={handleResetOnboarding}
+                />
+              </div>
+            </div>
 
-        {/* Widget 2: Notificaciones */}
-        <SettingsNotificationsWidget />
+            {/* ─── Notificaciones ─── */}
+            <div className={styles.sectionGroup}>
+              <p className={styles.sectionLabel}>NOTIFICACIONES</p>
+              <div className={styles.listCard}>
+                <SettingsNotificationsWidget />
+              </div>
+            </div>
 
-        {/* Widget 3: Sesión */}
-        <SettingsSessionWidget email={userEmail} onLogout={handleLogout} />
+            {/* ─── Sesión ─── */}
+            <div className={styles.sectionGroup}>
+              <p className={styles.sectionLabel}>SESIÓN</p>
+              <div className={styles.listCard}>
+                <SettingsSessionWidget email={userEmail} onLogout={handleLogout} />
+              </div>
+            </div>
 
-        {/* Widget 4: Zona de peligro */}
-        <SettingsDangerZoneWidget onResetAll={handleResetAll} />
+            {/* ─── Zona de peligro ─── */}
+            <div className={styles.sectionGroup}>
+              <p className={styles.sectionLabel}>ZONA DE PELIGRO</p>
+              <div className={styles.listCard}>
+                <SettingsDangerZoneWidget onResetAll={handleResetAll} />
+              </div>
+            </div>
 
-        {/* Widget 5: Ayuda y FAQs */}
-        <SettingsHelpWidget />
+            {/* ─── Ayuda y soporte ─── */}
+            <div className={styles.sectionGroup}>
+              <p className={styles.sectionLabel}>AYUDA</p>
+              <div className={styles.listCard}>
+                <SettingsHelpWidget />
+              </div>
+            </div>
 
+          </div>
+        </div>
       </div>
+
     </div>
   );
 }

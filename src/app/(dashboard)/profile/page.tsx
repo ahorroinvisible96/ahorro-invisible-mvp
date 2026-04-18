@@ -7,6 +7,7 @@ import { buildSummary, storeUpdateUserName, storeUpdateIncome } from '@/services
 import { authSignOut } from '@/services/authService';
 import type { IncomeRange } from '@/types/Dashboard';
 import styles from './Profile.module.css';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import {
   TargetIcon,
   BarChartIcon,
@@ -269,6 +270,23 @@ export default function ProfilePage() {
                   onClick={() => router.push('/settings')}
                   last
                 />
+              </div>
+            </div>
+
+            {/* ─── Bloque: Apariencia (modo oscuro / claro) ─── */}
+            <div className={styles.sectionGroup}>
+              <p className={styles.sectionLabel}>APARIENCIA</p>
+              <div className={styles.listCard}>
+                <div className={styles.listRow} style={{ cursor: 'default', justifyContent: 'space-between' }}>
+                  <span className={styles.listRowIcon}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="4"/>
+                      <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                    </svg>
+                  </span>
+                  <span className={styles.listRowLabel}>Modo de pantalla</span>
+                  <ThemeToggle />
+                </div>
               </div>
             </div>
 
