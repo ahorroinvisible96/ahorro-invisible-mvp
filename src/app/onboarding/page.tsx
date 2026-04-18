@@ -21,7 +21,7 @@ const INCOME_OPTIONS = [
   { label: '1.500 – 2.000 €',  min: 1_500, max: 2_000,  mid: 2_000 }, // base: 2000
   { label: '2.000 – 2.500 €',  min: 2_000, max: 2_500,  mid: 2_500 }, // base: 2500
   { label: '2.500 – 3.000 €',  min: 2_500, max: 3_000,  mid: 3_000 }, // base: 3000
-  { label: 'Más de 3.000 €',   min: 3_000, max: 10_000, mid: 3_000 }, // base: 3000
+  { label: 'Más de 3.000 €',   min: 3_000, max: 10_000, mid: 3_500 }, // base: 3500
 ];
 
 // ─── Tipos ─────────────────────────────────────────────────────────────────────
@@ -294,7 +294,7 @@ export default function OnboardingPage() {
     if (step === 5 && !hasAutoFilled && savingsHabit && selectedIncomeIdx !== null) {
       const mid     = INCOME_OPTIONS[selectedIncomeIdx].mid;
       const pct     = SAVINGS_PCT[savingsHabit];
-      const monthly = Math.max(50, Math.round(mid * pct / 50) * 50);
+      const monthly = Math.max(50, Math.round(mid * pct));
       const total   = monthly * goalMonths;
       setGoalAmount(total);
       setGoalInputValue(String(total));
@@ -306,7 +306,7 @@ export default function OnboardingPage() {
   // ── Valores calculados para el paso 5 ──────────────────────────────────────
   const incomeMid   = selectedIncomeIdx !== null ? INCOME_OPTIONS[selectedIncomeIdx].mid : 1_750;
   const savingsPct  = savingsHabit ? SAVINGS_PCT[savingsHabit] : 0.10;
-  const recMonthly  = Math.max(50, Math.round(incomeMid * savingsPct / 50) * 50);
+  const recMonthly  = Math.max(50, Math.round(incomeMid * savingsPct));
   const recTotal    = recMonthly * goalMonths;
   const monthlyGoal = goalAmount > 0 ? goalAmount / goalMonths : 0;
   const isOver30    = goalAmount > 0 && monthlyGoal > incomeMid * 0.30;
