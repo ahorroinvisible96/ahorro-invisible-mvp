@@ -17,11 +17,10 @@ import { pushLocalDataToSupabase } from "@/services/syncService";
 // ─── Constantes ───────────────────────────────────────────────────────────────
 const MAX_INCOME    = 10_000;
 const INCOME_STEP   = 50;
-const SAVINGS_LIMIT = 0.30; // 30 % del ingreso máximo
+const SAVINGS_LIMIT = 0.30;
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 type AvatarKey = UserAvatar;
-
 interface OnboardingOption { value: AvatarKey; label: string; sub: string; }
 interface OnboardingStep   { icon: string; label: string; question: string; options: OnboardingOption[]; }
 
@@ -69,15 +68,15 @@ function classifyAvatar(answers: AvatarKey[]): AvatarKey {
   return winners.length === 1 ? winners[0] : tieBreak.find(k => winners.includes(k)) ?? 'desordenado';
 }
 
-// ─── Fases del objetivo de ahorro ────────────────────────────────────────────
+// ─── Fases del objetivo ───────────────────────────────────────────────────────
 export function computeGoalPhases(amount: number, months: number) {
   const monthly = amount / months;
   const weekly  = monthly / 4;
 
   if (months <= 3) {
     return [
-      { label: 'Semana 1', target: Math.round(weekly),         type: 'week'  as const },
-      { label: 'Semana 2', target: Math.round(weekly * 2),     type: 'week'  as const },
+      { label: 'Semana 1', target: Math.round(weekly),       type: 'week'  as const },
+      { label: 'Semana 2', target: Math.round(weekly * 2),   type: 'week'  as const },
       ...Array.from({ length: months }, (_, i) => ({
         label: `Mes ${i + 1}`,
         target: Math.round(monthly * (i + 1)),
@@ -89,7 +88,7 @@ export function computeGoalPhases(amount: number, months: number) {
   const phases: { label: string; target: number; type: 'week' | 'month' }[] = [];
   const blocks = Math.ceil(months / 3);
   for (let b = 0; b < blocks; b++) {
-    const base       = monthly * b * 3;
+    const base        = monthly * b * 3;
     const blockMonths = Math.min(3, months - b * 3);
     phases.push({ label: `Bloque ${b + 1} – Semana 1`, target: Math.round(base + weekly),     type: 'week' });
     phases.push({ label: `Bloque ${b + 1} – Semana 2`, target: Math.round(base + weekly * 2), type: 'week' });
@@ -107,7 +106,18 @@ function fmtEUR(n: number): string {
   }).format(n);
 }
 
-// ─── Estilos compartidos ──────────────────────────────────────────────────────
+// ─── Config visual de fases ───────────────────────────────────────────────────
+const PHASE_CONFIGS = [
+  { emoji: '⚡', color: '#60a5fa', rgba: '96,165,250'   },
+  { emoji: '🔥', color: '#818cf8', rgba: '129,140,248'  },
+  { emoji: '🎯', color: '#a855f7', rgba: '168,85,247'   },
+  { emoji: '💪', color: '#c084fc', rgba: '192,132,252'  },
+  { emoji: '🌟', color: '#e879f9', rgba: '232,121,249'  },
+  { emoji: '🚀', color: '#f472b6', rgba: '244,114,182'  },
+  { emoji: '✨', color: '#fb7185', rgba: '251,113,133'  },
+];
+
+// ─── Estilos base ─────────────────────────────────────────────────────────────
 const btnBase: React.CSSProperties = {
   border: 'none', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 200ms ease',
 };
@@ -118,20 +128,22 @@ const btnBase: React.CSSProperties = {
 export default function OnboardingPage() {
   const router = useRouter();
 
-  // Paso actual: 1–3 preguntas comportamentales | 4 = ingresos + meta
-  const [step,     setStep]     = useState(1);
+  const [step,     setStep]     = useState(1);   // 1–5
   const [userName, setUserName] = useState('');
 
   // Respuestas pasos 1–3
   const [answers, setAnswers] = useState<(AvatarKey | null)[]>([null, null, null]);
 
-  // ── Estado paso 4 ────────────────────────────────────────────────────────
-  const [incomeMin,  setIncomeMin]  = useState(800);
-  const [incomeMax,  setIncomeMax]  = useState(2_000);
-  const [goalAmount, setGoalAmount] = useState(500);
-  const [goalMonths, setGoalMonths] = useState(3);
+  // Ingresos (paso 4)
+  const [incomeMin, setIncomeMin] = useState(800);
+  const [incomeMax, setIncomeMax] = useState(2_000);
 
-  // ── Slider refs (pointer capture) ────────────────────────────────────────
+  // Objetivo (paso 4)
+  const [goalAmount,     setGoalAmount]     = useState(500);
+  const [goalMonths,     setGoalMonths]     = useState(3);
+  const [goalInputValue, setGoalInputValue] = useState('500'); // texto del input manual
+
+  // Slider refs (pointer capture)
   const trackRef     = useRef<HTMLDivElement>(null);
   const activeHandle = useRef<'min' | 'max' | null>(null);
   const minRef       = useRef(incomeMin);
@@ -139,7 +151,10 @@ export default function OnboardingPage() {
   useEffect(() => { minRef.current = incomeMin; }, [incomeMin]);
   useEffect(() => { maxRef.current = incomeMax; }, [incomeMax]);
 
-  // ── Auth & analytics ─────────────────────────────────────────────────────
+  // Sincronizar input cuando cambia goalAmount por botones +/-
+  useEffect(() => { setGoalInputValue(String(goalAmount)); }, [goalAmount]);
+
+  // Auth check
   useEffect(() => {
     analytics.setScreen(`onboarding_step_${step}` as any);
     if (localStorage.getItem('isAuthenticated') !== 'true') { router.replace('/signup'); return; }
@@ -149,12 +164,15 @@ export default function OnboardingPage() {
     analytics.onboardingStepViewed(step);
   }, [router, step]);
 
-  // ── Computed: validación paso 4 ──────────────────────────────────────────
-  const monthlyNeeded      = goalAmount > 0 && goalMonths > 0 ? goalAmount / goalMonths : 0;
-  const incomeThreshold    = incomeMax * SAVINGS_LIMIT;
-  const isOverThreshold    = monthlyNeeded > incomeThreshold && incomeMax > 0 && goalAmount > 0;
-  const recMonthly         = Math.floor(incomeThreshold / INCOME_STEP) * INCOME_STEP;
-  const recTotal           = recMonthly * goalMonths;
+  // Computed validación paso 4
+  const monthlyNeeded   = goalAmount > 0 && goalMonths > 0 ? goalAmount / goalMonths : 0;
+  const incomeThreshold = incomeMax * SAVINGS_LIMIT;
+  const isOverThreshold = monthlyNeeded > incomeThreshold && incomeMax > 0 && goalAmount > 0;
+  const recMonthly      = Math.floor(incomeThreshold / INCOME_STEP) * INCOME_STEP;
+  const recTotal        = recMonthly * goalMonths;
+
+  // Fases calculadas (usadas en paso 5)
+  const phases = computeGoalPhases(goalAmount, goalMonths);
 
   // ── Slider handlers ──────────────────────────────────────────────────────
   function valueFromPointer(clientX: number): number {
@@ -178,9 +196,31 @@ export default function OnboardingPage() {
   }
   function onHandleUp() { activeHandle.current = null; }
 
-  // ── Navegación ───────────────────────────────────────────────────────────
-  const totalSteps = 4;
+  // ── Input manual del objetivo ─────────────────────────────────────────────
+  function handleGoalInput(e: React.ChangeEvent<HTMLInputElement>) {
+    setGoalInputValue(e.target.value);
+  }
+  function handleGoalInputBlur() {
+    const num = parseInt(goalInputValue.replace(/\D/g, ''), 10);
+    if (!isNaN(num) && num >= 50) {
+      setGoalAmount(num);
+    } else {
+      setGoalInputValue(String(goalAmount));
+    }
+  }
+  function applyRecommendation() { setGoalAmount(recTotal); }
+
+  // ── Navegación ────────────────────────────────────────────────────────────
+  const totalSteps = 5;
   const pct        = Math.round((step / totalSteps) * 100);
+  const minPct     = (incomeMin / MAX_INCOME) * 100;
+  const maxPct     = (incomeMax / MAX_INCOME) * 100;
+
+  const currentStep    = step <= 3 ? ONBOARDING_STEPS[step - 1] : null;
+  const selectedAnswer = step <= 3 ? answers[step - 1]           : null;
+  const isDisabled     = step <= 3 ? !selectedAnswer
+                       : step === 4 ? goalAmount <= 0 || goalMonths <= 0
+                       : false; // paso 5 siempre habilitado
 
   function setAnswer(value: AvatarKey) {
     setAnswers(prev => { const n = [...prev]; n[step - 1] = value; return n; });
@@ -192,19 +232,26 @@ export default function OnboardingPage() {
       if (!sel) return;
       analytics.onboardingQuestionAnswered(step, `onb_q${step}`, sel);
       setStep(step + 1);
+    } else if (step === 4) {
+      // Flush input manual antes de ir a paso 5
+      const num = parseInt(goalInputValue.replace(/\D/g, ''), 10);
+      if (!isNaN(num) && num >= 50) setGoalAmount(num);
+      setStep(5);
     } else {
+      // Paso 5: completar onboarding
       completeOnboarding();
     }
   }
 
   function handleBack() { if (step > 1) setStep(step - 1); }
 
-  function applyRecommendation() { setGoalAmount(recTotal); }
-
   function completeOnboarding() {
-    const finalAnswers = answers as AvatarKey[];
-    const avatar  = classifyAvatar(finalAnswers);
-    const phases  = computeGoalPhases(goalAmount, goalMonths);
+    const finalAnswers   = answers as AvatarKey[];
+    const avatar         = classifyAvatar(finalAnswers);
+    const num            = parseInt(goalInputValue.replace(/\D/g, ''), 10);
+    const resolvedAmount = !isNaN(num) && num >= 50 ? num : goalAmount;
+    const resolvedPhases = computeGoalPhases(resolvedAmount, goalMonths);
+
     try {
       localStorage.setItem('hasCompletedOnboarding', 'true');
       const name = localStorage.getItem('userName');
@@ -214,7 +261,7 @@ export default function OnboardingPage() {
       storeUpdateIncome({ min: incomeMin, max: incomeMax, currency: 'EUR' } satisfies IncomeRange);
       storeCreateGoal({
         title: 'Mi primer objetivo de ahorro',
-        targetAmount: goalAmount,
+        targetAmount: resolvedAmount,
         currentAmount: 0,
         horizonMonths: goalMonths,
         isPrimary: true,
@@ -222,8 +269,11 @@ export default function OnboardingPage() {
       });
       localStorage.setItem('onboardingData', JSON.stringify({
         userAvatar: avatar, answers: finalAnswers,
-        incomeMin, incomeMax, goalAmount, goalMonths, phases,
-        savingsProfile: 'medium', completedAt: new Date().toISOString(),
+        incomeMin, incomeMax,
+        goalAmount: resolvedAmount, goalMonths,
+        phases: resolvedPhases,
+        savingsProfile: 'medium',
+        completedAt: new Date().toISOString(),
       }));
       analytics.onboardingCompleted();
       const userId = localStorage.getItem('supabaseUserId');
@@ -234,22 +284,16 @@ export default function OnboardingPage() {
     }
   }
 
-  // ── Helpers de render ────────────────────────────────────────────────────
-  const currentStep    = step <= 3 ? ONBOARDING_STEPS[step - 1] : null;
-  const selectedAnswer = step <= 3 ? answers[step - 1]           : null;
-  const isDisabled     = step <= 3 ? !selectedAnswer : goalAmount <= 0 || goalMonths <= 0;
-
-  const minPct = (incomeMin / MAX_INCOME) * 100;
-  const maxPct = (incomeMax / MAX_INCOME) * 100;
-
+  // ─────────────────────────────────────────────────────────────────────────
+  // RENDER
   // ─────────────────────────────────────────────────────────────────────────
   return (
     <main style={{
       minHeight: '100vh',
       background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)',
       display: 'flex', flexDirection: 'column', alignItems: 'center',
-      justifyContent: step === 4 ? 'flex-start' : 'center',
-      padding: step === 4 ? '24px 16px 80px' : '24px 16px',
+      justifyContent: step >= 4 ? 'flex-start' : 'center',
+      padding: step >= 4 ? '24px 16px 80px' : '24px 16px',
       fontFamily: 'var(--font-geist-sans, Arial, sans-serif)',
     }}>
 
@@ -294,13 +338,13 @@ export default function OnboardingPage() {
             pointerEvents: 'none',
           }} />
 
-          {/* ── Progress bar ── */}
+          {/* ── Barra de progreso ── */}
           <div style={{ marginBottom: 26 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-              <div style={{ display: 'flex', gap: 6 }}>
-                {[1, 2, 3, 4].map(s => (
+              <div style={{ display: 'flex', gap: 5 }}>
+                {[1, 2, 3, 4, 5].map(s => (
                   <div key={s} style={{
-                    width: s === step ? 26 : 8, height: 8, borderRadius: 999,
+                    width: s === step ? 24 : 7, height: 7, borderRadius: 999,
                     background: s <= step ? 'linear-gradient(90deg, #a855f7, #2563eb)' : 'rgba(51,65,85,0.6)',
                     transition: 'all 300ms ease',
                     boxShadow: s <= step ? '0 0 8px rgba(168,85,247,0.5)' : 'none',
@@ -321,9 +365,9 @@ export default function OnboardingPage() {
             </div>
           </div>
 
-          {/* ═══════════════════════════════════════════════════════════════
+          {/* ══════════════════════════════════════
               PASOS 1–3: preguntas comportamentales
-          ══════════════════════════════════════════════════════════════════ */}
+          ══════════════════════════════════════ */}
           {step <= 3 && currentStep && (
             <>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
@@ -379,12 +423,12 @@ export default function OnboardingPage() {
             </>
           )}
 
-          {/* ═══════════════════════════════════════════════════════════════
+          {/* ══════════════════════════════════════
               PASO 4: Ingresos + Primer objetivo
-          ══════════════════════════════════════════════════════════════════ */}
+          ══════════════════════════════════════ */}
           {step === 4 && (
             <>
-              {/* Header */}
+              {/* Header paso 4 */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
                 <div style={{
                   width: 34, height: 34, borderRadius: 10,
@@ -393,11 +437,11 @@ export default function OnboardingPage() {
                   fontSize: 16, flexShrink: 0, boxShadow: '0 4px 14px rgba(168,85,247,0.3)',
                 }}>💰</div>
                 <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(148,163,184,0.6)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-                  PASO 4 DE 4 · INGRESOS Y META
+                  PASO 4 DE 5 · INGRESOS Y META
                 </span>
               </div>
 
-              {/* ── SECCIÓN 1: Ingresos ── */}
+              {/* Sección ingresos */}
               <h2 style={{ fontSize: 17, fontWeight: 700, color: '#f1f5f9', margin: '0 0 4px', lineHeight: 1.35 }}>
                 ¿Cuáles son tus ingresos mensuales aproximados?
               </h2>
@@ -405,84 +449,59 @@ export default function OnboardingPage() {
                 Selecciona un rango para que podamos recomendarte objetivos realistas y adaptados a ti.
               </p>
 
-              {/* Valores seleccionados */}
+              {/* Min/Max display */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
                 <div>
-                  <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(148,163,184,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 3 }}>
-                    Mínimo
-                  </div>
-                  <div style={{ fontSize: 22, fontWeight: 800, color: '#ec4899', letterSpacing: '-0.5px' }}>
-                    {fmtEUR(incomeMin)}
-                  </div>
+                  <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(148,163,184,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 3 }}>Mínimo</div>
+                  <div style={{ fontSize: 22, fontWeight: 800, color: '#ec4899', letterSpacing: '-0.5px' }}>{fmtEUR(incomeMin)}</div>
                 </div>
-                <div style={{ textAlign: 'center', flex: 1 }}>
-                  <div style={{ height: 1, background: 'linear-gradient(90deg, #ec4899, #a855f7, #60a5fa)', opacity: 0.3, margin: '0 16px' }} />
-                </div>
+                <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, #ec4899, #a855f7, #60a5fa)', opacity: 0.25, margin: '0 14px', alignSelf: 'center' }} />
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(148,163,184,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 3 }}>
-                    Máximo
-                  </div>
-                  <div style={{ fontSize: 22, fontWeight: 800, color: '#60a5fa', letterSpacing: '-0.5px' }}>
-                    {fmtEUR(incomeMax)}
-                  </div>
+                  <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(148,163,184,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 3 }}>Máximo</div>
+                  <div style={{ fontSize: 22, fontWeight: 800, color: '#60a5fa', letterSpacing: '-0.5px' }}>{fmtEUR(incomeMax)}</div>
                 </div>
               </div>
 
               {/* Dual-handle slider */}
               <div style={{ padding: '8px 0 24px', touchAction: 'none', userSelect: 'none' }}>
-                <div
-                  ref={trackRef}
-                  style={{
-                    position: 'relative', height: 8, borderRadius: 999,
-                    background: 'rgba(255,255,255,0.07)',
-                    boxShadow: 'inset 0 1px 4px rgba(0,0,0,0.4)',
-                  }}
-                >
-                  {/* Fill gradiente entre handles */}
+                <div ref={trackRef} style={{
+                  position: 'relative', height: 8, borderRadius: 999,
+                  background: 'rgba(255,255,255,0.07)',
+                  boxShadow: 'inset 0 1px 4px rgba(0,0,0,0.4)',
+                }}>
                   <div style={{
                     position: 'absolute', top: 0, bottom: 0,
                     left: `${minPct}%`, right: `${100 - maxPct}%`,
                     background: 'linear-gradient(90deg, #ec4899, #a855f7, #60a5fa)',
-                    borderRadius: 999,
-                    boxShadow: '0 0 12px rgba(168,85,247,0.4)',
+                    borderRadius: 999, boxShadow: '0 0 12px rgba(168,85,247,0.4)',
                   }} />
-
                   {/* Handle MIN */}
-                  <div
-                    style={{
-                      position: 'absolute', top: '50%',
-                      left: `${minPct}%`,
-                      transform: 'translate(-50%, -50%)',
-                      width: 28, height: 28, borderRadius: '50%',
-                      background: 'linear-gradient(135deg, #fff 0%, #f1f5f9 100%)',
-                      boxShadow: '0 0 0 3px #ec4899, 0 4px 14px rgba(236,72,153,0.5)',
-                      cursor: 'grab', zIndex: 3, touchAction: 'none',
-                    }}
+                  <div style={{
+                    position: 'absolute', top: '50%', left: `${minPct}%`,
+                    transform: 'translate(-50%,-50%)', width: 28, height: 28, borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #fff, #f1f5f9)',
+                    boxShadow: '0 0 0 3px #ec4899, 0 4px 14px rgba(236,72,153,0.5)',
+                    cursor: 'grab', zIndex: 3, touchAction: 'none',
+                  }}
                     onPointerDown={onHandleDown('min')}
                     onPointerMove={onHandleMove}
                     onPointerUp={onHandleUp}
                     onLostPointerCapture={onHandleUp}
                   />
-
                   {/* Handle MAX */}
-                  <div
-                    style={{
-                      position: 'absolute', top: '50%',
-                      left: `${maxPct}%`,
-                      transform: 'translate(-50%, -50%)',
-                      width: 28, height: 28, borderRadius: '50%',
-                      background: 'linear-gradient(135deg, #fff 0%, #f1f5f9 100%)',
-                      boxShadow: '0 0 0 3px #60a5fa, 0 4px 14px rgba(96,165,250,0.5)',
-                      cursor: 'grab', zIndex: 3, touchAction: 'none',
-                    }}
+                  <div style={{
+                    position: 'absolute', top: '50%', left: `${maxPct}%`,
+                    transform: 'translate(-50%,-50%)', width: 28, height: 28, borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #fff, #f1f5f9)',
+                    boxShadow: '0 0 0 3px #60a5fa, 0 4px 14px rgba(96,165,250,0.5)',
+                    cursor: 'grab', zIndex: 3, touchAction: 'none',
+                  }}
                     onPointerDown={onHandleDown('max')}
                     onPointerMove={onHandleMove}
                     onPointerUp={onHandleUp}
                     onLostPointerCapture={onHandleUp}
                   />
                 </div>
-
-                {/* Límites del rango */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 12 }}>
                   <span style={{ fontSize: 10, color: 'rgba(100,116,139,0.4)', fontWeight: 500 }}>0 €</span>
                   <span style={{ fontSize: 10, color: 'rgba(100,116,139,0.4)', fontWeight: 500 }}>10.000 €</span>
@@ -490,22 +509,18 @@ export default function OnboardingPage() {
               </div>
 
               {/* Divisor elegante */}
-              <div style={{
-                height: 1,
-                background: 'linear-gradient(90deg, transparent, rgba(168,85,247,0.3), transparent)',
-                margin: '0 0 22px',
-              }} />
+              <div style={{ height: 1, background: 'linear-gradient(90deg, transparent, rgba(168,85,247,0.3), transparent)', margin: '0 0 22px' }} />
 
-              {/* ── SECCIÓN 2: Primer objetivo ── */}
+              {/* Sección objetivo */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                 <span style={{ fontSize: 16 }}>🎯</span>
                 <span style={{ fontSize: 14, fontWeight: 700, color: '#f1f5f9' }}>Tu primer objetivo de ahorro</span>
               </div>
               <p style={{ fontSize: 12, color: 'rgba(148,163,184,0.5)', margin: '0 0 20px', lineHeight: 1.5 }}>
-                Te recomendamos empezar con un objetivo a <strong style={{ color: '#a78bfa' }}>3 meses</strong>: más fácil de cumplir, más motivador y con resultados reales desde el principio.
+                Te recomendamos empezar con un objetivo a <strong style={{ color: '#a78bfa' }}>3 meses</strong>: más fácil de cumplir y con resultados reales desde el principio.
               </p>
 
-              {/* Goal amount stepper */}
+              {/* Cantidad: stepper + input manual */}
               <div style={{ marginBottom: 16 }}>
                 <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(148,163,184,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>
                   ¿Cuánto quieres ahorrar?
@@ -517,22 +532,39 @@ export default function OnboardingPage() {
                 }}>
                   <button
                     onClick={() => setGoalAmount(a => Math.max(50, a - 50))}
-                    style={{ ...btnBase, width: 54, background: 'rgba(255,255,255,0.04)', color: 'rgba(148,163,184,0.8)', fontSize: 24 }}
+                    style={{ ...btnBase, width: 54, background: 'rgba(255,255,255,0.04)', color: 'rgba(148,163,184,0.8)', fontSize: 26, flexShrink: 0 }}
                   >−</button>
-                  <div style={{ flex: 1, textAlign: 'center', padding: '12px 0' }}>
-                    <div style={{ fontSize: 30, fontWeight: 800, color: '#f1f5f9', letterSpacing: '-0.5px', lineHeight: 1 }}>
-                      {fmtEUR(goalAmount)}
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '10px 4px' }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
+                      <input
+                        type="number"
+                        inputMode="numeric"
+                        value={goalInputValue}
+                        onChange={handleGoalInput}
+                        onBlur={handleGoalInputBlur}
+                        style={{
+                          background: 'transparent', border: 'none', outline: 'none',
+                          color: '#f1f5f9', fontWeight: 800, fontSize: 28,
+                          letterSpacing: '-0.5px', fontFamily: 'inherit',
+                          textAlign: 'right',
+                          width: `${Math.max(2, String(goalInputValue).length)}ch`,
+                          minWidth: '3ch', maxWidth: '10ch',
+                          /* Ocultar flechas del input number */
+                          MozAppearance: 'textfield',
+                        } as React.CSSProperties}
+                      />
+                      <span style={{ fontSize: 18, fontWeight: 700, color: 'rgba(241,245,249,0.5)', flexShrink: 0 }}>€</span>
                     </div>
-                    <div style={{ fontSize: 10, color: 'rgba(148,163,184,0.35)', marginTop: 4 }}>objetivo total</div>
+                    <div style={{ fontSize: 10, color: 'rgba(148,163,184,0.3)', marginTop: 3 }}>toca para escribir · o usa los botones</div>
                   </div>
                   <button
                     onClick={() => setGoalAmount(a => a + 50)}
-                    style={{ ...btnBase, width: 54, background: 'rgba(255,255,255,0.04)', color: 'rgba(148,163,184,0.8)', fontSize: 24 }}
+                    style={{ ...btnBase, width: 54, background: 'rgba(255,255,255,0.04)', color: 'rgba(148,163,184,0.8)', fontSize: 26, flexShrink: 0 }}
                   >+</button>
                 </div>
               </div>
 
-              {/* Months selector */}
+              {/* Selector de meses */}
               <div style={{ marginBottom: 16 }}>
                 <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(148,163,184,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>
                   ¿En cuántos meses?
@@ -581,32 +613,27 @@ export default function OnboardingPage() {
                 </div>
               )}
 
-              {/* ── Validación / feedback ── */}
+              {/* Validación 30% */}
               {goalAmount > 0 && incomeMax > 0 && (
                 isOverThreshold ? (
-                  /* 🔴 Objetivo exigente → recomendación amable */
                   <div style={{
                     background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)',
                     borderRadius: 14, padding: '14px 16px', marginBottom: 4,
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
                       <span style={{ fontSize: 15 }}>💡</span>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: '#fbbf24' }}>
-                        Recomendación de Ahorro Invisible
-                      </span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: '#fbbf24' }}>Recomendación de Ahorro Invisible</span>
                     </div>
                     <p style={{ fontSize: 12, color: 'rgba(251,191,36,0.8)', margin: '0 0 6px', lineHeight: 1.6 }}>
-                      Este objetivo puede ser algo exigente para empezar según el rango de ingresos que has indicado.
-                      Te recomendamos comenzar con una meta de{' '}
+                      Este objetivo puede ser algo exigente. Te recomendamos comenzar con{' '}
                       <strong style={{ color: '#fbbf24' }}>{fmtEUR(recMonthly)}/mes</strong>{' '}
-                      ({fmtEUR(recTotal)} en {goalMonths} meses) para que puedas mantener el ritmo y ver progreso real desde el principio.
+                      ({fmtEUR(recTotal)} en {goalMonths} meses) para mantener el ritmo y ver progreso real.
                     </p>
                     <p style={{ fontSize: 11, color: 'rgba(251,191,36,0.45)', margin: '0 0 12px', lineHeight: 1.5 }}>
-                      Más adelante, cuando consolides este hábito, podrás aumentar tu objetivo y seguir mejorando poco a poco.
+                      Más adelante podrás aumentar tu objetivo cuando consolides el hábito.
                     </p>
                     <button onClick={applyRecommendation} style={{
-                      ...btnBase,
-                      width: '100%', padding: '10px', borderRadius: 10,
+                      ...btnBase, width: '100%', padding: '10px', borderRadius: 10,
                       background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.30)',
                       color: '#fbbf24', fontSize: 12, fontWeight: 700,
                     }}>
@@ -614,7 +641,6 @@ export default function OnboardingPage() {
                     </button>
                   </div>
                 ) : (
-                  /* 🟢 Objetivo realista */
                   <div style={{
                     display: 'flex', alignItems: 'center', gap: 8,
                     background: 'rgba(16,185,129,0.07)', border: '1px solid rgba(16,185,129,0.2)',
@@ -630,8 +656,115 @@ export default function OnboardingPage() {
             </>
           )}
 
-          {/* ── Botones de navegación (comunes a todos los pasos) ── */}
-          <div style={{ display: 'flex', gap: 10, marginTop: step === 4 ? 20 : 0 }}>
+          {/* ══════════════════════════════════════
+              PASO 5: Roadmap visual de fases
+          ══════════════════════════════════════ */}
+          {step === 5 && (
+            <>
+              {/* Header */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+                <div style={{
+                  width: 34, height: 34, borderRadius: 10,
+                  background: 'linear-gradient(135deg, #fbbf24, #f97316)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 16, flexShrink: 0, boxShadow: '0 4px 14px rgba(251,191,36,0.35)',
+                }}>🗺️</div>
+                <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(148,163,184,0.6)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                  PASO 5 DE 5 · TU RECORRIDO
+                </span>
+              </div>
+
+              <h2 style={{ fontSize: 17, fontWeight: 700, color: '#f1f5f9', margin: '0 0 4px', lineHeight: 1.35 }}>
+                Así vas a alcanzar tu objetivo
+              </h2>
+              <p style={{ fontSize: 12, color: 'rgba(148,163,184,0.55)', margin: '0 0 20px', lineHeight: 1.5 }}>
+                Hemos dividido <strong style={{ color: '#a78bfa' }}>{fmtEUR(goalAmount)}</strong> en{' '}
+                <strong style={{ color: '#a78bfa' }}>{goalMonths} {goalMonths === 1 ? 'mes' : 'meses'}</strong> en fases pequeñas para que el progreso sea visible desde el primer día.
+              </p>
+
+              {/* Timeline de fases */}
+              <div style={{ maxHeight: 380, overflowY: 'auto', paddingRight: 2 }}>
+                {phases.map((phase, i) => {
+                  const isLast    = i === phases.length - 1;
+                  const conf      = isLast
+                    ? { emoji: '🏆', color: '#fbbf24', rgba: '251,191,36' }
+                    : PHASE_CONFIGS[Math.min(i, PHASE_CONFIGS.length - 1)];
+                  const nextConf  = PHASE_CONFIGS[Math.min(i + 1, PHASE_CONFIGS.length - 1)];
+                  const prevTarget = i > 0 ? phases[i - 1].target : 0;
+                  const increment  = phase.target - prevTarget;
+
+                  return (
+                    <div key={i} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+                      {/* Nodo + conector */}
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 36, flexShrink: 0 }}>
+                        <div style={{
+                          width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
+                          background: isLast
+                            ? 'linear-gradient(135deg, #fbbf24, #f97316)'
+                            : `rgba(${conf.rgba},0.15)`,
+                          border: `2px solid rgba(${conf.rgba},${isLast ? 0.8 : 0.45})`,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16,
+                          boxShadow: isLast
+                            ? '0 0 18px rgba(251,191,36,0.4)'
+                            : `0 0 8px rgba(${conf.rgba},0.25)`,
+                        }}>
+                          {conf.emoji}
+                        </div>
+                        {!isLast && (
+                          <div style={{
+                            width: 2, flex: 1, minHeight: 20,
+                            background: `linear-gradient(to bottom, rgba(${conf.rgba},0.4), rgba(${nextConf.rgba},0.25))`,
+                            margin: '3px 0',
+                          }} />
+                        )}
+                      </div>
+
+                      {/* Info de la fase */}
+                      <div style={{ flex: 1, paddingTop: 6, paddingBottom: isLast ? 4 : 18 }}>
+                        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, marginBottom: 3 }}>
+                          <span style={{
+                            fontSize: 11, fontWeight: 700, letterSpacing: '0.08em',
+                            color: `rgba(${conf.rgba},0.85)`, textTransform: 'uppercase',
+                          }}>
+                            {phase.label}
+                          </span>
+                          <span style={{ fontSize: 16, fontWeight: 800, color: isLast ? '#fbbf24' : conf.color, flexShrink: 0 }}>
+                            {fmtEUR(phase.target)}
+                          </span>
+                        </div>
+                        <div style={{ fontSize: 11, color: 'rgba(148,163,184,0.5)', lineHeight: 1.4 }}>
+                          {isLast
+                            ? '🏆 ¡Objetivo alcanzado!'
+                            : phase.type === 'week'
+                              ? `Ahorra ${fmtEUR(increment)} esta semana`
+                              : `+${fmtEUR(increment)} este mes · acumulas ${fmtEUR(phase.target)}`}
+                        </div>
+                        {!isLast && (
+                          <div style={{ height: 1, background: `rgba(${conf.rgba},0.1)`, marginTop: 10 }} />
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Nota motivacional */}
+              <div style={{
+                marginTop: 16,
+                background: 'rgba(168,85,247,0.07)', border: '1px solid rgba(168,85,247,0.2)',
+                borderRadius: 12, padding: '12px 14px',
+                display: 'flex', alignItems: 'flex-start', gap: 10,
+              }}>
+                <span style={{ fontSize: 16, flexShrink: 0 }}>💜</span>
+                <p style={{ fontSize: 12, color: 'rgba(148,163,184,0.7)', margin: 0, lineHeight: 1.5 }}>
+                  No tienes que conseguirlo todo de golpe. Cada fase que superes es una victoria real. Ahorro Invisible te guiará en cada paso del camino.
+                </p>
+              </div>
+            </>
+          )}
+
+          {/* ── Botones de navegación ── */}
+          <div style={{ display: 'flex', gap: 10, marginTop: step >= 4 ? 20 : 0 }}>
             {step > 1 && (
               <button onClick={handleBack} style={{
                 ...btnBase,
@@ -645,14 +778,22 @@ export default function OnboardingPage() {
             <button onClick={handleNext} disabled={isDisabled} style={{
               ...btnBase,
               flex: step > 1 ? 2 : 1, padding: '12px 0', borderRadius: 10,
-              background: isDisabled ? 'rgba(51,65,85,0.4)' : 'linear-gradient(90deg, #a855f7, #2563eb)',
+              background: isDisabled
+                ? 'rgba(51,65,85,0.4)'
+                : step === 5
+                  ? 'linear-gradient(90deg, #fbbf24, #f97316)'
+                  : 'linear-gradient(90deg, #a855f7, #2563eb)',
               border: 'none',
               color: isDisabled ? 'rgba(100,116,139,0.6)' : '#fff',
               fontSize: 14, fontWeight: 700,
               cursor: isDisabled ? 'not-allowed' : 'pointer',
-              boxShadow: isDisabled ? 'none' : '0 4px 14px rgba(168,85,247,0.35)',
+              boxShadow: isDisabled
+                ? 'none'
+                : step === 5
+                  ? '0 4px 14px rgba(251,191,36,0.35)'
+                  : '0 4px 14px rgba(168,85,247,0.35)',
             }}>
-              {step < totalSteps ? 'Siguiente →' : 'Empezar 🚀'}
+              {step < totalSteps ? 'Siguiente →' : 'Empezar mi recorrido 🚀'}
             </button>
           </div>
 
@@ -666,6 +807,13 @@ export default function OnboardingPage() {
         )}
 
       </div>
+
+      {/* Fix para input number: ocultar flechas en WebKit */}
+      <style>{`
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+      `}</style>
     </main>
   );
 }

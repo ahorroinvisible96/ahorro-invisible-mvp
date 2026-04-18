@@ -423,6 +423,79 @@ function CreateGoalModal({
   );
 }
 
+// ─── Indicador de fase del objetivo ──────────────────────────────────────────
+type GoalPhase = { label: string; target: number; type: string };
+const PHASE_COLORS = [
+  { bg: 'rgba(96,165,250,0.08)',   border: 'rgba(96,165,250,0.22)',   text: '#60a5fa'  },
+  { bg: 'rgba(129,140,248,0.08)',  border: 'rgba(129,140,248,0.22)',  text: '#818cf8'  },
+  { bg: 'rgba(168,85,247,0.08)',   border: 'rgba(168,85,247,0.22)',   text: '#a855f7'  },
+  { bg: 'rgba(192,132,252,0.08)',  border: 'rgba(192,132,252,0.22)',  text: '#c084fc'  },
+  { bg: 'rgba(232,121,249,0.08)',  border: 'rgba(232,121,249,0.22)',  text: '#e879f9'  },
+  { bg: 'rgba(251,191,36,0.08)',   border: 'rgba(251,191,36,0.22)',   text: '#fbbf24'  },
+];
+function GoalPhaseIndicator({ primaryGoal }: { primaryGoal: Goal | null }) {
+  const [phases, setPhases] = React.useState<GoalPhase[] | null>(null);
+  React.useEffect(() => {
+    try {
+      const raw = localStorage.getItem('onboardingData');
+      if (raw) {
+        const data = JSON.parse(raw);
+        if (Array.isArray(data.phases) && data.phases.length > 0) setPhases(data.phases);
+      }
+    } catch { /* ignore */ }
+  }, []);
+  if (!primaryGoal || !phases || phases.length === 0) return null;
+  const current = primaryGoal.currentAmount;
+  // Encuentra la primera fase no completada
+  let currentIdx = -1;
+  for (let i = 0; i < phases.length; i++) {
+    if (current < phases[i].target) { currentIdx = i; break; }
+  }
+  // Todas las fases superadas
+  if (currentIdx === -1) {
+    return (
+      <div style={{ background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.25)', borderRadius: 14, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
+        <span style={{ fontSize: 22 }}>🏆</span>
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#fbbf24' }}>¡Objetivo completado!</div>
+          <div style={{ fontSize: 11, color: 'rgba(251,191,36,0.55)' }}>Has superado todas las fases de tu recorrido</div>
+        </div>
+      </div>
+    );
+  }
+  const phase      = phases[currentIdx];
+  const prevTarget = currentIdx > 0 ? phases[currentIdx - 1].target : 0;
+  const phasePct   = prevTarget === phase.target ? 100 : Math.min(100, Math.round(((current - prevTarget) / (phase.target - prevTarget)) * 100));
+  const palette    = PHASE_COLORS[Math.min(currentIdx, PHASE_COLORS.length - 1)];
+  const phaseNeeded = phase.target - prevTarget;
+  const phaseGot    = Math.max(0, current - prevTarget);
+  return (
+    <div style={{ background: palette.bg, border: `1px solid ${palette.border}`, borderRadius: 14, padding: '14px 16px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ background: palette.text, borderRadius: 8, padding: '2px 10px', fontSize: 11, fontWeight: 800, color: '#fff' }}>
+            {phase.label}
+          </div>
+          <span style={{ fontSize: 11, color: 'rgba(148,163,184,0.45)' }}>Fase {currentIdx + 1} de {phases.length}</span>
+        </div>
+        <span style={{ fontSize: 13, fontWeight: 800, color: palette.text }}>
+          {formatEURDash(current)} / {formatEURDash(phase.target)}
+        </span>
+      </div>
+      {/* Barra de progreso de la fase */}
+      <div style={{ height: 6, borderRadius: 999, background: 'rgba(255,255,255,0.07)', overflow: 'hidden', marginBottom: 8 }}>
+        <div style={{ width: `${phasePct}%`, height: '100%', background: `linear-gradient(90deg, ${palette.text}88, ${palette.text})`, borderRadius: 999, transition: 'width 600ms ease' }} />
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11 }}>
+        <span style={{ color: 'rgba(148,163,184,0.45)' }}>
+          {formatEURDash(phaseGot)} de {formatEURDash(phaseNeeded)} en esta fase
+        </span>
+        <span style={{ color: palette.text, fontWeight: 700 }}>Hito: {formatEURDash(phase.target)}</span>
+      </div>
+    </div>
+  );
+}
+
 export default function DashboardPage() {
   const router = useRouter();
   const [showCreateGoal, setShowCreateGoal] = useState(false);
@@ -747,6 +820,9 @@ export default function DashboardPage() {
                 </div>
               </div>
             )}
+
+            {/* ── Indicador de fase actual del objetivo ── */}
+            <GoalPhaseIndicator primaryGoal={summary.primaryGoal} />
 
             <div id="daily-decision-widget">
               <DailyDecisionWidget
