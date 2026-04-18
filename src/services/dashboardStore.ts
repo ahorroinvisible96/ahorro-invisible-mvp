@@ -76,6 +76,46 @@ export type DailyQuestion = {
   tags?: string[];
 };
 
+// ─── Avatar de usuario (perfil de comportamiento) ────────────────────────────
+export type UserAvatar = 'comodo' | 'social' | 'impulsivo' | 'desordenado';
+
+export const AVATAR_META: Record<UserAvatar, {
+  label: string;
+  emoji: string;
+  color: string;
+  tagline: string;
+  description: string;
+}> = {
+  comodo: {
+    label: 'Cómodo',
+    emoji: '🛋️',
+    color: '#f59e0b',
+    tagline: 'Te gusta la facilidad, pero puedes optimizarla.',
+    description: 'Tiendes a gastar en comodidad y rapidez. Tus preguntas diarias te ayudarán a encontrar alternativas igual de prácticas pero más económicas.',
+  },
+  social: {
+    label: 'Social',
+    emoji: '🧑‍🤝‍🧑',
+    color: '#10b981',
+    tagline: 'Disfrutas salir, pero puedes elegir mejor cómo.',
+    description: 'Gastas más cuando hay planes y gente de por medio. Tus preguntas diarias te ayudarán a disfrutar sin excederte.',
+  },
+  impulsivo: {
+    label: 'Impulsivo',
+    emoji: '⚡',
+    color: '#ef4444',
+    tagline: 'Actúas rápido. Aprender a frenar te cambiará la vida.',
+    description: 'Tomas decisiones de gasto en el momento, sin pensarlo demasiado. Tus preguntas diarias te darán ese segundo de pausa que lo cambia todo.',
+  },
+  desordenado: {
+    label: 'Desordenado',
+    emoji: '🌀',
+    color: '#8b5cf6',
+    tagline: 'No es falta de voluntad, es falta de visibilidad.',
+    description: 'El dinero se te escapa en pequeños gastos sin que te des cuenta. Tus preguntas diarias te darán claridad y sensación de control.',
+  },
+};
+
 export const DAILY_QUESTIONS: DailyQuestion[] = [
   // ─ Originales ────────────────────────────────────────────────────────────
   { questionId: 'coffee',         tags: ['consumo', 'food'],
@@ -146,7 +186,15 @@ export const DAILY_QUESTIONS: DailyQuestion[] = [
     answers: [{ key: 'closed', label: 'Sí, lo cerré', savingsHint: '+20€' }, { key: 'bought', label: 'Compré' }] },
 ];
 
-// Pregunta del día personalizada según moneyFeeling del usuario
+// Preguntas personalizadas por avatar (sustituye al sistema moneyFeeling)
+const AVATAR_TAGS: Record<UserAvatar, string[]> = {
+  comodo:      ['food', 'consumo', 'hogar', 'transport'],
+  social:      ['ocio', 'food', 'consumo', 'transport'],
+  impulsivo:   ['impulse', 'consumo', 'tech', 'ocio'],
+  desordenado: ['hogar', 'subscription', 'salud', 'food'],
+};
+
+// Pregunta del día personalizada (avatar tiene prioridad sobre moneyFeeling)
 const FEELING_TAGS: Record<string, string[]> = {
   reactive:  ['food', 'consumo', 'impulse', 'transport'],
   avoidant:  ['food', 'consumo', 'hogar', 'subscription'],
@@ -154,19 +202,32 @@ const FEELING_TAGS: Record<string, string[]> = {
 };
 
 export function getTodayQuestion(): DailyQuestion {
+  let userAvatar: UserAvatar | null = null;
   let moneyFeeling: string | null = null;
   if (typeof window !== 'undefined') {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) moneyFeeling = (JSON.parse(raw) as { moneyFeeling?: string }).moneyFeeling ?? null;
-      if (!moneyFeeling) {
+      if (raw) {
+        const parsed = JSON.parse(raw) as StoreState;
+        userAvatar = (parsed.userAvatar ?? null) as UserAvatar | null;
+        moneyFeeling = parsed.moneyFeeling ?? null;
+      }
+      if (!moneyFeeling && !userAvatar) {
         const onbRaw = localStorage.getItem('onboardingData');
-        if (onbRaw) moneyFeeling = (JSON.parse(onbRaw) as { moneyFeeling?: string }).moneyFeeling ?? null;
+        if (onbRaw) {
+          const onb = JSON.parse(onbRaw) as { moneyFeeling?: string; userAvatar?: string };
+          moneyFeeling = onb.moneyFeeling ?? null;
+          userAvatar = (onb.userAvatar ?? null) as UserAvatar | null;
+        }
       }
     } catch { /* fallthrough */ }
   }
   let pool = DAILY_QUESTIONS;
-  if (moneyFeeling && FEELING_TAGS[moneyFeeling]) {
+  // Avatar tiene prioridad sobre el sistema anterior de moneyFeeling
+  if (userAvatar && AVATAR_TAGS[userAvatar]) {
+    const preferred = DAILY_QUESTIONS.filter(q => q.tags?.some(t => AVATAR_TAGS[userAvatar!].includes(t)));
+    if (preferred.length >= 5) pool = preferred;
+  } else if (moneyFeeling && FEELING_TAGS[moneyFeeling]) {
     const preferred = DAILY_QUESTIONS.filter(q => q.tags?.some(t => FEELING_TAGS[moneyFeeling!].includes(t)));
     if (preferred.length >= 5) pool = preferred;
   }
@@ -180,6 +241,7 @@ type StoreState = {
   userEmail: string;
   incomeRange: IncomeRange | null;
   moneyFeeling: string | null;
+  userAvatar: UserAvatar | null;
   goals: Goal[];
   decisions: DailyDecision[];
   hucha: Hucha;
@@ -196,6 +258,7 @@ const SEED: StoreState = {
   userEmail: '',
   incomeRange: null,
   moneyFeeling: null,
+  userAvatar: null,
   goals: [],
   decisions: [],
   hucha: { balance: 0, entries: [] },
@@ -233,6 +296,8 @@ function loadStore(): StoreState {
       if (!parsed.savingsPercent) parsed.savingsPercent = 6;
       if (!parsed.goalPercentMilestonesSeen) parsed.goalPercentMilestonesSeen = {};
       if (parsed.lastAdaptiveEvaluation === undefined) parsed.lastAdaptiveEvaluation = null;
+      // Migración: userAvatar
+      if (parsed.userAvatar === undefined) parsed.userAvatar = null;
       return parsed;
     }
   } catch { /* fallthrough */ }
@@ -619,6 +684,16 @@ export function storeUpdateMoneyFeeling(
 ): DashboardSummary {
   const state = loadStore();
   state.moneyFeeling = moneyFeeling;
+  persistStore(state);
+  return buildSummary(currentRange);
+}
+
+export function storeSetUserAvatar(
+  avatar: UserAvatar,
+  currentRange: '7d' | '30d' | '90d' = '30d',
+): DashboardSummary {
+  const state = loadStore();
+  state.userAvatar = avatar;
   persistStore(state);
   return buildSummary(currentRange);
 }
