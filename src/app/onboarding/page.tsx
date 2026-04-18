@@ -16,12 +16,12 @@ import { pushLocalDataToSupabase } from "@/services/syncService";
 
 // ─── Constantes ────────────────────────────────────────────────────────────────
 const INCOME_OPTIONS = [
-  { label: 'Menos de 1.000 €', min: 0,     max: 1_000,  mid: 1_000 },
-  { label: '1.000 – 1.500 €',  min: 1_000, max: 1_500,  mid: 1_250 },
-  { label: '1.500 – 2.000 €',  min: 1_500, max: 2_000,  mid: 1_750 },
-  { label: '2.000 – 2.500 €',  min: 2_000, max: 2_500,  mid: 2_250 },
-  { label: '2.500 – 3.000 €',  min: 2_500, max: 3_000,  mid: 2_750 },
-  { label: 'Más de 3.000 €',   min: 3_000, max: 10_000, mid: 4_000 },
+  { label: 'Menos de 1.000 €', min: 0,     max: 1_000,  mid: 1_000 }, // base: 1000
+  { label: '1.000 – 1.500 €',  min: 1_000, max: 1_500,  mid: 1_500 }, // base: 1500
+  { label: '1.500 – 2.000 €',  min: 1_500, max: 2_000,  mid: 2_000 }, // base: 2000
+  { label: '2.000 – 2.500 €',  min: 2_000, max: 2_500,  mid: 2_500 }, // base: 2500
+  { label: '2.500 – 3.000 €',  min: 2_500, max: 3_000,  mid: 3_000 }, // base: 3000
+  { label: 'Más de 3.000 €',   min: 3_000, max: 10_000, mid: 3_000 }, // base: 3000
 ];
 
 // ─── Tipos ─────────────────────────────────────────────────────────────────────
