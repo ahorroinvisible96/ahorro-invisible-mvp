@@ -567,3 +567,59 @@
     --profile-zone-padding-v: 28px;
   }
 }
+
+/* ── WIDGET PERSONALIZACIÓN ── */
+.personalizationCard {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 16px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.06), rgba(59, 130, 246, 0.04));
+  border: 1px solid rgba(168, 85, 247, 0.12);
+  cursor: pointer;
+  text-align: left;
+  transition: all 250ms ease;
+}
+
+.personalizationCard:hover {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.10), rgba(59, 130, 246, 0.06));
+  border-color: rgba(168, 85, 247, 0.25);
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.08);
+}
+
+.personalizationIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(59, 130, 246, 0.10));
+  border: 1px solid rgba(168, 85, 247, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a855f7;
+  flex-shrink: 0;
+}
+
+.personalizationContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.personalizationTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.2;
+}
+
+.personalizationSub {
+  font-size: 12px;
+  font-weight: 400;
+  color: rgba(148, 163, 184, 0.50);
+  line-height: 1.4;
+}

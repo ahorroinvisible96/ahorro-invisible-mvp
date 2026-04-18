@@ -222,24 +222,24 @@ function GoalDonutChart({ goals }: { goals: Goal[] }) {
         </div>
       )}
 
-      {/* ── Leyenda condensada: solo nombre + color (sin importes fijos) ── */}
-      {activeGoals.length > 0 && (
+      {/* ── Leyenda: solo objetivos con ahorro > 0 ── */}
+      {goalsWithSavings.length > 0 && (
         <div className={styles.donutLegend}>
-          {activeGoals.map((g, i) => {
+          {goalsWithSavings.map((g, i) => {
             const color = DONUT_COLORS[i % DONUT_COLORS.length];
-            const isSelected = selectedIdx === i;
+            const origIdx = activeGoals.indexOf(g);
+            const isSelected = selectedIdx === origIdx;
             return (
               <button
                 key={g.id}
                 className={`${styles.donutLegendItem} ${isSelected ? styles.donutLegendItemActive : ''}`}
-                onClick={() => handleSegmentClick(i)}
+                onClick={() => handleSegmentClick(origIdx)}
               >
                 <div
                   className={styles.donutLegendDot}
                   style={{
                     background: color,
                     boxShadow: isSelected ? `0 0 8px ${color}66` : 'none',
-                    opacity: g.currentAmount > 0 ? 1 : 0.3,
                   }}
                 />
                 <span className={styles.donutLegendLabel}>{g.title}</span>

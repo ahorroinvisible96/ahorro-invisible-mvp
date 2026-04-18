@@ -1,0 +1,291 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   ProfilingModal — Modal de personalización
+   Estilo coherente con la app: fondo oscuro, colores púrpura, premium
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Overlay ── */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.70);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: overlayIn 200ms ease both;
+}
+
+@keyframes overlayIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Modal card ── */
+.modal {
+  width: 100%;
+  max-width: 420px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: #0f1420;
+  border-radius: 24px;
+  border: 1px solid rgba(168, 85, 247, 0.12);
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.60),
+    0 0 48px rgba(168, 85, 247, 0.08);
+  animation: modalSlideIn 350ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes modalSlideIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   INTRO PHASE
+   ═══════════════════════════════════════════════════════════════════════ */
+.introBody {
+  padding: 36px 28px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+}
+
+.introIcon {
+  width: 60px;
+  height: 60px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(59, 130, 246, 0.10));
+  border: 1px solid rgba(168, 85, 247, 0.20);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a855f7;
+  margin-bottom: 4px;
+}
+
+.introTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: #f1f5f9;
+  letter-spacing: -0.02em;
+  margin: 0;
+  line-height: 1.25;
+}
+
+.introText {
+  font-size: 14px;
+  color: rgba(148, 163, 184, 0.70);
+  line-height: 1.6;
+  margin: 0;
+  max-width: 340px;
+}
+
+.introBtns {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+/* ── Botones comunes ── */
+.primaryBtn {
+  width: 100%;
+  padding: 14px 0;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #a855f7, #7c3aed);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(168, 85, 247, 0.30);
+  transition: all 200ms ease;
+}
+
+.primaryBtn:hover {
+  background: linear-gradient(135deg, #9333ea, #6d28d9);
+  box-shadow: 0 6px 24px rgba(168, 85, 247, 0.40);
+}
+
+.secondaryBtn {
+  width: 100%;
+  padding: 12px 0;
+  border-radius: 14px;
+  background: transparent;
+  color: rgba(148, 163, 184, 0.60);
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid rgba(51, 65, 85, 0.30);
+  cursor: pointer;
+  transition: all 180ms ease;
+}
+
+.secondaryBtn:hover {
+  background: rgba(51, 65, 85, 0.15);
+  color: rgba(148, 163, 184, 0.85);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   QUESTIONS PHASE
+   ═══════════════════════════════════════════════════════════════════════ */
+.questionBody {
+  padding: 28px 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: qFadeIn 280ms ease both;
+}
+
+@keyframes qFadeIn {
+  from { opacity: 0; transform: translateX(12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ── Barra de progreso ── */
+.progressBar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.progressTrack {
+  flex: 1;
+  height: 4px;
+  border-radius: 4px;
+  background: rgba(51, 65, 85, 0.35);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #a855f7, #7c3aed);
+  transition: width 350ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.progressLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(148, 163, 184, 0.45);
+  flex-shrink: 0;
+  min-width: 28px;
+  text-align: right;
+}
+
+/* ── Pregunta ── */
+.questionTitle {
+  font-size: 17px;
+  font-weight: 600;
+  color: #e2e8f0;
+  line-height: 1.45;
+  margin: 0;
+}
+
+/* ── Opciones ── */
+.optionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.optionBtn {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.50);
+  border: 1px solid rgba(51, 65, 85, 0.35);
+  cursor: pointer;
+  text-align: left;
+  transition: all 200ms ease;
+}
+
+.optionBtn:hover {
+  background: rgba(168, 85, 247, 0.06);
+  border-color: rgba(168, 85, 247, 0.25);
+}
+
+.optionBtn:disabled {
+  pointer-events: none;
+}
+
+.optionSelected {
+  background: rgba(168, 85, 247, 0.12) !important;
+  border-color: rgba(168, 85, 247, 0.45) !important;
+  box-shadow: 0 0 16px rgba(168, 85, 247, 0.12);
+}
+
+.optionLetter {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: rgba(168, 85, 247, 0.10);
+  border: 1px solid rgba(168, 85, 247, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #a855f7;
+  flex-shrink: 0;
+  transition: all 200ms ease;
+}
+
+.optionSelected .optionLetter {
+  background: #a855f7;
+  color: #fff;
+  border-color: #a855f7;
+}
+
+.optionText {
+  font-size: 14px;
+  font-weight: 400;
+  color: rgba(203, 213, 225, 0.85);
+  line-height: 1.45;
+  padding-top: 3px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   DONE PHASE
+   ═══════════════════════════════════════════════════════════════════════ */
+.doneBody {
+  padding: 40px 28px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+  animation: donePop 400ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes donePop {
+  from { opacity: 0; transform: scale(0.90); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.doneIcon {
+  font-size: 42px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.doneTitle {
+  font-size: 22px;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin: 0;
+}
+
+.doneText {
+  font-size: 14px;
+  color: rgba(148, 163, 184, 0.65);
+  line-height: 1.6;
+  margin: 0;
+  max-width: 300px;
+}

@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { analytics } from '@/services/analytics';
 import { buildSummary, storeUpdateUserName, storeUpdateIncome } from '@/services/dashboardStore';
 import { authSignOut } from '@/services/authService';
+import { hasCompletedProfiling } from '@/services/profilingService';
+import { ProfilingModal } from '@/components/profile/ProfilingModal/ProfilingModal';
 import type { IncomeRange } from '@/types/Dashboard';
 import styles from './Profile.module.css';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
@@ -118,6 +120,9 @@ export default function ProfilePage() {
   const [nameSaved, setNameSaved]         = useState(false);
   // Estado de privacidad de ingresos — persiste en localStorage
   const [incomeVisible, setIncomeVisible] = useState(true);
+  // Estado del modal de personalización
+  const [profilingOpen, setProfilingOpen]       = useState(false);
+  const [profilingDone, setProfilingDone]       = useState(false);
 
   const toggleIncomeVisibility = useCallback(() => {
     setIncomeVisible(v => {
@@ -145,6 +150,8 @@ export default function ProfilePage() {
     // Restaurar preferencia de privacidad
     const savedVisible = localStorage.getItem('profile_income_visible');
     if (savedVisible === '0') setIncomeVisible(false);
+    // Comprobar si ya completó profiling
+    setProfilingDone(hasCompletedProfiling());
     analytics.profileViewed();
     setLoading(false);
   }, [router]);
@@ -308,6 +315,33 @@ export default function ProfilePage() {
               </div>
             </div>
 
+            {/* ─── Bloque: Personalización ─── */}
+            <div className={styles.sectionGroup}>
+              <p className={styles.sectionLabel}>PERSONALIZACIÓN</p>
+              <button
+                className={styles.personalizationCard}
+                onClick={() => setProfilingOpen(true)}
+              >
+                <div className={styles.personalizationIcon}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26Z" />
+                  </svg>
+                </div>
+                <div className={styles.personalizationContent}>
+                  <span className={styles.personalizationTitle}>
+                    {profilingDone ? 'Personalización completada' : 'Personaliza aún más tu experiencia'}
+                  </span>
+                  <span className={styles.personalizationSub}>
+                    {profilingDone
+                      ? 'Tu perfil ya está optimizado. Puedes repetirlo cuando quieras.'
+                      : 'Responde unas preguntas rápidas para mejorar tu experiencia'}
+                  </span>
+                </div>
+                <ChevronRightIcon size={14} className={styles.listRowChevron} />
+              </button>
+            </div>
+
             {/* ─── Bloque: Apariencia (modo oscuro / claro) ─── */}
             <div className={styles.sectionGroup}>
               <p className={styles.sectionLabel}>APARIENCIA</p>
@@ -411,6 +445,14 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* ── Modal de personalización ── */}
+      {profilingOpen && (
+        <ProfilingModal
+          onClose={() => setProfilingOpen(false)}
+          onCompleted={() => setProfilingDone(true)}
+        />
+      )}
 
     </div>
   );
