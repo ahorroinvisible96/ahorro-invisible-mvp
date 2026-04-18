@@ -6,19 +6,36 @@ import { analytics } from '@/services/analytics';
 import { storeResetAllData, storeExportData, buildSummary } from '@/services/dashboardStore';
 import { authSignOut } from '@/services/authService';
 import { resetUserDataInSupabase } from '@/services/syncService';
+import { getTheme } from '@/styles/themes';
 import { SettingsMyDataWidget } from '@/components/settings/SettingsMyDataWidget/SettingsMyDataWidget';
 import { SettingsNotificationsWidget } from '@/components/settings/SettingsNotificationsWidget/SettingsNotificationsWidget';
 import { SettingsSessionWidget } from '@/components/settings/SettingsSessionWidget/SettingsSessionWidget';
 import { SettingsDangerZoneWidget } from '@/components/settings/SettingsDangerZoneWidget/SettingsDangerZoneWidget';
 import { SettingsHelpWidget } from '@/components/settings/SettingsHelpWidget/SettingsHelpWidget';
-import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import styles from './Settings.module.css';
 import { SettingsIcon } from '@/components/ui/AppIcons';
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function truncateEmail(email: string, max = 18): string {
+  if (!email || email.length <= max) return email || '—';
+  const [local, domain] = email.split('@');
+  if (!domain) return email.slice(0, max) + '…';
+  const localShort = local.length > 8 ? local.slice(0, 7) + '…' : local;
+  return `${localShort}@${domain}`;
+}
+
+const THEME_LABELS: Record<string, string> = {
+  dark:   'Oscuro',
+  light:  'Claro',
+  system: 'Sistema',
+};
+
 export default function SettingsPage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [userEmail, setUserEmail] = useState('');
+  const [loading, setLoading]           = useState(true);
+  const [userEmail, setUserEmail]       = useState('');
+  const [notifEnabled, setNotifEnabled] = useState(false);
+  const [currentTheme, setCurrentTheme] = useState('dark');
 
   useEffect(() => {
     analytics.setScreen('settings');
@@ -26,6 +43,12 @@ export default function SettingsPage() {
     if (isAuth !== 'true') { router.replace('/login'); return; }
     const summary = buildSummary('30d');
     setUserEmail(summary.userEmail);
+    // Estado de notificaciones
+    const notifPerm = typeof Notification !== 'undefined' ? Notification.permission : 'default';
+    const notifSaved = localStorage.getItem('push_reminders_enabled');
+    setNotifEnabled(notifPerm === 'granted' && notifSaved === 'true');
+    // Tema actual
+    setCurrentTheme(getTheme());
     analytics.settingsViewed();
     setLoading(false);
   }, [router]);
@@ -68,12 +91,18 @@ export default function SettingsPage() {
     );
   }
 
+  const themeLabel = THEME_LABELS[currentTheme] ?? 'Oscuro';
+  const themeColor = currentTheme === 'light' ? '#fbbf24' : currentTheme === 'system' ? '#60a5fa' : '#a78bfa';
+  const notifLabel = notifEnabled ? 'Activas' : 'Inactivas';
+  const notifColor = notifEnabled ? '#4ade80' : 'rgba(255,255,255,0.35)';
+  const emailShort = truncateEmail(userEmail);
+
   return (
     <div className={styles.page}>
 
       {/* ══════════════════════════════════════════════════════════════════════
-          ZONA 1 — HEADER PRINCIPAL (degradado azul, identidad de Configuración)
-          Contiene: icono + título + email de cuenta activa
+          ZONA 1 — HEADER PRINCIPAL (degradado azul)
+          Contiene: icono + título → 3 métricas clave (cuenta, notifs, tema)
           ══════════════════════════════════════════════════════════════════════ */}
       <div className={styles.headerZone}>
         <div className={styles.zoneInner}>
@@ -85,7 +114,7 @@ export default function SettingsPage() {
                 <SettingsIcon size={22} />
               </div>
               <div className={styles.headerTitles}>
-                <span className={styles.headerSub}>Ajustes</span>
+                <span className={styles.headerSub}>Ajustes de la app</span>
                 <h1 className={styles.headerTitle}>Configuración</h1>
               </div>
             </div>
@@ -93,10 +122,36 @@ export default function SettingsPage() {
             {/* Divisor */}
             <div className={styles.headerDivider} />
 
-            {/* Estado: email de cuenta */}
-            <div className={styles.headerStatusRow}>
-              <span className={styles.headerStatusLabel}>Cuenta activa</span>
-              <span className={styles.headerStatusValue}>{userEmail || '—'}</span>
+            {/* Tarjetas de métricas: cuenta · notificaciones · tema */}
+            <div className={styles.metricsRow}>
+
+              {/* Métrica 1: Cuenta activa */}
+              <div className={styles.metricCard}>
+                <span className={styles.metricLabel}>Cuenta</span>
+                <span className={styles.metricValue} title={userEmail}>
+                  {emailShort}
+                </span>
+                <span className={styles.metricSub}>sesión activa</span>
+              </div>
+
+              {/* Métrica 2: Estado de notificaciones */}
+              <div className={styles.metricCard}>
+                <span className={styles.metricLabel}>Notifs</span>
+                <span className={styles.metricValueAccent} style={{ color: notifColor }}>
+                  {notifLabel}
+                </span>
+                <span className={styles.metricSub}>recordatorio diario</span>
+              </div>
+
+              {/* Métrica 3: Tema actual */}
+              <div className={styles.metricCard}>
+                <span className={styles.metricLabel}>Tema</span>
+                <span className={styles.metricValueAccent} style={{ color: themeColor }}>
+                  {themeLabel}
+                </span>
+                <span className={styles.metricSub}>modo de pantalla</span>
+              </div>
+
             </div>
 
           </div>
