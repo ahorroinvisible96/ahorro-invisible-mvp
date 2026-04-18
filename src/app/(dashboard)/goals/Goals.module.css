@@ -1,0 +1,284 @@
+/* ═══════════════════════════════════════════════════════════
+   GOALS PAGE — Estructura idéntica a Dashboard / History / Profile
+   headerZone (índigo-púrpura) + contentZone (oscuro sólido)
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Página principal — rompe el padding del container ── */
+.page {
+  margin: -16px;
+  width: calc(100% + 32px);
+  min-height: calc(100vh - 32px);
+  box-sizing: border-box;
+  overflow-x: hidden;
+  background: #08080f;
+  animation: pageFadeIn 300ms ease both;
+}
+
+@media (min-width: 768px) {
+  .page {
+    margin: -24px;
+    width: calc(100% + 48px);
+    min-height: calc(100vh - 48px);
+  }
+}
+
+@keyframes pageFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   ZONA 1: HEADER — degradado índigo-púrpura (identidad de Objetivos)
+   ══════════════════════════════════════════════════════════════════════ */
+.headerZone {
+  background: linear-gradient(160deg,
+    #0d0a1e 0%,
+    #1a1040 30%,
+    #2e1a6e 60%,
+    #5b21b6 100%
+  );
+  padding: 28px 0 32px;
+  position: relative;
+  overflow: hidden;
+  animation: heroSlideUp 400ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.headerZone::before {
+  content: '';
+  position: absolute;
+  top: -60px;
+  right: -50px;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  background: rgba(139, 92, 246, 0.30);
+  filter: blur(70px);
+  pointer-events: none;
+}
+
+.headerZone::after {
+  content: '';
+  position: absolute;
+  bottom: -50px;
+  left: -40px;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: rgba(99, 102, 241, 0.22);
+  filter: blur(60px);
+  pointer-events: none;
+}
+
+@keyframes heroSlideUp {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Contenido del header ── */
+.headerContent {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Fila superior: icono + título + botón nuevo */
+.headerTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.headerIconWrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.85);
+  flex-shrink: 0;
+}
+
+.headerTitles {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.headerSub {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.40);
+}
+
+.headerTitle {
+  font-size: 22px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.92);
+  letter-spacing: -0.3px;
+  margin: 0;
+}
+
+/* Botón "+ Nuevo" en el header */
+.newGoalBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 150ms ease;
+}
+.newGoalBtn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+}
+
+/* Divisor */
+.headerDivider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+/* ── Tarjetas métricas (misma estructura que history/profile) ── */
+.metricsRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+
+@media (max-width: 360px) {
+  .metricsRow {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.metricCard {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 14px;
+  padding: 13px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.metricLabel {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.metricValue {
+  font-size: 22px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.92);
+  letter-spacing: -0.4px;
+  line-height: 1;
+}
+
+.metricValueAccent {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.1px;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.metricSub {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.32);
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   ZONA 2: CONTENIDO — fondo sólido oscuro
+   ══════════════════════════════════════════════════════════════════════ */
+.contentZone {
+  background: #08080f;
+  padding: 24px 0 80px;
+  animation: contentSlideUp 450ms cubic-bezier(0.22, 1, 0.36, 1) 80ms both;
+}
+
+@media (min-width: 768px) {
+  .contentZone {
+    padding-bottom: 40px;
+  }
+}
+
+@keyframes contentSlideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Wrapper interior ── */
+.zoneInner {
+  width: 100%;
+  padding: 0 16px;
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .zoneInner {
+    padding: 0 24px;
+  }
+}
+
+/* ── Stack de contenido ── */
+.contentCol {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Grupo: etiqueta + contenido */
+.sectionGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Etiqueta de sección */
+.sectionLabel {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.28);
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Loading ── */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  color: rgba(255, 255, 255, 0.30);
+  font-size: 13px;
+}

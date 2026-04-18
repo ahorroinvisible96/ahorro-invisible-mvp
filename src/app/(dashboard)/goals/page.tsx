@@ -21,6 +21,8 @@ import {
 import { pushLocalDataToSupabase, syncGoalToSupabase, deleteGoalFromSupabase } from '@/services/syncService';
 import type { Goal, Hucha, DashboardSummary } from '@/types/Dashboard';
 import { CollapseChevron } from '@/components/dashboard/CollapsibleWidget/CollapsibleWidget';
+import { TargetIcon, PlusIcon } from '@/components/ui/AppIcons';
+import styles from './Goals.module.css';
 
 function formatEUR(n: number) {
   return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
@@ -409,23 +411,20 @@ export default function GoalsPage() {
 
   if (loading || !summary) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--color-background-page)' }}>
-        <span style={{ color: 'rgba(148,163,184,0.6)', fontSize: 14 }}>Cargando objetivos...</span>
+      <div className={styles.page}>
+        <div className={styles.loading}>Cargando objetivos...</div>
       </div>
     );
   }
 
+  const primaryGoal     = summary.primaryGoal;
+  const primaryPct      = primaryGoal ? Math.min(100, Math.round((primaryGoal.currentAmount / primaryGoal.targetAmount) * 100)) : 0;
+  const primaryTitle    = primaryGoal ? (primaryGoal.title.length > 16 ? primaryGoal.title.slice(0, 15) + '…' : primaryGoal.title) : 'Sin objetivo';
   const inProgressGoals = activeGoals.filter(g => g.currentAmount < g.targetAmount);
   const completedGoals  = activeGoals.filter(g => g.currentAmount >= g.targetAmount);
 
-  const sectionLabel = (text: string, count: number) => (
-    <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(148,163,184,0.5)', textTransform: 'uppercase' as const, letterSpacing: '0.08em', margin: '0 0 12px' }}>
-      {text} <span style={{ color: 'rgba(148,163,184,0.35)' }}>({count})</span>
-    </p>
-  );
-
   return (
-    <div style={{ minHeight: '100vh', paddingBottom: 80, background: 'var(--color-background-page)' }}>
+    <div className={styles.page}>
 
       {/* ── Modals ── */}
       {modalMode && (
@@ -467,140 +466,198 @@ export default function GoalsPage() {
         onCreateGoal={() => { setShowHuchaModal(false); setModalMode('create'); }}
       />
 
-      {/* ── Hero: objetivo principal (igual que en dashboard) ── */}
-      <PrimaryGoalHeroWidget
-        goal={summary.primaryGoal}
-        estimatedMonthsRemaining={summary.estimatedMonthsRemaining}
-        avgMonthlySavings={summary.avgMonthlySavings}
-        dailyCompleted={summary.daily.status === 'completed'}
-        onCreateGoal={() => setModalMode('create')}
-        onOpenGoal={(id) => router.push(`/goals/${id}`)}
-        onGoToDailyDecision={() => router.push('/daily')}
-        onAddExtraSaving={() => router.push('/extra-saving')}
-        onGoToHistory={() => router.push('/history')}
-        onEditGoal={(id) => {
-          const g = activeGoals.find(x => x.id === id);
-          if (g) { setEditingGoal(g); setModalMode('edit'); }
-        }}
-        variant="header"
-      />
+      {/* ══════════════════════════════════════════════════════════════════════
+          ZONA 1 — HEADER PRINCIPAL (degradado índigo-púrpura)
+          Contiene: título + 3 métricas clave + botón nuevo objetivo
+          ══════════════════════════════════════════════════════════════════════ */}
+      <div className={styles.headerZone}>
+        <div className={styles.zoneInner}>
+          <div className={styles.headerContent}>
 
-      {/* ── Contenido principal ── */}
-      <div style={{ padding: '24px 0 0' }}>
+            {/* Fila superior: icono + título + botón nuevo */}
+            <div className={styles.headerTop}>
+              <div className={styles.headerLeft}>
+                <div className={styles.headerIconWrap}>
+                  <TargetIcon size={22} />
+                </div>
+                <div className={styles.headerTitles}>
+                  <span className={styles.headerSub}>Tu planificación</span>
+                  <h1 className={styles.headerTitle}>Objetivos</h1>
+                </div>
+              </div>
+              <button
+                className={styles.newGoalBtn}
+                onClick={() => setModalMode('create')}
+                aria-label="Crear nuevo objetivo"
+              >
+                <PlusIcon size={14} />
+                Nuevo
+              </button>
+            </div>
 
-        {/* Header secundario */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-          <h2 style={{ fontSize: 18, fontWeight: 800, color: '#f1f5f9', margin: 0 }}>Mis Objetivos</h2>
-          <button
-            onClick={() => setModalMode('create')}
-            style={{ padding: '9px 16px', background: 'linear-gradient(90deg,#a855f7,#2563eb)', color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: 'pointer', boxShadow: '0 4px 12px rgba(168,85,247,0.3)' }}
-          >
-            + Nuevo
-          </button>
+            {/* Divisor */}
+            <div className={styles.headerDivider} />
+
+            {/* Tarjetas métricas: objetivo principal · progreso · activos */}
+            <div className={styles.metricsRow}>
+
+              {/* Métrica 1: Nombre del objetivo principal */}
+              <div className={styles.metricCard}>
+                <span className={styles.metricLabel}>Principal</span>
+                <span className={styles.metricValueAccent} style={{ color: primaryGoal ? '#c4b5fd' : 'rgba(255,255,255,0.30)' }}>
+                  {primaryTitle}
+                </span>
+                <span className={styles.metricSub}>
+                  {primaryGoal ? `${formatEUR(primaryGoal.currentAmount)} ahorrados` : 'sin objetivo'}
+                </span>
+              </div>
+
+              {/* Métrica 2: % de progreso del principal */}
+              <div className={styles.metricCard}>
+                <span className={styles.metricLabel}>Progreso</span>
+                <span className={styles.metricValue} style={{ color: primaryPct >= 100 ? '#4ade80' : primaryPct > 0 ? '#a78bfa' : 'rgba(255,255,255,0.40)' }}>
+                  {primaryPct}<span style={{ fontSize: 14, fontWeight: 500 }}>%</span>
+                </span>
+                <span className={styles.metricSub}>
+                  {primaryGoal ? `meta: ${formatEUR(primaryGoal.targetAmount)}` : 'crea un objetivo'}
+                </span>
+              </div>
+
+              {/* Métrica 3: Objetivos activos */}
+              <div className={styles.metricCard}>
+                <span className={styles.metricLabel}>Activos</span>
+                <span className={styles.metricValue}>{activeGoals.length}</span>
+                <span className={styles.metricSub}>
+                  {completedGoals.length > 0 ? `${completedGoals.length} completado${completedGoals.length > 1 ? 's' : ''}` : 'en curso'}
+                </span>
+              </div>
+
+            </div>
+
+          </div>
         </div>
-
-        {/* Hucha badge */}
-        <SavingsBadge
-          balance={hucha.balance}
-          hasActiveGoals={activeGoals.length > 0}
-          onClick={() => setShowHuchaModal(true)}
-        />
-
-        {/* ── En progreso ── */}
-        {activeGoals.length === 0 ? (
-          <div style={{ background: 'linear-gradient(135deg,#0f172a,#1e293b)', border: '1px solid rgba(51,65,85,0.4)', borderRadius: 16, padding: '40px 24px', textAlign: 'center', marginTop: 16 }}>
-            <div style={{ fontSize: 48, marginBottom: 12 }}>🎯</div>
-            <p style={{ fontSize: 15, fontWeight: 600, color: '#f1f5f9', marginBottom: 6 }}>Sin objetivos activos</p>
-            <p style={{ fontSize: 13, color: 'rgba(148,163,184,0.6)', marginBottom: 20 }}>Crea tu primer objetivo para empezar a ahorrar.</p>
-            <button onClick={() => setModalMode('create')} style={{ padding: '12px 24px', background: 'linear-gradient(90deg,#a855f7,#2563eb)', color: '#fff', border: 'none', borderRadius: 12, fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>Crear objetivo</button>
-          </div>
-        ) : (
-          <>
-            {inProgressGoals.length > 0 && (
-              <div style={{ marginTop: 20 }}>
-                <div onClick={() => toggleSec('progreso')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 16px', background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(51,65,85,0.4)', borderRadius: 14, cursor: 'pointer', userSelect: 'none', marginBottom: openSec.progreso ? 12 : 0 }}>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(241,245,249,0.9)' }}>🟢 En progreso ({inProgressGoals.length})</span>
-                  <CollapseChevron collapsed={!openSec.progreso} onToggle={() => toggleSec('progreso')} />
-                </div>
-                {openSec.progreso && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    {inProgressGoals.map(g => (
-                      <GoalCard
-                        key={g.id}
-                        goal={g}
-                        onDetail={() => router.push(`/goals/${g.id}`)}
-                        onEdit={() => { setEditingGoal(g); setModalMode('edit'); }}
-                        onArchive={() => handleArchiveRequest(g.id)}
-                        onDelete={() => setDeletingGoal(g)}
-                        onSetPrimary={() => handleSetPrimary(g.id)}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* ── Completados ── */}
-            {completedGoals.length > 0 && (
-              <div style={{ marginTop: 16 }}>
-                <div onClick={() => toggleSec('completados')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 16px', background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(51,65,85,0.4)', borderRadius: 14, cursor: 'pointer', userSelect: 'none', marginBottom: openSec.completados ? 12 : 0 }}>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(241,245,249,0.9)' }}>🏆 Completados ({completedGoals.length})</span>
-                  <CollapseChevron collapsed={!openSec.completados} onToggle={() => toggleSec('completados')} />
-                </div>
-                {openSec.completados && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    {completedGoals.map(g => (
-                      <GoalCard
-                        key={g.id}
-                        goal={g}
-                        onDetail={() => router.push(`/goals/${g.id}`)}
-                        onEdit={() => { setEditingGoal(g); setModalMode('edit'); }}
-                        onArchive={() => handleArchiveRequest(g.id)}
-                        onDelete={() => setDeletingGoal(g)}
-                        onSetPrimary={() => handleSetPrimary(g.id)}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </>
-        )}
-
-        {/* ── Archivados ── */}
-        {archivedGoals.length > 0 && (
-          <div style={{ marginTop: 28 }}>
-            <button
-              onClick={() => setShowArchived(v => !v)}
-              style={{ background: 'none', border: 'none', color: 'rgba(148,163,184,0.5)', fontSize: 13, cursor: 'pointer', marginBottom: 12, fontWeight: 600, padding: 0 }}
-            >
-              {showArchived ? '▲' : '▼'} Archivados ({archivedGoals.length})
-            </button>
-            {showArchived && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {archivedGoals.map(g => (
-                  <div key={g.id} style={{ background: 'rgba(15,23,42,0.6)', borderRadius: 12, padding: '14px 18px', border: '1px solid rgba(51,65,85,0.3)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                      <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(148,163,184,0.8)' }}>{g.title}</span>
-                      <span style={{ fontSize: 12, color: 'rgba(100,116,139,0.7)' }}>{pct(g)}%</span>
-                    </div>
-                    <p style={{ fontSize: 12, color: 'rgba(100,116,139,0.6)', margin: '0 0 10px' }}>{formatEUR(g.currentAmount)} / {formatEUR(g.targetAmount)}</p>
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      <button onClick={() => handleReactivate(g.id)} style={{ flex: 1, fontSize: 12, padding: '7px 0', border: '1px solid rgba(37,99,235,0.35)', background: 'rgba(37,99,235,0.12)', color: '#60a5fa', borderRadius: 8, cursor: 'pointer', fontWeight: 600 }}>
-                        ✓ Reactivar
-                      </button>
-                      <button onClick={() => setDeletingGoal(g)} style={{ flex: 1, fontSize: 12, padding: '7px 0', border: '1px solid rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.08)', color: '#f87171', borderRadius: 8, cursor: 'pointer', fontWeight: 600 }}>
-                        🗑 Eliminar
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
       </div>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          ZONA 2 — CONTENIDO SECUNDARIO (fondo oscuro sólido)
+          Hero del objetivo principal + lista de todos los objetivos
+          ══════════════════════════════════════════════════════════════════════ */}
+      <div className={styles.contentZone}>
+        <div className={styles.zoneInner}>
+          <div className={styles.contentCol}>
+
+            {/* ─── Widget hero: objetivo primario (tarjeta detalle) ─── */}
+            <PrimaryGoalHeroWidget
+              goal={summary.primaryGoal}
+              estimatedMonthsRemaining={summary.estimatedMonthsRemaining}
+              avgMonthlySavings={summary.avgMonthlySavings}
+              dailyCompleted={summary.daily.status === 'completed'}
+              onCreateGoal={() => setModalMode('create')}
+              onOpenGoal={(id) => router.push(`/goals/${id}`)}
+              onGoToDailyDecision={() => router.push('/daily')}
+              onAddExtraSaving={() => router.push('/extra-saving')}
+              onGoToHistory={() => router.push('/history')}
+              onEditGoal={(id) => {
+                const g = activeGoals.find(x => x.id === id);
+                if (g) { setEditingGoal(g); setModalMode('edit'); }
+              }}
+              variant="header"
+            />
+
+            {/* ─── Hucha badge ─── */}
+            <SavingsBadge
+              balance={hucha.balance}
+              hasActiveGoals={activeGoals.length > 0}
+              onClick={() => setShowHuchaModal(true)}
+            />
+
+            {/* ─── Lista de objetivos ─── */}
+            {activeGoals.length === 0 ? (
+              <div style={{ background: 'linear-gradient(135deg,#0f172a,#1e293b)', border: '1px solid rgba(51,65,85,0.4)', borderRadius: 16, padding: '40px 24px', textAlign: 'center' }}>
+                <div style={{ fontSize: 48, marginBottom: 12 }}>🎯</div>
+                <p style={{ fontSize: 15, fontWeight: 600, color: '#f1f5f9', marginBottom: 6 }}>Sin objetivos activos</p>
+                <p style={{ fontSize: 13, color: 'rgba(148,163,184,0.6)', marginBottom: 20 }}>Crea tu primer objetivo para empezar a ahorrar.</p>
+                <button onClick={() => setModalMode('create')} style={{ padding: '12px 24px', background: 'linear-gradient(90deg,#a855f7,#2563eb)', color: '#fff', border: 'none', borderRadius: 12, fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>Crear objetivo</button>
+              </div>
+            ) : (
+              <>
+                {inProgressGoals.length > 0 && (
+                  <div>
+                    <div onClick={() => toggleSec('progreso')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 16px', background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(51,65,85,0.4)', borderRadius: 14, cursor: 'pointer', userSelect: 'none', marginBottom: openSec.progreso ? 12 : 0 }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(241,245,249,0.9)' }}>🟢 En progreso ({inProgressGoals.length})</span>
+                      <CollapseChevron collapsed={!openSec.progreso} onToggle={() => toggleSec('progreso')} />
+                    </div>
+                    {openSec.progreso && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                        {inProgressGoals.map(g => (
+                          <GoalCard key={g.id} goal={g}
+                            onDetail={() => router.push(`/goals/${g.id}`)}
+                            onEdit={() => { setEditingGoal(g); setModalMode('edit'); }}
+                            onArchive={() => handleArchiveRequest(g.id)}
+                            onDelete={() => setDeletingGoal(g)}
+                            onSetPrimary={() => handleSetPrimary(g.id)}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {completedGoals.length > 0 && (
+                  <div>
+                    <div onClick={() => toggleSec('completados')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 16px', background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(51,65,85,0.4)', borderRadius: 14, cursor: 'pointer', userSelect: 'none', marginBottom: openSec.completados ? 12 : 0 }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(241,245,249,0.9)' }}>🏆 Completados ({completedGoals.length})</span>
+                      <CollapseChevron collapsed={!openSec.completados} onToggle={() => toggleSec('completados')} />
+                    </div>
+                    {openSec.completados && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                        {completedGoals.map(g => (
+                          <GoalCard key={g.id} goal={g}
+                            onDetail={() => router.push(`/goals/${g.id}`)}
+                            onEdit={() => { setEditingGoal(g); setModalMode('edit'); }}
+                            onArchive={() => handleArchiveRequest(g.id)}
+                            onDelete={() => setDeletingGoal(g)}
+                            onSetPrimary={() => handleSetPrimary(g.id)}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* ─── Archivados ─── */}
+            {archivedGoals.length > 0 && (
+              <div>
+                <button onClick={() => setShowArchived(v => !v)} style={{ background: 'none', border: 'none', color: 'rgba(148,163,184,0.5)', fontSize: 13, cursor: 'pointer', marginBottom: 12, fontWeight: 600, padding: 0 }}>
+                  {showArchived ? '▲' : '▼'} Archivados ({archivedGoals.length})
+                </button>
+                {showArchived && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {archivedGoals.map(g => (
+                      <div key={g.id} style={{ background: 'rgba(15,23,42,0.6)', borderRadius: 12, padding: '14px 18px', border: '1px solid rgba(51,65,85,0.3)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                          <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(148,163,184,0.8)' }}>{g.title}</span>
+                          <span style={{ fontSize: 12, color: 'rgba(100,116,139,0.7)' }}>{pct(g)}%</span>
+                        </div>
+                        <p style={{ fontSize: 12, color: 'rgba(100,116,139,0.6)', margin: '0 0 10px' }}>{formatEUR(g.currentAmount)} / {formatEUR(g.targetAmount)}</p>
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          <button onClick={() => handleReactivate(g.id)} style={{ flex: 1, fontSize: 12, padding: '7px 0', border: '1px solid rgba(37,99,235,0.35)', background: 'rgba(37,99,235,0.12)', color: '#60a5fa', borderRadius: 8, cursor: 'pointer', fontWeight: 600 }}>✓ Reactivar</button>
+                          <button onClick={() => setDeletingGoal(g)} style={{ flex: 1, fontSize: 12, padding: '7px 0', border: '1px solid rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.08)', color: '#f87171', borderRadius: 8, cursor: 'pointer', fontWeight: 600 }}>🗑 Eliminar</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 }
+
