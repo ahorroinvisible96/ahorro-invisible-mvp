@@ -9,9 +9,9 @@ import type { SavingsEvolutionWidgetProps } from './SavingsEvolutionWidget.types
 import styles from './SavingsEvolutionWidget.module.css';
 import { useWidgetCollapse } from '@/hooks/useWidgetCollapse';
 import { CollapseChevron } from '@/components/dashboard/CollapsibleWidget/CollapsibleWidget';
-import { TrendingUpIcon, BarChartIcon, ChevronRightIcon } from '@/components/ui/AppIcons';
+import { TrendingUpIcon, ChevronRightIcon } from '@/components/ui/AppIcons';
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat('es-ES', {
     style: 'currency', currency: 'EUR',
@@ -27,178 +27,168 @@ function formatCurrencyShort(value: number): string {
   return `${Math.round(value)}€`;
 }
 
-function getRangeDays(range: string): number {
-  switch (range) {
-    case '7d':  return 7;
-    case '30d': return 30;
-    case '90d': return 90;
-    default:    return 30;
-  }
-}
+// ── Paleta de colores para el donut ───────────────────────────────────────────
+const DONUT_COLORS = [
+  '#a855f7', // purple
+  '#3b82f6', // blue
+  '#ec4899', // pink
+  '#10b981', // emerald
+  '#f59e0b', // amber
+  '#06b6d4', // cyan
+  '#8b5cf6', // violet
+  '#f97316', // orange
+];
 
-/** Formatea una fecha local en YYYY-MM-DD sin problemas de timezone */
-function localDateKey(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
+// ── Donut chart — distribución por objetivos ──────────────────────────────────
+function GoalDonutChart({ goals }: { goals: Goal[] }) {
+  const activeGoals = goals.filter((g) => !g.archived);
+  const totalSaved  = activeGoals.reduce((sum, g) => sum + g.currentAmount, 0);
+  const hasData     = totalSaved > 0;
 
-const RANGES = ['7d', '30d', '90d'] as const;
+  const CX = 100, CY = 100, R = 68;
+  const STROKE = 22;
+  const CI  = 2 * Math.PI * R; // circunferencia ≈ 427.26
+  const GAP = 5;               // px de hueco entre segmentos
 
-// ── General Line Chart (acumulado día a día) ──────────────────────────────────
-function GeneralLineChart({
-  points,
-  rangeDays,
-}: {
-  points: { date: string; value: number }[];
-  rangeDays: number;
-}) {
-  const W = 320, H = 160;
-  const PAD = { top: 16, right: 12, bottom: 28, left: 52 };
-  const CW = W - PAD.left - PAD.right;
-  const CH = H - PAD.top - PAD.bottom;
+  // Solo los objetivos con ahorro > 0 aparecen como segmentos
+  const goalsWithSavings = activeGoals.filter((g) => g.currentAmount > 0);
 
-  // ── Mapa de ahorro por fecha (día local) ─────────────────────────────────
-  const byDate: Record<string, number> = {};
-  for (const pt of points) {
-    const dk = pt.date.substring(0, 10);
-    byDate[dk] = (byDate[dk] ?? 0) + pt.value;
-  }
-
-  // ── Construir línea de tiempo acumulativa ─────────────────────────────────
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const timeline: { day: number; cumulative: number; label: string }[] = [];
-  let running = 0;
-  for (let i = rangeDays - 1; i >= 0; i--) {
-    const d = new Date(today);
-    d.setDate(today.getDate() - i);
-    const dk = localDateKey(d);
-    running += byDate[dk] ?? 0;
-    timeline.push({
-      day: rangeDays - 1 - i,
-      cumulative: running,
-      label: d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }),
-    });
-  }
-
-  const maxVal = Math.max(...timeline.map((t) => t.cumulative), 1);
-  const hasProgress = timeline.some((t) => t.cumulative > 0);
-
-  const xScale = (day: number) => PAD.left + (day / Math.max(rangeDays - 1, 1)) * CW;
-  const yScale = (val: number) => PAD.top + CH - (val / maxVal) * CH;
-  const yBottom = yScale(0);
-
-  const svgPts = timeline.map((t) => ({
-    x: xScale(t.day),
-    y: yScale(t.cumulative),
-    cumulative: t.cumulative,
-    label: t.label,
-  }));
-
-  const polylineStr = svgPts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
-
-  const areaPath =
-    svgPts.length > 1
-      ? [
-          `M ${svgPts[0].x.toFixed(1)} ${svgPts[0].y.toFixed(1)}`,
-          ...svgPts.slice(1).map((p) => `L ${p.x.toFixed(1)} ${p.y.toFixed(1)}`),
-          `L ${svgPts[svgPts.length - 1].x.toFixed(1)} ${yBottom.toFixed(1)}`,
-          `L ${svgPts[0].x.toFixed(1)} ${yBottom.toFixed(1)}`,
-          'Z',
-        ].join(' ')
-      : '';
-
-  // Etiquetas eje X: cada 1 día (7d), 7 días (30d), 14 días (90d)
-  const labelStep = rangeDays <= 7 ? 1 : rangeDays <= 30 ? 7 : 14;
-  const xLabelDays = timeline.filter((_, i) => i % labelStep === 0 || i === timeline.length - 1);
-
-  const yRatios = [0, 0.25, 0.5, 0.75, 1.0];
+  let rotOffset = -90; // empezamos desde arriba
+  const segments = goalsWithSavings.map((g, i) => {
+    const pct     = g.currentAmount / totalSaved;
+    const dashLen = Math.max(0, pct * CI - (goalsWithSavings.length > 1 ? GAP : 0));
+    const startRot = rotOffset;
+    rotOffset += pct * 360;
+    return { goal: g, pct, dashLen, startRot, color: DONUT_COLORS[i % DONUT_COLORS.length] };
+  });
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ display: 'block', overflow: 'visible' }}>
-      <defs>
-        <linearGradient id="genLineGrad" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%"   stopColor="#60a5fa" />
-          <stop offset="100%" stopColor="#a855f7" />
-        </linearGradient>
-        <linearGradient id="genAreaGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stopColor="rgba(96,165,250,0.16)" />
-          <stop offset="100%" stopColor="rgba(168,85,247,0.00)" />
-        </linearGradient>
-      </defs>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18 }}>
 
-      {/* Grid lines */}
-      {yRatios.slice(1).map((r, i) => (
-        <line key={i}
-          x1={PAD.left} y1={yScale(maxVal * r)}
-          x2={W - PAD.right} y2={yScale(maxVal * r)}
-          stroke="rgba(51,65,85,0.30)" strokeDasharray="4 3"
-        />
-      ))}
-
-      {/* Y labels */}
-      {yRatios.map((r, i) => (
-        <text key={i}
-          x={PAD.left - 6} y={yScale(maxVal * r) + 4}
-          textAnchor="end" fontSize="9" fill="rgba(148,163,184,0.65)" fontFamily="inherit"
+      {/* ── SVG Donut ── */}
+      <div style={{ position: 'relative', width: '100%', maxWidth: 200, margin: '0 auto' }}>
+        <svg
+          viewBox="0 0 200 200"
+          width="100%"
+          style={{ display: 'block', filter: 'drop-shadow(0 0 20px rgba(168,85,247,0.12))' }}
         >
-          {formatCurrencyShort(maxVal * r)}
-        </text>
-      ))}
+          {/* Anillo de fondo */}
+          <circle
+            cx={CX} cy={CY} r={R}
+            fill="none"
+            stroke="rgba(51,65,85,0.22)"
+            strokeWidth={STROKE}
+          />
 
-      {/* X labels */}
-      {xLabelDays.map((t, idx) => (
-        <text key={idx}
-          x={xScale(t.day)} y={H - 6}
-          textAnchor="middle" fontSize="9" fill="rgba(148,163,184,0.65)" fontFamily="inherit"
-        >
-          {t.label}
-        </text>
-      ))}
+          {/* Segmentos por objetivo */}
+          {segments.map((seg, i) => (
+            <circle
+              key={i}
+              cx={CX} cy={CY} r={R}
+              fill="none"
+              stroke={seg.color}
+              strokeWidth={STROKE}
+              strokeDasharray={`${seg.dashLen} ${CI}`}
+              strokeLinecap="butt"
+              transform={`rotate(${seg.startRot} ${CX} ${CY})`}
+              style={{ filter: `drop-shadow(0 0 5px ${seg.color}55)` }}
+            />
+          ))}
 
-      {/* Eje X */}
-      <line x1={PAD.left} y1={yBottom} x2={W - PAD.right} y2={yBottom} stroke="rgba(51,65,85,0.40)" />
+          {/* ── Centro: total ahorrado ── */}
+          {hasData ? (
+            <>
+              <text
+                x={CX} y={CY - 10}
+                textAnchor="middle"
+                fontSize="8.5"
+                fill="rgba(148,163,184,0.5)"
+                fontFamily="inherit"
+                letterSpacing="0.1em"
+              >
+                TOTAL AHORRADO
+              </text>
+              <text
+                x={CX} y={CY + 9}
+                textAnchor="middle"
+                fontSize="19"
+                fontWeight="800"
+                fill="#f1f5f9"
+                fontFamily="inherit"
+              >
+                {formatCurrencyShort(totalSaved)}
+              </text>
+            </>
+          ) : (
+            <>
+              <text
+                x={CX} y={CY - 4}
+                textAnchor="middle"
+                fontSize="10"
+                fill="rgba(148,163,184,0.3)"
+                fontFamily="inherit"
+              >
+                Sin ahorros aún
+              </text>
+              <text
+                x={CX} y={CY + 12}
+                textAnchor="middle"
+                fontSize="13"
+                fill="rgba(148,163,184,0.2)"
+                fontFamily="inherit"
+                fontWeight="600"
+              >
+                0 €
+              </text>
+            </>
+          )}
+        </svg>
+      </div>
 
-      {/* Área de relleno */}
-      {hasProgress && areaPath && <path d={areaPath} fill="url(#genAreaGrad)" />}
-
-      {/* Línea acumulativa */}
-      {hasProgress && svgPts.length > 1 && (
-        <polyline
-          points={polylineStr}
-          fill="none"
-          stroke="url(#genLineGrad)"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
+      {/* ── Leyenda: un objetivo por línea ── */}
+      {activeGoals.length === 0 ? (
+        <p style={{ fontSize: 12, color: 'rgba(148,163,184,0.4)', textAlign: 'center', margin: 0 }}>
+          Crea un objetivo para ver la distribución
+        </p>
+      ) : (
+        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {activeGoals.map((g, i) => {
+            const color = DONUT_COLORS[i % DONUT_COLORS.length];
+            const pct   = hasData ? Math.round((g.currentAmount / totalSaved) * 100) : 0;
+            return (
+              <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{
+                  width: 10, height: 10, borderRadius: '50%',
+                  background: color, flexShrink: 0,
+                  boxShadow: `0 0 6px ${color}66`,
+                  opacity: g.currentAmount > 0 ? 1 : 0.3,
+                }} />
+                <span style={{
+                  flex: 1, fontSize: 12, color: g.currentAmount > 0 ? '#cbd5e1' : 'rgba(148,163,184,0.45)',
+                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                }}>
+                  {g.title}
+                </span>
+                <span style={{
+                  fontSize: 12, fontWeight: 700,
+                  color: g.currentAmount > 0 ? color : 'rgba(100,116,139,0.5)',
+                }}>
+                  {formatCurrencyShort(g.currentAmount)}
+                </span>
+                {hasData && (
+                  <span style={{
+                    fontSize: 10, color: 'rgba(148,163,184,0.4)',
+                    minWidth: 30, textAlign: 'right',
+                  }}>
+                    {pct}%
+                  </span>
+                )}
+              </div>
+            );
+          })}
+        </div>
       )}
-
-      {/* Punto actual */}
-      {hasProgress && svgPts.length > 0 && (
-        <circle
-          cx={svgPts[svgPts.length - 1].x}
-          cy={svgPts[svgPts.length - 1].y}
-          r="4"
-          fill="#a855f7"
-          stroke="rgba(168,85,247,0.30)"
-          strokeWidth="6"
-        />
-      )}
-
-      {/* Estado vacío dentro del SVG si no hay datos */}
-      {!hasProgress && (
-        <text
-          x={W / 2} y={H / 2 + 4}
-          textAnchor="middle"
-          fontSize="11"
-          fill="rgba(148,163,184,0.35)"
-          fontFamily="inherit"
-        >
-          Tu curva aparecerá aquí cuando empieces a ahorrar
-        </text>
-      )}
-    </svg>
+    </div>
   );
 }
 
@@ -206,8 +196,8 @@ function GeneralLineChart({
 function GoalLineChart({ points, goal }: { points: GoalProgressPoint[]; goal: Goal }) {
   const W = 320, H = 180;
   const PAD = { top: 16, right: 12, bottom: 28, left: 52 };
-  const CW = W - PAD.left - PAD.right;
-  const CH = H - PAD.top - PAD.bottom;
+  const CW  = W - PAD.left - PAD.right;
+  const CH  = H - PAD.top  - PAD.bottom;
 
   const horizonDays = goal.horizonMonths * 30;
   const maxVal      = goal.targetAmount || 1;
@@ -216,15 +206,14 @@ function GoalLineChart({ points, goal }: { points: GoalProgressPoint[]; goal: Go
   const greenAreaId = `greenArea_${safeId}`;
 
   const xScale = (day: number) => PAD.left + (day / horizonDays) * CW;
-  const yScale = (val: number) => PAD.top + CH - (val / maxVal) * CH;
+  const yScale = (val: number) => PAD.top  + CH - (val / maxVal)  * CH;
 
-  // Solo mostrar el progreso real cuando el usuario ha ahorrado algo
   const hasActualProgress = goal.currentAmount > 0 && points.length > 0;
 
-  const actualPts = points.map((p) => ({ x: xScale(p.day), y: yScale(p.actual) }));
+  const actualPts   = points.map((p) => ({ x: xScale(p.day), y: yScale(p.actual) }));
   const polylineStr = actualPts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+  const yBottom     = yScale(0);
 
-  const yBottom = yScale(0);
   const areaPath =
     actualPts.length > 1
       ? [
@@ -249,12 +238,10 @@ function GoalLineChart({ points, goal }: { points: GoalProgressPoint[]; goal: Go
   return (
     <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ display: 'block', overflow: 'visible' }}>
       <defs>
-        {/* Degradado verde para la línea de progreso */}
         <linearGradient id={greenGradId} x1="0" y1="0" x2="1" y2="0">
           <stop offset="0%"   stopColor="#10b981" />
           <stop offset="100%" stopColor="#34d399" />
         </linearGradient>
-        {/* Área bajo la línea de progreso */}
         <linearGradient id={greenAreaId} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%"   stopColor="rgba(52,211,153,0.18)" />
           <stop offset="100%" stopColor="rgba(52,211,153,0.00)" />
@@ -269,7 +256,6 @@ function GoalLineChart({ points, goal }: { points: GoalProgressPoint[]; goal: Go
           stroke="rgba(51,65,85,0.30)" strokeDasharray="4 3"
         />
       ))}
-
       {/* Y labels */}
       {yRatios.map((r, i) => (
         <text key={i}
@@ -279,7 +265,6 @@ function GoalLineChart({ points, goal }: { points: GoalProgressPoint[]; goal: Go
           {formatCurrencyShort(maxVal * r)}
         </text>
       ))}
-
       {/* X labels */}
       {xLabels.map((l, i) => (
         <text key={i}
@@ -289,11 +274,10 @@ function GoalLineChart({ points, goal }: { points: GoalProgressPoint[]; goal: Go
           {l.month === 0 ? 'Inicio' : `${l.month}m`}
         </text>
       ))}
-
       {/* Eje X */}
       <line x1={PAD.left} y1={yBottom} x2={W - PAD.right} y2={yBottom} stroke="rgba(51,65,85,0.40)" />
 
-      {/* Línea de ritmo ideal (siempre visible como referencia) */}
+      {/* Ritmo ideal — siempre visible */}
       <line
         x1={xScale(0)} y1={yScale(0)}
         x2={xScale(horizonDays)} y2={yScale(maxVal)}
@@ -302,7 +286,7 @@ function GoalLineChart({ points, goal }: { points: GoalProgressPoint[]; goal: Go
         strokeDasharray="6 4"
       />
 
-      {/* ── Tu progreso real (solo cuando hay ahorros registrados) ── */}
+      {/* Tu progreso — solo cuando hay ahorros */}
       {hasActualProgress && areaPath && (
         <path d={areaPath} fill={`url(#${greenAreaId})`} />
       )}
@@ -320,19 +304,14 @@ function GoalLineChart({ points, goal }: { points: GoalProgressPoint[]; goal: Go
         <circle
           cx={actualPts[actualPts.length - 1].x}
           cy={actualPts[actualPts.length - 1].y}
-          r="4"
-          fill="#22c55e"
-          stroke="rgba(34,197,94,0.30)"
-          strokeWidth="6"
+          r="4" fill="#22c55e" stroke="rgba(34,197,94,0.30)" strokeWidth="6"
         />
       )}
-
-      {/* Mensaje si no hay progreso aún */}
       {!hasActualProgress && (
         <text
           x={W / 2} y={H / 2 + 4}
           textAnchor="middle" fontSize="10"
-          fill="rgba(148,163,184,0.35)" fontFamily="inherit"
+          fill="rgba(148,163,184,0.30)" fontFamily="inherit"
         >
           Tu línea verde aparecerá con el primer ahorro
         </text>
@@ -348,9 +327,6 @@ export function SavingsEvolutionWidget({
   onGoToDailyQuestion,
   goals,
 }: SavingsEvolutionWidgetProps & { onGoToDailyQuestion?: () => void }): React.ReactElement {
-  const [selectedRange, setSelectedRange] = useState<'7d' | '30d' | '90d'>(
-    evolution?.range ?? '30d'
-  );
   const [activeTab, setActiveTab] = useState<'general' | 'goals'>('general');
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(
     goals?.[0]?.id ?? null
@@ -382,18 +358,10 @@ export function SavingsEvolutionWidget({
     }
   }, [goals, selectedGoalId]);
 
-  const handleRangeChange = (range: '7d' | '30d' | '90d') => {
-    setSelectedRange(range);
-    analytics.savingsEvolutionRangeChanged(range, evolution?.mode ?? 'live');
-    onChangeRange?.(range);
-  };
-
-  // Acumulado total del rango seleccionado
-  const totalAmount = evolution?.points.reduce((acc, p) => acc + p.value, 0) ?? 0;
-  const hasData     = (evolution?.points?.length ?? 0) > 0;
-
   const activeGoalList = (goals ?? []).filter((g) => !g.archived);
-  const selectedGoal: Goal | null = activeGoalList.find((g) => g.id === selectedGoalId) ?? null;
+  const allTimeSaved   = activeGoalList.reduce((sum, g) => sum + g.currentAmount, 0);
+
+  const selectedGoal: Goal | null  = activeGoalList.find((g) => g.id === selectedGoalId) ?? null;
   const goalPoints: GoalProgressPoint[] =
     activeTab === 'goals' && selectedGoalId
       ? storeGetGoalProgressPoints(selectedGoalId)
@@ -419,47 +387,24 @@ export function SavingsEvolutionWidget({
             {evolution?.mode === 'demo' && (
               <div className={styles.demoBadge}>DEMO</div>
             )}
-            {/* Selector de rango: solo en pestaña general */}
-            {!collapsed && activeTab === 'general' && (
-              <div className={styles.rangeSelector}>
-                {RANGES.map((r) => (
-                  <button
-                    key={r}
-                    className={`${styles.rangeBtn} ${selectedRange === r ? styles.rangeBtnActive : ''}`}
-                    onClick={() => handleRangeChange(r)}
-                  >
-                    {r.toUpperCase()}
-                  </button>
-                ))}
-              </div>
-            )}
             <CollapseChevron collapsed={collapsed} onToggle={toggle} />
           </div>
         </div>
 
-        {/* ── Total acumulado (siempre visible en modo live) ── */}
-        {evolution?.mode !== 'demo' && (
-          <div
-            className={styles.totalSection}
-            style={{ cursor: collapsed ? 'pointer' : 'default' }}
-            onClick={collapsed ? toggle : undefined}
-          >
-            <div className={styles.totalAmount}>{formatCurrency(totalAmount)}</div>
-            <div className={styles.totalLabel}>Acumulado en {getRangeDays(selectedRange)}d</div>
-          </div>
-        )}
-        {evolution?.mode === 'demo' && !collapsed && (
-          <div className={styles.totalSection}>
-            <div style={{ fontSize: 13, color: 'rgba(148,163,184,0.7)', lineHeight: 1.5 }}>
-              Aquí verás tu curva de ahorro cuando completes tu primera decisión diaria. 📈
-            </div>
-          </div>
-        )}
+        {/* ── Total acumulado (siempre visible) ── */}
+        <div
+          className={styles.totalSection}
+          style={{ cursor: collapsed ? 'pointer' : 'default' }}
+          onClick={collapsed ? toggle : undefined}
+        >
+          <div className={styles.totalAmount}>{formatCurrency(allTimeSaved)}</div>
+          <div className={styles.totalLabel}>Total ahorrado en todos los objetivos</div>
+        </div>
 
         {/* ── Contenido expandido ── */}
         {!collapsed && (
           <>
-            {/* Tab bar (solo si hay objetivos activos) */}
+            {/* Tab bar */}
             {activeGoalList.length > 0 && (
               <div className={styles.tabBar}>
                 <button
@@ -477,27 +422,9 @@ export function SavingsEvolutionWidget({
               </div>
             )}
 
-            {/* ── Tab: Ahorro general — línea acumulativa ── */}
+            {/* ── Tab: Ahorro general — rosco por objetivos ── */}
             {activeTab === 'general' && (
-              hasData ? (
-                <div className={styles.lineChartWrap}>
-                  <GeneralLineChart
-                    points={evolution!.points}
-                    rangeDays={getRangeDays(selectedRange)}
-                  />
-                </div>
-              ) : (
-                <div className={styles.emptyState}>
-                  <div className={styles.emptyIconWrap}><BarChartIcon size={32} /></div>
-                  <p className={styles.emptyText}>Aún no hay datos para este período.</p>
-                  {onGoToDailyQuestion && (
-                    <button className={styles.emptyBtn} onClick={onGoToDailyQuestion}>
-                      <span>Responder ahora</span>
-                      <span className={styles.emptyBtnArrow}><ChevronRightIcon size={16} /></span>
-                    </button>
-                  )}
-                </div>
-              )
+              <GoalDonutChart goals={activeGoalList} />
             )}
 
             {/* ── Tab: Mis objetivos ── */}
@@ -516,7 +443,10 @@ export function SavingsEvolutionWidget({
                       width="14" height="14" viewBox="0 0 24 24"
                       fill="none" stroke="currentColor" strokeWidth="1.5"
                       strokeLinecap="round" strokeLinejoin="round"
-                      style={{ transform: goalDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 180ms ease', flexShrink: 0 }}
+                      style={{
+                        transform: goalDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                        transition: 'transform 180ms ease', flexShrink: 0,
+                      }}
                     >
                       <polyline points="6 9 12 15 18 9" />
                     </svg>
@@ -538,7 +468,7 @@ export function SavingsEvolutionWidget({
 
                 {selectedGoal && (
                   <>
-                    {/* Resumen del objetivo */}
+                    {/* Resumen */}
                     <div className={styles.goalSummary}>
                       <div className={styles.goalAmounts}>
                         <span className={styles.goalActual}>{formatCurrency(selectedGoal.currentAmount)}</span>
@@ -550,14 +480,13 @@ export function SavingsEvolutionWidget({
                       </span>
                     </div>
 
-                    {/* Gráfica de progreso vs. ideal */}
+                    {/* Gráfica */}
                     <div className={styles.lineChartWrap}>
                       <GoalLineChart points={goalPoints} goal={selectedGoal} />
                     </div>
 
                     {/* Leyenda */}
                     <div className={styles.chartLegend}>
-                      {/* Ritmo ideal */}
                       <div className={styles.legendItem}>
                         <svg width="24" height="10" viewBox="0 0 24 10">
                           <line x1="0" y1="5" x2="24" y2="5"
@@ -565,7 +494,6 @@ export function SavingsEvolutionWidget({
                         </svg>
                         <span className={styles.legendLabel}>Ritmo ideal</span>
                       </div>
-                      {/* Tu progreso (verde) */}
                       <div className={styles.legendItem}>
                         <svg width="24" height="10" viewBox="0 0 24 10">
                           <defs>
@@ -581,6 +509,19 @@ export function SavingsEvolutionWidget({
                       </div>
                     </div>
                   </>
+                )}
+
+                {/* Empty state sin objetivos */}
+                {activeGoalList.length === 0 && (
+                  <div className={styles.emptyState}>
+                    <p className={styles.emptyText}>Crea tu primer objetivo para ver la evolución.</p>
+                    {onGoToDailyQuestion && (
+                      <button className={styles.emptyBtn} onClick={onGoToDailyQuestion}>
+                        <span>Empezar</span>
+                        <span className={styles.emptyBtnArrow}><ChevronRightIcon size={16} /></span>
+                      </button>
+                    )}
+                  </div>
                 )}
               </>
             )}
