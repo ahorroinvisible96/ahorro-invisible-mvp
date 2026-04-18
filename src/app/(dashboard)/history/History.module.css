@@ -1,83 +1,311 @@
-/* ── Página ── */
+/* ═══════════════════════════════════════════════════════════
+   HISTORY PAGE — Estructura idéntica a Dashboard / Goals / Settings
+   headerZone (verde-esmeralda) + contentZone (oscuro sólido)
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Página principal — rompe el padding del container ── */
 .page {
-  min-height: 100vh;
-  background: var(--color-background-page);
-  padding: 0 0 80px;
+  margin: -16px;
+  width: calc(100% + 32px);
+  min-height: calc(100vh - 32px);
   box-sizing: border-box;
   overflow-x: hidden;
-  max-width: 100%;
+  background: #08080f;
+  animation: pageFadeIn 300ms ease both;
 }
 
 @media (min-width: 768px) {
   .page {
-    padding: 0 0 40px;
+    margin: -24px;
+    width: calc(100% + 48px);
+    min-height: calc(100vh - 48px);
   }
 }
 
-/* ── Header de página ── */
-.pageHeader {
-  position: relative;
-  padding: 28px 0 20px;
-  overflow: hidden;
+@keyframes pageFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
-.pageHeaderGlow {
+/* ══════════════════════════════════════════════════════════════════════
+   ZONA 1: HEADER — degradado verde-esmeralda (identidad del historial)
+   Contiene: título + métricas clave (decisiones + ahorro)
+   ══════════════════════════════════════════════════════════════════════ */
+.headerZone {
+  background: linear-gradient(160deg,
+    #021a0f 0%,
+    #063320 30%,
+    #0a4f31 60%,
+    #0e7548 100%
+  );
+  padding: 28px 0 32px;
+  position: relative;
+  overflow: hidden;
+  animation: heroSlideUp 400ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Orbe decorativo superior-derecho */
+.headerZone::before {
+  content: '';
   position: absolute;
-  top: -40px;
-  right: -60px;
+  top: -60px;
+  right: -50px;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  background: rgba(16, 185, 129, 0.25);
+  filter: blur(70px);
+  pointer-events: none;
+}
+
+/* Orbe decorativo inferior-izquierdo */
+.headerZone::after {
+  content: '';
+  position: absolute;
+  bottom: -50px;
+  left: -40px;
   width: 220px;
   height: 220px;
   border-radius: 50%;
-  background: rgba(168, 85, 247, 0.12);
+  background: rgba(52, 211, 153, 0.18);
   filter: blur(60px);
   pointer-events: none;
 }
 
-.pageHeaderInner {
+@keyframes heroSlideUp {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Contenido del header ── */
+.headerContent {
   position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Fila superior: icono + título + botón exportar */
+.headerTop {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
 }
 
-.pageIconWrap {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #a855f7, #2563eb);
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.headerIconWrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: rgba(255, 255, 255, 0.85);
   flex-shrink: 0;
-  box-shadow: 0 4px 14px rgba(168, 85, 247, 0.4);
 }
 
-.pageTitles {
+.headerTitles {
   display: flex;
   flex-direction: column;
+  gap: 2px;
 }
 
-.pageTitle {
-  font-size: 20px;
-  font-weight: 800;
-  color: var(--color-text-page-title);
+.headerSub {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.40);
+}
+
+.headerTitle {
+  font-size: 22px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.92);
+  letter-spacing: -0.3px;
   margin: 0;
-  line-height: 1.2;
 }
 
-.pageSubtitle {
+/* Botón CSV exportar */
+.exportBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.70);
   font-size: 13px;
-  color: var(--color-text-page-sub);
-  margin: 2px 0 0;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 150ms ease;
+}
+.exportBtn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.90);
 }
 
-/* ── Grid de widgets ── */
-.widgetsStack {
+/* Divisor */
+.headerDivider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+/* ── Métricas principales (2 tarjetas lado a lado) ── */
+.metricsRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.metricCard {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 16px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 6px;
+}
+
+.metricLabel {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.38);
+}
+
+.metricValue {
+  font-size: 28px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.92);
+  letter-spacing: -0.5px;
+  line-height: 1;
+}
+
+.metricValueGreen {
+  font-size: 24px;
+  font-weight: 700;
+  color: #4ade80;
+  letter-spacing: -0.3px;
+  line-height: 1;
+}
+
+.metricSub {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.35);
+  font-weight: 400;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   ZONA 2: CONTENIDO — fondo sólido oscuro (filtros + lista)
+   ══════════════════════════════════════════════════════════════════════ */
+.contentZone {
+  background: #08080f;
+  padding: 24px 0 80px;
+  animation: contentSlideUp 450ms cubic-bezier(0.22, 1, 0.36, 1) 80ms both;
+}
+
+@media (min-width: 768px) {
+  .contentZone {
+    padding-bottom: 40px;
+  }
+}
+
+@keyframes contentSlideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Wrapper interior ── */
+.zoneInner {
+  width: 100%;
+  padding: 0 16px;
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .zoneInner {
+    padding: 0 24px;
+  }
+}
+
+/* ── Stack de secciones ── */
+.contentCol {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Grupo: etiqueta + contenido */
+.sectionGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Etiqueta de sección */
+.sectionLabel {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.28);
+  margin: 0;
   padding: 0;
+}
+
+/* ── Tarjeta base (lista iOS) ── */
+.listCard {
+  background: #111111;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+/* ── Filtros en línea (chips por periodo) ── */
+.filterChipsRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 14px 16px;
+}
+
+.filterChip {
+  padding: 5px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.50);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.filterChipActive {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.40);
+  color: #34d399;
+  font-weight: 600;
+}
+
+.filterChip:hover:not(.filterChipActive) {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.75);
 }
 
 /* ── Loading ── */
@@ -86,6 +314,6 @@
   align-items: center;
   justify-content: center;
   height: 200px;
-  color: var(--color-text-label);
-  font-size: 14px;
+  color: rgba(255, 255, 255, 0.30);
+  font-size: 13px;
 }
