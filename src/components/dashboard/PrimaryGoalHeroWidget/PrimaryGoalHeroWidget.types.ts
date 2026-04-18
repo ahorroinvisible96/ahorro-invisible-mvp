@@ -12,6 +12,7 @@ export type PrimaryGoalHeroProps = {
   onGoToHistory: () => void;
   onEditGoal?: (goalId: string) => void;
   variant?: 'default' | 'header';
+  phaseLabel?: string | null; // ej. "Fase 1 de 5 · Semana 1"
 };
 
 export type GoalDisplayData = {

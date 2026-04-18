@@ -44,7 +44,9 @@ export function PrimaryGoalHeroWidget({
   onGoToHistory,
   onEditGoal,
   variant = 'default',
+  phaseLabel,
 }: PrimaryGoalHeroProps): React.ReactElement {
+
   const isHeader = variant === 'header';
   const [mounted, setMounted] = useState(false);
   const { collapsed, toggle } = useWidgetCollapse('primary_goal', false);
@@ -84,7 +86,14 @@ export function PrimaryGoalHeroWidget({
           style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: collapsed ? 'pointer' : 'default' }}
           onClick={collapsed ? toggle : undefined}
         >
-          <h2 className={styles.title} style={{ marginBottom: collapsed ? 0 : undefined }}>{goal.title}</h2>
+          <div>
+            <h2 className={styles.title} style={{ marginBottom: collapsed ? 0 : undefined }}>{goal.title}</h2>
+            {phaseLabel && (
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(168,85,247,0.15)', border: '1px solid rgba(168,85,247,0.3)', borderRadius: 20, padding: '2px 10px', marginTop: 4 }}>
+                <span style={{ fontSize: 10, fontWeight: 700, color: '#c4b5fd', letterSpacing: '0.04em' }}>{phaseLabel}</span>
+              </div>
+            )}
+          </div>
           {collapsed && <span style={{ fontSize: 20, fontWeight: 800, color: 'rgba(255,255,255,0.9)', flexShrink: 0 }}>{d.progressPct}%</span>}
         </div>
 

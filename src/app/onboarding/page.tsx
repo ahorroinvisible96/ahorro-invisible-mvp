@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { analytics } from "@/services/analytics";
 import {
@@ -15,8 +15,14 @@ import type { SavingsProfile, IncomeRange } from "@/types/Dashboard";
 import { pushLocalDataToSupabase } from "@/services/syncService";
 
 // ─── Constantes ────────────────────────────────────────────────────────────────
-const MAX_INCOME  = 10_000;
-const INCOME_STEP = 50;
+const INCOME_OPTIONS = [
+  { label: 'Menos de 1.000 €', min: 0,     max: 1_000,  mid: 750   },
+  { label: '1.000 – 1.500 €',  min: 1_000, max: 1_500,  mid: 1_250 },
+  { label: '1.500 – 2.000 €',  min: 1_500, max: 2_000,  mid: 1_750 },
+  { label: '2.000 – 2.500 €',  min: 2_000, max: 2_500,  mid: 2_250 },
+  { label: '2.500 – 3.500 €',  min: 2_500, max: 3_500,  mid: 3_000 },
+  { label: 'Más de 3.500 €',   min: 3_500, max: 10_000, mid: 4_500 },
+];
 
 // ─── Tipos ─────────────────────────────────────────────────────────────────────
 type AvatarKey     = UserAvatar;
@@ -263,21 +269,12 @@ export default function OnboardingPage() {
   const [savingsHabit, setSavingsHabit] = useState<SavingsHabit | null>(null);
 
   // ── Paso 5: ingresos + objetivo ────────────────────────────────────────────
-  const [incomeMin,      setIncomeMin]      = useState(800);
-  const [incomeMax,      setIncomeMax]      = useState(2_000);
-  const [goalName,       setGoalName]       = useState('Mi primer objetivo de ahorro');
-  const [goalAmount,     setGoalAmount]     = useState(0);
-  const [goalInputValue, setGoalInputValue] = useState('');
-  const [goalMonths,     setGoalMonths]     = useState(3);
-  const [hasAutoFilled,  setHasAutoFilled]  = useState(false);
-
-  // ── Slider refs ─────────────────────────────────────────────────────────────
-  const trackRef     = useRef<HTMLDivElement>(null);
-  const activeHandle = useRef<'min' | 'max' | null>(null);
-  const minRef       = useRef(incomeMin);
-  const maxRef       = useRef(incomeMax);
-  useEffect(() => { minRef.current = incomeMin; }, [incomeMin]);
-  useEffect(() => { maxRef.current = incomeMax; }, [incomeMax]);
+  const [selectedIncomeIdx, setSelectedIncomeIdx] = useState<number | null>(null);
+  const [goalName,          setGoalName]           = useState('Mi primer objetivo de ahorro');
+  const [goalAmount,        setGoalAmount]          = useState(0);
+  const [goalInputValue,    setGoalInputValue]      = useState('');
+  const [goalMonths,        setGoalMonths]          = useState(3);
+  const [hasAutoFilled,     setHasAutoFilled]       = useState(false);
 
   // Sync input visual cuando goalAmount cambia por botones
   useEffect(() => { if (goalAmount > 0) setGoalInputValue(String(goalAmount)); }, [goalAmount]);
@@ -294,10 +291,10 @@ export default function OnboardingPage() {
 
   // ── Auto-fill recomendación al entrar en paso 5 ────────────────────────────
   useEffect(() => {
-    if (step === 5 && !hasAutoFilled && savingsHabit) {
-      const mid     = (incomeMin + incomeMax) / 2;
+    if (step === 5 && !hasAutoFilled && savingsHabit && selectedIncomeIdx !== null) {
+      const mid     = INCOME_OPTIONS[selectedIncomeIdx].mid;
       const pct     = SAVINGS_PCT[savingsHabit];
-      const monthly = Math.max(50, Math.round(mid * pct / INCOME_STEP) * INCOME_STEP);
+      const monthly = Math.max(50, Math.round(mid * pct / 50) * 50);
       const total   = monthly * goalMonths;
       setGoalAmount(total);
       setGoalInputValue(String(total));
@@ -307,38 +304,15 @@ export default function OnboardingPage() {
   }, [step]);
 
   // ── Valores calculados para el paso 5 ──────────────────────────────────────
-  const incomeMid   = (incomeMin + incomeMax) / 2;
+  const incomeMid   = selectedIncomeIdx !== null ? INCOME_OPTIONS[selectedIncomeIdx].mid : 1_750;
   const savingsPct  = savingsHabit ? SAVINGS_PCT[savingsHabit] : 0.10;
-  const recMonthly  = Math.max(50, Math.round(incomeMid * savingsPct / INCOME_STEP) * INCOME_STEP);
+  const recMonthly  = Math.max(50, Math.round(incomeMid * savingsPct / 50) * 50);
   const recTotal    = recMonthly * goalMonths;
   const monthlyGoal = goalAmount > 0 ? goalAmount / goalMonths : 0;
   const isOver30    = goalAmount > 0 && monthlyGoal > incomeMid * 0.30;
   const isOverRec   = goalAmount > 0 && goalAmount > recTotal && !isOver30;
 
   const phases  = computeGoalPhases(Math.max(50, goalAmount || recTotal), goalMonths);
-  const minPct  = (incomeMin / MAX_INCOME) * 100;
-  const maxPct  = (incomeMax / MAX_INCOME) * 100;
-
-  // ── Slider handlers ────────────────────────────────────────────────────────
-  function valueFromPointer(clientX: number): number {
-    if (!trackRef.current) return 0;
-    const rect  = trackRef.current.getBoundingClientRect();
-    const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-    return Math.round(ratio * MAX_INCOME / INCOME_STEP) * INCOME_STEP;
-  }
-  const onHandleDown = (handle: 'min' | 'max') => (e: React.PointerEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    activeHandle.current = handle;
-    (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId);
-  };
-  function onHandleMove(e: React.PointerEvent<HTMLDivElement>) {
-    if (!activeHandle.current) return;
-    const val = valueFromPointer(e.clientX);
-    if (activeHandle.current === 'min') setIncomeMin(Math.min(val, maxRef.current - INCOME_STEP));
-    else                                setIncomeMax(Math.max(val, minRef.current + INCOME_STEP));
-  }
-  function onHandleUp() { activeHandle.current = null; }
-
   // ── Input manual del objetivo ──────────────────────────────────────────────
   function handleGoalInputBlur() {
     const num = parseInt(goalInputValue.replace(/\D/g, ''), 10);
@@ -353,7 +327,7 @@ export default function OnboardingPage() {
   const selectedAnswer = step <= 3 ? answers[step - 1]           : null;
   const isDisabled     = step <= 3 ? !selectedAnswer
                        : step === 4 ? !savingsHabit
-                       : step === 5 ? !goalName.trim() || goalAmount <= 0
+                       : step === 5 ? (!goalName.trim() || goalAmount <= 0 || selectedIncomeIdx === null)
                        : false;
 
   function setAnswer(value: AvatarKey) {
@@ -398,7 +372,8 @@ export default function OnboardingPage() {
       if (name) storeUpdateUserName(name);
       storeSetUserAvatar(avatar);
       storeSetSavingsProfile('medium' as SavingsProfile);
-      storeUpdateIncome({ min: incomeMin, max: incomeMax, currency: 'EUR' } satisfies IncomeRange);
+      const incomeOpt = selectedIncomeIdx !== null ? INCOME_OPTIONS[selectedIncomeIdx] : INCOME_OPTIONS[1];
+      storeUpdateIncome({ min: incomeOpt.min, max: incomeOpt.max, currency: 'EUR' } satisfies IncomeRange);
       storeCreateGoal({
         title: resolvedName,
         targetAmount: resolvedAmount,
@@ -410,7 +385,7 @@ export default function OnboardingPage() {
       localStorage.setItem('onboardingData', JSON.stringify({
         userAvatar: avatar, answers: finalAnswers,
         savingsHabit,
-        incomeMin, incomeMax,
+        incomeMin: incomeOpt.min, incomeMax: incomeOpt.max, incomeMid: incomeOpt.mid,
         goalName: resolvedName, goalAmount: resolvedAmount, goalMonths,
         phases: resolvedPhases,
         savingsProfile: 'medium',
@@ -556,33 +531,37 @@ export default function OnboardingPage() {
                 Vamos a proponerte un punto de partida adaptado a tu situación. Siempre puedes cambiarlo.
               </p>
 
-              {/* Ingresos */}
+              {/* Ingresos — 6 opciones en grid 2 columnas */}
               <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(148,163,184,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 10 }}>¿Cuáles son tus ingresos netos aproximados?</div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                <div>
-                  <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(148,163,184,0.35)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 3 }}>Mínimo</div>
-                  <div style={{ fontSize: 20, fontWeight: 800, color: '#ec4899' }}>{fmtEUR(incomeMin)}</div>
-                </div>
-                <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, #ec4899, #a855f7, #60a5fa)', opacity: 0.2, margin: '0 12px', alignSelf: 'center' }} />
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(148,163,184,0.35)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 3 }}>Máximo</div>
-                  <div style={{ fontSize: 20, fontWeight: 800, color: '#60a5fa' }}>{fmtEUR(incomeMax)}</div>
-                </div>
-              </div>
-
-              {/* Dual-handle slider */}
-              <div style={{ padding: '4px 0 20px', touchAction: 'none', userSelect: 'none' }}>
-                <div ref={trackRef} style={{ position: 'relative', height: 8, borderRadius: 999, background: 'rgba(255,255,255,0.07)', boxShadow: 'inset 0 1px 4px rgba(0,0,0,0.4)' }}>
-                  <div style={{ position: 'absolute', top: 0, bottom: 0, left: `${minPct}%`, right: `${100 - maxPct}%`, background: 'linear-gradient(90deg, #ec4899, #a855f7, #60a5fa)', borderRadius: 999, boxShadow: '0 0 10px rgba(168,85,247,0.35)' }} />
-                  {/* Handle MIN */}
-                  <div style={{ position: 'absolute', top: '50%', left: `${minPct}%`, transform: 'translate(-50%,-50%)', width: 26, height: 26, borderRadius: '50%', background: 'linear-gradient(135deg,#fff,#f1f5f9)', boxShadow: '0 0 0 3px #ec4899, 0 4px 12px rgba(236,72,153,0.4)', cursor: 'grab', zIndex: 3, touchAction: 'none' }} onPointerDown={onHandleDown('min')} onPointerMove={onHandleMove} onPointerUp={onHandleUp} onLostPointerCapture={onHandleUp} />
-                  {/* Handle MAX */}
-                  <div style={{ position: 'absolute', top: '50%', left: `${maxPct}%`, transform: 'translate(-50%,-50%)', width: 26, height: 26, borderRadius: '50%', background: 'linear-gradient(135deg,#fff,#f1f5f9)', boxShadow: '0 0 0 3px #60a5fa, 0 4px 12px rgba(96,165,250,0.4)', cursor: 'grab', zIndex: 3, touchAction: 'none' }} onPointerDown={onHandleDown('max')} onPointerMove={onHandleMove} onPointerUp={onHandleUp} onLostPointerCapture={onHandleUp} />
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10 }}>
-                  <span style={{ fontSize: 10, color: 'rgba(100,116,139,0.4)' }}>0 €</span>
-                  <span style={{ fontSize: 10, color: 'rgba(100,116,139,0.4)' }}>10.000 €</span>
-                </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 20 }}>
+                {INCOME_OPTIONS.map((opt, i) => {
+                  const isSel = selectedIncomeIdx === i;
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => { setSelectedIncomeIdx(i); setHasAutoFilled(false); }}
+                      style={{
+                        ...btnBase,
+                        padding: '11px 10px',
+                        borderRadius: 12,
+                        textAlign: 'center',
+                        background: isSel
+                          ? 'linear-gradient(135deg,rgba(236,72,153,0.22),rgba(168,85,247,0.22))'
+                          : 'rgba(15,23,42,0.5)',
+                        border: isSel
+                          ? '1px solid rgba(168,85,247,0.55)'
+                          : '1px solid rgba(51,65,85,0.5)',
+                        color: isSel ? '#f1f5f9' : '#94a3b8',
+                        fontSize: 12,
+                        fontWeight: isSel ? 700 : 500,
+                        boxShadow: isSel ? '0 0 14px rgba(168,85,247,0.15)' : 'none',
+                        lineHeight: 1.35,
+                      }}
+                    >
+                      {opt.label}
+                    </button>
+                  );
+                })}
               </div>
 
               {/* Divider */}
