@@ -11,14 +11,11 @@ import { useWidgetCollapse } from '@/hooks/useWidgetCollapse';
 import { CollapseChevron } from '@/components/dashboard/CollapsibleWidget/CollapsibleWidget';
 import { TrendingUpIcon, BarChartIcon, ChevronRightIcon } from '@/components/ui/AppIcons';
 
-
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat('es-ES', {
-    style: 'currency',
-    currency: 'EUR',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
+    style: 'currency', currency: 'EUR',
+    minimumFractionDigits: 0, maximumFractionDigits: 0,
   }).format(value);
 }
 
@@ -32,126 +29,271 @@ function formatCurrencyShort(value: number): string {
 
 function getRangeDays(range: string): number {
   switch (range) {
-    case '7d': return 7;
+    case '7d':  return 7;
     case '30d': return 30;
     case '90d': return 90;
-    default: return 30;
+    default:    return 30;
   }
 }
 
-// ── Constantes ───────────────────────────────────────────────────────────────
+/** Formatea una fecha local en YYYY-MM-DD sin problemas de timezone */
+function localDateKey(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 const RANGES = ['7d', '30d', '90d'] as const;
 
-// ── Goal Line Chart ───────────────────────────────────────────────────────────
-function GoalLineChart({ points, goal }: { points: GoalProgressPoint[]; goal: Goal }) {
-  const W = 320;
-  const H = 180;
+// ── General Line Chart (acumulado día a día) ──────────────────────────────────
+function GeneralLineChart({
+  points,
+  rangeDays,
+}: {
+  points: { date: string; value: number }[];
+  rangeDays: number;
+}) {
+  const W = 320, H = 160;
   const PAD = { top: 16, right: 12, bottom: 28, left: 52 };
   const CW = W - PAD.left - PAD.right;
   const CH = H - PAD.top - PAD.bottom;
-  const horizonDays = goal.horizonMonths * 30;
-  const maxVal = goal.targetAmount || 1;
 
-  const safeId = goal.id.replace(/[^a-zA-Z0-9]/g, '_');
-  const gradId = `act_${safeId}`;
-  const areaGradId = `area_${safeId}`;
+  // ── Mapa de ahorro por fecha (día local) ─────────────────────────────────
+  const byDate: Record<string, number> = {};
+  for (const pt of points) {
+    const dk = pt.date.substring(0, 10);
+    byDate[dk] = (byDate[dk] ?? 0) + pt.value;
+  }
 
-  const xScale = (day: number) => PAD.left + (day / horizonDays) * CW;
+  // ── Construir línea de tiempo acumulativa ─────────────────────────────────
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const timeline: { day: number; cumulative: number; label: string }[] = [];
+  let running = 0;
+  for (let i = rangeDays - 1; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    const dk = localDateKey(d);
+    running += byDate[dk] ?? 0;
+    timeline.push({
+      day: rangeDays - 1 - i,
+      cumulative: running,
+      label: d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }),
+    });
+  }
+
+  const maxVal = Math.max(...timeline.map((t) => t.cumulative), 1);
+  const hasProgress = timeline.some((t) => t.cumulative > 0);
+
+  const xScale = (day: number) => PAD.left + (day / Math.max(rangeDays - 1, 1)) * CW;
   const yScale = (val: number) => PAD.top + CH - (val / maxVal) * CH;
+  const yBottom = yScale(0);
 
-  const actualPts = points.map((p) => ({ x: xScale(p.day), y: yScale(p.actual) }));
-  const actualPolyline = actualPts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+  const svgPts = timeline.map((t) => ({
+    x: xScale(t.day),
+    y: yScale(t.cumulative),
+    cumulative: t.cumulative,
+    label: t.label,
+  }));
+
+  const polylineStr = svgPts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
 
   const areaPath =
-    actualPts.length > 1
+    svgPts.length > 1
       ? [
-          `M ${actualPts[0].x.toFixed(1)} ${actualPts[0].y.toFixed(1)}`,
-          ...actualPts.slice(1).map((p) => `L ${p.x.toFixed(1)} ${p.y.toFixed(1)}`),
-          `L ${actualPts[actualPts.length - 1].x.toFixed(1)} ${yScale(0).toFixed(1)}`,
-          `L ${actualPts[0].x.toFixed(1)} ${yScale(0).toFixed(1)}`,
+          `M ${svgPts[0].x.toFixed(1)} ${svgPts[0].y.toFixed(1)}`,
+          ...svgPts.slice(1).map((p) => `L ${p.x.toFixed(1)} ${p.y.toFixed(1)}`),
+          `L ${svgPts[svgPts.length - 1].x.toFixed(1)} ${yBottom.toFixed(1)}`,
+          `L ${svgPts[0].x.toFixed(1)} ${yBottom.toFixed(1)}`,
           'Z',
         ].join(' ')
       : '';
 
+  // Etiquetas eje X: cada 1 día (7d), 7 días (30d), 14 días (90d)
+  const labelStep = rangeDays <= 7 ? 1 : rangeDays <= 30 ? 7 : 14;
+  const xLabelDays = timeline.filter((_, i) => i % labelStep === 0 || i === timeline.length - 1);
+
   const yRatios = [0, 0.25, 0.5, 0.75, 1.0];
 
-  const xLabels: { month: number; x: number }[] = [];
-  const step =
-    goal.horizonMonths <= 3 ? 1
-    : goal.horizonMonths <= 6 ? 2
-    : goal.horizonMonths <= 12 ? 3
-    : 6;
-  for (let m = 0; m <= goal.horizonMonths; m += step) {
-    xLabels.push({ month: m, x: xScale(m * 30) });
-  }
-
-  const yBottom = yScale(0);
-
   return (
-    <svg
-      viewBox={`0 0 ${W} ${H}`}
-      width="100%"
-      style={{ display: 'block', overflow: 'visible' }}
-    >
+    <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ display: 'block', overflow: 'visible' }}>
       <defs>
-        <linearGradient id={gradId} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="#a855f7" />
-          <stop offset="100%" stopColor="#22c55e" />
+        <linearGradient id="genLineGrad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%"   stopColor="#60a5fa" />
+          <stop offset="100%" stopColor="#a855f7" />
         </linearGradient>
-        <linearGradient id={areaGradId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="rgba(168,85,247,0.20)" />
+        <linearGradient id="genAreaGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stopColor="rgba(96,165,250,0.16)" />
           <stop offset="100%" stopColor="rgba(168,85,247,0.00)" />
         </linearGradient>
       </defs>
 
-      {/* Horizontal grid lines */}
+      {/* Grid lines */}
       {yRatios.slice(1).map((r, i) => (
-        <line
-          key={i}
+        <line key={i}
           x1={PAD.left} y1={yScale(maxVal * r)}
           x2={W - PAD.right} y2={yScale(maxVal * r)}
-          stroke="rgba(51,65,85,0.30)"
-          strokeDasharray="4 3"
+          stroke="rgba(51,65,85,0.30)" strokeDasharray="4 3"
         />
       ))}
 
-      {/* Y-axis labels */}
+      {/* Y labels */}
       {yRatios.map((r, i) => (
-        <text
-          key={i}
-          x={PAD.left - 6}
-          y={yScale(maxVal * r) + 4}
-          textAnchor="end"
-          fontSize="9"
-          fill="rgba(148,163,184,0.65)"
-          fontFamily="inherit"
+        <text key={i}
+          x={PAD.left - 6} y={yScale(maxVal * r) + 4}
+          textAnchor="end" fontSize="9" fill="rgba(148,163,184,0.65)" fontFamily="inherit"
         >
           {formatCurrencyShort(maxVal * r)}
         </text>
       ))}
 
-      {/* X-axis labels */}
-      {xLabels.map((l, i) => (
+      {/* X labels */}
+      {xLabelDays.map((t, idx) => (
+        <text key={idx}
+          x={xScale(t.day)} y={H - 6}
+          textAnchor="middle" fontSize="9" fill="rgba(148,163,184,0.65)" fontFamily="inherit"
+        >
+          {t.label}
+        </text>
+      ))}
+
+      {/* Eje X */}
+      <line x1={PAD.left} y1={yBottom} x2={W - PAD.right} y2={yBottom} stroke="rgba(51,65,85,0.40)" />
+
+      {/* Área de relleno */}
+      {hasProgress && areaPath && <path d={areaPath} fill="url(#genAreaGrad)" />}
+
+      {/* Línea acumulativa */}
+      {hasProgress && svgPts.length > 1 && (
+        <polyline
+          points={polylineStr}
+          fill="none"
+          stroke="url(#genLineGrad)"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      )}
+
+      {/* Punto actual */}
+      {hasProgress && svgPts.length > 0 && (
+        <circle
+          cx={svgPts[svgPts.length - 1].x}
+          cy={svgPts[svgPts.length - 1].y}
+          r="4"
+          fill="#a855f7"
+          stroke="rgba(168,85,247,0.30)"
+          strokeWidth="6"
+        />
+      )}
+
+      {/* Estado vacío dentro del SVG si no hay datos */}
+      {!hasProgress && (
         <text
-          key={i}
-          x={l.x} y={H - 6}
+          x={W / 2} y={H / 2 + 4}
           textAnchor="middle"
-          fontSize="9"
-          fill="rgba(148,163,184,0.65)"
+          fontSize="11"
+          fill="rgba(148,163,184,0.35)"
           fontFamily="inherit"
+        >
+          Tu curva aparecerá aquí cuando empieces a ahorrar
+        </text>
+      )}
+    </svg>
+  );
+}
+
+// ── Goal Line Chart (progreso vs. ritmo ideal) ────────────────────────────────
+function GoalLineChart({ points, goal }: { points: GoalProgressPoint[]; goal: Goal }) {
+  const W = 320, H = 180;
+  const PAD = { top: 16, right: 12, bottom: 28, left: 52 };
+  const CW = W - PAD.left - PAD.right;
+  const CH = H - PAD.top - PAD.bottom;
+
+  const horizonDays = goal.horizonMonths * 30;
+  const maxVal      = goal.targetAmount || 1;
+  const safeId      = goal.id.replace(/[^a-zA-Z0-9]/g, '_');
+  const greenGradId = `green_${safeId}`;
+  const greenAreaId = `greenArea_${safeId}`;
+
+  const xScale = (day: number) => PAD.left + (day / horizonDays) * CW;
+  const yScale = (val: number) => PAD.top + CH - (val / maxVal) * CH;
+
+  // Solo mostrar el progreso real cuando el usuario ha ahorrado algo
+  const hasActualProgress = goal.currentAmount > 0 && points.length > 0;
+
+  const actualPts = points.map((p) => ({ x: xScale(p.day), y: yScale(p.actual) }));
+  const polylineStr = actualPts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+
+  const yBottom = yScale(0);
+  const areaPath =
+    actualPts.length > 1
+      ? [
+          `M ${actualPts[0].x.toFixed(1)} ${actualPts[0].y.toFixed(1)}`,
+          ...actualPts.slice(1).map((p) => `L ${p.x.toFixed(1)} ${p.y.toFixed(1)}`),
+          `L ${actualPts[actualPts.length - 1].x.toFixed(1)} ${yBottom.toFixed(1)}`,
+          `L ${actualPts[0].x.toFixed(1)} ${yBottom.toFixed(1)}`,
+          'Z',
+        ].join(' ')
+      : '';
+
+  const yRatios = [0, 0.25, 0.5, 0.75, 1.0];
+  const step =
+    goal.horizonMonths <= 3 ? 1 :
+    goal.horizonMonths <= 6 ? 2 :
+    goal.horizonMonths <= 12 ? 3 : 6;
+  const xLabels: { month: number; x: number }[] = [];
+  for (let m = 0; m <= goal.horizonMonths; m += step) {
+    xLabels.push({ month: m, x: xScale(m * 30) });
+  }
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ display: 'block', overflow: 'visible' }}>
+      <defs>
+        {/* Degradado verde para la línea de progreso */}
+        <linearGradient id={greenGradId} x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%"   stopColor="#10b981" />
+          <stop offset="100%" stopColor="#34d399" />
+        </linearGradient>
+        {/* Área bajo la línea de progreso */}
+        <linearGradient id={greenAreaId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stopColor="rgba(52,211,153,0.18)" />
+          <stop offset="100%" stopColor="rgba(52,211,153,0.00)" />
+        </linearGradient>
+      </defs>
+
+      {/* Grid lines */}
+      {yRatios.slice(1).map((r, i) => (
+        <line key={i}
+          x1={PAD.left} y1={yScale(maxVal * r)}
+          x2={W - PAD.right} y2={yScale(maxVal * r)}
+          stroke="rgba(51,65,85,0.30)" strokeDasharray="4 3"
+        />
+      ))}
+
+      {/* Y labels */}
+      {yRatios.map((r, i) => (
+        <text key={i}
+          x={PAD.left - 6} y={yScale(maxVal * r) + 4}
+          textAnchor="end" fontSize="9" fill="rgba(148,163,184,0.65)" fontFamily="inherit"
+        >
+          {formatCurrencyShort(maxVal * r)}
+        </text>
+      ))}
+
+      {/* X labels */}
+      {xLabels.map((l, i) => (
+        <text key={i}
+          x={l.x} y={H - 6}
+          textAnchor="middle" fontSize="9" fill="rgba(148,163,184,0.65)" fontFamily="inherit"
         >
           {l.month === 0 ? 'Inicio' : `${l.month}m`}
         </text>
       ))}
 
-      {/* X-axis line */}
-      <line
-        x1={PAD.left} y1={yBottom}
-        x2={W - PAD.right} y2={yBottom}
-        stroke="rgba(51,65,85,0.40)"
-      />
+      {/* Eje X */}
+      <line x1={PAD.left} y1={yBottom} x2={W - PAD.right} y2={yBottom} stroke="rgba(51,65,85,0.40)" />
 
-      {/* Ideal line (dashed diagonal) */}
+      {/* Línea de ritmo ideal (siempre visible como referencia) */}
       <line
         x1={xScale(0)} y1={yScale(0)}
         x2={xScale(horizonDays)} y2={yScale(maxVal)}
@@ -160,37 +302,46 @@ function GoalLineChart({ points, goal }: { points: GoalProgressPoint[]; goal: Go
         strokeDasharray="6 4"
       />
 
-      {/* Area fill under actual progress */}
-      {areaPath && <path d={areaPath} fill={`url(#${areaGradId})`} />}
-
-      {/* Actual progress polyline */}
-      {actualPts.length > 1 && (
+      {/* ── Tu progreso real (solo cuando hay ahorros registrados) ── */}
+      {hasActualProgress && areaPath && (
+        <path d={areaPath} fill={`url(#${greenAreaId})`} />
+      )}
+      {hasActualProgress && actualPts.length > 1 && (
         <polyline
-          points={actualPolyline}
+          points={polylineStr}
           fill="none"
-          stroke={`url(#${gradId})`}
+          stroke={`url(#${greenGradId})`}
           strokeWidth="2.5"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
       )}
-
-      {/* Dot at current progress */}
-      {actualPts.length > 0 && (
+      {hasActualProgress && actualPts.length > 0 && (
         <circle
           cx={actualPts[actualPts.length - 1].x}
           cy={actualPts[actualPts.length - 1].y}
           r="4"
-          fill="#a855f7"
-          stroke="rgba(168,85,247,0.30)"
+          fill="#22c55e"
+          stroke="rgba(34,197,94,0.30)"
           strokeWidth="6"
         />
+      )}
+
+      {/* Mensaje si no hay progreso aún */}
+      {!hasActualProgress && (
+        <text
+          x={W / 2} y={H / 2 + 4}
+          textAnchor="middle" fontSize="10"
+          fill="rgba(148,163,184,0.35)" fontFamily="inherit"
+        >
+          Tu línea verde aparecerá con el primer ahorro
+        </text>
       )}
     </svg>
   );
 }
 
-// ── Componente principal ─────────────────────────────────────────────────────
+// ── Componente principal ──────────────────────────────────────────────────────
 export function SavingsEvolutionWidget({
   evolution,
   onChangeRange,
@@ -237,11 +388,9 @@ export function SavingsEvolutionWidget({
     onChangeRange?.(range);
   };
 
+  // Acumulado total del rango seleccionado
   const totalAmount = evolution?.points.reduce((acc, p) => acc + p.value, 0) ?? 0;
-  const maxValue = evolution?.points.length
-    ? Math.max(...evolution.points.map((p) => p.value))
-    : 0;
-  const hasData = (evolution?.points?.length ?? 0) > 0;
+  const hasData     = (evolution?.points?.length ?? 0) > 0;
 
   const activeGoalList = (goals ?? []).filter((g) => !g.archived);
   const selectedGoal: Goal | null = activeGoalList.find((g) => g.id === selectedGoalId) ?? null;
@@ -270,6 +419,7 @@ export function SavingsEvolutionWidget({
             {evolution?.mode === 'demo' && (
               <div className={styles.demoBadge}>DEMO</div>
             )}
+            {/* Selector de rango: solo en pestaña general */}
             {!collapsed && activeTab === 'general' && (
               <div className={styles.rangeSelector}>
                 {RANGES.map((r) => (
@@ -309,7 +459,7 @@ export function SavingsEvolutionWidget({
         {/* ── Contenido expandido ── */}
         {!collapsed && (
           <>
-            {/* Tab bar (solo si hay objetivos) */}
+            {/* Tab bar (solo si hay objetivos activos) */}
             {activeGoalList.length > 0 && (
               <div className={styles.tabBar}>
                 <button
@@ -327,35 +477,14 @@ export function SavingsEvolutionWidget({
               </div>
             )}
 
-            {/* ── Tab: Ahorro general ── */}
+            {/* ── Tab: Ahorro general — línea acumulativa ── */}
             {activeTab === 'general' && (
               hasData ? (
-                <div className={styles.chartContainer}>
-                  <div className={styles.barsRow}>
-                    {evolution!.points.map((point, index) => {
-                      const heightPct = maxValue > 0 ? (point.value / maxValue) * 100 : 0;
-                      const dateLabel = new Date(point.date).toLocaleDateString('es-ES', {
-                        day: 'numeric',
-                        month: 'short',
-                      });
-                      return (
-                        <div key={index} className={styles.barWrapper}>
-                          <div className={styles.tooltip}>
-                            <div className={styles.tooltipInner}>
-                              <div className={styles.tooltipDate}>{dateLabel}</div>
-                              <div className={styles.tooltipValue}>{formatCurrency(point.value)}</div>
-                            </div>
-                            <div className={styles.tooltipArrow} />
-                          </div>
-                          <div className={styles.bar} style={{ height: `${heightPct}%` }}>
-                            <div className={styles.barBase} />
-                            <div className={styles.barShine} />
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <div className={styles.axisLine} />
+                <div className={styles.lineChartWrap}>
+                  <GeneralLineChart
+                    points={evolution!.points}
+                    rangeDays={getRangeDays(selectedRange)}
+                  />
                 </div>
               ) : (
                 <div className={styles.emptyState}>
@@ -374,7 +503,7 @@ export function SavingsEvolutionWidget({
             {/* ── Tab: Mis objetivos ── */}
             {activeTab === 'goals' && (
               <>
-                {/* Selector de objetivo — dropdown */}
+                {/* Selector de objetivo */}
                 <div className={styles.goalDropdownWrap} ref={dropdownRef}>
                   <button
                     className={styles.goalDropdownTrigger}
@@ -421,13 +550,14 @@ export function SavingsEvolutionWidget({
                       </span>
                     </div>
 
-                    {/* Gráfica de líneas */}
+                    {/* Gráfica de progreso vs. ideal */}
                     <div className={styles.lineChartWrap}>
                       <GoalLineChart points={goalPoints} goal={selectedGoal} />
                     </div>
 
                     {/* Leyenda */}
                     <div className={styles.chartLegend}>
+                      {/* Ritmo ideal */}
                       <div className={styles.legendItem}>
                         <svg width="24" height="10" viewBox="0 0 24 10">
                           <line x1="0" y1="5" x2="24" y2="5"
@@ -435,16 +565,17 @@ export function SavingsEvolutionWidget({
                         </svg>
                         <span className={styles.legendLabel}>Ritmo ideal</span>
                       </div>
+                      {/* Tu progreso (verde) */}
                       <div className={styles.legendItem}>
                         <svg width="24" height="10" viewBox="0 0 24 10">
                           <defs>
-                            <linearGradient id="lgd" x1="0" y1="0" x2="1" y2="0">
-                              <stop offset="0%" stopColor="#a855f7" />
-                              <stop offset="100%" stopColor="#22c55e" />
+                            <linearGradient id="lgd_green" x1="0" y1="0" x2="1" y2="0">
+                              <stop offset="0%"   stopColor="#10b981" />
+                              <stop offset="100%" stopColor="#34d399" />
                             </linearGradient>
                           </defs>
                           <line x1="0" y1="5" x2="24" y2="5"
-                            stroke="url(#lgd)" strokeWidth="2.5" strokeLinecap="round" />
+                            stroke="url(#lgd_green)" strokeWidth="2.5" strokeLinecap="round" />
                         </svg>
                         <span className={styles.legendLabel}>Tu progreso</span>
                       </div>
