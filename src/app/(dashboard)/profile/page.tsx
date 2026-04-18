@@ -191,54 +191,89 @@ export default function ProfilePage() {
       </Suspense>
 
       {/* ══════════════════════════════════════════════════════════════════════
-          ZONA 1 — HEADER PRINCIPAL (degradado púrpura, igual que dashboard)
-          Contiene: avatar, nombre, ingresos mensuales con control de privacidad
+          ZONA 1 — HEADER PRINCIPAL (degradado púrpura)
+          Contiene: avatar + nombre → métricas clave → ingresos con privacidad
           ══════════════════════════════════════════════════════════════════════ */}
       <div className={styles.headerZone}>
         <div className={styles.zoneInner}>
+          <div className={styles.headerContent}>
 
-          {/* Zona alta: avatar + saludo */}
-          <div className={styles.heroTop}>
-            <div className={styles.avatar}>{initials}</div>
-            <div className={styles.heroGreeting}>
-              <span className={styles.heroSub}>Bienvenido de nuevo</span>
-              <span className={styles.heroName}>{firstName}</span>
+            {/* Fila superior: avatar + nombre */}
+            <div className={styles.heroTop}>
+              <div className={styles.avatar}>{initials}</div>
+              <div className={styles.heroGreeting}>
+                <span className={styles.heroSub}>Bienvenido de nuevo</span>
+                <span className={styles.heroName}>{firstName}</span>
+              </div>
             </div>
+
+            {/* Divisor */}
+            <div className={styles.heroDivider} />
+
+            {/* Tarjetas de métricas: total ahorrado · racha · nivel */}
+            <div className={styles.metricsRow}>
+
+              {/* Métrica 1: Total ahorrado */}
+              <div className={styles.metricCard}>
+                <span className={styles.metricLabel}>Total ahorrado</span>
+                <span className={styles.metricValueAccent} style={{ color: '#4ade80' }}>
+                  {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(totalSaved)}
+                </span>
+                <span className={styles.metricSub}>acumulado</span>
+              </div>
+
+              {/* Métrica 2: Racha actual */}
+              <div className={styles.metricCard}>
+                <span className={styles.metricLabel}>Racha</span>
+                <span className={styles.metricValue} style={{ color: streak > 0 ? '#fb923c' : undefined }}>
+                  {streak}
+                </span>
+                <span className={styles.metricSub}>{streak === 1 ? 'día seguido' : 'días seguidos'}</span>
+              </div>
+
+              {/* Métrica 3: Nivel actual (medalla) */}
+              <div className={styles.metricCard}>
+                <span className={styles.metricLabel}>Nivel</span>
+                <span className={styles.metricValueAccent} style={{ color: medal.color }}>
+                  {medal.label}
+                </span>
+                <span className={styles.metricSub}>
+                  {totalSaved > 0
+                    ? `${new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(totalSaved)} guardados`
+                    : 'empieza a ahorrar'}
+                </span>
+              </div>
+
+            </div>
+
+            {/* Fila de ingresos compacta con toggle de privacidad */}
+            <div className={styles.incomeRow}>
+              <div className={styles.incomeLeft}>
+                <span className={styles.incomeLabel}>INGRESOS MENSUALES</span>
+                <span className={`${styles.incomeValue} ${!incomeVisible ? styles.incomeBlur : ''}`}>
+                  {incomeDisplay}
+                </span>
+              </div>
+              <div className={styles.incomePills}>
+                <button
+                  className={styles.heroIconPill}
+                  onClick={toggleIncomeVisibility}
+                  aria-label={incomeVisible ? 'Ocultar ingresos' : 'Mostrar ingresos'}
+                >
+                  <EyeIcon open={incomeVisible} size={13} />
+                </button>
+                <button
+                  className={styles.heroEditPill}
+                  onClick={() => setInfoOpen(true)}
+                  aria-label="Editar ingresos"
+                >
+                  <EditIcon size={12} />
+                  Editar
+                </button>
+              </div>
+            </div>
+
           </div>
-
-          {/* Divisor */}
-          <div className={styles.heroDivider} />
-
-          {/* Zona baja: ingresos + controles */}
-          <div className={styles.heroBottom}>
-            <div className={styles.heroIncomeBlock}>
-              <span className={styles.heroIncomeLabel}>INGRESOS MENSUALES</span>
-              <span className={`${styles.heroIncomeValue} ${!incomeVisible ? styles.heroIncomeBlur : ''}`}>
-                {incomeDisplay}
-              </span>
-            </div>
-            <div className={styles.heroPills}>
-              {/* Toggle privacidad */}
-              <button
-                className={styles.heroIconPill}
-                onClick={toggleIncomeVisibility}
-                aria-label={incomeVisible ? 'Ocultar ingresos' : 'Mostrar ingresos'}
-                title={incomeVisible ? 'Ocultar' : 'Mostrar'}
-              >
-                <EyeIcon open={incomeVisible} size={13} />
-              </button>
-              {/* Editar */}
-              <button
-                className={styles.heroEditPill}
-                onClick={() => setInfoOpen(true)}
-                aria-label="Editar ingresos"
-              >
-                <EditIcon size={12} />
-                Editar
-              </button>
-            </div>
-          </div>
-
         </div>
       </div>
 
