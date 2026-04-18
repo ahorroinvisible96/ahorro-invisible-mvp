@@ -73,30 +73,28 @@ export function computeGoalPhases(amount: number, months: number) {
   const monthly = amount / months;
   const weekly  = monthly / 4;
 
-  if (months <= 3) {
+  // Caso especial: 1 mes → 3 semanas intermedias + Meta final
+  if (months === 1) {
     return [
-      { label: 'Semana 1', target: Math.round(weekly),       type: 'week'  as const },
-      { label: 'Semana 2', target: Math.round(weekly * 2),   type: 'week'  as const },
-      ...Array.from({ length: months }, (_, i) => ({
-        label: `Mes ${i + 1}`,
-        target: Math.round(monthly * (i + 1)),
-        type: 'month' as const,
-      })),
+      { label: 'Semana 1',    target: Math.round(weekly * 1), type: 'week'  as const },
+      { label: 'Semana 2',    target: Math.round(weekly * 2), type: 'week'  as const },
+      { label: 'Semana 3',    target: Math.round(weekly * 3), type: 'week'  as const },
+      { label: 'Meta final',  target: amount,                 type: 'final' as const },
     ];
   }
-  // Para objetivos más largos: bloques de 3 meses
-  const phases: { label: string; target: number; type: 'week' | 'month' }[] = [];
-  const blocks = Math.ceil(months / 3);
-  for (let b = 0; b < blocks; b++) {
-    const base        = monthly * b * 3;
-    const blockMonths = Math.min(3, months - b * 3);
-    phases.push({ label: `Bloque ${b + 1} – Semana 1`, target: Math.round(base + weekly),     type: 'week' });
-    phases.push({ label: `Bloque ${b + 1} – Semana 2`, target: Math.round(base + weekly * 2), type: 'week' });
-    for (let m = 1; m <= blockMonths; m++) {
-      phases.push({ label: `Mes ${b * 3 + m}`, target: Math.round(base + monthly * m), type: 'month' });
-    }
-  }
-  return phases;
+
+  // Caso general N ≥ 2:
+  // Semana 1 → Semana 2 → Mes 1 → … → Mes (N-1) → Meta final
+  return [
+    { label: 'Semana 1',   target: Math.round(weekly * 1), type: 'week'  as const },
+    { label: 'Semana 2',   target: Math.round(weekly * 2), type: 'week'  as const },
+    ...Array.from({ length: months - 1 }, (_, i) => ({
+      label: `Mes ${i + 1}`,
+      target: Math.round(monthly * (i + 1)),
+      type: 'month' as const,
+    })),
+    { label: 'Meta final', target: amount,                 type: 'final' as const },
+  ];
 }
 
 // ─── Helper de formato ────────────────────────────────────────────────────────
