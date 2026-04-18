@@ -168,7 +168,11 @@ export default function ProfilePage() {
   }, [router]);
 
   if (loading) {
-    return <div className={styles.page}><div className={styles.loading}>Cargando perfil…</div></div>;
+    return (
+      <div className={styles.page}>
+        <div className={styles.loading}>Cargando perfil…</div>
+      </div>
+    );
   }
 
   const initials = getInitials(userName, email);
@@ -185,164 +189,176 @@ export default function ProfilePage() {
         <SectionOpener onOpen={handleSectionOpen} />
       </Suspense>
 
-      {/* ══════════════════════════════════════════
-          BLOQUE 1 — HERO HEADER
-      ══════════════════════════════════════════ */}
-      <header className={styles.hero}>
+      {/* ══════════════════════════════════════════════════════════════════════
+          ZONA 1 — HEADER PRINCIPAL (degradado púrpura, igual que dashboard)
+          Contiene: avatar, nombre, ingresos mensuales con control de privacidad
+          ══════════════════════════════════════════════════════════════════════ */}
+      <div className={styles.headerZone}>
+        <div className={styles.zoneInner}>
 
-        {/* Zona alta: avatar + saludo */}
-        <div className={styles.heroTop}>
-          <div className={styles.avatar}>{initials}</div>
-          <div className={styles.heroGreeting}>
-            <span className={styles.heroSub}>Bienvenido de nuevo</span>
-            <span className={styles.heroName}>{firstName}</span>
-          </div>
-        </div>
-
-        {/* Divisor */}
-        <div className={styles.heroDivider} />
-
-        {/* Zona baja: ingresos + controles */}
-        <div className={styles.heroBottom}>
-          <div className={styles.heroIncomeBlock}>
-            <span className={styles.heroIncomeLabel}>INGRESOS MENSUALES</span>
-            <span className={`${styles.heroIncomeValue} ${!incomeVisible ? styles.heroIncomeBlur : ''}`}>
-              {incomeDisplay}
-            </span>
-          </div>
-          <div className={styles.heroPills}>
-            {/* Toggle privacidad */}
-            <button
-              className={styles.heroIconPill}
-              onClick={toggleIncomeVisibility}
-              aria-label={incomeVisible ? 'Ocultar ingresos' : 'Mostrar ingresos'}
-              title={incomeVisible ? 'Ocultar' : 'Mostrar'}
-            >
-              <EyeIcon open={incomeVisible} size={13} />
-            </button>
-            {/* Editar */}
-            <button
-              className={styles.heroEditPill}
-              onClick={() => setInfoOpen(true)}
-              aria-label="Editar ingresos"
-            >
-              <EditIcon size={12} />
-              Editar
-            </button>
-          </div>
-        </div>
-
-      </header>
-
-      {/* ── Contenido scrollable ── */}
-      <div className={styles.content}>
-
-        {/* ══════════════════════════════════════
-            BLOQUE 2 — ACCESO RÁPIDO
-        ══════════════════════════════════════ */}
-        <p className={styles.sectionLabel}>ACCESO RÁPIDO</p>
-        <div className={styles.listCard}>
-          <ListRow
-            icon={<TargetIcon size={16} />}
-            label="Mis objetivos"
-            onClick={() => router.push('/goals')}
-          />
-          <ListRow
-            icon={<BarChartIcon size={16} />}
-            label="Historial de ahorro"
-            onClick={() => router.push('/history')}
-          />
-          <ListRow
-            icon={<SettingsIcon size={16} />}
-            label="Configuración avanzada"
-            onClick={() => router.push('/settings')}
-            last
-          />
-        </div>
-
-        {/* ══════════════════════════════════════
-            BLOQUE 3 — MOTIVACIÓN
-        ══════════════════════════════════════ */}
-        <p className={styles.sectionLabel}>MOTIVACIÓN</p>
-        <div className={styles.listCard}>
-          <div className={styles.motivationRow}>
-            {/* Medalla */}
-            <span className={styles.listRowIcon} style={{ color: medal.color }}>
-              <medal.Icon size={18} />
-            </span>
-            <div className={styles.motivationTexts}>
-              <span className={styles.listRowLabel}>{medal.label}</span>
-              <span className={styles.motivationSub}>Nivel actual</span>
+          {/* Zona alta: avatar + saludo */}
+          <div className={styles.heroTop}>
+            <div className={styles.avatar}>{initials}</div>
+            <div className={styles.heroGreeting}>
+              <span className={styles.heroSub}>Bienvenido de nuevo</span>
+              <span className={styles.heroName}>{firstName}</span>
             </div>
-            {/* Racha */}
-            {streak > 0 && (
-              <div className={styles.streakPill}>
-                <FlameIcon size={13} className={styles.flameIcon} />
-                <span className={styles.streakNum}>{streak}</span>
-                <span className={styles.streakUnit}>días</span>
-              </div>
-            )}
           </div>
+
+          {/* Divisor */}
+          <div className={styles.heroDivider} />
+
+          {/* Zona baja: ingresos + controles */}
+          <div className={styles.heroBottom}>
+            <div className={styles.heroIncomeBlock}>
+              <span className={styles.heroIncomeLabel}>INGRESOS MENSUALES</span>
+              <span className={`${styles.heroIncomeValue} ${!incomeVisible ? styles.heroIncomeBlur : ''}`}>
+                {incomeDisplay}
+              </span>
+            </div>
+            <div className={styles.heroPills}>
+              {/* Toggle privacidad */}
+              <button
+                className={styles.heroIconPill}
+                onClick={toggleIncomeVisibility}
+                aria-label={incomeVisible ? 'Ocultar ingresos' : 'Mostrar ingresos'}
+                title={incomeVisible ? 'Ocultar' : 'Mostrar'}
+              >
+                <EyeIcon open={incomeVisible} size={13} />
+              </button>
+              {/* Editar */}
+              <button
+                className={styles.heroEditPill}
+                onClick={() => setInfoOpen(true)}
+                aria-label="Editar ingresos"
+              >
+                <EditIcon size={12} />
+                Editar
+              </button>
+            </div>
+          </div>
+
         </div>
+      </div>
 
-        {/* ══════════════════════════════════════
-            BLOQUE 4 — INFORMACIÓN PERSONAL
-        ══════════════════════════════════════ */}
-        <div className={styles.listCard}>
+      {/* ══════════════════════════════════════════════════════════════════════
+          ZONA 2 — CONTENIDO SECUNDARIO (fondo oscuro sólido, igual que dashboard)
+          Contiene: acceso rápido, motivación, información personal
+          ══════════════════════════════════════════════════════════════════════ */}
+      <div className={styles.contentZone}>
+        <div className={styles.zoneInner}>
+          <div className={styles.contentCol}>
 
-          {/* Cabecera colapsable */}
-          <button
-            className={`${styles.listRow} ${!infoOpen ? styles.listRowLast : ''}`}
-            onClick={() => setInfoOpen(v => !v)}
-          >
-            <span className={styles.listRowIcon}><UserIcon size={16} /></span>
-            <span className={styles.listRowLabel} style={{ flex: 1 }}>Información personal</span>
-            <ChevronDownIcon
-              size={14}
-              className={`${styles.listRowChevron} ${infoOpen ? styles.chevronOpen : ''}`}
-            />
-          </button>
-
-          {/* Cuerpo expandible */}
-          {infoOpen && (
-            <div className={styles.infoBody}>
-
-              {/* Fila nombre editable */}
-              <div className={styles.infoRow}>
-                <span className={styles.infoLabel}>Nombre</span>
-                <input
-                  className={styles.infoInput}
-                  value={editingName}
-                  onChange={(e) => setEditingName(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSaveName()}
-                  placeholder="Tu nombre"
+            {/* ─── Bloque: Acceso rápido ─── */}
+            <div className={styles.sectionGroup}>
+              <p className={styles.sectionLabel}>ACCESO RÁPIDO</p>
+              <div className={styles.listCard}>
+                <ListRow
+                  icon={<TargetIcon size={16} />}
+                  label="Mis objetivos"
+                  onClick={() => router.push('/goals')}
+                />
+                <ListRow
+                  icon={<BarChartIcon size={16} />}
+                  label="Historial de ahorro"
+                  onClick={() => router.push('/history')}
+                />
+                <ListRow
+                  icon={<SettingsIcon size={16} />}
+                  label="Configuración avanzada"
+                  onClick={() => router.push('/settings')}
+                  last
                 />
               </div>
-
-              {/* Fila email (solo lectura) */}
-              {email && (
-                <div className={styles.infoRow}>
-                  <span className={styles.infoLabel}>Email</span>
-                  <span className={styles.infoValue}>{email}</span>
-                </div>
-              )}
-
-              {/* Guardar nombre */}
-              <button className={styles.saveBtn} onClick={handleSaveName}>
-                {nameSaved ? '✓ Guardado' : 'Guardar cambios'}
-              </button>
-
-              {/* Cerrar sesión */}
-              <button className={styles.logoutBtn} onClick={handleLogout}>
-                <LogoutIcon size={14} />
-                Cerrar sesión
-              </button>
-
             </div>
-          )}
-        </div>
 
+            {/* ─── Bloque: Motivación ─── */}
+            <div className={styles.sectionGroup}>
+              <p className={styles.sectionLabel}>MOTIVACIÓN</p>
+              <div className={styles.listCard}>
+                <div className={styles.motivationRow}>
+                  {/* Medalla */}
+                  <span className={styles.listRowIcon} style={{ color: medal.color }}>
+                    <medal.Icon size={18} />
+                  </span>
+                  <div className={styles.motivationTexts}>
+                    <span className={styles.listRowLabel}>{medal.label}</span>
+                    <span className={styles.motivationSub}>Nivel actual</span>
+                  </div>
+                  {/* Racha */}
+                  {streak > 0 && (
+                    <div className={styles.streakPill}>
+                      <FlameIcon size={13} className={styles.flameIcon} />
+                      <span className={styles.streakNum}>{streak}</span>
+                      <span className={styles.streakUnit}>días</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* ─── Bloque: Información personal ─── */}
+            <div className={styles.sectionGroup}>
+              <p className={styles.sectionLabel}>INFORMACIÓN PERSONAL</p>
+              <div className={styles.listCard}>
+
+                {/* Cabecera colapsable */}
+                <button
+                  className={`${styles.listRow} ${!infoOpen ? styles.listRowLast : ''}`}
+                  onClick={() => setInfoOpen(v => !v)}
+                >
+                  <span className={styles.listRowIcon}><UserIcon size={16} /></span>
+                  <span className={styles.listRowLabel} style={{ flex: 1 }}>Datos de la cuenta</span>
+                  <ChevronDownIcon
+                    size={14}
+                    className={`${styles.listRowChevron} ${infoOpen ? styles.chevronOpen : ''}`}
+                  />
+                </button>
+
+                {/* Cuerpo expandible */}
+                {infoOpen && (
+                  <div className={styles.infoBody}>
+
+                    {/* Fila nombre editable */}
+                    <div className={styles.infoRow}>
+                      <span className={styles.infoLabel}>Nombre</span>
+                      <input
+                        className={styles.infoInput}
+                        value={editingName}
+                        onChange={(e) => setEditingName(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleSaveName()}
+                        placeholder="Tu nombre"
+                      />
+                    </div>
+
+                    {/* Fila email (solo lectura) */}
+                    {email && (
+                      <div className={styles.infoRow}>
+                        <span className={styles.infoLabel}>Email</span>
+                        <span className={styles.infoValue}>{email}</span>
+                      </div>
+                    )}
+
+                    {/* Guardar nombre */}
+                    <button className={styles.saveBtn} onClick={handleSaveName}>
+                      {nameSaved ? '✓ Guardado' : 'Guardar cambios'}
+                    </button>
+
+                    {/* Cerrar sesión */}
+                    <button className={styles.logoutBtn} onClick={handleLogout}>
+                      <LogoutIcon size={14} />
+                      Cerrar sesión
+                    </button>
+
+                  </div>
+                )}
+              </div>
+            </div>
+
+          </div>
+        </div>
       </div>
+
     </div>
   );
 }
