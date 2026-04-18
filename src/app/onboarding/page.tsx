@@ -16,7 +16,7 @@ import { pushLocalDataToSupabase } from "@/services/syncService";
 
 // ─── Constantes ────────────────────────────────────────────────────────────────
 const INCOME_OPTIONS = [
-  { label: 'Menos de 1.000 €', min: 0,     max: 1_000,  mid: 750   },
+  { label: 'Menos de 1.000 €', min: 0,     max: 1_000,  mid: 1_000 },
   { label: '1.000 – 1.500 €',  min: 1_000, max: 1_500,  mid: 1_250 },
   { label: '1.500 – 2.000 €',  min: 1_500, max: 2_000,  mid: 1_750 },
   { label: '2.000 – 2.500 €',  min: 2_000, max: 2_500,  mid: 2_250 },
