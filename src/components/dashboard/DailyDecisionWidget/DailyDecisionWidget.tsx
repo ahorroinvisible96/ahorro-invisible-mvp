@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { analytics } from '@/services/analytics';
-import { getTodayQuestion, DAILY_DECISION_RULES } from '@/services/dashboardStore';
+import { getTodayQuestion } from '@/services/dashboardStore';
 import type { DailyDecisionWidgetProps, ExtraSaving } from './DailyDecisionWidget.types';
 import styles from './DailyDecisionWidget.module.css';
 import { useWidgetCollapse } from '@/hooks/useWidgetCollapse';
@@ -170,24 +170,14 @@ export function DailyDecisionWidget({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [primaryGoal?.id, activeGoals.length]);
 
-  // Delta real desde DAILY_DECISION_RULES — nunca hardcodeado
-  const selectedRule = selectedAnswer
-    ? DAILY_DECISION_RULES.find(
-        (r) => r.questionId === todayQuestion.questionId && r.answerKey === selectedAnswer,
-      ) ?? null
-    : null;
+  // Importe parseado del input
+  const parsedAmount = customAmount ? Number(customAmount) : 0;
+  const hasAmount = parsedAmount > 0;
 
-  if (selectedAnswer && !selectedRule) {
-    console.error(`[DailyDecisionWidget] Sin regla para ${todayQuestion.questionId}/${selectedAnswer}`);
-  }
-
-  const savingsDelta = selectedRule?.immediateDelta ?? 0;
-  const isSavingAnswer = savingsDelta > 0;
-
-  // Confirmar solo si: respuesta + (si hay ahorro → objetivo) + no enviado
+  // Confirmar: siempre se puede (0 = no ahorré, >0 = ahorré X)
   const canConfirm =
-    !!selectedAnswer &&
-    (!isSavingAnswer || (isSavingAnswer && !!selectedGoalId && activeGoals.length > 0)) &&
+    !!selectedGoalId &&
+    activeGoals.length > 0 &&
     !submitting &&
     !confirmed;
 
@@ -267,26 +257,26 @@ export function DailyDecisionWidget({
   // ── Handler único de confirmación ────────────────────────────────────────
   function handleConfirm() {
     if (!canConfirm) return;
-    const goalId = isSavingAnswer ? selectedGoalId : (activeGoals[0]?.id ?? '');
-    const finalAmount = useCustomAmount && customAmount ? Number(customAmount) : undefined;
+    const goalId = selectedGoalId || (activeGoals[0]?.id ?? '');
+    const answerKey = hasAmount ? 'saved' : 'zero';
+    const finalAmount = hasAmount ? parsedAmount : undefined;
     setSubmitting(true);
+    setSelectedAnswer(answerKey);
     analytics.dailyAnswerSubmitted(
       daily.date,
       todayQuestion.questionId,
-      selectedAnswer!,
+      answerKey,
       goalId,
       primaryGoal?.id === goalId,
     );
-    onSubmitDecision(todayQuestion.questionId, selectedAnswer!, goalId, finalAmount);
+    onSubmitDecision(todayQuestion.questionId, answerKey, goalId, finalAmount);
     setConfirmed(true);
     setTimeout(() => setSubmitting(false), 1800);
   }
 
   // ── Mensaje motivacional ─────────────────────────────────────────────────
-  const motivationalMsg = selectedAnswer && !confirmed
-    ? isSavingAnswer
-      ? '¡Excelente! Estás construyendo buenos hábitos financieros y sumando a tu objetivo.'
-      : 'No te preocupes, lo importante es ser consciente de tus decisiones financieras.'
+  const motivationalMsg = hasAmount && !confirmed
+    ? '¡Excelente! Cada euro que registras construye tu hábito de ahorro.'
     : null;
 
   // ── Render ───────────────────────────────────────────────────────────────
@@ -303,84 +293,49 @@ export function DailyDecisionWidget({
           <p style={{ fontSize: 13, color: 'rgba(148,163,184,0.65)', margin: '4px 0 0', lineHeight: 1.4, cursor: 'pointer' }} onClick={toggle}>{todayQuestion.text}</p>
         )}
 
-        {/* ── Opciones: precio SIEMPRE visible si delta > 0 ── */}
+        {/* ── Importe de ahorro ── */}
         {!collapsed && <div className={styles.answers}>
-          {todayQuestion.answers.map((a) => {
-            const rule = DAILY_DECISION_RULES.find(
-              (r) => r.questionId === todayQuestion.questionId && r.answerKey === a.key,
-            );
-            const delta = rule?.immediateDelta ?? 0;
-            const isSelected = selectedAnswer === a.key;
-            return (
-              <button
-                key={a.key}
-                onClick={() => !submitting && !confirmed && setSelectedAnswer(a.key)}
+          <div style={{ marginBottom: 12 }}>
+            <label style={{ fontSize: 12, fontWeight: 700, color: 'rgba(148,163,184,0.5)', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: 8 }}>
+              ¿Cuánto te has ahorrado?
+            </label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <input
+                type="number"
+                inputMode="decimal"
+                min="0"
+                step="0.5"
+                value={customAmount}
+                onChange={(e) => { setCustomAmount(e.target.value); if (!selectedAnswer) setSelectedAnswer('saved'); }}
+                placeholder="0"
                 disabled={submitting || confirmed}
-                className={`${styles.answerBtn} ${
-                  isSelected && delta > 0
-                    ? styles.answerBtnSaving
-                    : isSelected
-                    ? styles.answerBtnSelected
-                    : ''
-                }`}
-              >
-                <div className={styles.answerLeft}>
-                  <div className={`${styles.radio} ${isSelected ? styles.radioSelected : ''}`}>
-                    {isSelected && <div className={styles.radioDot} />}
-                  </div>
-                  <span className={styles.answerLabel}>{a.label}</span>
-                </div>
-                {/* Precio siempre visible si la opción tiene ahorro */}
-                {delta > 0 && (
-                  <div className={`${styles.savingsBadge} ${isSelected ? styles.savingsBadgeActive : styles.savingsBadgeDim}`}>
-                    <TrendingUpIcon size={12} />
-                    +{delta}€
-                  </div>
-                )}
-              </button>
-            );
-          })}
+                style={{
+                  flex: 1,
+                  padding: '12px 14px',
+                  background: 'rgba(15,23,42,0.6)',
+                  border: `1.5px solid ${Number(customAmount) > 0 ? 'rgba(74,222,128,0.4)' : 'rgba(51,65,85,0.5)'}`,
+                  borderRadius: 12,
+                  color: Number(customAmount) > 0 ? '#4ade80' : '#f1f5f9',
+                  fontSize: 22,
+                  fontWeight: 800,
+                  textAlign: 'right',
+                  outline: 'none',
+                  fontFamily: 'inherit',
+                  transition: 'border-color 0.2s',
+                }}
+              />
+              <span style={{ fontSize: 18, fontWeight: 700, color: 'rgba(148,163,184,0.4)' }}>€</span>
+            </div>
+            <p style={{ fontSize: 11, color: 'rgba(148,163,184,0.45)', marginTop: 6, marginBottom: 0 }}>
+              💡 Típico: {todayQuestion.suggestedAmount} € · Si no ahorraste nada, deja 0
+            </p>
+          </div>
         </div>}
 
-        {/* ── Selector de objetivo inline: solo si la respuesta tiene ahorro ── */}
-        {!collapsed && isSavingAnswer && (
+        {/* ── Selector de objetivo ── */}
+        {!collapsed && (
           <div className={styles.goalSection}>
-            <div className={styles.goalSectionLabelRow}>
-              <p className={styles.goalSectionLabel}>
-                Destinar{' '}
-                {useCustomAmount && customAmount
-                  ? <span className={styles.deltaHighlight}>+{customAmount}€</span>
-                  : <span className={styles.deltaHighlight}>+{savingsDelta}€</span>
-                }{' '}a:
-              </p>
-              <button
-                className={styles.customAmountToggle}
-                onClick={() => { setUseCustomAmount(!useCustomAmount); setCustomAmount(''); }}
-                disabled={submitting || confirmed}
-              >
-                {useCustomAmount ? 'Usar precio sugerido' : 'Cambiar importe'}
-              </button>
-            </div>
-
-            {useCustomAmount && (
-              <div className={styles.customAmountRow}>
-                <input
-                  className={styles.customAmountInput}
-                  type="number"
-                  min="0.01"
-                  step="0.01"
-                  value={customAmount}
-                  onChange={(e) => setCustomAmount(e.target.value)}
-                  placeholder={`${savingsDelta}`}
-                  disabled={submitting || confirmed}
-                />
-                <span className={styles.customAmountUnit}>€</span>
-              </div>
-            )}
-
-
             {activeGoals.length === 0 ? (
-              /* Sin objetivos: CTA inline dentro del mismo widget */
               <div className={styles.noGoalsBox}>
                 <AlertIcon size={15} className={styles.noGoalsIcon} />
                 <div>
@@ -391,7 +346,6 @@ export function DailyDecisionWidget({
                 </div>
               </div>
             ) : (
-              /* Lista real de objetivos activos */
               <div className={styles.goalList}>
                 {activeGoals.map((g) => {
                   const isSelected = selectedGoalId === g.id;
@@ -452,7 +406,7 @@ export function DailyDecisionWidget({
               </svg>
               Decisión Confirmada
             </span>
-          ) : 'Confirmar decisión'}
+          ) : Number(customAmount) > 0 ? `Registrar ahorro de ${Number(customAmount).toLocaleString('es-ES')}€` : 'Hoy no he ahorrado (0 €)'}
         </button>}
 
       </div>

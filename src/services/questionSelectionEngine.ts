@@ -379,22 +379,25 @@ export function getContextualDailyQuestion(
 }
 
 /**
- * Convierte una DailyQuestion del banco a formato del dashboardStore
- * para compatibilidad con el sistema existente.
+ * Convierte una DailyQuestion del banco a formato del dashboardStore.
+ * Nuevo formato: basado en importe, no en sí/no.
  */
 export function toDashboardQuestion(q: DailyQuestion): {
   questionId: string;
   text: string;
-  answers: { key: string; label: string; savingsHint?: string }[];
+  suggestedAmount: number;
+  monthlyDelta: number;
+  yearlyDelta: number;
+  labelImpact: string;
   tags: string[];
 } {
   return {
     questionId: q.id,
     text: q.text,
-    answers: [
-      { key: q.answerKey1, label: q.answerOption1, savingsHint: q.monthlyDelta > 0 ? `+${q.monthlyDelta} €/mes` : undefined },
-      { key: q.answerKey2, label: q.answerOption2 },
-    ],
+    suggestedAmount: q.suggestedAmount,
+    monthlyDelta: q.monthlyDelta,
+    yearlyDelta: q.yearlyDelta,
+    labelImpact: q.labelImpact,
     tags: [q.habitCategory, q.targetAvatarPrimary, q.targetSubavatarPrimary].filter(Boolean),
   };
 }

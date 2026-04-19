@@ -253,12 +253,11 @@ export default function GoalDetailPage({ params }: { params: { id: string } }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {decisions.slice(0, 20).map(d => {
                 const q = DAILY_QUESTIONS.find(q => q.questionId === d.questionId);
-                const ans = q?.answers.find(a => a.key === d.answerKey);
                 return (
                   <div key={d.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: `1px solid ${D.border}` }}>
                     <div>
                       <p style={{ fontSize: 13, fontWeight: 600, color: D.ts, marginBottom: 2 }}>{q?.text ?? d.questionId}</p>
-                      <p style={{ fontSize: 12, color: D.tm, margin: 0 }}>{ans?.label ?? d.answerKey} · {formatDate(d.date)}</p>
+                      <p style={{ fontSize: 12, color: D.tm, margin: 0 }}>{formatDate(d.date)}</p>
                     </div>
                     {d.deltaAmount > 0 && (
                       <span style={{ fontSize: 14, fontWeight: 700, color: D.green, flexShrink: 0, marginLeft: 12 }}>+{formatEUR(d.deltaAmount)}</span>

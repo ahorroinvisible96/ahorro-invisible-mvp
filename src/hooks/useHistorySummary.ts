@@ -36,8 +36,9 @@ function getQuestionText(questionId: string): string {
 
 function getAnswerLabel(questionId: string, answerKey: string): string {
   if (questionId === 'extra_saving') return answerKey;
-  const q = DAILY_QUESTIONS.find((q) => q.questionId === questionId);
-  return q?.answers.find((a) => a.key === answerKey)?.label ?? answerKey;
+  if (answerKey === 'zero') return 'Sin ahorro';
+  if (answerKey === 'saved') return 'Ahorrado';
+  return answerKey;
 }
 
 function getCategory(questionId: string, answerKey: string): string {

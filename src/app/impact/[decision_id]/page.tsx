@@ -72,7 +72,7 @@ export default function ImpactPage({ params }: { params: { decision_id: string }
   }, [load]);
 
   const q = decision ? DAILY_QUESTIONS.find((q) => q.questionId === decision.questionId) : null;
-  const answerLabel = q?.answers.find((a) => a.key === decision?.answerKey)?.label ?? decision?.answerKey ?? '';
+  const answerLabel = decision && decision.deltaAmount > 0 ? `Ahorré ${formatEUR(decision.deltaAmount)}` : 'No ahorré hoy';
   const goalPct = goal ? Math.min(100, Math.round((goal.currentAmount / goal.targetAmount) * 100)) : 0;
 
   const DARK = {
@@ -242,14 +242,13 @@ export default function ImpactPage({ params }: { params: { decision_id: string }
           <button
             onClick={async () => {
               const q = DAILY_QUESTIONS.find((q) => q.questionId === decision.questionId);
-              const ans = q?.answers.find((a) => a.key === decision.answerKey)?.label ?? decision.answerKey;
-              const text = decision.yearlyProjection > 0
+              const shareText = decision.yearlyProjection > 0
                 ? `Con Ahorro Invisible acabo de registrar una decisión que puede ahorrarme ${formatEUR(decision.yearlyProjection)} al año. ¡Pequeñas decisiones, grandes resultados! 💪`
-                : `Con Ahorro Invisible acabo de registrar una decisión consciente: "${ans}". ¡Construyendo hábitos de ahorro! 💡`;
+                : `Con Ahorro Invisible acabo de registrar una decisión consciente. ¡Construyendo hábitos de ahorro! 💡`;
               if (navigator.share) {
-                await navigator.share({ title: 'Mi decisión en Ahorro Invisible', text, url: 'https://ahorro-invisible.vercel.app' }).catch(() => null);
+                await navigator.share({ title: 'Mi decisión en Ahorro Invisible', text: shareText, url: 'https://ahorro-invisible.vercel.app' }).catch(() => null);
               } else {
-                await navigator.clipboard.writeText(text).catch(() => null);
+                await navigator.clipboard.writeText(shareText).catch(() => null);
                 setShared(true);
                 setTimeout(() => setShared(false), 2500);
               }

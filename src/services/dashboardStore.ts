@@ -15,6 +15,7 @@ import {
   getCurrentTimeWindow,
   type UserProfile,
 } from './questionSelectionEngine';
+import { getQuestionById } from './dailyQuestionsBank';
 import type { AvatarKey, SubavatarKey } from './profilingService';
 import { STORAGE_KEY } from '@/lib/constants';
 
@@ -75,11 +76,14 @@ export const DAILY_DECISION_RULES: DailyDecisionRule[] = [
   { category: 'consumo',      questionId: 'impulse_online',  answerKey: 'bought',    immediateDelta: 0,  monthlyProjection: 0,   yearlyProjection: 0,    impactType: 'real' },
 ];
 
-// ─── Preguntas diarias ────────────────────────────────────────────────────────
+// ─── Preguntas diarias (nuevo formato basado en importe) ──────────────────────
 export type DailyQuestion = {
   questionId: string;
   text: string;
-  answers: { key: string; label: string; savingsHint?: string }[];
+  suggestedAmount: number;
+  monthlyDelta: number;
+  yearlyDelta: number;
+  labelImpact: string;
   tags?: string[];
 };
 
@@ -124,73 +128,27 @@ export const AVATAR_META: Record<UserAvatar, {
 };
 
 export const DAILY_QUESTIONS: DailyQuestion[] = [
-  // ─ Originales ────────────────────────────────────────────────────────────
-  { questionId: 'coffee',         tags: ['consumo', 'food'],
-    text: '¿Compraste café o bebida fuera de casa hoy?',
-    answers: [{ key: 'no', label: 'No, ahorré', savingsHint: '+3€' }, { key: 'yes', label: 'Sí, lo compré' }] },
-  { questionId: 'delivery',       tags: ['food', 'consumo'],
-    text: '¿Pediste comida a domicilio hoy?',
-    answers: [{ key: 'no', label: 'No, cociné en casa', savingsHint: '+8€' }, { key: 'yes', label: 'Sí, lo pedí' }] },
-  { questionId: 'transport',      tags: ['transport'],
-    text: '¿Cómo te movilizaste hoy?',
-    answers: [{ key: 'public', label: 'Transporte público', savingsHint: '+5€' }, { key: 'car', label: 'Coche / taxi' }] },
-  { questionId: 'impulse',        tags: ['impulse', 'consumo'],
-    text: '¿Evitaste una compra impulsiva hoy?',
-    answers: [{ key: 'avoided', label: 'Sí, lo evité', savingsHint: '+15€' }, { key: 'bought', label: 'No, compré' }] },
-  { questionId: 'subscription',   tags: ['subscription', 'tech'],
-    text: '¿Revisaste tus suscripciones activas?',
-    answers: [{ key: 'cancelled', label: 'Cancelé una sin uso', savingsHint: '+12€/mes' }, { key: 'kept', label: 'Las mantuve todas' }] },
-  // ─ Hogar ─────────────────────────────────────────────────────────────────
-  { questionId: 'hogar_energy',   tags: ['hogar'],
-    text: '¿Apagaste los electrodomésticos que no usabas al salir de casa hoy?',
-    answers: [{ key: 'yes', label: 'Sí, los apagué', savingsHint: '+2€' }, { key: 'no', label: 'No me acordé' }] },
-  { questionId: 'hogar_water',    tags: ['hogar'],
-    text: '¿Diste una ducha corta (menos de 5 minutos) hoy?',
-    answers: [{ key: 'yes', label: 'Sí, ducha rápida', savingsHint: '+3€' }, { key: 'no', label: 'Me duché largo' }] },
-  { questionId: 'hogar_meal_plan',tags: ['hogar', 'food'],
-    text: '¿Planificaste las comidas de esta semana para reducir desperdicios?',
-    answers: [{ key: 'yes', label: 'Sí, lo planiqué', savingsHint: '+15€' }, { key: 'no', label: 'No esta semana' }] },
-  { questionId: 'hogar_heating',  tags: ['hogar'],
-    text: '¿Ajustaste la temperatura del hogar para ahorrar en la factura de energía?',
-    answers: [{ key: 'yes', label: 'Sí, la ajusté', savingsHint: '+5€' }, { key: 'no', label: 'Lo dejé como estaba' }] },
-  // ─ Salud ──────────────────────────────────────────────────────────────────
-  { questionId: 'salud_lunch',    tags: ['salud', 'food'],
-    text: '¿Llevaste el almuerzo de casa al trabajo hoy?',
-    answers: [{ key: 'yes', label: 'Sí, lo traje', savingsHint: '+8€' }, { key: 'no', label: 'Comí fuera' }] },
-  { questionId: 'salud_exercise', tags: ['salud'],
-    text: '¿Hiciste ejercicio en casa o al aire libre en lugar de ir al gimnasio?',
-    answers: [{ key: 'free', label: 'Sí, sin pagar', savingsHint: '+7€' }, { key: 'gym', label: 'Fui al gimnasio' }] },
-  { questionId: 'salud_generic',  tags: ['salud', 'consumo'],
-    text: '¿Compraste medicamentos o productos genéricos en lugar de marcas?',
-    answers: [{ key: 'generic', label: 'Sí, genéricos', savingsHint: '+8€' }, { key: 'brand', label: 'Compré de marca' }] },
-  // ─ Ocio ───────────────────────────────────────────────────────────────────
-  { questionId: 'ocio_streaming', tags: ['ocio'],
-    text: '¿Elegiste ver contenido en casa en lugar de ir al cine o espectáculo?',
-    answers: [{ key: 'home', label: 'Sí, en casa', savingsHint: '+10€' }, { key: 'out', label: 'Salí' }] },
-  { questionId: 'ocio_bar',       tags: ['ocio', 'consumo'],
-    text: '¿Tomaste algo en casa en lugar de salir al bar o cafetería por la tarde?',
-    answers: [{ key: 'home', label: 'En casa', savingsHint: '+7€' }, { key: 'bar', label: 'Salí al bar' }] },
-  { questionId: 'ocio_library',   tags: ['ocio'],
-    text: '¿Usaste la biblioteca o contenido gratuito en lugar de comprar un libro?',
-    answers: [{ key: 'free', label: 'Sí, gratis', savingsHint: '+12€' }, { key: 'bought', label: 'Lo compré' }] },
-  // ─ Tecnología ─────────────────────────────────────────────────────────────
-  { questionId: 'tech_apps',      tags: ['tech', 'subscription'],
-    text: '¿Evitaste instalar una app de pago o nueva suscripción digital hoy?',
-    answers: [{ key: 'avoided', label: 'Sí, lo evité', savingsHint: '+5€' }, { key: 'bought', label: 'Me suscribí' }] },
-  { questionId: 'tech_gadget',    tags: ['tech', 'impulse'],
-    text: '¿Resististe la tentación de comprar un gadget o accesorio tecnológico?',
-    answers: [{ key: 'resisted', label: 'Sí, resistí', savingsHint: '+20€' }, { key: 'bought', label: 'Lo compré' }] },
-  // ─ Transporte alternativo ─────────────────────────────────────────────────
-  { questionId: 'transport_alt',  tags: ['transport'],
-    text: '¿Usaste bicicleta, patinete o fuiste andando en lugar del coche o taxi?',
-    answers: [{ key: 'alt', label: 'Sí, alternativa eco', savingsHint: '+6€' }, { key: 'car', label: 'Usé el coche' }] },
-  { questionId: 'transport_share',tags: ['transport'],
-    text: '¿Compartiste coche con alguien para ir al trabajo o hacer recados?',
-    answers: [{ key: 'shared', label: 'Sí, compartí', savingsHint: '+8€' }, { key: 'alone', label: 'Fui solo' }] },
-  // ─ Impulso online ─────────────────────────────────────────────────────────
-  { questionId: 'impulse_online', tags: ['impulse', 'consumo'],
-    text: '¿Cerraste un carrito de compra online sin finalizar la compra?',
-    answers: [{ key: 'closed', label: 'Sí, lo cerré', savingsHint: '+20€' }, { key: 'bought', label: 'Compré' }] },
+  // ─ Legacy pool (formato importe) ────────────────────────────────────────
+  { questionId: 'coffee',         tags: ['consumo', 'food'],       text: 'Si hoy te has preparado café en casa en vez de comprarlo, ¿cuánto te has ahorrado?',              suggestedAmount: 3,  monthlyDelta: 60,  yearlyDelta: 720,  labelImpact: 'Café en casa ahorra ~60 €/mes' },
+  { questionId: 'delivery',       tags: ['food', 'consumo'],       text: 'Si hoy has cocinado en vez de pedir delivery, ¿cuánto te has ahorrado?',                         suggestedAmount: 8,  monthlyDelta: 120, yearlyDelta: 1440, labelImpact: 'Cocinar en casa ahorra ~120 €/mes' },
+  { questionId: 'transport',      tags: ['transport'],             text: 'Si hoy has usado transporte público en vez de taxi, ¿cuánto te has ahorrado?',                    suggestedAmount: 5,  monthlyDelta: 80,  yearlyDelta: 960,  labelImpact: 'Transporte público ahorra ~80 €/mes' },
+  { questionId: 'impulse',        tags: ['impulse', 'consumo'],    text: 'Si hoy has evitado una compra impulsiva, ¿cuánto te has ahorrado?',                               suggestedAmount: 15, monthlyDelta: 150, yearlyDelta: 1800, labelImpact: 'Evitar impulsos ahorra ~150 €/mes' },
+  { questionId: 'subscription',   tags: ['subscription', 'tech'],  text: 'Si hoy has cancelado una suscripción sin uso, ¿cuánto te ahorras al mes?',                        suggestedAmount: 10, monthlyDelta: 10,  yearlyDelta: 120,  labelImpact: 'Cancelar suscripciones innecesarias ahorra al año' },
+  { questionId: 'hogar_energy',   tags: ['hogar'],                 text: 'Si hoy has apagado electrodomésticos que no usabas, ¿cuánto te has ahorrado?',                    suggestedAmount: 2,  monthlyDelta: 40,  yearlyDelta: 480,  labelImpact: 'Apagar electrodomésticos ahorra ~40 €/mes' },
+  { questionId: 'hogar_water',    tags: ['hogar'],                 text: 'Si hoy has dado una ducha corta, ¿cuánto crees que has ahorrado en agua caliente?',               suggestedAmount: 3,  monthlyDelta: 50,  yearlyDelta: 600,  labelImpact: 'Duchas cortas ahorran ~50 €/mes' },
+  { questionId: 'hogar_meal_plan',tags: ['hogar', 'food'],         text: 'Si hoy has planificado las comidas para reducir desperdicios, ¿cuánto te has ahorrado?',          suggestedAmount: 15, monthlyDelta: 60,  yearlyDelta: 720,  labelImpact: 'Planificar comidas ahorra ~60 €/mes' },
+  { questionId: 'hogar_heating',  tags: ['hogar'],                 text: 'Si hoy has ajustado la temperatura del hogar para ahorrar, ¿cuánto?',                             suggestedAmount: 5,  monthlyDelta: 30,  yearlyDelta: 360,  labelImpact: 'Ajustar temperatura ahorra ~30 €/mes' },
+  { questionId: 'salud_lunch',    tags: ['salud', 'food'],         text: 'Si hoy has llevado el almuerzo de casa al trabajo, ¿cuánto te has ahorrado?',                     suggestedAmount: 8,  monthlyDelta: 160, yearlyDelta: 1920, labelImpact: 'Llevar almuerzo ahorra ~160 €/mes' },
+  { questionId: 'salud_exercise', tags: ['salud'],                 text: 'Si hoy has hecho ejercicio gratis (calle/casa) en vez de pagar gimnasio, ¿cuánto?',              suggestedAmount: 7,  monthlyDelta: 30,  yearlyDelta: 360,  labelImpact: 'Ejercicio al aire libre ahorra ~30 €/mes' },
+  { questionId: 'salud_generic',  tags: ['salud', 'consumo'],      text: 'Si hoy has comprado productos genéricos en vez de marcas, ¿cuánto te has ahorrado?',             suggestedAmount: 8,  monthlyDelta: 24,  yearlyDelta: 288,  labelImpact: 'Productos genéricos ahorran ~24 €/mes' },
+  { questionId: 'ocio_streaming', tags: ['ocio'],                  text: 'Si hoy has visto contenido en casa en vez de ir al cine, ¿cuánto te has ahorrado?',              suggestedAmount: 10, monthlyDelta: 40,  yearlyDelta: 480,  labelImpact: 'Cine en casa vs fuera ahorra ~40 €/mes' },
+  { questionId: 'ocio_bar',       tags: ['ocio', 'consumo'],       text: 'Si hoy has tomado algo en casa en vez de ir al bar, ¿cuánto te has ahorrado?',                   suggestedAmount: 7,  monthlyDelta: 112, yearlyDelta: 1344, labelImpact: 'Tomar algo en casa ahorra ~112 €/mes' },
+  { questionId: 'ocio_library',   tags: ['ocio'],                  text: 'Si hoy has usado contenido gratuito (biblioteca, online) en vez de comprar, ¿cuánto?',           suggestedAmount: 12, monthlyDelta: 24,  yearlyDelta: 288,  labelImpact: 'Usar contenido gratuito ahorra ~24 €/mes' },
+  { questionId: 'tech_apps',      tags: ['tech', 'subscription'],  text: 'Si hoy has evitado instalar una app de pago o nueva suscripción, ¿cuánto?',                      suggestedAmount: 5,  monthlyDelta: 15,  yearlyDelta: 180,  labelImpact: 'Evitar suscripciones innecesarias ahorra ~15 €/mes' },
+  { questionId: 'tech_gadget',    tags: ['tech', 'impulse'],       text: 'Si hoy has resistido la tentación de comprar un gadget, ¿cuánto te has ahorrado?',               suggestedAmount: 20, monthlyDelta: 40,  yearlyDelta: 480,  labelImpact: 'Resistir gadgets ahorra ~40 €/mes' },
+  { questionId: 'transport_alt',  tags: ['transport'],             text: 'Si hoy has ido en bici, patinete o andando en vez de en coche/taxi, ¿cuánto te has ahorrado?',   suggestedAmount: 6,  monthlyDelta: 96,  yearlyDelta: 1152, labelImpact: 'Movilidad eco ahorra ~96 €/mes' },
+  { questionId: 'transport_share',tags: ['transport'],             text: 'Si hoy has compartido coche con alguien, ¿cuánto te has ahorrado?',                              suggestedAmount: 8,  monthlyDelta: 64,  yearlyDelta: 768,  labelImpact: 'Compartir coche ahorra ~64 €/mes' },
+  { questionId: 'impulse_online', tags: ['impulse', 'consumo'],    text: 'Si hoy has cerrado un carrito online sin comprar, ¿cuánto te has ahorrado?',                     suggestedAmount: 20, monthlyDelta: 80,  yearlyDelta: 960,  labelImpact: 'Cerrar carritos sin comprar ahorra ~80 €/mes' },
 ];
 
 // Preguntas personalizadas por avatar (sustituye al sistema moneyFeeling)
@@ -1195,6 +1153,15 @@ export function storeAcknowledgeAdaptiveEvaluation(newPercent?: number): void {
   persistStore(state);
 }
 
+/**
+ * Registra la decisión de ahorro del día.
+ *
+ * Nuevo flujo (formato importe):
+ *   - savedAmount: cuánto ha ahorrado el usuario (0 = no ahorró nada)
+ *   - El importe lo pone el usuario directamente (default 0 €)
+ *
+ * Se mantiene retrocompatibilidad con las legacy questions (answerKey).
+ */
 export function storeSubmitDecision(
   questionId: string,
   answerKey: string,
@@ -1209,14 +1176,15 @@ export function storeSubmitDecision(
     return buildSummary(currentRange);
   }
 
-  const rule = DAILY_DECISION_RULES.find(
-    (r) => r.questionId === questionId && r.answerKey === answerKey,
-  );
-
   const multiplier = incomeMultiplier(state.incomeRange);
   let effectiveDelta: number;
   let effectiveMonthly: number;
   let effectiveYearly: number;
+
+  // Primero intentar legacy rules
+  const rule = DAILY_DECISION_RULES.find(
+    (r) => r.questionId === questionId && r.answerKey === answerKey,
+  );
 
   if (rule) {
     // Legacy question pool
@@ -1225,19 +1193,12 @@ export function storeSubmitDecision(
     effectiveMonthly = Math.round(rule.monthlyProjection * multiplier * 100) / 100;
     effectiveYearly = Math.round(rule.yearlyProjection * multiplier * 100) / 100;
   } else {
-    // Bank question (Q_CI_*, Q_IM_*, Q_FS_*, etc.)
-    const { getQuestionById } = require('./dailyQuestionsBank');
+    // Bank question (formato importe): el usuario introduce cuánto ha ahorrado
     const bankQ = getQuestionById(questionId);
-    if (!bankQ) {
-      console.error(`[dashboardStore] No rule or bank question for ${questionId}/${answerKey}`);
-      return buildSummary(currentRange);
-    }
-    // "yes" = ahorro, "no" = sin ahorro
-    const isSaving = answerKey === bankQ.answerKey1;
-    const baseDelta = isSaving ? bankQ.monthlyDelta : 0;
-    effectiveDelta = Math.round(baseDelta * multiplier * 100) / 100;
-    effectiveMonthly = Math.round((isSaving ? bankQ.monthlyDelta : 0) * multiplier * 100) / 100;
-    effectiveYearly = Math.round((isSaving ? bankQ.yearlyDelta : 0) * multiplier * 100) / 100;
+    const savedAmount = customAmount != null && customAmount > 0 ? customAmount : 0;
+    effectiveDelta = Math.round(savedAmount * multiplier * 100) / 100;
+    effectiveMonthly = bankQ ? Math.round(bankQ.monthlyDelta * multiplier * 100) / 100 : 0;
+    effectiveYearly = bankQ ? Math.round(bankQ.yearlyDelta * multiplier * 100) / 100 : 0;
   }
 
   const now = new Date().toISOString();
