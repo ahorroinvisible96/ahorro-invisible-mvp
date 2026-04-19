@@ -9,6 +9,13 @@ import type {
   SavingsProfile,
   AdaptiveEvaluation,
 } from '@/types/Dashboard';
+import {
+  getContextualDailyQuestion,
+  toDashboardQuestion,
+  getCurrentTimeWindow,
+  type UserProfile,
+} from './questionSelectionEngine';
+import type { AvatarKey, SubavatarKey } from './profilingService';
 import { STORAGE_KEY } from '@/lib/constants';
 
 // STORAGE_KEY importado desde @/lib/constants
@@ -201,39 +208,110 @@ const FEELING_TAGS: Record<string, string[]> = {
   anxious:   ['hogar', 'salud', 'subscription', 'food'],
 };
 
+/**
+ * Obtiene la pregunta del día usando el motor contextual de selección.
+ *
+ * Combina:
+ *   1. Perfil del usuario (avatar + subavatar)
+ *   2. Día de la semana
+ *   3. Franja horaria actual (Mañana / Tarde / Noche)
+ *
+ * Si el usuario NO ha respondido la pregunta diaria, la pregunta puede
+ * cambiar al cambiar de franja horaria (p.ej. de mañana a tarde).
+ *
+ * Si YA respondió, devuelve la misma pregunta del legacy pool como fallback.
+ */
 export function getTodayQuestion(): DailyQuestion {
+  // ── Leer perfil del usuario ──────────────────────────────────────────────
   let userAvatar: UserAvatar | null = null;
-  let moneyFeeling: string | null = null;
+  let userSubavatar: string | null = null;
+  let streak = 0;
+  let answeredToday = false;
+  let lastQuestionId: string | null = null;
+  const recentQuestionIds: string[] = [];
+
   if (typeof window !== 'undefined') {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw) as StoreState;
         userAvatar = (parsed.userAvatar ?? null) as UserAvatar | null;
-        moneyFeeling = parsed.moneyFeeling ?? null;
+
+        // Leer subavatar del profiling
+        const profilingRaw = localStorage.getItem('profilingResults');
+        if (profilingRaw) {
+          try {
+            const profiling = JSON.parse(profilingRaw) as { subavatar?: string };
+            userSubavatar = profiling.subavatar ?? null;
+          } catch { /* fallthrough */ }
+        }
+
+        // Calcular racha y si ya respondió hoy
+        const today = new Date().toISOString().split('T')[0];
+        const dailyDecisions = (parsed.decisions ?? []).filter(
+          (d: DailyDecision) => d.questionId !== 'extra_saving' && d.questionId !== 'grace_day'
+        );
+        const todayDecision = dailyDecisions.find((d: DailyDecision) => d.date === today);
+        answeredToday = !!todayDecision;
+        lastQuestionId = todayDecision?.questionId ?? null;
+
+        // Racha
+        streak = computeStreak(parsed.decisions ?? []);
+
+        // Ids respondidos en los últimos 7 días (para evitar repeticiones)
+        const cutoff7 = new Date(Date.now() - 7 * 86_400_000).toISOString().split('T')[0];
+        for (const d of dailyDecisions) {
+          if (d.date >= cutoff7 && !recentQuestionIds.includes(d.questionId)) {
+            recentQuestionIds.push(d.questionId);
+          }
+        }
       }
-      if (!moneyFeeling && !userAvatar) {
+
+      // Fallback: leer del onboardingData
+      if (!userAvatar) {
         const onbRaw = localStorage.getItem('onboardingData');
         if (onbRaw) {
-          const onb = JSON.parse(onbRaw) as { moneyFeeling?: string; userAvatar?: string };
-          moneyFeeling = onb.moneyFeeling ?? null;
+          const onb = JSON.parse(onbRaw) as { userAvatar?: string };
           userAvatar = (onb.userAvatar ?? null) as UserAvatar | null;
         }
       }
     } catch { /* fallthrough */ }
   }
+
+  // ── Usar motor contextual del banco de 135 preguntas ─────────────────────
+  const profile: UserProfile = {
+    avatar: userAvatar as AvatarKey | 'constructor' | null,
+    subavatar: (userSubavatar as SubavatarKey) ?? null,
+    streak,
+  };
+
+  try {
+    const bankQuestion = getContextualDailyQuestion(
+      profile,
+      answeredToday,
+      lastQuestionId,
+      recentQuestionIds,
+    );
+    return toDashboardQuestion(bankQuestion);
+  } catch {
+    // Fallback al pool legacy si algo falla con el banco
+  }
+
+  // ── Fallback: pool legacy ───────────────────────────────────────────────
   let pool = DAILY_QUESTIONS;
-  // Avatar tiene prioridad sobre el sistema anterior de moneyFeeling
   if (userAvatar && AVATAR_TAGS[userAvatar]) {
     const preferred = DAILY_QUESTIONS.filter(q => q.tags?.some(t => AVATAR_TAGS[userAvatar!].includes(t)));
-    if (preferred.length >= 5) pool = preferred;
-  } else if (moneyFeeling && FEELING_TAGS[moneyFeeling]) {
-    const preferred = DAILY_QUESTIONS.filter(q => q.tags?.some(t => FEELING_TAGS[moneyFeeling!].includes(t)));
     if (preferred.length >= 5) pool = preferred;
   }
   const dayIndex = Math.floor(Date.now() / 86_400_000) % pool.length;
   return pool[dayIndex];
 }
+
+/**
+ * Devuelve la franja horaria actual (para que el componente
+ * pueda detectar cambios de franja y refrescar la pregunta).
+ */
+export { getCurrentTimeWindow } from './questionSelectionEngine';
 
 // ─── Forma interna del store ────────────────────────────────────────────
 type StoreState = {
@@ -1134,16 +1212,33 @@ export function storeSubmitDecision(
   const rule = DAILY_DECISION_RULES.find(
     (r) => r.questionId === questionId && r.answerKey === answerKey,
   );
-  if (!rule) {
-    console.error(`[dashboardStore] No rule for ${questionId}/${answerKey}`);
-    return buildSummary(currentRange);
-  }
 
   const multiplier = incomeMultiplier(state.incomeRange);
-  const baseDelta = customAmount != null && customAmount > 0 ? customAmount : rule.immediateDelta;
-  const effectiveDelta = Math.round(baseDelta * multiplier * 100) / 100;
-  const effectiveMonthly = Math.round(rule.monthlyProjection * multiplier * 100) / 100;
-  const effectiveYearly = Math.round(rule.yearlyProjection * multiplier * 100) / 100;
+  let effectiveDelta: number;
+  let effectiveMonthly: number;
+  let effectiveYearly: number;
+
+  if (rule) {
+    // Legacy question pool
+    const baseDelta = customAmount != null && customAmount > 0 ? customAmount : rule.immediateDelta;
+    effectiveDelta = Math.round(baseDelta * multiplier * 100) / 100;
+    effectiveMonthly = Math.round(rule.monthlyProjection * multiplier * 100) / 100;
+    effectiveYearly = Math.round(rule.yearlyProjection * multiplier * 100) / 100;
+  } else {
+    // Bank question (Q_CI_*, Q_IM_*, Q_FS_*, etc.)
+    const { getQuestionById } = require('./dailyQuestionsBank');
+    const bankQ = getQuestionById(questionId);
+    if (!bankQ) {
+      console.error(`[dashboardStore] No rule or bank question for ${questionId}/${answerKey}`);
+      return buildSummary(currentRange);
+    }
+    // "yes" = ahorro, "no" = sin ahorro
+    const isSaving = answerKey === bankQ.answerKey1;
+    const baseDelta = isSaving ? bankQ.monthlyDelta : 0;
+    effectiveDelta = Math.round(baseDelta * multiplier * 100) / 100;
+    effectiveMonthly = Math.round((isSaving ? bankQ.monthlyDelta : 0) * multiplier * 100) / 100;
+    effectiveYearly = Math.round((isSaving ? bankQ.yearlyDelta : 0) * multiplier * 100) / 100;
+  }
 
   const now = new Date().toISOString();
   state.decisions.push({

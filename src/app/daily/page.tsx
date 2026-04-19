@@ -9,7 +9,9 @@ import {
   storeGetDailyForDate,
   storeListActiveGoals,
   DAILY_DECISION_RULES,
+  getCurrentTimeWindow,
 } from "@/services/dashboardStore";
+import { getQuestionById } from "@/services/dailyQuestionsBank";
 import { pushLocalDataToSupabase, syncDecisionToSupabase, syncGoalToSupabase } from "@/services/syncService";
 import type { Goal } from "@/types/Dashboard";
 
@@ -28,6 +30,9 @@ export default function DailyPage() {
   const [selectedGoalId, setSelectedGoalId] = useState<string>('');
   const [customAmount, setCustomAmount] = useState<string>('');
   const [completedDecisionId, setCompletedDecisionId] = useState<string | null>(null);
+  const [currentTimeWindow, setCurrentTimeWindow] = useState<string>(() =>
+    typeof window !== 'undefined' ? getCurrentTimeWindow() : 'Mañana'
+  );
   const today = new Date().toISOString().split('T')[0];
 
   useEffect(() => {
@@ -57,6 +62,27 @@ export default function DailyPage() {
       analytics.dailyQuestionViewed(today, q.questionId, 'pending');
     }
   }, [router, today]);
+
+  // ── Auto-refresh: si cambia la franja horaria y no se respondió ──────────
+  useEffect(() => {
+    if (phase !== 'pending') return;
+
+    const interval = setInterval(() => {
+      const newWindow = getCurrentTimeWindow();
+      if (newWindow !== currentTimeWindow) {
+        setCurrentTimeWindow(newWindow);
+        // Re-seleccionar pregunta contextual para la nueva franja
+        const q = getTodayQuestion();
+        setQuestion(q);
+        analytics.dailyQuestionViewed(today, q.questionId, 'pending');
+        // Reset answer selection on question change
+        setSelectedAnswer(null);
+        setCustomAmount('');
+      }
+    }, 60_000); // Check every 60 seconds
+
+    return () => clearInterval(interval);
+  }, [phase, currentTimeWindow, today]);
 
   const handleSelectAnswer = (key: string) => {
     if (phase !== 'pending') return;
@@ -109,9 +135,19 @@ export default function DailyPage() {
     router.push('/dashboard');
   };
 
+  // Buscar regla de impacto: primero legacy, luego banco de 135
   const rule = question && selectedAnswer
     ? DAILY_DECISION_RULES.find(r => r.questionId === question.questionId && r.answerKey === selectedAnswer)
     : null;
+
+  // Fallback al banco si no hay regla legacy
+  const bankQuestion = !rule && question ? getQuestionById(question.questionId) : null;
+  const bankIsSaving = bankQuestion && selectedAnswer ? selectedAnswer === bankQuestion.answerKey1 : false;
+  const effectiveImpact = rule
+    ? { delta: rule.immediateDelta, monthly: rule.monthlyProjection, yearly: rule.yearlyProjection, allowCustom: rule.allowCustomAmount }
+    : bankQuestion && bankIsSaving
+      ? { delta: bankQuestion.monthlyDelta, monthly: bankQuestion.monthlyDelta, yearly: bankQuestion.yearlyDelta, allowCustom: false }
+      : null;
 
   const DARK = {
     page: '#0f172a',
@@ -218,7 +254,7 @@ export default function DailyPage() {
         </div>
 
         {/* Input importe personalizable (suscripciones, etc.) */}
-        {rule?.allowCustomAmount && selectedAnswer && (
+        {effectiveImpact?.allowCustom && selectedAnswer && (
           <div style={{ background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.25)', borderRadius: 14, padding: '16px 20px', marginBottom: 16 }}>
             <p style={{ fontSize: 12, fontWeight: 700, color: 'rgba(196,181,253,0.8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>¿Cuánto te costaba al mes?</p>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -228,7 +264,7 @@ export default function DailyPage() {
                 step="0.5"
                 value={customAmount}
                 onChange={(e) => setCustomAmount(e.target.value)}
-                placeholder={String(rule.immediateDelta)}
+                placeholder={String(effectiveImpact.delta)}
                 style={{
                   flex: 1, padding: '10px 14px', background: 'rgba(15,23,42,0.7)',
                   border: '1px solid rgba(168,85,247,0.4)', borderRadius: 10,
@@ -238,24 +274,24 @@ export default function DailyPage() {
               />
               <span style={{ fontSize: 16, fontWeight: 700, color: 'rgba(196,181,253,0.8)', flexShrink: 0 }}>€/mes</span>
             </div>
-            <p style={{ fontSize: 12, color: 'rgba(148,163,184,0.6)', marginTop: 6, marginBottom: 0 }}>Por defecto: {formatEUR(rule.immediateDelta)}/mes. Ajusta según tu suscripción real.</p>
+            <p style={{ fontSize: 12, color: 'rgba(148,163,184,0.6)', marginTop: 6, marginBottom: 0 }}>Por defecto: {formatEUR(effectiveImpact.delta)}/mes. Ajusta según tu suscripción real.</p>
           </div>
         )}
 
         {/* Impacto estimado */}
-        {rule && (rule.immediateDelta > 0 || (customAmount && parseFloat(customAmount) > 0)) && !rule.allowCustomAmount && (
+        {effectiveImpact && effectiveImpact.delta > 0 && !effectiveImpact.allowCustom && (
           <div style={{ background: DARK.green.bg, border: `1px solid ${DARK.green.border}`, borderRadius: 14, padding: '14px 20px', marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <p style={{ fontSize: 12, fontWeight: 700, color: DARK.green.label, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 }}>Impacto estimado</p>
-              <p style={{ fontSize: 13, color: DARK.textSecondary }}>Mensual: <strong style={{ color: DARK.green.text }}>{formatEUR(rule.monthlyProjection)}</strong> · Anual: <strong style={{ color: DARK.green.text }}>{formatEUR(rule.yearlyProjection)}</strong></p>
+              <p style={{ fontSize: 13, color: DARK.textSecondary }}>Mensual: <strong style={{ color: DARK.green.text }}>{formatEUR(effectiveImpact.monthly)}</strong> · Anual: <strong style={{ color: DARK.green.text }}>{formatEUR(effectiveImpact.yearly)}</strong></p>
             </div>
-            <span style={{ fontSize: 20, fontWeight: 800, color: DARK.green.text }}>+{formatEUR(rule.immediateDelta)}</span>
+            <span style={{ fontSize: 20, fontWeight: 800, color: DARK.green.text }}>+{formatEUR(effectiveImpact.delta)}</span>
           </div>
         )}
 
         {/* Impacto estimado (allowCustomAmount) */}
-        {rule?.allowCustomAmount && selectedAnswer && (() => {
-          const amt = customAmount ? parseFloat(customAmount) : rule.immediateDelta;
+        {effectiveImpact?.allowCustom && selectedAnswer && (() => {
+          const amt = customAmount ? parseFloat(customAmount) : effectiveImpact.delta;
           if (amt <= 0) return null;
           return (
             <div style={{ background: DARK.green.bg, border: `1px solid ${DARK.green.border}`, borderRadius: 14, padding: '14px 20px', marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
