@@ -44,7 +44,6 @@ function formatEUR(amount: number): string {
 
 // ── Opciones de periodo ───────────────────────────────────────────────────────
 const RANGE_OPTIONS = [
-  { label: 'Todo', value: 'all' },
   { label: '7 días', value: '7d' },
   { label: '30 días', value: '30d' },
   { label: '90 días', value: '90d' },
@@ -65,12 +64,24 @@ export default function HistoryPage() {
     editDecision,
   } = useHistorySummary();
 
+  const [rangeOpen, setRangeOpen] = useState(false);
+  const [goalOpen, setGoalOpen] = useState(false);
+
   useEffect(() => {
     analytics.setScreen('history');
     const isAuthenticated = localStorage.getItem('isAuthenticated');
     if (isAuthenticated !== 'true') { router.replace('/login'); return; }
     analytics.historyViewed('sidebar');
   }, [router]);
+
+  // Cerrar dropdowns al hacer click fuera
+  useEffect(() => {
+    if (!rangeOpen && !goalOpen) return;
+    const handleClick = () => { setRangeOpen(false); setGoalOpen(false); };
+    // Defer para que no cierre inmediatamente al abrir
+    const t = setTimeout(() => document.addEventListener('click', handleClick), 0);
+    return () => { clearTimeout(t); document.removeEventListener('click', handleClick); };
+  }, [rangeOpen, goalOpen]);
 
   const handleExport = useCallback(() => {
     exportCSV(filtered);
@@ -128,6 +139,82 @@ export default function HistoryPage() {
               )}
             </div>
 
+            {/* ── Filtros integrados: Periodo + Objetivo ── */}
+            <div className={styles.headerFilters}>
+              {/* Dropdown Periodo */}
+              <div className={styles.dropdownWrap}>
+                <button
+                  className={styles.dropdownTrigger}
+                  onClick={() => { setRangeOpen(!rangeOpen); setGoalOpen(false); }}
+                >
+                  <span className={styles.dropdownLabel}>Periodo</span>
+                  <span className={styles.dropdownValue}>
+                    {RANGE_OPTIONS.find(o => o.value === filters.range)?.label ?? '30 días'}
+                  </span>
+                  <svg className={`${styles.dropdownChevron} ${rangeOpen ? styles.dropdownChevronOpen : ''}`} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                {rangeOpen && (
+                  <div className={styles.dropdownMenu}>
+                    {RANGE_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.value}
+                        className={`${styles.dropdownItem} ${filters.range === opt.value ? styles.dropdownItemActive : ''}`}
+                        onClick={() => { setFilters({ range: opt.value }); setRangeOpen(false); }}
+                      >
+                        {opt.label}
+                        {filters.range === opt.value && (
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Dropdown Objetivo */}
+              {goals.length > 0 && (
+                <div className={styles.dropdownWrap}>
+                  <button
+                    className={styles.dropdownTrigger}
+                    onClick={() => { setGoalOpen(!goalOpen); setRangeOpen(false); }}
+                  >
+                    <span className={styles.dropdownLabel}>Objetivo</span>
+                    <span className={styles.dropdownValue}>
+                      {filters.goalId === 'all'
+                        ? 'Todos'
+                        : (goals.find(g => g.id === filters.goalId)?.title ?? 'Todos')}
+                    </span>
+                    <svg className={`${styles.dropdownChevron} ${goalOpen ? styles.dropdownChevronOpen : ''}`} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                  </button>
+                  {goalOpen && (
+                    <div className={styles.dropdownMenu}>
+                      <button
+                        className={`${styles.dropdownItem} ${filters.goalId === 'all' ? styles.dropdownItemActive : ''}`}
+                        onClick={() => { setFilters({ goalId: 'all' }); setGoalOpen(false); }}
+                      >
+                        Todos los objetivos
+                        {filters.goalId === 'all' && (
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        )}
+                      </button>
+                      {goals.map((g) => (
+                        <button
+                          key={g.id}
+                          className={`${styles.dropdownItem} ${filters.goalId === g.id ? styles.dropdownItemActive : ''}`}
+                          onClick={() => { setFilters({ goalId: g.id }); setGoalOpen(false); }}
+                        >
+                          {g.title}
+                          {filters.goalId === g.id && (
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
             {/* Divisor */}
             <div className={styles.headerDivider} />
 
@@ -164,48 +251,6 @@ export default function HistoryPage() {
       <div className={styles.contentZone}>
         <div className={styles.zoneInner}>
           <div className={styles.contentCol}>
-
-            {/* ─── Bloque: Filtros de periodo ─── */}
-            <div className={styles.sectionGroup}>
-              <p className={styles.sectionLabel}>FILTRAR POR PERIODO</p>
-              <div className={styles.listCard}>
-                <div className={styles.filterChipsRow}>
-                  {RANGE_OPTIONS.map((opt) => (
-                    <button
-                      key={opt.value}
-                      className={`${styles.filterChip} ${filters.range === opt.value ? styles.filterChipActive : ''}`}
-                      onClick={() => setFilters({ range: opt.value })}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Filtro por objetivo (solo si hay varios) */}
-                {goals.length > 1 && (
-                  <>
-                    <div style={{ height: 1, background: 'rgba(255,255,255,0.05)', margin: '0 16px' }} />
-                    <div className={styles.filterChipsRow}>
-                      <button
-                        className={`${styles.filterChip} ${filters.goalId === 'all' ? styles.filterChipActive : ''}`}
-                        onClick={() => setFilters({ goalId: 'all' })}
-                      >
-                        Todos los objetivos
-                      </button>
-                      {goals.map((g) => (
-                        <button
-                          key={g.id}
-                          className={`${styles.filterChip} ${filters.goalId === g.id ? styles.filterChipActive : ''}`}
-                          onClick={() => setFilters({ goalId: g.id })}
-                        >
-                          {g.title}
-                        </button>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
 
             {/* ─── Bloque: Lista de decisiones ─── */}
             <div className={styles.sectionGroup}>

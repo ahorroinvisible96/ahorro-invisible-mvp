@@ -275,37 +275,128 @@
   overflow: hidden;
 }
 
-/* ── Filtros en línea (chips por periodo) ── */
-.filterChipsRow {
+/* ── Filtros integrados en el header ── */
+.headerFilters {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  position: relative;
+  z-index: 10;
+}
+
+/* Wrapper de cada dropdown (position: relative para anclar el menú) */
+.dropdownWrap {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Botón trigger */
+.dropdownTrigger {
+  width: 100%;
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
-  padding: 14px 16px;
-}
-
-.filterChip {
-  padding: 5px 14px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  background: rgba(255, 255, 255, 0.04);
-  color: rgba(255, 255, 255, 0.50);
-  font-size: 12px;
-  font-weight: 500;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   cursor: pointer;
   transition: all 150ms ease;
 }
 
-.filterChipActive {
-  background: rgba(16, 185, 129, 0.15);
-  border-color: rgba(16, 185, 129, 0.40);
-  color: #34d399;
-  font-weight: 600;
+.dropdownTrigger:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.18);
 }
 
-.filterChip:hover:not(.filterChipActive) {
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.75);
+.dropdownLabel {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.35);
+  flex-shrink: 0;
+}
+
+.dropdownValue {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.88);
+  flex: 1;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dropdownChevron {
+  color: rgba(255, 255, 255, 0.35);
+  flex-shrink: 0;
+  transition: transform 200ms ease;
+}
+
+.dropdownChevronOpen {
+  transform: rotate(180deg);
+}
+
+/* ── Menú desplegable ── */
+.dropdownMenu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  min-width: 160px;
+  background: #1a1a26;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 14px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.50), 0 0 0 1px rgba(255,255,255,0.04);
+  overflow: hidden;
+  animation: dropdownFadeIn 150ms ease both;
+  z-index: 50;
+}
+
+@keyframes dropdownFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Cada opción del menú */
+.dropdownItem {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.60);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 120ms ease;
+  text-align: left;
+}
+
+.dropdownItem:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.dropdownItem + .dropdownItem {
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.dropdownItemActive {
+  color: #34d399;
+  font-weight: 600;
+  background: rgba(16, 185, 129, 0.08);
+}
+
+.dropdownItemActive:hover {
+  background: rgba(16, 185, 129, 0.12);
+  color: #34d399;
 }
 
 /* ── Loading ── */

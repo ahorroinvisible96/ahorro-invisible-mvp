@@ -66,7 +66,7 @@ export function useHistorySummary(): UseHistorySummaryReturn {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFiltersState] = useState<HistoryFilters>({
-    range: 'all',
+    range: '30d',
     goalId: 'all',
     category: 'all',
   });
