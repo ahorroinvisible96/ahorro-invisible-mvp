@@ -157,7 +157,7 @@ function RoadmapScreen({
       background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)',
       display: 'flex', flexDirection: 'column', alignItems: 'center',
       justifyContent: 'flex-start', padding: '24px 16px 80px',
-      fontFamily: 'var(--font-geist-sans, Arial, sans-serif)',
+      fontFamily: 'var(--font-app)',
     }}>
       <div style={{ position: 'fixed', top: '15%', left: '50%', transform: 'translateX(-50%)', width: 700, height: 500, background: 'radial-gradient(ellipse, rgba(251,191,36,0.06) 0%, transparent 65%)', pointerEvents: 'none' }} />
       <div style={{ width: '100%', maxWidth: 480, position: 'relative' }}>
@@ -188,7 +188,7 @@ function RoadmapScreen({
           {/* Header */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
             <div style={{ width: 34, height: 34, borderRadius: 10, background: 'linear-gradient(135deg, #fbbf24, #f97316)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0, boxShadow: '0 4px 14px rgba(251,191,36,0.35)' }}>🗺️</div>
-            <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(148,163,184,0.6)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>TU RECORRIDO</span>
+            <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(148,163,184,0.6)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>TU RECORRIDO</span>
           </div>
 
           <h2 style={{ fontSize: 18, fontWeight: 700, color: '#f1f5f9', margin: '0 0 4px', lineHeight: 1.35 }}>Así vas a alcanzar tu objetivo</h2>
@@ -214,8 +214,8 @@ function RoadmapScreen({
                   </div>
                   <div style={{ flex: 1, paddingTop: 6, paddingBottom: isLast ? 4 : 18 }}>
                     <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, marginBottom: 3 }}>
-                      <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: `rgba(${conf.rgba},0.85)`, textTransform: 'uppercase' }}>{phase.label}</span>
-                      <span style={{ fontSize: 16, fontWeight: 800, color: isLast ? '#fbbf24' : conf.color, flexShrink: 0 }}>{fmtEUR(phase.target)}</span>
+                      <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', color: `rgba(${conf.rgba},0.85)`, textTransform: 'uppercase' }}>{phase.label}</span>
+                      <span style={{ fontSize: 16, fontWeight: 700, color: isLast ? '#fbbf24' : conf.color, flexShrink: 0 }}>{fmtEUR(phase.target)}</span>
                     </div>
                     <div style={{ fontSize: 11, color: 'rgba(148,163,184,0.5)', lineHeight: 1.4 }}>
                       {isLast ? '🏆 ¡Objetivo alcanzado!' : phase.type === 'week' ? `Ahorra ${fmtEUR(increment)} esta semana` : `+${fmtEUR(increment)} este mes · acumulas ${fmtEUR(phase.target)}`}
@@ -239,7 +239,7 @@ function RoadmapScreen({
           <button onClick={onContinue} style={{
             ...btnBase, width: '100%', marginTop: 20, padding: '14px 0', borderRadius: 12,
             background: 'linear-gradient(90deg, #fbbf24, #f97316)',
-            color: '#0f172a', fontSize: 15, fontWeight: 800,
+            color: '#0f172a', fontSize: 14, fontWeight: 600,
             boxShadow: '0 4px 20px rgba(251,191,36,0.4)',
             letterSpacing: '-0.2px',
           }}>
@@ -422,7 +422,7 @@ export default function OnboardingPage() {
       display: 'flex', flexDirection: 'column', alignItems: 'center',
       justifyContent: step >= 5 ? 'flex-start' : 'center',
       padding: step >= 5 ? '24px 16px 80px' : '24px 16px',
-      fontFamily: 'var(--font-geist-sans, Arial, sans-serif)',
+      fontFamily: 'var(--font-app)',
     }}>
       <div style={{ position: 'fixed', top: '20%', left: '50%', transform: 'translateX(-50%)', width: 700, height: 500, background: 'radial-gradient(ellipse, rgba(168,85,247,0.1) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
@@ -446,7 +446,7 @@ export default function OnboardingPage() {
                   <div key={s} style={{ width: s === step ? 24 : 7, height: 7, borderRadius: 999, background: s <= step ? 'linear-gradient(90deg, #a855f7, #2563eb)' : 'rgba(51,65,85,0.6)', transition: 'all 300ms ease', boxShadow: s <= step ? '0 0 8px rgba(168,85,247,0.5)' : 'none' }} />
                 ))}
               </div>
-              <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(148,163,184,0.5)', letterSpacing: '0.08em' }}>{pct}% COMPLETADO</span>
+              <span style={{ fontSize: 10, fontWeight: 600, color: 'rgba(148,163,184,0.5)', letterSpacing: '0.10em' }}>{pct}% COMPLETADO</span>
             </div>
             <div style={{ height: 3, borderRadius: 999, background: 'rgba(51,65,85,0.5)', overflow: 'hidden' }}>
               <div style={{ width: `${pct}%`, height: '100%', background: 'linear-gradient(90deg, #a855f7, #2563eb)', borderRadius: 999, transition: 'width 400ms ease', boxShadow: '0 0 8px rgba(168,85,247,0.5)' }} />
@@ -460,11 +460,11 @@ export default function OnboardingPage() {
             <>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
                 <div style={{ width: 34, height: 34, borderRadius: 10, background: 'linear-gradient(135deg, #a855f7, #2563eb)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0, boxShadow: '0 4px 14px rgba(168,85,247,0.3)' }}>{currentStep.icon}</div>
-                <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(148,163,184,0.6)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(148,163,184,0.6)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
                   PASO {step} DE {totalSteps} · {currentStep.label}
                 </span>
               </div>
-              <h2 style={{ fontSize: 17, fontWeight: 700, color: '#f1f5f9', margin: '0 0 22px', lineHeight: 1.35 }}>{currentStep.question}</h2>
+              <h2 style={{ fontSize: 18, fontWeight: 700, color: '#f1f5f9', margin: '0 0 22px', lineHeight: 1.3 }}>{currentStep.question}</h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 28 }}>
                 {currentStep.options.map((opt, i) => {
                   const isActive = selectedAnswer === opt.value;
@@ -491,9 +491,9 @@ export default function OnboardingPage() {
             <>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
                 <div style={{ width: 34, height: 34, borderRadius: 10, background: 'linear-gradient(135deg, #10b981, #059669)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0, boxShadow: '0 4px 14px rgba(16,185,129,0.3)' }}>💰</div>
-                <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(148,163,184,0.6)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>PASO 4 DE {totalSteps} · SITUACIÓN ACTUAL</span>
+                <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(148,163,184,0.6)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>PASO 4 DE {totalSteps} · SITUACIÓN ACTUAL</span>
               </div>
-              <h2 style={{ fontSize: 17, fontWeight: 700, color: '#f1f5f9', margin: '0 0 6px', lineHeight: 1.35 }}>¿Cómo dirías que es tu ahorro actualmente?</h2>
+              <h2 style={{ fontSize: 18, fontWeight: 700, color: '#f1f5f9', margin: '0 0 6px', lineHeight: 1.3 }}>¿Cómo dirías que es tu ahorro actualmente?</h2>
               <p style={{ fontSize: 12, color: 'rgba(148,163,184,0.5)', margin: '0 0 22px', lineHeight: 1.5 }}>
                 No hay respuesta correcta ni incorrecta. Esto nos ayuda a proponerte un buen punto de partida.
               </p>
@@ -524,15 +524,15 @@ export default function OnboardingPage() {
               {/* Header */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
                 <div style={{ width: 34, height: 34, borderRadius: 10, background: 'linear-gradient(135deg, #ec4899, #a855f7, #2563eb)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0, boxShadow: '0 4px 14px rgba(168,85,247,0.3)' }}>🎯</div>
-                <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(148,163,184,0.6)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>PASO 5 DE {totalSteps} · TU OBJETIVO</span>
+                <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(148,163,184,0.6)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>PASO 5 DE {totalSteps} · TU OBJETIVO</span>
               </div>
-              <h2 style={{ fontSize: 17, fontWeight: 700, color: '#f1f5f9', margin: '0 0 4px', lineHeight: 1.35 }}>Cuéntanos sobre tu objetivo</h2>
+              <h2 style={{ fontSize: 18, fontWeight: 700, color: '#f1f5f9', margin: '0 0 4px', lineHeight: 1.3 }}>Cuéntanos sobre tu objetivo</h2>
               <p style={{ fontSize: 12, color: 'rgba(148,163,184,0.55)', margin: '0 0 22px', lineHeight: 1.5 }}>
                 Vamos a proponerte un punto de partida adaptado a tu situación. Siempre puedes cambiarlo.
               </p>
 
               {/* Ingresos — 6 opciones en grid 2 columnas */}
-              <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(148,163,184,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 10 }}>¿Cuáles son tus ingresos netos aproximados?</div>
+              <div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(148,163,184,0.4)', textTransform: 'uppercase', letterSpacing: '0.10em', marginBottom: 10 }}>¿Cuáles son tus ingresos netos aproximados?</div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 20 }}>
                 {INCOME_OPTIONS.map((opt, i) => {
                   const isSel = selectedIncomeIdx === i;
@@ -553,7 +553,7 @@ export default function OnboardingPage() {
                           : '1px solid rgba(51,65,85,0.5)',
                         color: isSel ? '#f1f5f9' : '#94a3b8',
                         fontSize: 12,
-                        fontWeight: isSel ? 700 : 500,
+                        fontWeight: isSel ? 600 : 400,
                         boxShadow: isSel ? '0 0 14px rgba(168,85,247,0.15)' : 'none',
                         lineHeight: 1.35,
                       }}
@@ -569,7 +569,7 @@ export default function OnboardingPage() {
 
               {/* Nombre del objetivo */}
               <div style={{ marginBottom: 16 }}>
-                <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(148,163,184,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>¿Cómo se llama tu objetivo?</div>
+                <div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(148,163,184,0.4)', textTransform: 'uppercase', letterSpacing: '0.10em', marginBottom: 8 }}>¿Cómo se llama tu objetivo?</div>
                 <input
                   type="text"
                   value={goalName}
@@ -583,15 +583,15 @@ export default function OnboardingPage() {
 
               {/* Duración */}
               <div style={{ marginBottom: 16 }}>
-                <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(148,163,184,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>¿En cuántos meses?</div>
+                <div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(148,163,184,0.4)', textTransform: 'uppercase', letterSpacing: '0.10em', marginBottom: 8 }}>¿En cuántos meses?</div>
                 <div style={{ display: 'flex', gap: 8 }}>
                   {[1, 2, 3, 6, 12].map(m => {
                     const isSel = goalMonths === m;
                     const isRec = m === 3;
                     return (
-                      <button key={m} onClick={() => setGoalMonths(m)} style={{ ...btnBase, flex: 1, padding: '10px 0', borderRadius: 10, position: 'relative', background: isSel ? 'linear-gradient(135deg, #a855f7, #2563eb)' : 'rgba(15,23,42,0.5)', border: isSel ? 'none' : isRec ? '1px solid rgba(168,85,247,0.35)' : '1px solid rgba(51,65,85,0.5)', color: isSel ? '#fff' : isRec ? '#c4b5fd' : 'rgba(148,163,184,0.55)', fontSize: 13, fontWeight: isSel ? 800 : 600, boxShadow: isSel ? '0 4px 14px rgba(168,85,247,0.3)' : 'none' }}>
+                      <button key={m} onClick={() => setGoalMonths(m)} style={{ ...btnBase, flex: 1, padding: '10px 0', borderRadius: 10, position: 'relative', background: isSel ? 'linear-gradient(135deg, #a855f7, #2563eb)' : 'rgba(15,23,42,0.5)', border: isSel ? 'none' : isRec ? '1px solid rgba(168,85,247,0.35)' : '1px solid rgba(51,65,85,0.5)', color: isSel ? '#fff' : isRec ? '#c4b5fd' : 'rgba(148,163,184,0.55)', fontSize: 13, fontWeight: isSel ? 700 : 600, boxShadow: isSel ? '0 4px 14px rgba(168,85,247,0.3)' : 'none' }}>
                         {m}m
-                        {isRec && !isSel && <div style={{ position: 'absolute', top: -8, left: '50%', transform: 'translateX(-50%)', background: 'linear-gradient(90deg, #a855f7, #2563eb)', borderRadius: 999, padding: '1px 6px', fontSize: 7, fontWeight: 800, color: '#fff', whiteSpace: 'nowrap', pointerEvents: 'none' }}>★ REC</div>}
+                        {isRec && !isSel && <div style={{ position: 'absolute', top: -8, left: '50%', transform: 'translateX(-50%)', background: 'linear-gradient(90deg, #a855f7, #2563eb)', borderRadius: 999, padding: '1px 6px', fontSize: 8, fontWeight: 700, color: '#fff', whiteSpace: 'nowrap', pointerEvents: 'none' }}>★ REC</div>}
                       </button>
                     );
                   })}
@@ -601,7 +601,7 @@ export default function OnboardingPage() {
               {/* Cantidad: stepper + input manual */}
               <div style={{ marginBottom: 14 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(148,163,184,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>¿Cuánto quieres ahorrar?</div>
+                  <div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(148,163,184,0.4)', textTransform: 'uppercase', letterSpacing: '0.10em' }}>¿Cuánto quieres ahorrar?</div>
                   <div style={{ fontSize: 11, color: 'rgba(168,85,247,0.7)', fontWeight: 600 }}>Recomendamos: {fmtEUR(recTotal)}</div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'stretch', background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(51,65,85,0.5)', borderRadius: 14, overflow: 'hidden' }}>
@@ -636,9 +636,9 @@ export default function OnboardingPage() {
                     </p>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(251,191,36,0.08)', borderRadius: 10, padding: '8px 12px', marginBottom: 10 }}>
                       <span style={{ fontSize: 11, color: 'rgba(251,191,36,0.6)' }}>Referencia para tu perfil</span>
-                      <span style={{ fontSize: 14, fontWeight: 800, color: '#fbbf24' }}>{fmtEUR(recTotal)}</span>
+                      <span style={{ fontSize: 14, fontWeight: 700, color: '#fbbf24' }}>{fmtEUR(recTotal)}</span>
                     </div>
-                    <button onClick={() => { setGoalAmount(recTotal); setGoalInputValue(String(recTotal)); }} style={{ ...btnBase, width: '100%', padding: '9px', borderRadius: 10, background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.28)', color: '#fbbf24', fontSize: 12, fontWeight: 700 }}>
+                    <button onClick={() => { setGoalAmount(recTotal); setGoalInputValue(String(recTotal)); }} style={{ ...btnBase, width: '100%', padding: '9px', borderRadius: 10, background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.28)', color: '#fbbf24', fontSize: 12, fontWeight: 600 }}>
                       Empezar con {fmtEUR(recTotal)} →
                     </button>
                   </div>
@@ -652,7 +652,7 @@ export default function OnboardingPage() {
                     <p style={{ fontSize: 12, color: 'rgba(196,181,253,0.8)', margin: '0 0 10px', lineHeight: 1.6 }}>
                       Esta meta es un poco más ambiciosa que la que te recomendamos para empezar. Puedes seguir con ella, aunque empezar con una cantidad más realista puede ayudarte a mantener el ritmo mejor.
                     </p>
-                    <button onClick={() => { setGoalAmount(recTotal); setGoalInputValue(String(recTotal)); }} style={{ ...btnBase, width: '100%', padding: '9px', borderRadius: 10, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.28)', color: '#c4b5fd', fontSize: 12, fontWeight: 700 }}>
+                    <button onClick={() => { setGoalAmount(recTotal); setGoalInputValue(String(recTotal)); }} style={{ ...btnBase, width: '100%', padding: '9px', borderRadius: 10, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.28)', color: '#c4b5fd', fontSize: 12, fontWeight: 600 }}>
                       Usar {fmtEUR(recTotal)} como objetivo →
                     </button>
                   </div>
@@ -676,7 +676,7 @@ export default function OnboardingPage() {
                 Atrás
               </button>
             )}
-            <button onClick={handleNext} disabled={isDisabled} style={{ ...btnBase, flex: step > 1 ? 2 : 1, padding: '12px 0', borderRadius: 10, background: isDisabled ? 'rgba(51,65,85,0.4)' : 'linear-gradient(90deg, #a855f7, #2563eb)', border: 'none', color: isDisabled ? 'rgba(100,116,139,0.6)' : '#fff', fontSize: 14, fontWeight: 700, cursor: isDisabled ? 'not-allowed' : 'pointer', boxShadow: isDisabled ? 'none' : '0 4px 14px rgba(168,85,247,0.35)' }}>
+            <button onClick={handleNext} disabled={isDisabled} style={{ ...btnBase, flex: step > 1 ? 2 : 1, padding: '12px 0', borderRadius: 10, background: isDisabled ? 'rgba(51,65,85,0.4)' : 'linear-gradient(90deg, #a855f7, #2563eb)', border: 'none', color: isDisabled ? 'rgba(100,116,139,0.6)' : '#fff', fontSize: 14, fontWeight: 600, cursor: isDisabled ? 'not-allowed' : 'pointer', boxShadow: isDisabled ? 'none' : '0 4px 14px rgba(168,85,247,0.35)' }}>
               {step < totalSteps ? 'Siguiente →' : 'Ver mi plan →'}
             </button>
           </div>

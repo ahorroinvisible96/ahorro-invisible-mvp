@@ -1,62 +1,112 @@
 /* 
- * Sistema de tokens de tipografía para Ahorro Invisible
- * Basado en la imagen de referencia del dashboard
+ * ═══════════════════════════════════════════════════════════
+ * SISTEMA TIPOGRÁFICO — Ahorro Invisible
+ * Fuente: Geist Sans (cargada via next/font/google)
+ * ═══════════════════════════════════════════════════════════
+ *
+ * REGLAS:
+ *   800 → Solo Display y Hero auth
+ *   700 → Títulos (H1, H2), métricas numéricas
+ *   600 → Subtítulos (H3), botones, labels, body-strong
+ *   500 → Nav activa
+ *   400 → Body, small, caption (lectura)
  */
 
 :root {
-  /* Familias tipográficas */
-  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  
-  /* Tamaños de fuente */
-  --font-size-xs: 0.75rem;      /* 12px - Texto muy pequeño, etiquetas */
-  --font-size-sm: 0.875rem;     /* 14px - Texto secundario */
-  --font-size-base: 1rem;       /* 16px - Texto base */
-  --font-size-lg: 1.125rem;     /* 18px - Títulos de sección */
-  --font-size-xl: 1.25rem;      /* 20px */
-  --font-size-2xl: 1.5rem;      /* 24px - Títulos de tarjetas */
-  --font-size-3xl: 1.875rem;    /* 30px */
-  --font-size-4xl: 2.25rem;     /* 36px - Título principal */
-  --font-size-5xl: 3rem;        /* 48px */
-  --font-size-6xl: 3.75rem;     /* 60px */
-  --font-size-7xl: 4.5rem;      /* 72px */
-  --font-size-8xl: 6rem;        /* 96px */
-  --font-size-9xl: 8rem;        /* 128px */
-  
-  /* Pesos de fuente */
-  --font-weight-thin: 100;
-  --font-weight-extralight: 200;
-  --font-weight-light: 300;
-  --font-weight-normal: 400;
-  --font-weight-medium: 500;    /* Texto medio */
-  --font-weight-semibold: 600;  /* Títulos, etiquetas */
-  --font-weight-bold: 700;      /* Texto destacado */
-  --font-weight-extrabold: 800;
-  --font-weight-black: 900;
-  
-  /* Altura de línea */
-  --line-height-none: 1;
-  --line-height-tight: 1.25;
-  --line-height-snug: 1.375;
-  --line-height-normal: 1.5;
-  --line-height-relaxed: 1.625;
-  --line-height-loose: 2;
-  
-  /* Espaciado entre letras */
-  --letter-spacing-tighter: -0.05em;
-  --letter-spacing-tight: -0.025em;
-  --letter-spacing-normal: 0em;
-  --letter-spacing-wide: 0.025em;
-  --letter-spacing-wider: 0.05em;  /* Etiquetas, badges */
-  --letter-spacing-widest: 0.1em;  /* Texto en mayúsculas */
-  
-  /* Estilos específicos de la aplicación */
-  --header-title: var(--font-size-4xl);
-  --header-weight: var(--font-weight-semibold);
-  --section-title: var(--font-size-lg);
-  --section-weight: var(--font-weight-semibold);
-  --badge-text: var(--font-size-xs);
-  --badge-weight: var(--font-weight-semibold);
-  --badge-spacing: var(--letter-spacing-wider);
+  /* ── Familia ─────────────────────────────────────────────── */
+  --font-app: var(--font-geist-sans, system-ui, -apple-system, sans-serif);
+
+  /* ── Escala semántica ────────────────────────────────────── */
+
+  /* Display — métricas hero, milestone amounts */
+  --type-display-size:    28px;
+  --type-display-weight:  800;
+  --type-display-lh:      1.1;
+  --type-display-ls:      -0.5px;
+
+  /* Hero auth — solo login/signup full-page */
+  --type-hero-size:       32px;
+  --type-hero-weight:     800;
+  --type-hero-lh:         1.15;
+  --type-hero-ls:         -0.5px;
+
+  /* H1 — título principal de pantalla */
+  --type-h1-size:         22px;
+  --type-h1-weight:       700;
+  --type-h1-lh:           1.2;
+  --type-h1-ls:           -0.3px;
+
+  /* H2 — título de card, modal, widget */
+  --type-h2-size:         18px;
+  --type-h2-weight:       700;
+  --type-h2-lh:           1.3;
+  --type-h2-ls:           -0.2px;
+
+  /* H3 — subtítulos, row labels */
+  --type-h3-size:         15px;
+  --type-h3-weight:       600;
+  --type-h3-lh:           1.35;
+  --type-h3-ls:           0;
+
+  /* Body — texto principal */
+  --type-body-size:       14px;
+  --type-body-weight:     400;
+  --type-body-lh:         1.5;
+  --type-body-ls:         0;
+
+  /* Body strong — texto con énfasis */
+  --type-body-strong-size:   14px;
+  --type-body-strong-weight: 600;
+  --type-body-strong-lh:     1.5;
+  --type-body-strong-ls:     0;
+
+  /* Small — texto secundario, mensajes error/éxito */
+  --type-small-size:      13px;
+  --type-small-weight:    400;
+  --type-small-lh:        1.45;
+  --type-small-ls:        0;
+
+  /* Caption — microcopy, timestamps, copyright */
+  --type-caption-size:    12px;
+  --type-caption-weight:  400;
+  --type-caption-lh:      1.4;
+  --type-caption-ls:      0;
+
+  /* Button — todos los botones */
+  --type-btn-size:        14px;
+  --type-btn-weight:      600;
+  --type-btn-lh:          1;
+  --type-btn-ls:          0;
+
+  /* Label — labels de formulario, etiquetas de sección (uppercase) */
+  --type-label-size:      11px;
+  --type-label-weight:    600;
+  --type-label-lh:        1;
+  --type-label-ls:        0.08em;
+
+  /* Metric label — etiquetas encima de métricas (uppercase) */
+  --type-metric-label-size:   10px;
+  --type-metric-label-weight: 600;
+  --type-metric-label-lh:     1;
+  --type-metric-label-ls:     0.10em;
+
+  /* Nav — labels de navegación bottom */
+  --type-nav-size:        10px;
+  --type-nav-weight:      500;
+  --type-nav-lh:          1;
+  --type-nav-ls:          0.01em;
+
+  /* ── Sub-escala de métricas numéricas ───────────────────── */
+
+  /* Metric hero — dato principal, milestone amount */
+  --type-metric-hero-size:   28px;
+  --type-metric-hero-weight: 800;
+
+  /* Metric large — metric cards en headers */
+  --type-metric-lg-size:     22px;
+  --type-metric-lg-weight:   700;
+
+  /* Metric small — valores en cards secundarias */
+  --type-metric-sm-size:     16px;
+  --type-metric-sm-weight:   700;
 }

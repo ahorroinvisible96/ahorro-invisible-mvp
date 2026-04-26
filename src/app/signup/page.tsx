@@ -89,20 +89,20 @@ export default function SignupPage() {
     borderRadius: 10,
     color: '#f1f5f9',
     fontSize: 14,
-    fontWeight: 500,
+    fontWeight: 400,
     outline: 'none',
     boxSizing: 'border-box',
-    fontFamily: 'var(--font-geist-sans, Arial, sans-serif)',
+    fontFamily: 'var(--font-app)',
     transition: 'border-color 180ms ease',
   };
 
   const labelStyle: React.CSSProperties = {
     display: 'block',
     fontSize: 11,
-    fontWeight: 700,
+    fontWeight: 600,
     color: 'rgba(148,163,184,0.6)',
     textTransform: 'uppercase',
-    letterSpacing: '0.06em',
+    letterSpacing: '0.08em',
     marginBottom: 6,
   };
 
@@ -117,7 +117,7 @@ export default function SignupPage() {
       <div style={{
         minHeight: '100vh', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
         background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)',
-        fontFamily: 'var(--font-geist-sans, Arial, sans-serif)', padding: '24px 16px',
+        fontFamily: 'var(--font-app)', padding: '24px 16px',
       }}>
         <div style={{ width: '100%', maxWidth: 440, textAlign: 'center' }}>
           <div style={{
@@ -126,7 +126,7 @@ export default function SignupPage() {
             padding: '40px 32px',
           }}>
             <div style={{ fontSize: 56, marginBottom: 16 }}>✉️</div>
-            <h2 style={{ fontSize: 22, fontWeight: 800, color: '#f1f5f9', margin: '0 0 12px' }}>Verifica tu email</h2>
+            <h2 style={{ fontSize: 18, fontWeight: 700, color: '#f1f5f9', margin: '0 0 12px' }}>Verifica tu email</h2>
             <p style={{ fontSize: 14, color: 'rgba(148,163,184,0.8)', lineHeight: 1.6, margin: '0 0 8px' }}>
               Enviamos un enlace de confirmación a:
             </p>
@@ -157,7 +157,7 @@ export default function SignupPage() {
               style={{
                 width: '100%', padding: '13px 0', marginBottom: 12,
                 background: 'linear-gradient(90deg, #a855f7, #2563eb)', border: 'none',
-                borderRadius: 10, color: '#fff', fontSize: 15, fontWeight: 700,
+                borderRadius: 10, color: '#fff', fontSize: 14, fontWeight: 600,
                 cursor: 'pointer', fontFamily: 'inherit',
               }}
             >
@@ -168,7 +168,7 @@ export default function SignupPage() {
               style={{
                 width: '100%', padding: '11px 0',
                 background: 'rgba(30,41,59,0.5)', border: '1px solid rgba(51,65,85,0.5)',
-                borderRadius: 10, color: 'rgba(203,213,225,0.7)', fontSize: 13, fontWeight: 600,
+                borderRadius: 10, color: 'rgba(203,213,225,0.7)', fontSize: 13, fontWeight: 400,
                 cursor: 'pointer', fontFamily: 'inherit',
               }}
             >
@@ -186,7 +186,7 @@ export default function SignupPage() {
       width: '100%',
       display: 'flex',
       background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)',
-      fontFamily: 'var(--font-geist-sans, Arial, sans-serif)',
+      fontFamily: 'var(--font-app)',
     }}>
       {/* Glow decorativo fijo */}
       <div style={{
@@ -254,8 +254,8 @@ export default function SignupPage() {
               </span>
             </div>
             <h1 style={{
-              fontSize: 36, fontWeight: 800,
-              color: '#f1f5f9', lineHeight: 1.2,
+              fontSize: 32, fontWeight: 800,
+              color: '#f1f5f9', lineHeight: 1.15,
               margin: '0 0 16px',
             }}>
               Tu dinero crece<br />
@@ -263,7 +263,7 @@ export default function SignupPage() {
                 sin que te des cuenta.
               </span>
             </h1>
-            <p style={{ fontSize: 16, color: 'rgba(148,163,184,0.75)', lineHeight: 1.6, margin: 0 }}>
+            <p style={{ fontSize: 14, color: 'rgba(148,163,184,0.75)', lineHeight: 1.6, margin: 0 }}>
               Pequeñas decisiones diarias.<br />Grandes resultados a largo plazo.
             </p>
 
@@ -282,7 +282,7 @@ export default function SignupPage() {
                   borderRadius: 12,
                 }}>
                   <span style={{ fontSize: 18 }}>{f.icon}</span>
-                  <span style={{ fontSize: 14, color: 'rgba(203,213,225,0.85)', fontWeight: 500 }}>{f.text}</span>
+                  <span style={{ fontSize: 14, color: 'rgba(203,213,225,0.85)', fontWeight: 400 }}>{f.text}</span>
                 </div>
               ))}
             </div>
@@ -349,7 +349,7 @@ export default function SignupPage() {
                   boxShadow: '0 4px 14px rgba(168,85,247,0.3)',
                 }}>✨</div>
                 <span style={{
-                  fontSize: 11, fontWeight: 700,
+                  fontSize: 11, fontWeight: 600,
                   color: 'rgba(148,163,184,0.7)',
                   letterSpacing: '0.1em',
                   textTransform: 'uppercase',
@@ -357,7 +357,7 @@ export default function SignupPage() {
               </div>
 
               <h2 style={{
-                fontSize: 22, fontWeight: 800,
+                fontSize: 18, fontWeight: 700,
                 color: '#f1f5f9', margin: '0 0 6px',
               }}>Crea tu cuenta</h2>
               <p style={{
@@ -429,7 +429,7 @@ export default function SignupPage() {
                     width: '100%', padding: '13px 0', marginTop: 4,
                     background: loading ? 'rgba(168,85,247,0.4)' : 'linear-gradient(90deg, #a855f7, #2563eb)',
                     border: 'none', borderRadius: 10,
-                    color: '#fff', fontSize: 15, fontWeight: 700,
+                    color: '#fff', fontSize: 14, fontWeight: 600,
                     cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
                     boxShadow: '0 4px 14px rgba(168,85,247,0.35)',
                     transition: 'all 200ms ease',

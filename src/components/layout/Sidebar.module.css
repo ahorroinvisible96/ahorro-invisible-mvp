@@ -47,7 +47,7 @@
 }
 
 .logoName {
-  font-size: 14px;
+  font-size: var(--type-body-size);
   font-weight: 800;
   color: var(--color-text-nav-active);
   letter-spacing: -0.2px;
@@ -55,7 +55,7 @@
 
 .logoSub {
   font-size: 9px;
-  font-weight: 700;
+  font-weight: var(--type-h2-weight);
   color: rgba(168, 85, 247, 0.7);
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -80,7 +80,7 @@
 
 .navLabel {
   font-size: 9px;
-  font-weight: 700;
+  font-weight: var(--type-h2-weight);
   color: var(--color-text-nav-label);
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -96,8 +96,8 @@
   padding: 8px 10px;
   border-radius: 10px;
   color: var(--color-text-nav);
-  font-size: 13px;
-  font-weight: 500;
+  font-size: var(--type-small-size);
+  font-weight: var(--type-nav-weight);
   text-decoration: none;
   transition: all 160ms ease;
   position: relative;
@@ -204,8 +204,8 @@
 }
 
 .themeLabel {
-  font-size: 10px;
-  font-weight: 600;
+  font-size: var(--type-metric-label-size);
+  font-weight: var(--type-metric-label-weight);
   color: var(--color-text-nav-label);
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -230,7 +230,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: var(--type-caption-size);
   font-weight: 800;
   color: #fff;
   flex-shrink: 0;
@@ -244,8 +244,8 @@
 }
 
 .userName {
-  font-size: 12px;
-  font-weight: 700;
+  font-size: var(--type-caption-size);
+  font-weight: var(--type-h2-weight);
   color: var(--color-text-user-name);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -254,7 +254,7 @@
 }
 
 .userRole {
-  font-size: 10px;
+  font-size: var(--type-metric-label-size);
   color: var(--color-text-user-role);
   line-height: 1.2;
 }

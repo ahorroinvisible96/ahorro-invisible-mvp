@@ -117,16 +117,16 @@
   --icon-wrap-radius: 50%;
   --icon-svg-size:    18px;
 
-  /* ── Widget header ── */
-  --widget-title-size:   16px;
-  --widget-title-weight: 700;
-  --widget-label-size:   11px;
-  --widget-label-weight: 600;
+  /* ── Widget header (referencia tokens tipográficos) ── */
+  --widget-title-size:   var(--type-metric-sm-size);
+  --widget-title-weight: var(--type-metric-sm-weight);
+  --widget-label-size:   var(--type-label-size);
+  --widget-label-weight: var(--type-label-weight);
 
-  /* ── Widget body text ── */
-  --widget-body-size:    14px;
-  --widget-row-label:    15px;
-  --widget-row-sub:      13px;
+  /* ── Widget body text (referencia tokens tipográficos) ── */
+  --widget-body-size:    var(--type-body-size);
+  --widget-row-label:    var(--type-h3-size);
+  --widget-row-sub:      var(--type-small-size);
 
   /* ── Widget padding ── */
   --widget-padding:      20px;
@@ -135,8 +135,8 @@
 
   /* ── Botones ── */
   --btn-radius:          12px;
-  --btn-font-size:       15px;
-  --btn-font-weight:     600;
+  --btn-font-size:       var(--type-btn-size);
+  --btn-font-weight:     var(--type-btn-weight);
   --btn-padding-y:       12px;
 
   /* ── Gradiente primario ── */
@@ -190,7 +190,7 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans, Arial, sans-serif);
+  font-family: var(--font-app);
 }
 
 /* ── Modo claro: fondos sólidos en toda la jerarquía ── */

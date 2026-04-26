@@ -32,15 +32,15 @@ export default function LoginPage() {
   const inputStyle: React.CSSProperties = {
     width: "100%", padding: "11px 14px",
     background: "rgba(15,23,42,0.6)", border: "1px solid rgba(51,65,85,0.55)",
-    borderRadius: 10, color: "#f1f5f9", fontSize: 14, fontWeight: 500,
+    borderRadius: 10, color: "#f1f5f9", fontSize: 14, fontWeight: 400,
     outline: "none", boxSizing: "border-box",
-    fontFamily: "var(--font-geist-sans, Arial, sans-serif)",
+    fontFamily: "var(--font-app)",
     transition: "border-color 180ms ease",
   };
   const labelStyle: React.CSSProperties = {
-    display: "block", fontSize: 11, fontWeight: 700,
+    display: "block", fontSize: 11, fontWeight: 600,
     color: "rgba(148,163,184,0.6)", textTransform: "uppercase",
-    letterSpacing: "0.06em", marginBottom: 6,
+    letterSpacing: "0.08em", marginBottom: 6,
   };
 
   async function handlePasswordLogin(e: React.FormEvent) {
@@ -104,7 +104,7 @@ export default function LoginPage() {
     <div style={{
       minHeight: "100vh", width: "100%", display: "flex",
       background: "linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)",
-      fontFamily: "var(--font-geist-sans, Arial, sans-serif)",
+      fontFamily: "var(--font-app)",
     }}>
       {/* Glow decorativo */}
       <div style={{ position: "fixed", top: "15%", left: "25%", width: 500, height: 500, background: "radial-gradient(ellipse, rgba(168,85,247,0.1) 0%, transparent 70%)", pointerEvents: "none" }} />
@@ -125,11 +125,11 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <h1 style={{ fontSize: 36, fontWeight: 800, color: "#f1f5f9", lineHeight: 1.2, margin: "0 0 16px" }}>
+            <h1 style={{ fontSize: 32, fontWeight: 800, color: "#f1f5f9", lineHeight: 1.15, margin: "0 0 16px" }}>
               Bienvenido de<br />
               <span style={{ background: "linear-gradient(90deg, #a855f7, #60a5fa)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>vuelta.</span>
             </h1>
-            <p style={{ fontSize: 16, color: "rgba(148,163,184,0.75)", lineHeight: 1.6, margin: 0 }}>
+            <p style={{ fontSize: 14, color: "rgba(148,163,184,0.75)", lineHeight: 1.6, margin: 0 }}>
               Tu racha te espera.<br />Un hábito no se rompe en un día.
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 32 }}>
@@ -140,7 +140,7 @@ export default function LoginPage() {
               ].map((f) => (
                 <div key={f.text} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 16px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(51,65,85,0.4)", borderRadius: 12 }}>
                   <span style={{ fontSize: 16 }}>{f.icon}</span>
-                  <span style={{ fontSize: 13, color: "rgba(203,213,225,0.85)", fontWeight: 500 }}>{f.text}</span>
+                  <span style={{ fontSize: 13, color: "rgba(203,213,225,0.85)", fontWeight: 400 }}>{f.text}</span>
                 </div>
               ))}
             </div>
@@ -165,8 +165,8 @@ export default function LoginPage() {
             <div style={{ position: "relative", borderRadius: 20, background: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)", border: "1px solid rgba(51,65,85,0.6)", boxShadow: "0 25px 50px rgba(2,6,23,0.7)", overflow: "hidden", padding: "32px 28px" }}>
               <div style={{ position: "absolute", top: -40, right: -40, width: 200, height: 200, background: "radial-gradient(ellipse, rgba(168,85,247,0.1) 0%, transparent 70%)", pointerEvents: "none" }} />
 
-              <h2 style={{ fontSize: 22, fontWeight: 800, color: "#f1f5f9", margin: "0 0 6px" }}>Iniciar sesión</h2>
-              <p style={{ fontSize: 13, color: "rgba(148,163,184,0.75)", margin: "0 0 24px", lineHeight: 1.5 }}>
+              <h2 style={{ fontSize: 18, fontWeight: 700, color: "#f1f5f9", margin: "0 0 6px" }}>Iniciar sesión</h2>
+              <p style={{ fontSize: 13, color: "rgba(148,163,184,0.75)", margin: "0 0 24px", lineHeight: 1.45 }}>
                 {isSupabaseConfigured ? "Accede a tu cuenta de Ahorro Invisible." : "Modo demo — accede con el email de tu registro."}
               </p>
 
@@ -175,7 +175,7 @@ export default function LoginPage() {
                 <div style={{ display: "flex", background: "rgba(15,23,42,0.6)", borderRadius: 10, padding: 3, marginBottom: 20, gap: 3 }}>
                   {(["password", "magic"] as Mode[]).map((m) => (
                     <button key={m} onClick={() => { setMode(m); setError(""); setInfo(""); }}
-                      style={{ flex: 1, padding: "8px 0", borderRadius: 8, border: "none", background: mode === m ? "rgba(168,85,247,0.25)" : "transparent", color: mode === m ? "#c4b5fd" : "rgba(148,163,184,0.6)", fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 200ms" }}>
+                      style={{ flex: 1, padding: "8px 0", borderRadius: 8, border: "none", background: mode === m ? "rgba(168,85,247,0.25)" : "transparent", color: mode === m ? "#c4b5fd" : "rgba(148,163,184,0.6)", fontSize: 13, fontWeight: mode === m ? 600 : 400, cursor: "pointer", transition: "all 200ms" }}>
                       {m === "password" ? "🔑 Contraseña" : "✉️ Magic link"}
                     </button>
                   ))}
@@ -189,7 +189,7 @@ export default function LoginPage() {
                     style={{ background: "none", border: "none", color: "rgba(148,163,184,0.6)", fontSize: 13, cursor: "pointer", padding: 0, marginBottom: 12 }}>
                     ← Volver al login
                   </button>
-                  <h3 style={{ fontSize: 16, fontWeight: 700, color: "#f1f5f9", margin: "0 0 4px" }}>Recuperar contraseña</h3>
+                  <h3 style={{ fontSize: 18, fontWeight: 700, color: "#f1f5f9", margin: "0 0 4px" }}>Recuperar contraseña</h3>
                   <p style={{ fontSize: 13, color: "rgba(148,163,184,0.6)", margin: 0 }}>Te enviaremos un enlace para restablecerla.</p>
                 </div>
               )}
@@ -247,7 +247,7 @@ export default function LoginPage() {
                 )}
 
                 <button type="submit" disabled={loading}
-                  style={{ width: "100%", padding: "13px 0", marginTop: 4, background: loading ? "rgba(168,85,247,0.4)" : "linear-gradient(90deg, #a855f7, #2563eb)", border: "none", borderRadius: 10, color: "#fff", fontSize: 15, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer", fontFamily: "inherit", boxShadow: "0 4px 14px rgba(168,85,247,0.35)", transition: "all 200ms" }}>
+                  style={{ width: "100%", padding: "13px 0", marginTop: 4, background: loading ? "rgba(168,85,247,0.4)" : "linear-gradient(90deg, #a855f7, #2563eb)", border: "none", borderRadius: 10, color: "#fff", fontSize: 14, fontWeight: 600, cursor: loading ? "not-allowed" : "pointer", fontFamily: "inherit", boxShadow: "0 4px 14px rgba(168,85,247,0.35)", transition: "all 200ms" }}>
                   {loading ? "Procesando..." : mode === "password" ? "Entrar →" : mode === "magic" ? "Enviar magic link →" : "Enviar instrucciones →"}
                 </button>
               </form>

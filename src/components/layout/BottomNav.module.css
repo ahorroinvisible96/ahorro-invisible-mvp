@@ -78,9 +78,9 @@
 
 /* ── Label ── */
 .label {
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.01em;
+  font-size: var(--type-nav-size);
+  font-weight: var(--type-nav-weight);
+  letter-spacing: var(--type-nav-ls);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
