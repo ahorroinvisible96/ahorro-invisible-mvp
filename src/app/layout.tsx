@@ -1,6 +1,6 @@
 // Archivo layout.tsx limpiado para despliegue
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import "@/styles/tokens/index.css"; // Importar tokens CSS
 import ThemeInit from '@/components/providers/ThemeInit';
@@ -8,9 +8,10 @@ import PostHogProvider from '@/components/providers/PostHogProvider';
 import SyncProvider from '@/components/providers/SyncProvider';
 import { Analytics } from "@vercel/analytics/next";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
 });
 
 
@@ -57,7 +58,7 @@ export default function RootLayout({
         ` }} />
       </head>
       <body
-        className={`${geistSans.variable} antialiased`}
+        className={`${inter.variable} antialiased`}
       >
         {/* Inicializa el tema en el cliente */}
         <ThemeInit />

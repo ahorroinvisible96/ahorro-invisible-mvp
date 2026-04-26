@@ -1,7 +1,7 @@
 /* 
  * ═══════════════════════════════════════════════════════════
  * SISTEMA TIPOGRÁFICO — Ahorro Invisible
- * Fuente: Geist Sans (cargada via next/font/google)
+ * Fuente: Inter (cargada via next/font/google)
  * ═══════════════════════════════════════════════════════════
  *
  * REGLAS:
@@ -14,7 +14,7 @@
 
 :root {
   /* ── Familia ─────────────────────────────────────────────── */
-  --font-app: var(--font-geist-sans, system-ui, -apple-system, sans-serif);
+  --font-app: var(--font-inter, system-ui, -apple-system, sans-serif);
 
   /* ── Escala semántica ────────────────────────────────────── */
 
