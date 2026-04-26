@@ -99,7 +99,7 @@ function CreateGoalInner() {
   if (uiState === 'recommendation' && realismData) {
     const userAmount = Number(targetAmount);
     return (
-      <main style={{ minHeight: '100vh', background: 'linear-gradient(135deg,#0f172a 0%,#1e1b4b 50%,#0f172a 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 16px', fontFamily: 'var(--font-geist-sans,Arial,sans-serif)' }}>
+      <main style={{ minHeight: '100vh', background: 'linear-gradient(135deg,#0f172a 0%,#1e1b4b 50%,#0f172a 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 16px', fontFamily: 'var(--font-app)' }}>
         <div style={{ width: '100%', maxWidth: 480 }}>
           <div style={{ borderRadius: 20, background: 'linear-gradient(135deg,#1e293b 0%,#0f172a 100%)', border: '1px solid rgba(251,191,36,0.3)', boxShadow: '0 25px 50px rgba(2,6,23,0.7)', padding: '28px 24px' }}>
             <div style={{ fontSize: 48, textAlign: 'center', marginBottom: 16 }}>⚡</div>
@@ -153,7 +153,7 @@ function CreateGoalInner() {
   if (uiState === 'restructuring' && realismData) {
     const userAmount = Number(targetAmount);
     return (
-      <main style={{ minHeight: '100vh', background: 'linear-gradient(135deg,#0f172a 0%,#1e1b4b 50%,#0f172a 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 16px', fontFamily: 'var(--font-geist-sans,Arial,sans-serif)' }}>
+      <main style={{ minHeight: '100vh', background: 'linear-gradient(135deg,#0f172a 0%,#1e1b4b 50%,#0f172a 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 16px', fontFamily: 'var(--font-app)' }}>
         <div style={{ width: '100%', maxWidth: 480 }}>
           <div style={{ borderRadius: 20, background: 'linear-gradient(135deg,#1e293b 0%,#0f172a 100%)', border: '1px solid rgba(99,102,241,0.35)', boxShadow: '0 25px 50px rgba(2,6,23,0.7)', padding: '28px 24px' }}>
             <div style={{ fontSize: 48, textAlign: 'center', marginBottom: 16 }}>🗺️</div>
@@ -203,7 +203,7 @@ function CreateGoalInner() {
     fontWeight: 500,
     outline: 'none',
     boxSizing: 'border-box',
-    fontFamily: 'var(--font-geist-sans, Arial, sans-serif)',
+    fontFamily: 'var(--font-app)',
     transition: 'border-color 180ms ease',
   };
 
@@ -226,7 +226,7 @@ function CreateGoalInner() {
       alignItems: 'center',
       justifyContent: 'center',
       padding: '24px 16px',
-      fontFamily: 'var(--font-geist-sans, Arial, sans-serif)',
+      fontFamily: 'var(--font-app)',
     }}>
       {/* Glow decorativo */}
       <div style={{
