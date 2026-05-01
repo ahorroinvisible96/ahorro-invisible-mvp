@@ -9,6 +9,8 @@ import { HistoryDecisionsListWidget } from '@/components/history/HistoryDecision
 import { HistoryEmptyStateWidget } from '@/components/history/HistoryEmptyStateWidget/HistoryEmptyStateWidget';
 import styles from './History.module.css';
 import { BarChartIcon, DownloadIcon } from '@/components/ui/AppIcons';
+import { WidgetSkeleton } from '@/components/ui/Skeleton/Skeleton';
+import { useToast } from '@/components/ui/Toast/Toast';
 
 // ── Helper CSV ────────────────────────────────────────────────────────────────
 function exportCSV(decisions: HistoryDecisionItem[]): void {
@@ -83,9 +85,12 @@ export default function HistoryPage() {
     return () => { clearTimeout(t); document.removeEventListener('click', handleClick); };
   }, [rangeOpen, goalOpen]);
 
+  const { addToast } = useToast();
+
   const handleExport = useCallback(() => {
     exportCSV(filtered);
-  }, [filtered]);
+    addToast(`${filtered.length} decisiones exportadas a CSV`, 'success');
+  }, [filtered, addToast]);
 
   const hasActiveFilters =
     filters.range !== 'all' ||
@@ -95,7 +100,10 @@ export default function HistoryPage() {
   if (loading) {
     return (
       <div className={styles.page}>
-        <div className={styles.loading}>Cargando historial...</div>
+        <div style={{ padding: '40px 16px', display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 480, margin: '0 auto', width: '100%' }}>
+          <WidgetSkeleton />
+          <WidgetSkeleton />
+        </div>
       </div>
     );
   }

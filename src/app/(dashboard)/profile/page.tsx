@@ -10,6 +10,8 @@ import { ProfilingModal } from '@/components/profile/ProfilingModal/ProfilingMod
 import type { IncomeRange } from '@/types/Dashboard';
 import styles from './Profile.module.css';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { WidgetSkeleton } from '@/components/ui/Skeleton/Skeleton';
+import { useToast } from '@/components/ui/Toast/Toast';
 import {
   TargetIcon,
   BarChartIcon,
@@ -123,6 +125,7 @@ export default function ProfilePage() {
   // Estado del modal de personalización
   const [profilingOpen, setProfilingOpen]       = useState(false);
   const [profilingDone, setProfilingDone]       = useState(false);
+  const { addToast } = useToast();
 
   const toggleIncomeVisibility = useCallback(() => {
     setIncomeVisible(v => {
@@ -167,18 +170,24 @@ export default function ProfilePage() {
     setUserName(editingName.trim());
     analytics.profileUpdated(['userName']);
     setNameSaved(true);
+    addToast('Nombre guardado', 'success');
     setTimeout(() => setNameSaved(false), 2500);
-  }, [editingName]);
+  }, [editingName, addToast]);
 
   const handleLogout = useCallback(async () => {
     await authSignOut();
     router.replace('/login');
   }, [router]);
 
+
+
   if (loading) {
     return (
       <div className={styles.page}>
-        <div className={styles.loading}>Cargando perfil…</div>
+        <div style={{ padding: '40px 16px', display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 480, margin: '0 auto', width: '100%' }}>
+          <WidgetSkeleton />
+          <WidgetSkeleton />
+        </div>
       </div>
     );
   }

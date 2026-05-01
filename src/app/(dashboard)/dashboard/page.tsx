@@ -1,5 +1,8 @@
 "use client";
 
+import { useToast } from '@/components/ui/Toast/Toast';
+import { WidgetSkeleton } from '@/components/ui/Skeleton/Skeleton';
+
 import React, { useEffect, useState } from 'react';
 import type { Goal, Hucha } from '@/types/Dashboard';
 import type { ExtraSaving } from '@/components/dashboard/DailyDecisionWidget/DailyDecisionWidget.types';
@@ -515,10 +518,16 @@ export default function DashboardPage() {
     }
   }, [summary?.newMilestone, summary?.goalPercentMilestone?.goalId, summary?.adaptiveEvaluation?.type, summary?.streakBrokeYesterday, summary?.streak, summary?.daily.status, streakAlertDismissed]);
 
+  const { addToast } = useToast();
+
   if (loading || !summary) {
     return (
       <div className={styles.loadingScreen}>
-        <span className={styles.loadingText}>Cargando dashboard...</span>
+        <div style={{ width: '100%', maxWidth: 480, padding: '0 16px' }}>
+          <WidgetSkeleton />
+          <div style={{ height: 16 }} />
+          <WidgetSkeleton />
+        </div>
       </div>
     );
   }
@@ -542,6 +551,7 @@ export default function DashboardPage() {
     createGoal({ title: data.title, targetAmount: data.targetAmount, horizonMonths: data.horizonMonths });
     analytics.goalCreated(`goal_${Date.now()}`, activeGoals.length === 0, data.targetAmount, data.horizonMonths);
     setShowCreateGoal(false);
+    addToast('Objetivo creado correctamente', 'success');
   };
 
   const handleEditGoal = (goalId: string) => {
@@ -553,6 +563,7 @@ export default function DashboardPage() {
     if (!editingGoal) return;
     updateGoal(editingGoal.id, patch);
     setEditingGoal(null);
+    addToast('Objetivo actualizado', 'success');
   };
 
   const handleArchiveRequest = (goalId: string) => {
@@ -568,6 +579,7 @@ export default function DashboardPage() {
     syncGoalToSupabase({ ...archivingGoal, archived: true, currentAmount: 0 }).catch(() => null);
     setArchivingGoal(null);
     refresh();
+    addToast('Objetivo archivado', 'info');
   };
 
   return (
@@ -622,6 +634,7 @@ export default function DashboardPage() {
           storeTransferFromHucha(goalId, amount);
           setShowHuchaModal(false);
           refresh();
+          addToast('Saldo transferido al objetivo', 'success');
         }}
         onCreateGoal={() => { setShowHuchaModal(false); setShowCreateGoal(true); }}
       />
@@ -629,7 +642,7 @@ export default function DashboardPage() {
         <ExtraSavingDashboardModal
           allGoals={activeGoals}
           primaryGoal={summary.primaryGoal}
-          onSave={(s: ExtraSaving) => { addExtraSaving(s); setShowExtraSaving(false); }}
+          onSave={(s: ExtraSaving) => { addExtraSaving(s); setShowExtraSaving(false); addToast(`+${s.amount}€ ahorro extra registrado`, 'success'); }}
           onClose={() => setShowExtraSaving(false)}
         />
       )}

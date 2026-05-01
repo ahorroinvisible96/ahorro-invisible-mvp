@@ -11,6 +11,7 @@ import { CloseIcon, PlusIcon, TargetIcon, ChevronRightIcon, AlertIcon, StarIcon,
 import { Modal } from '@/components/ui/Modal/Modal';
 import { Button } from '@/components/ui/Button/Button';
 import { Badge } from '@/components/ui/Badge/Badge';
+import { useToast } from '@/components/ui/Toast/Toast';
 
 // ── Modal de ahorro extra ────────────────────────────────────────────────────
 function ExtraSavingModal({
@@ -143,6 +144,7 @@ export function DailyDecisionWidget({
   const activeGoals = allGoals.filter((g) => !g.archived);
   const todayQuestion = getTodayQuestion();
   const { collapsed, toggle } = useWidgetCollapse('daily_decision', false);
+  const { addToast } = useToast();
 
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [selectedGoalId, setSelectedGoalId] = useState<string>(
@@ -247,7 +249,7 @@ export function DailyDecisionWidget({
           footer={
             <div className={styles.modalFooter}>
               <Button variant="secondary" onClick={() => setShowResetConfirm(false)} fullWidth>Cancelar</Button>
-              <Button variant="danger" onClick={() => { onResetDecision!(); setShowResetConfirm(false); }} fullWidth>Sí, reiniciar</Button>
+              <Button variant="danger" onClick={() => { onResetDecision!(); setShowResetConfirm(false); addToast('Decisión reiniciada', 'info'); }} fullWidth>Sí, reiniciar</Button>
             </div>
           }
         >
@@ -258,7 +260,7 @@ export function DailyDecisionWidget({
           isOpen={showExtraModal}
           allGoals={activeGoals}
           primaryGoal={primaryGoal}
-          onSave={(s) => { onAddExtraSaving?.(s); setShowExtraModal(false); }}
+          onSave={(s) => { onAddExtraSaving?.(s); setShowExtraModal(false); addToast(`+${s.amount}€ ahorro extra`, 'success'); }}
           onClose={() => setShowExtraModal(false)}
         />
       </>
@@ -282,6 +284,7 @@ export function DailyDecisionWidget({
     );
     onSubmitDecision(todayQuestion.questionId, answerKey, goalId, finalAmount);
     setConfirmed(true);
+    addToast(hasAmount ? `+${parsedAmount}€ registrado ✓` : 'Decisión registrada', 'success');
     setTimeout(() => setSubmitting(false), 1800);
   }
 

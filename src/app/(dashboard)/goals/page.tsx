@@ -22,6 +22,9 @@ import { pushLocalDataToSupabase, syncGoalToSupabase, deleteGoalFromSupabase } f
 import type { Goal, Hucha, DashboardSummary } from '@/types/Dashboard';
 import { CollapseChevron } from '@/components/dashboard/CollapsibleWidget/CollapsibleWidget';
 import { TargetIcon, PlusIcon } from '@/components/ui/AppIcons';
+import { WidgetSkeleton } from '@/components/ui/Skeleton/Skeleton';
+import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
+import { useToast } from '@/components/ui/Toast/Toast';
 import styles from './Goals.module.css';
 
 function formatEUR(n: number) {
@@ -312,6 +315,7 @@ export default function GoalsPage() {
   const [deletingGoal, setDeletingGoal] = useState<Goal | null>(null);
   const [showHuchaModal, setShowHuchaModal] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { addToast } = useToast();
 
   const refresh = () => {
     const s = buildSummary('30d');
@@ -346,6 +350,7 @@ export default function GoalsPage() {
     if (userId) pushLocalDataToSupabase(userId).catch(() => null);
     setModalMode(null);
     refresh();
+    addToast('Objetivo creado correctamente', 'success');
   };
 
   const handleEdit = (data: { title: string; targetAmount: number; horizonMonths: number; applyHucha: boolean }) => {
@@ -358,6 +363,7 @@ export default function GoalsPage() {
     setModalMode(null);
     setEditingGoal(null);
     refresh();
+    addToast('Objetivo actualizado', 'success');
   };
 
   const handleArchiveRequest = (goalId: string) => {
@@ -382,6 +388,7 @@ export default function GoalsPage() {
     syncGoalToSupabase({ ...archivingGoal, archived: true, currentAmount: 0 }).catch(() => null);
     setArchivingGoal(null);
     refresh();
+    addToast('Objetivo archivado', 'info');
   };
 
   const handleSetPrimary = (goalId: string) => {
@@ -401,6 +408,7 @@ export default function GoalsPage() {
     deleteGoalFromSupabase(goalId).catch(() => null);
     setDeletingGoal(null);
     refresh();
+    addToast('Objetivo eliminado', 'info');
   };
 
   const handleHuchaAssign = (goalId: string, amount: number) => {
@@ -412,7 +420,10 @@ export default function GoalsPage() {
   if (loading || !summary) {
     return (
       <div className={styles.page}>
-        <div className={styles.loading}>Cargando objetivos...</div>
+        <div style={{ padding: '40px 16px', display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 480, margin: '0 auto', width: '100%' }}>
+          <WidgetSkeleton />
+          <WidgetSkeleton />
+        </div>
       </div>
     );
   }
@@ -573,12 +584,12 @@ export default function GoalsPage() {
 
             {/* ─── Lista de objetivos ─── */}
             {activeGoals.length === 0 ? (
-              <div style={{ background: 'linear-gradient(135deg,#0f172a,#1e293b)', border: '1px solid rgba(51,65,85,0.4)', borderRadius: 16, padding: '40px 24px', textAlign: 'center' }}>
-                <div style={{ fontSize: 48, marginBottom: 12 }}>🎯</div>
-                <p style={{ fontSize: 15, fontWeight: 600, color: '#f1f5f9', marginBottom: 6 }}>Sin objetivos activos</p>
-                <p style={{ fontSize: 13, color: 'rgba(148,163,184,0.6)', marginBottom: 20 }}>Crea tu primer objetivo para empezar a ahorrar.</p>
-                <button onClick={() => setModalMode('create')} style={{ padding: '12px 24px', background: 'linear-gradient(90deg,#a855f7,#2563eb)', color: '#fff', border: 'none', borderRadius: 12, fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>Crear objetivo</button>
-              </div>
+              <EmptyState
+                icon="🎯"
+                title="Sin objetivos activos"
+                description="Crea tu primer objetivo para empezar a ahorrar."
+                action={{ label: 'Crear objetivo', onClick: () => setModalMode('create') }}
+              />
             ) : (
               <>
                 {inProgressGoals.length > 0 && (

@@ -14,6 +14,8 @@ import { SettingsDangerZoneWidget } from '@/components/settings/SettingsDangerZo
 import { SettingsHelpWidget } from '@/components/settings/SettingsHelpWidget/SettingsHelpWidget';
 import styles from './Settings.module.css';
 import { SettingsIcon } from '@/components/ui/AppIcons';
+import { WidgetSkeleton } from '@/components/ui/Skeleton/Skeleton';
+import { useToast } from '@/components/ui/Toast/Toast';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function truncateEmail(email: string, max = 18): string {
@@ -53,6 +55,8 @@ export default function SettingsPage() {
     setLoading(false);
   }, [router]);
 
+  const { addToast } = useToast();
+
   const handleExport = useCallback(() => {
     const data = storeExportData();
     const blob = new Blob([data], { type: 'application/json' });
@@ -62,7 +66,8 @@ export default function SettingsPage() {
     a.download = `ahorro-invisible-${new Date().toISOString().split('T')[0]}.json`;
     a.click();
     URL.revokeObjectURL(url);
-  }, []);
+    addToast('Datos exportados correctamente', 'success');
+  }, [addToast]);
 
   const handleResetOnboarding = useCallback(() => {
     analytics.onboardingReset();
@@ -86,7 +91,10 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <div className={styles.page}>
-        <div className={styles.loading}>Cargando ajustes...</div>
+        <div style={{ padding: '40px 16px', display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 480, margin: '0 auto', width: '100%' }}>
+          <WidgetSkeleton />
+          <WidgetSkeleton />
+        </div>
       </div>
     );
   }
