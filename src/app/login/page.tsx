@@ -184,7 +184,7 @@ export default function LoginPage() {
                 {mode === "password" && (
                   <div>
                     <div className={s.passwordRow}>
-                      <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'rgba(148,163,184,0.6)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                      <label className={s.passwordLabel}>
                         Contraseña
                       </label>
                       {isSupabaseConfigured && (

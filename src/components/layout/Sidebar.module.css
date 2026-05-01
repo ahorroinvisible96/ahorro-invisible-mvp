@@ -30,7 +30,7 @@
 .logoMark {
   width: 32px;
   height: 32px;
-  border-radius: 10px;
+  border-radius: var(--radius-icon);
   background: linear-gradient(135deg, #a855f7, #2563eb);
   display: flex;
   align-items: center;
@@ -94,12 +94,12 @@
   align-items: center;
   gap: 10px;
   padding: 8px 10px;
-  border-radius: 10px;
+  border-radius: var(--radius-icon);
   color: var(--color-text-nav);
   font-size: var(--type-small-size);
   font-weight: var(--type-nav-weight);
   text-decoration: none;
-  transition: all 160ms ease;
+  transition: all var(--transition-fast);
   position: relative;
   cursor: pointer;
   border: none;
@@ -136,7 +136,7 @@
   background: var(--nav-icon-bg);
   color: var(--nav-icon-color);
   flex-shrink: 0;
-  transition: all 160ms ease;
+  transition: all var(--transition-fast);
 }
 
 .navItem:hover .navIcon {
@@ -165,7 +165,7 @@
 .navItemDailyBtn {
   background: var(--nav-item-daily-bg);
   border: 1px solid var(--nav-item-daily-border);
-  color: #c084fc;
+  color: var(--color-brand-purple-light);
   font-weight: 600;
 }
 
@@ -177,7 +177,7 @@
 
 .navIconDaily {
   background: rgba(168, 85, 247, 0.2);
-  color: #c084fc;
+  color: var(--color-brand-purple-light);
 }
 
 .navItemDailyBtn:hover .navIconDaily {
@@ -217,7 +217,7 @@
   gap: 8px;
   padding: 10px 12px;
   margin: 8px 8px 0;
-  border-radius: 10px;
+  border-radius: var(--radius-icon);
   background: var(--nav-user-row-bg);
   border: 1px solid var(--nav-user-row-border);
 }
@@ -265,17 +265,17 @@
   justify-content: center;
   width: 26px;
   height: 26px;
-  border-radius: 7px;
+  border-radius: var(--radius-sm);
   background: transparent;
   border: 1px solid var(--color-border-btn);
   color: var(--color-text-muted);
   cursor: pointer;
-  transition: all 160ms ease;
+  transition: all var(--transition-fast);
   flex-shrink: 0;
 }
 
 .logoutBtn:hover {
   background: var(--nav-logout-bg-hover);
   border-color: var(--nav-logout-border-hover);
-  color: #f87171;
+  color: var(--color-error-light);
 }

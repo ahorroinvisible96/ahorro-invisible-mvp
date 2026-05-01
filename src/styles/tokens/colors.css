@@ -79,4 +79,12 @@
   --slate-800: #1e293b;
   --slate-900: #0f172a;
   --slate-950: #0d0d14;
+
+  /* ── Aliases legacy (usados por UI components heredados) ── */
+  --color-primary-50:  var(--color-brand-purple-muted);
+  --color-primary-100: rgba(168, 85, 247, 0.20);
+  --color-primary-200: rgba(168, 85, 247, 0.30);
+  --color-primary-500: var(--color-brand-purple);
+  --color-primary-600: var(--color-brand-purple-hover);
+  --color-primary-700: #7c3aed;
 }

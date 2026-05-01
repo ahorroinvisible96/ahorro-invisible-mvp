@@ -22,7 +22,7 @@
   /* ── Texto ── */
   --color-text-primary: #ffffff;
   --color-text-secondary: rgba(255, 255, 255, 0.55);
-  --color-text-muted: rgba(255, 255, 255, 0.35);
+  --color-text-muted: rgba(255, 255, 255, 0.50);
   --color-text-label: rgba(255, 255, 255, 0.45);
   --color-text-inverted: #0d0d14;
   --color-text-success: #30d158;
@@ -31,7 +31,7 @@
   --color-text-page-sub: rgba(255, 255, 255, 0.5);
   --color-text-nav: rgba(255, 255, 255, 0.45);
   --color-text-nav-active: #ffffff;
-  --color-text-nav-label: rgba(255, 255, 255, 0.3);
+  --color-text-nav-label: rgba(255, 255, 255, 0.45);
   --color-text-user-name: #ffffff;
   --color-text-user-role: rgba(255, 255, 255, 0.45);
   --color-text-greeting: #ffffff;

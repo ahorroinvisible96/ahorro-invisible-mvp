@@ -8,9 +8,9 @@
   justify-content: center;
   width: 28px;
   height: 28px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: all 160ms ease;
+  transition: all var(--transition-fast);
   color: var(--theme-toggle-color);
   background: var(--theme-toggle-bg);
   border: 1px solid var(--theme-toggle-border);

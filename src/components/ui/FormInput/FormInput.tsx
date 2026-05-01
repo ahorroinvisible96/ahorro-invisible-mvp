@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useId } from 'react';
 import styles from './FormInput.module.css';
 
 export interface FormInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -19,7 +19,12 @@ export interface FormInputProps extends React.InputHTMLAttributes<HTMLInputEleme
 }
 
 export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
-  ({ label, error, success, hint, variant = 'default', containerClassName = '', className = '', ...props }, ref) => {
+  ({ label, error, success, hint, variant = 'default', containerClassName = '', className = '', id: externalId, ...props }, ref) => {
+    const autoId = useId();
+    const inputId = externalId || autoId;
+    const feedbackId = `${inputId}-feedback`;
+    const hasFeedback = !!(error || success || hint);
+
     const containerClasses = [
       styles.container,
       containerClassName
@@ -36,29 +41,32 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
     return (
       <div className={containerClasses}>
         {label && (
-          <label className={styles.label}>
+          <label htmlFor={inputId} className={styles.label}>
             {label}
           </label>
         )}
         
         <input
           ref={ref}
+          id={inputId}
           className={inputClasses}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={hasFeedback ? feedbackId : undefined}
           {...props}
         />
         
         {error && (
-          <div className={styles.errorMessage}>
+          <div id={feedbackId} className={styles.errorMessage} role="alert">
             {error}
           </div>
         )}
         {success && !error && (
-          <div className={styles.successMessage}>
+          <div id={feedbackId} className={styles.successMessage}>
             {success}
           </div>
         )}
         {hint && !error && !success && (
-          <div className={styles.hintMessage}>
+          <div id={feedbackId} className={styles.hintMessage}>
             {hint}
           </div>
         )}

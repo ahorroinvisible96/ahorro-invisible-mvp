@@ -77,7 +77,7 @@
   border: none;
   cursor: pointer;
   box-shadow: 0 4px 14px rgba(168, 85, 247, 0.3);
-  transition: all 200ms ease;
+  transition: all var(--transition-normal);
 }
 
 .newBtn:hover {
@@ -88,7 +88,7 @@
 .plusIcon {
   display: flex;
   align-items: center;
-  transition: transform 300ms ease;
+  transition: transform var(--transition-slow);
 }
 
 .newBtn:hover .plusIcon {

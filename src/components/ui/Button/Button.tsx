@@ -5,7 +5,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   /**
    * Variante visual del botón
    */
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'dangerOutline' | 'cancel' | 'heroPrimary' | 'heroSecondary';
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'heroPrimary' | 'heroSecondary';
   
   /**
    * Tamaño del botón

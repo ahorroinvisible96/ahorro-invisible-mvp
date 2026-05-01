@@ -7,7 +7,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 500;
+  z-index: var(--z-daily-modal);
   padding: 16px;
   animation: fadeIn 200ms ease;
 }

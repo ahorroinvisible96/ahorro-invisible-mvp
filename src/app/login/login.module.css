@@ -1,53 +1,53 @@
 /* 
  * ═══════════════════════════════════════════════════════════
  * LOGIN PAGE — CSS Modules
- * Migrado desde inline styles, comparte tokens con signup
+ * Importa estilos compartidos de auth-shared.module.css
  * ═══════════════════════════════════════════════════════════
  */
 
-/* ── Página ── */
-.page { composes: page from '../signup/signup.module.css'; }
-.glowPurple { composes: glowPurple from '../signup/signup.module.css'; }
-.glowBlue { composes: glowBlue from '../signup/signup.module.css'; }
-.layout { composes: layout from '../signup/signup.module.css'; }
+/* ── Compartidos con signup ── */
+.page { composes: page from '../auth-shared.module.css'; }
+.glowPurple { composes: glowPurple from '../auth-shared.module.css'; }
+.glowBlue { composes: glowBlue from '../auth-shared.module.css'; }
+.layout { composes: layout from '../auth-shared.module.css'; }
 
-/* ── Brand panel (reutiliza signup) ── */
-.brandPanel { composes: brandPanel from '../signup/signup.module.css'; }
-.logo { composes: logo from '../signup/signup.module.css'; }
-.logoMark { composes: logoMark from '../signup/signup.module.css'; }
-.logoName { composes: logoName from '../signup/signup.module.css'; }
-.logoPurple { composes: logoPurple from '../signup/signup.module.css'; }
-.copyright { composes: copyright from '../signup/signup.module.css'; }
+.brandPanel { composes: brandPanel from '../auth-shared.module.css'; }
+.logo { composes: logo from '../auth-shared.module.css'; }
+.logoMark { composes: logoMark from '../auth-shared.module.css'; }
+.logoName { composes: logoName from '../auth-shared.module.css'; }
+.logoPurple { composes: logoPurple from '../auth-shared.module.css'; }
+.copyright { composes: copyright from '../auth-shared.module.css'; }
 
-.claimTitle { composes: claimTitle from '../signup/signup.module.css'; }
-.claimGradient { composes: claimGradient from '../signup/signup.module.css'; }
-.claimSub { composes: claimSub from '../signup/signup.module.css'; }
-.features { composes: features from '../signup/signup.module.css'; }
-.featureItem { composes: featureItem from '../signup/signup.module.css'; }
-.featureIcon { composes: featureIcon from '../signup/signup.module.css'; }
-.featureText { composes: featureText from '../signup/signup.module.css'; }
+.claimTitle { composes: claimTitle from '../auth-shared.module.css'; }
+.claimGradient { composes: claimGradient from '../auth-shared.module.css'; }
+.claimSub { composes: claimSub from '../auth-shared.module.css'; }
+.features { composes: features from '../auth-shared.module.css'; }
+.featureItem { composes: featureItem from '../auth-shared.module.css'; }
+.featureIcon { composes: featureIcon from '../auth-shared.module.css'; }
+.featureText { composes: featureText from '../auth-shared.module.css'; }
 
-/* ── Form panel (reutiliza signup) ── */
-.formPanel { composes: formPanel from '../signup/signup.module.css'; }
-.formContainer { composes: formContainer from '../signup/signup.module.css'; }
-.logoMobile { composes: logoMobile from '../signup/signup.module.css'; }
-.logoMobileMark { composes: logoMobileMark from '../signup/signup.module.css'; }
-.logoMobileName { composes: logoMobileName from '../signup/signup.module.css'; }
-.logoMobilePurple { composes: logoMobilePurple from '../signup/signup.module.css'; }
-.card { composes: card from '../signup/signup.module.css'; }
-.cardGlow { composes: cardGlow from '../signup/signup.module.css'; }
-.cardTitle { composes: cardTitle from '../signup/signup.module.css'; }
-.cardSub { composes: cardSub from '../signup/signup.module.css'; }
-.form { composes: form from '../signup/signup.module.css'; }
-.submitBtn { composes: submitBtn from '../signup/signup.module.css'; }
-.errorAlert { composes: errorAlert from '../signup/signup.module.css'; }
-.infoAlert { composes: infoAlert from '../signup/signup.module.css'; }
-.divider { composes: divider from '../signup/signup.module.css'; }
-.dividerLine { composes: dividerLine from '../signup/signup.module.css'; }
-.dividerText { composes: dividerText from '../signup/signup.module.css'; }
-.secondaryBtn { composes: secondaryBtn from '../signup/signup.module.css'; }
+.formPanel { composes: formPanel from '../auth-shared.module.css'; }
+.formContainer { composes: formContainer from '../auth-shared.module.css'; }
+.logoMobile { composes: logoMobile from '../auth-shared.module.css'; }
+.logoMobileMark { composes: logoMobileMark from '../auth-shared.module.css'; }
+.logoMobileName { composes: logoMobileName from '../auth-shared.module.css'; }
+.logoMobilePurple { composes: logoMobilePurple from '../auth-shared.module.css'; }
+.card { composes: card from '../auth-shared.module.css'; }
+.cardGlow { composes: cardGlow from '../auth-shared.module.css'; }
+.cardTitle { composes: cardTitle from '../auth-shared.module.css'; }
+.cardSub { composes: cardSub from '../auth-shared.module.css'; }
+.form { composes: form from '../auth-shared.module.css'; }
+.submitBtn { composes: submitBtn from '../auth-shared.module.css'; }
+.errorAlert { composes: errorAlert from '../auth-shared.module.css'; }
+.infoAlert { composes: infoAlert from '../auth-shared.module.css'; }
+.divider { composes: divider from '../auth-shared.module.css'; }
+.dividerLine { composes: dividerLine from '../auth-shared.module.css'; }
+.dividerText { composes: dividerText from '../auth-shared.module.css'; }
+.secondaryBtn { composes: secondaryBtn from '../auth-shared.module.css'; }
 
-/* ── Estilos propios de login ── */
+/* ═══════════════════════════════════════════════════════════
+   ESTILOS PROPIOS DE LOGIN
+   ═══════════════════════════════════════════════════════════ */
 
 /* Mode toggle tabs */
 .modeToggle {
@@ -157,4 +157,14 @@
   font-size: 13px;
   color: rgba(148, 163, 184, 0.8);
   font-weight: 500;
+}
+
+/* Password label inline (matches FormInput label style) */
+.passwordLabel {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(148, 163, 184, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }

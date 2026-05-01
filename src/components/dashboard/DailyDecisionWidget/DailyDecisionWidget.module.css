@@ -1,7 +1,7 @@
 /* ── Wrapper dark + glows ── */
 .wrapper {
   position: relative;
-  border-radius: 24px;
+  border-radius: var(--radius-widget);
   overflow: hidden;
   background: var(--widget-bg);
 }
@@ -57,7 +57,7 @@
   z-index: 1;
   background: var(--widget-card-bg);
   backdrop-filter: blur(4px);
-  border-radius: 18px;
+  border-radius: var(--radius-xl);
   padding: 20px 22px 22px;
   border: 1px solid var(--widget-border);
 }
@@ -115,10 +115,10 @@
   align-items: center;
   gap: 6px;
   padding: 5px 12px;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   background: linear-gradient(90deg, rgba(245, 158, 11, 0.2), rgba(234, 88, 12, 0.2));
   border: 1px solid rgba(245, 158, 11, 0.3);
-  color: #fbbf24;
+  color: var(--color-warning-light);
   font-size: 12px;
   font-weight: 700;
 }
@@ -141,10 +141,10 @@
   align-items: center;
   gap: 6px;
   padding: 5px 12px;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   background: linear-gradient(90deg, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.2));
   border: 1px solid rgba(34, 197, 94, 0.3);
-  color: #4ade80;
+  color: var(--color-success-light);
   font-size: 12px;
   font-weight: 700;
 }
@@ -167,7 +167,7 @@
 
 .deltaHighlight {
   font-weight: 700;
-  color: #60a5fa;
+  color: var(--color-info);
 }
 
 /* ── Opciones de respuesta ── */
@@ -185,11 +185,11 @@
   width: 100%;
   padding: 14px 16px;
   border: 2px solid var(--widget-answer-border);
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   background: var(--widget-answer-bg);
   cursor: pointer;
   text-align: left;
-  transition: all 300ms ease;
+  transition: all var(--transition-slow);
 }
 
 .answerBtn:hover:not(:disabled) {
@@ -205,7 +205,7 @@
 
 .answerBtnSaving {
   background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(168, 85, 247, 0.2));
-  border-color: #60a5fa;
+  border-color: var(--color-info);
   box-shadow: 0 4px 16px rgba(59, 130, 246, 0.2);
 }
 
@@ -225,11 +225,11 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: all 200ms ease;
+  transition: all var(--transition-normal);
 }
 
 .radioSelected {
-  border-color: #60a5fa;
+  border-color: var(--color-info);
   background: #3b82f6;
 }
 
@@ -252,11 +252,11 @@
   align-items: center;
   gap: 5px;
   padding: 4px 9px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 12px;
   font-weight: 700;
   flex-shrink: 0;
-  transition: all 250ms ease;
+  transition: all var(--transition-normal);
 }
 
 /* Seleccionado: destacado */
@@ -287,13 +287,13 @@
   width: 100%;
   padding: 14px 0;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   background: linear-gradient(90deg, #2563eb, #a855f7);
   color: #fff;
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
-  transition: all 200ms ease;
+  transition: all var(--transition-normal);
   box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
   margin-top: 2px;
 }
@@ -330,18 +330,18 @@
   padding: 10px 18px;
   background: transparent;
   border: 1.5px solid rgba(96, 165, 250, 0.4);
-  color: #60a5fa;
-  border-radius: 10px;
+  color: var(--color-info);
+  border-radius: var(--radius-icon);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 200ms ease;
+  transition: all var(--transition-normal);
   margin-top: 6px;
 }
 
 .btnOutline:hover {
   background: rgba(59, 130, 246, 0.1);
-  border-color: #60a5fa;
+  border-color: var(--color-info);
 }
 
 /* ── Mensaje motivacional ── */
@@ -353,7 +353,7 @@
   padding: 12px 14px;
   background: var(--widget-inner-bg);
   border: 1px solid var(--widget-inner-border);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   animation: fadeInUp 0.4s ease-out;
 }
 
@@ -363,7 +363,7 @@
 }
 
 .motivIcon {
-  color: #60a5fa;
+  color: var(--color-info);
   flex-shrink: 0;
   margin-top: 1px;
 }
@@ -395,11 +395,11 @@
   padding: 12px 14px;
   background: rgba(245, 158, 11, 0.08);
   border: 1px solid rgba(245, 158, 11, 0.2);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
 }
 
 .noGoalsIcon {
-  color: #fbbf24;
+  color: var(--color-warning-light);
   flex-shrink: 0;
   margin-top: 1px;
 }
@@ -416,7 +416,7 @@
   padding: 0;
   font-size: 13px;
   font-weight: 700;
-  color: #60a5fa;
+  color: var(--color-info);
   cursor: pointer;
   transition: color 150ms ease;
 }
@@ -437,11 +437,11 @@
   width: 100%;
   padding: 14px 16px;
   border: 2px solid var(--widget-answer-border);
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   background: var(--widget-answer-bg);
   cursor: pointer;
   text-align: left;
-  transition: all 300ms ease;
+  transition: all var(--transition-slow);
 }
 
 .goalBtn:hover:not(:disabled) {
@@ -451,7 +451,7 @@
 
 .goalBtnSelected {
   background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(168, 85, 247, 0.2));
-  border-color: #60a5fa;
+  border-color: var(--color-info);
   box-shadow: 0 4px 16px rgba(59, 130, 246, 0.2);
 }
 
@@ -496,14 +496,14 @@
 .goalTrack {
   height: 6px;
   background: var(--widget-track-bg-light);
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   overflow: hidden;
 }
 
 .goalFill {
   height: 100%;
   background: linear-gradient(90deg, #3b82f6, #a855f7);
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   transition: width 500ms ease;
 }
 
@@ -523,13 +523,13 @@
   width: 100%;
   padding: 12px 0;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   background: linear-gradient(90deg, #a855f7, #2563eb);
   color: #fff;
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
-  transition: all 200ms ease;
+  transition: all var(--transition-normal);
   box-shadow: 0 4px 14px rgba(168, 85, 247, 0.35);
 }
 
@@ -547,19 +547,19 @@
   width: 100%;
   padding: 10px 0;
   border: 1px solid rgba(239, 68, 68, 0.25);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   background: rgba(239, 68, 68, 0.07);
   color: rgba(248, 113, 113, 0.85);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 200ms ease;
+  transition: all var(--transition-normal);
 }
 
 .btnReset:hover {
   background: rgba(239, 68, 68, 0.15);
   border-color: rgba(239, 68, 68, 0.45);
-  color: #f87171;
+  color: var(--color-error-light);
 }
 
 /* ── Overlay modal ── */
@@ -571,7 +571,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 100;
+  z-index: var(--z-modal-overlay);
   padding: 16px;
 }
 
@@ -580,7 +580,7 @@
   max-width: 420px;
   background: var(--widget-modal-bg);
   border: 1px solid var(--widget-border);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
   padding: 24px;
 }
@@ -605,12 +605,12 @@
   justify-content: center;
   width: 30px;
   height: 30px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: var(--widget-cancel-bg);
   border: 1px solid var(--widget-border);
   color: var(--color-text-secondary);
   cursor: pointer;
-  transition: all 200ms ease;
+  transition: all var(--transition-normal);
 }
 
 .modalClose:hover {
@@ -627,10 +627,10 @@
 
 .modalError {
   font-size: 12px;
-  color: #f87171;
+  color: var(--color-error-light);
   background: rgba(239, 68, 68, 0.1);
   border: 1px solid rgba(239, 68, 68, 0.2);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   padding: 8px 12px;
   margin-bottom: 14px;
 }
@@ -654,11 +654,11 @@
   padding: 10px 14px;
   background: var(--widget-input-bg);
   border: 1px solid var(--widget-border);
-  border-radius: 10px;
+  border-radius: var(--radius-icon);
   color: var(--color-text-primary);
   font-size: 14px;
   outline: none;
-  transition: border-color 200ms ease;
+  transition: border-color var(--transition-normal);
   box-sizing: border-box;
 }
 
@@ -675,12 +675,12 @@
   padding: 10px 14px;
   background: var(--widget-input-bg);
   border: 1px solid var(--widget-border);
-  border-radius: 10px;
+  border-radius: var(--radius-icon);
   color: var(--color-text-primary);
   font-size: 14px;
   outline: none;
   cursor: pointer;
-  transition: border-color 200ms ease;
+  transition: border-color var(--transition-normal);
   box-sizing: border-box;
 }
 
@@ -698,13 +698,13 @@
   flex: 1;
   padding: 11px 0;
   border: 1px solid var(--widget-adjust-border);
-  border-radius: 10px;
+  border-radius: var(--radius-icon);
   background: var(--widget-cancel-bg);
   color: var(--color-text-secondary);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 200ms ease;
+  transition: all var(--transition-normal);
 }
 
 .btnCancel:hover {
@@ -716,13 +716,13 @@
   flex: 1;
   padding: 11px 0;
   border: none;
-  border-radius: 10px;
+  border-radius: var(--radius-icon);
   background: linear-gradient(90deg, #a855f7, #2563eb);
   color: #fff;
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
-  transition: all 200ms ease;
+  transition: all var(--transition-normal);
   box-shadow: 0 4px 14px rgba(168, 85, 247, 0.3);
 }
 
@@ -735,13 +735,13 @@
   flex: 1;
   padding: 11px 0;
   border: none;
-  border-radius: 10px;
+  border-radius: var(--radius-icon);
   background: linear-gradient(90deg, #dc2626, #b91c1c);
   color: #fff;
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
-  transition: all 200ms ease;
+  transition: all var(--transition-normal);
 }
 
 .btnDanger:hover {
@@ -763,7 +763,7 @@
   padding: 0;
   font-size: 12px;
   font-weight: 600;
-  color: #60a5fa;
+  color: var(--color-info);
   cursor: pointer;
   transition: color 150ms ease;
   white-space: nowrap;
@@ -792,12 +792,12 @@
   padding: 10px 14px;
   background: var(--widget-input-bg);
   border: 1px solid var(--widget-answer-border);
-  border-radius: 10px;
+  border-radius: var(--radius-icon);
   color: var(--color-text-primary);
   font-size: 15px;
   font-weight: 600;
   outline: none;
-  transition: border-color 200ms ease;
+  transition: border-color var(--transition-normal);
 }
 
 .customAmountInput:focus {
@@ -823,14 +823,14 @@
 
 .btnBack {
   padding: 14px 0;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--widget-adjust-border);
   background: var(--widget-cancel-bg);
   color: var(--color-text-secondary);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 200ms ease;
+  transition: all var(--transition-normal);
 }
 
 .btnBack:hover:not(:disabled) {
