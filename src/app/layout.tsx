@@ -6,6 +6,7 @@ import "@/styles/tokens/index.css"; // Importar tokens CSS
 import ThemeInit from '@/components/providers/ThemeInit';
 import PostHogProvider from '@/components/providers/PostHogProvider';
 import SyncProvider from '@/components/providers/SyncProvider';
+import { ToastProvider } from '@/components/ui/Toast/Toast';
 import { Analytics } from "@vercel/analytics/next";
 
 const inter = Inter({
@@ -63,7 +64,9 @@ export default function RootLayout({
         {/* Inicializa el tema en el cliente */}
         <ThemeInit />
         <PostHogProvider>
-          <SyncProvider>{children}</SyncProvider>
+          <SyncProvider>
+            <ToastProvider>{children}</ToastProvider>
+          </SyncProvider>
         </PostHogProvider>
         <Analytics />
       </body>

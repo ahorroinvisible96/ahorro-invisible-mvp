@@ -8,14 +8,19 @@ import styles from './DailyDecisionWidget.module.css';
 import { useWidgetCollapse } from '@/hooks/useWidgetCollapse';
 import { CollapseChevron } from '@/components/dashboard/CollapsibleWidget/CollapsibleWidget';
 import { CloseIcon, PlusIcon, TargetIcon, ChevronRightIcon, AlertIcon, StarIcon, BoltIcon, TrendingUpIcon } from '@/components/ui/AppIcons';
+import { Modal } from '@/components/ui/Modal/Modal';
+import { Button } from '@/components/ui/Button/Button';
+import { Badge } from '@/components/ui/Badge/Badge';
 
 // ── Modal de ahorro extra ────────────────────────────────────────────────────
 function ExtraSavingModal({
+  isOpen,
   allGoals,
   primaryGoal,
   onSave,
   onClose,
 }: {
+  isOpen: boolean;
   allGoals: { id: string; title: string }[];
   primaryGoal: { id: string } | null;
   onSave: (s: ExtraSaving) => void;
@@ -36,63 +41,60 @@ function ExtraSavingModal({
   }
 
   return (
-    <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
-        <div className={styles.modalHeader}>
-          <h3 className={styles.modalTitle}>Añadir ahorro extra</h3>
-          <button className={styles.modalClose} onClick={onClose}>
-            <CloseIcon size={16} />
-          </button>
-        </div>
-
-        {error && <p className={styles.modalError}>{error}</p>}
-
-        <div className={styles.modalField}>
-          <label className={styles.modalLabel}>Nombre del ahorro</label>
-          <input
-            className={styles.modalInput}
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Ej: Ahorro extra café"
-            autoFocus
-          />
-        </div>
-
-        <div className={styles.modalField}>
-          <label className={styles.modalLabel}>Cantidad (€)</label>
-          <input
-            className={styles.modalInput}
-            type="number"
-            min="0.01"
-            step="0.01"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="0"
-          />
-        </div>
-
-        {allGoals.length > 0 && (
-          <div className={styles.modalField}>
-            <label className={styles.modalLabel}>Asignar a objetivo</label>
-            <select
-              className={styles.modalSelect}
-              value={goalId}
-              onChange={(e) => setGoalId(e.target.value)}
-            >
-              {allGoals.map((g) => (
-                <option key={g.id} value={g.id}>{g.title}</option>
-              ))}
-            </select>
-          </div>
-        )}
-
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Añadir ahorro extra"
+      size="sm"
+      footer={
         <div className={styles.modalFooter}>
-          <button className={styles.btnCancel} onClick={onClose}>Cancelar</button>
-          <button className={styles.btnSave} onClick={handleSave}>Guardar ahorro</button>
+          <Button variant="secondary" onClick={onClose} fullWidth>Cancelar</Button>
+          <Button variant="primary" onClick={handleSave} fullWidth>Guardar ahorro</Button>
         </div>
+      }
+    >
+      {error && <p className={styles.modalError}>{error}</p>}
+
+      <div className={styles.modalField}>
+        <label className={styles.modalLabel}>Nombre del ahorro</label>
+        <input
+          className={styles.modalInput}
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Ej: Ahorro extra café"
+          autoFocus
+        />
       </div>
-    </div>
+
+      <div className={styles.modalField}>
+        <label className={styles.modalLabel}>Cantidad (€)</label>
+        <input
+          className={styles.modalInput}
+          type="number"
+          min="0.01"
+          step="0.01"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          placeholder="0"
+        />
+      </div>
+
+      {allGoals.length > 0 && (
+        <div className={styles.modalField}>
+          <label className={styles.modalLabel}>Asignar a objetivo</label>
+          <select
+            className={styles.modalSelect}
+            value={goalId}
+            onChange={(e) => setGoalId(e.target.value)}
+          >
+            {allGoals.map((g) => (
+              <option key={g.id} value={g.id}>{g.title}</option>
+            ))}
+          </select>
+        </div>
+      )}
+    </Modal>
   );
 }
 
@@ -107,16 +109,17 @@ function WidgetHeader({ completed, collapsed, onToggle, isHeader }: { completed:
         <div className={`${styles.iconBadge} ${isHeader ? styles.iconBadgeHeader : ''}`}><CoffeeIcon /></div>
         <span className={`${styles.headerLabel} ${isHeader ? styles.headerLabelOnGrad : ''}`}>DECISIÓN DIARIA</span>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div className={styles.headerRight}>
         {completed ? (
-          <div className={styles.badgeCompleted}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          <Badge variant="success" size="sm" pill bold
+            icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
+          >
             Completado
-          </div>
+          </Badge>
         ) : (
-          <div className={styles.badgePending}>
-            <span className={styles.badgeDot} /> Pendiente
-          </div>
+          <Badge variant="warning" size="sm" pill bold dot dotPulse>
+            Pendiente
+          </Badge>
         )}
         <CollapseChevron collapsed={collapsed} onToggle={onToggle} />
       </div>
@@ -196,27 +199,38 @@ export function DailyDecisionWidget({
                 <p className={styles.subtitle}>Ya registraste tu ahorro de hoy. Tu objetivo avanza.</p>
                 <div className={styles.completedActions}>
                   {onGoToHistory && (
-                    <button
-                      className={styles.btnOutline}
+                    <Button
+                      variant="outline"
+                      fullWidth
                       onClick={() => { analytics.dailyCtaClicked('completed', 'history'); onGoToHistory(); }}
                     >
                       Ver progreso →
-                    </button>
+                    </Button>
                   )}
-                  <button className={styles.btnExtraSaving} onClick={() => setShowExtraModal(true)}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                    </svg>
+                  <Button
+                    variant="primary"
+                    fullWidth
+                    icon={<PlusIcon size={14} />}
+                    onClick={() => setShowExtraModal(true)}
+                  >
                     Añadir ahorro extra
-                  </button>
+                  </Button>
                   {onResetDecision && (
-                    <button className={styles.btnReset} onClick={() => setShowResetConfirm(true)}>
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="1 4 1 10 7 10"/>
-                        <path d="M3.51 15a9 9 0 1 0 .49-3.5"/>
-                      </svg>
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      fullWidth
+                      className={styles.btnResetCustom}
+                      icon={
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="1 4 1 10 7 10"/>
+                          <path d="M3.51 15a9 9 0 1 0 .49-3.5"/>
+                        </svg>
+                      }
+                      onClick={() => setShowResetConfirm(true)}
+                    >
                       Reiniciar decisión
-                    </button>
+                    </Button>
                   )}
                 </div>
               </>
@@ -225,31 +239,28 @@ export function DailyDecisionWidget({
         </div>
 
         {/* ── Modal confirmación reset ── */}
-        {showResetConfirm && (
-          <div className={styles.overlay} onClick={() => setShowResetConfirm(false)}>
-            <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
-              <div className={styles.modalHeader}>
-                <h3 className={styles.modalTitle}>¿Reiniciar decisión?</h3>
-                <button className={styles.modalClose} onClick={() => setShowResetConfirm(false)}>
-                  <CloseIcon size={16} />
-                </button>
-              </div>
-              <p className={styles.modalText}>Se eliminará el ahorro registrado hoy y se revertirá el progreso del objetivo. Esta acción no se puede deshacer.</p>
-              <div className={styles.modalFooter}>
-                <button className={styles.btnCancel} onClick={() => setShowResetConfirm(false)}>Cancelar</button>
-                <button className={styles.btnDanger} onClick={() => { onResetDecision!(); setShowResetConfirm(false); }}>Sí, reiniciar</button>
-              </div>
+        <Modal
+          isOpen={showResetConfirm}
+          onClose={() => setShowResetConfirm(false)}
+          title="¿Reiniciar decisión?"
+          size="sm"
+          footer={
+            <div className={styles.modalFooter}>
+              <Button variant="secondary" onClick={() => setShowResetConfirm(false)} fullWidth>Cancelar</Button>
+              <Button variant="danger" onClick={() => { onResetDecision!(); setShowResetConfirm(false); }} fullWidth>Sí, reiniciar</Button>
             </div>
-          </div>
-        )}
-        {showExtraModal && (
-          <ExtraSavingModal
-            allGoals={activeGoals}
-            primaryGoal={primaryGoal}
-            onSave={(s) => { onAddExtraSaving?.(s); setShowExtraModal(false); }}
-            onClose={() => setShowExtraModal(false)}
-          />
-        )}
+          }
+        >
+          <p className={styles.modalText}>Se eliminará el ahorro registrado hoy y se revertirá el progreso del objetivo. Esta acción no se puede deshacer.</p>
+        </Modal>
+
+        <ExtraSavingModal
+          isOpen={showExtraModal}
+          allGoals={activeGoals}
+          primaryGoal={primaryGoal}
+          onSave={(s) => { onAddExtraSaving?.(s); setShowExtraModal(false); }}
+          onClose={() => setShowExtraModal(false)}
+        />
       </>
     );
   }
@@ -290,16 +301,16 @@ export function DailyDecisionWidget({
 
         {!collapsed && <h2 className={styles.title}>{todayQuestion.text}</h2>}
         {collapsed && (
-          <p style={{ fontSize: 13, color: 'rgba(148,163,184,0.65)', margin: '4px 0 0', lineHeight: 1.4, cursor: 'pointer' }} onClick={toggle}>{todayQuestion.text}</p>
+          <p className={styles.collapsedPreview} onClick={toggle}>{todayQuestion.text}</p>
         )}
 
         {/* ── Importe de ahorro ── */}
         {!collapsed && <div className={styles.answers}>
-          <div style={{ marginBottom: 12 }}>
-            <label style={{ fontSize: 12, fontWeight: 700, color: 'rgba(148,163,184,0.5)', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: 8 }}>
+          <div className={styles.amountSection}>
+            <label className={styles.amountLabel}>
               ¿Cuánto te has ahorrado?
             </label>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div className={styles.amountRow}>
               <input
                 type="number"
                 inputMode="decimal"
@@ -309,24 +320,11 @@ export function DailyDecisionWidget({
                 onChange={(e) => { setCustomAmount(e.target.value); if (!selectedAnswer) setSelectedAnswer('saved'); }}
                 placeholder="0"
                 disabled={submitting || confirmed}
-                style={{
-                  flex: 1,
-                  padding: '12px 14px',
-                  background: 'rgba(15,23,42,0.6)',
-                  border: `1.5px solid ${Number(customAmount) > 0 ? 'rgba(74,222,128,0.4)' : 'rgba(51,65,85,0.5)'}`,
-                  borderRadius: 12,
-                  color: Number(customAmount) > 0 ? '#4ade80' : '#f1f5f9',
-                  fontSize: 22,
-                  fontWeight: 800,
-                  textAlign: 'right',
-                  outline: 'none',
-                  fontFamily: 'inherit',
-                  transition: 'border-color 0.2s',
-                }}
+                className={`${styles.amountInput} ${Number(customAmount) > 0 ? styles.amountInputActive : ''}`}
               />
-              <span style={{ fontSize: 18, fontWeight: 700, color: 'rgba(148,163,184,0.4)' }}>€</span>
+              <span className={styles.amountUnit}>€</span>
             </div>
-            <p style={{ fontSize: 11, color: 'rgba(148,163,184,0.45)', marginTop: 6, marginBottom: 0 }}>
+            <p className={styles.amountHint}>
               💡 Típico: {todayQuestion.suggestedAmount} € · Si no ahorraste nada, deja 0
             </p>
           </div>
@@ -362,11 +360,11 @@ export function DailyDecisionWidget({
                           {isSelected && <div className={styles.radioDot} />}
                         </div>
                         <div className={styles.goalBtnName}>
-                          <TargetIcon size={12} style={{ color: '#60a5fa', flexShrink: 0 }} />
+                          <TargetIcon size={12} className={styles.goalIcon} />
                           <span className={styles.goalBtnTitle}>{g.title}</span>
                         </div>
                         <ChevronRightIcon size={14}
-                          style={{ color: isSelected ? '#60a5fa' : 'rgba(148,163,184,0.4)', flexShrink: 0 }}/>
+                          className={isSelected ? styles.goalChevronActive : styles.goalChevronDefault}/>
                       </div>
                       <div className={styles.goalProgress}>
                         <div className={styles.goalAmounts}>
@@ -394,20 +392,25 @@ export function DailyDecisionWidget({
         )}
 
         {/* ── Botón confirmar ── */}
-        {!collapsed && <button
-          className={`${styles.btnPrimary} ${!canConfirm ? styles.btnDisabled : ''}`}
-          onClick={handleConfirm}
-          disabled={!canConfirm}
-        >
-          {confirmed ? (
-            <span className={styles.confirmedContent}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-              Decisión Confirmada
-            </span>
-          ) : Number(customAmount) > 0 ? `Registrar ahorro de ${Number(customAmount).toLocaleString('es-ES')}€` : 'Hoy no he ahorrado (0 €)'}
-        </button>}
+        {!collapsed && (
+          <Button
+            variant="primary"
+            fullWidth
+            disabled={!canConfirm}
+            loading={submitting && !confirmed}
+            onClick={handleConfirm}
+            className={styles.btnConfirm}
+          >
+            {confirmed ? (
+              <span className={styles.confirmedContent}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Decisión Confirmada
+              </span>
+            ) : Number(customAmount) > 0 ? `Registrar ahorro de ${Number(customAmount).toLocaleString('es-ES')}€` : 'Hoy no he ahorrado (0 €)'}
+          </Button>
+        )}
 
       </div>
     </div>

@@ -7,6 +7,9 @@ import type { PrimaryGoalHeroProps } from './PrimaryGoalHeroWidget.types';
 import styles from './PrimaryGoalHeroWidget.module.css';
 import { useWidgetCollapse } from '@/hooks/useWidgetCollapse';
 import { CollapsibleWidget, CollapseChevron } from '@/components/dashboard/CollapsibleWidget/CollapsibleWidget';
+import { Button } from '@/components/ui/Button/Button';
+import { Badge } from '@/components/ui/Badge/Badge';
+import { PlusIcon } from '@/components/ui/AppIcons';
 
 function EmptyState({ onCreateGoal }: { onCreateGoal: () => void }): React.ReactElement {
   return (
@@ -18,9 +21,9 @@ function EmptyState({ onCreateGoal }: { onCreateGoal: () => void }): React.React
           <div className={styles.emptyIcon}>🎯</div>
           <p className={styles.emptyTitle}>Sin objetivo principal</p>
           <p className={styles.emptySubtitle}>Define un objetivo para empezar a ahorrar.</p>
-          <button className={styles.btnPrimary} onClick={onCreateGoal}>
+          <Button variant="primary" fullWidth onClick={onCreateGoal}>
             Crear objetivo
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -70,7 +73,7 @@ export function PrimaryGoalHeroWidget({
       <div className={styles.card}>
         {/* Header — siempre visible, chevron a la derecha */}
         <div className={styles.headerRow}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div className={styles.headerActions}>
             <button
               className={styles.horizonChip}
               onClick={() => onEditGoal?.(goal.id)}
@@ -83,18 +86,18 @@ export function PrimaryGoalHeroWidget({
 
         {/* Resumen mínimo siempre visible al plegar */}
         <div
-          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: collapsed ? 'pointer' : 'default' }}
+          className={styles.summaryRow}
           onClick={collapsed ? toggle : undefined}
         >
           <div>
-            <h2 className={styles.title} style={{ marginBottom: collapsed ? 0 : undefined }}>{goal.title}</h2>
+            <h2 className={`${styles.title} ${collapsed ? styles.titleCollapsed : ''}`}>{goal.title}</h2>
             {phaseLabel && (
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(168,85,247,0.15)', border: '1px solid rgba(168,85,247,0.3)', borderRadius: 20, padding: '2px 10px', marginTop: 4 }}>
-                <span style={{ fontSize: 10, fontWeight: 700, color: '#c4b5fd', letterSpacing: '0.04em' }}>{phaseLabel}</span>
-              </div>
+              <Badge variant="primary" size="sm" pill uppercase bold className={styles.phaseChip}>
+                {phaseLabel}
+              </Badge>
             )}
           </div>
-          {collapsed && <span style={{ fontSize: 20, fontWeight: 800, color: 'rgba(255,255,255,0.9)', flexShrink: 0 }}>{d.progressPct}%</span>}
+          {collapsed && <span className={styles.collapsedPct}>{d.progressPct}%</span>}
         </div>
 
         {/* Cuerpo colapsable */}
@@ -126,11 +129,11 @@ export function PrimaryGoalHeroWidget({
 
             {/* Sub-goal context: hacia meta final */}
             {goal.finalGoalAmount && goal.finalGoalAmount > goal.targetAmount && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.16)', borderRadius: 10, marginBottom: 10, backdropFilter: 'blur(10px)' }}>
-                <span style={{ fontSize: 14 }}>🗺️</span>
-                <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.75)', margin: 0, lineHeight: 1.4 }}>
+              <div className={styles.subGoalContext}>
+                <span className={styles.subGoalIcon}>🗺️</span>
+                <p className={styles.subGoalText}>
                   Paso {(goal.subGoalIndex ?? 0) + 1} hacia tu objetivo final de{' '}
-                  <strong style={{ color: '#ffffff' }}>{formatEUR(goal.finalGoalAmount)}</strong>
+                  <strong>{formatEUR(goal.finalGoalAmount)}</strong>
                 </p>
               </div>
             )}
@@ -161,21 +164,23 @@ export function PrimaryGoalHeroWidget({
             <div className={styles.buttonsRow}>
               {!d.isCompleted ? (
                 dailyCompleted ? (
-                  <button className={styles.btnAddFunds} onClick={onAddExtraSaving}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                    </svg>
+                  <Button
+                    variant="primary"
+                    fullWidth
+                    icon={<PlusIcon size={14} />}
+                    onClick={onAddExtraSaving}
+                  >
                     Añadir Fondos
-                  </button>
+                  </Button>
                 ) : (
-                  <button className={styles.btnPrimary} onClick={onGoToDailyDecision}>
+                  <Button variant="primary" fullWidth onClick={onGoToDailyDecision}>
                     Ir a Decisión Diaria
-                  </button>
+                  </Button>
                 )
               ) : (
-                <button className={styles.btnPrimary} onClick={onCreateGoal}>
+                <Button variant="primary" fullWidth onClick={onCreateGoal}>
                   Crear nueva meta
-                </button>
+                </Button>
               )}
             </div>
           </>

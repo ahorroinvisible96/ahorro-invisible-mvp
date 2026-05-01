@@ -1,615 +1,334 @@
-# Sistema de Diseño Ahorro Invisible
+# Sistema de Diseño — Ahorro Invisible
+
+> **Versión:** 2.0 (post-refactor P1+P2+P3)
+> **Stack:** Next.js 15 + CSS Modules + Geist Sans
+> **Modo:** Dark-first PWA
+
+---
 
 ## Índice
 
-1. [Introducción](#introducción)
-2. [Tokens de Diseño](#tokens-de-diseño)
-   - [Colores](#colores)
-   - [Tipografía](#tipografía)
-   - [Espaciado](#espaciado)
-   - [Bordes y Sombras](#bordes-y-sombras)
-3. [Componentes](#componentes)
-   - [Básicos](#componentes-básicos)
-   - [Avanzados](#componentes-avanzados)
-4. [Layout](#layout)
-5. [Temas](#temas)
-6. [Buenas Prácticas](#buenas-prácticas)
+1. [Tokens de Diseño](#tokens-de-diseño)
+2. [Componentes Base](#componentes-base)
+3. [Layout](#layout)
+4. [Z-Index Scale](#z-index-scale)
+5. [Reglas Obligatorias](#reglas-obligatorias)
+6. [Accesibilidad](#accesibilidad)
 
-## Introducción
-
-Este documento describe el sistema de diseño de Ahorro Invisible, una aplicación para ayudar a los usuarios a ahorrar dinero de forma inteligente. El sistema de diseño proporciona un conjunto de componentes, tokens y patrones para crear interfaces consistentes y de alta calidad.
+---
 
 ## Tokens de Diseño
 
-Los tokens de diseño son variables que definen los valores fundamentales del sistema de diseño. Estos tokens se utilizan en toda la aplicación para mantener la consistencia visual.
+Todos los tokens viven en `src/styles/tokens/`:
+- `colors.css` — Colores semánticos y gradientes
+- `typography.css` — Escala tipográfica de 12 niveles (Geist Sans)
+- `spacing.css` — Espaciados
+- `effects.css` — Radios, sombras, transiciones, animaciones, z-index
 
-### Colores
-
-#### Colores Primarios
-
-```css
---color-primary-50: #eef4ff;
---color-primary-100: #e0eaff;
---color-primary-200: #c7d7fe;
---color-primary-300: #a5bcfd;
---color-primary-400: #819dfc;
---color-primary-500: #2F63FF; /* Color principal azul */
---color-primary-600: #2B57F2;
---color-primary-700: #1E40AF;
---color-primary-800: #1e3a8a;
---color-primary-900: #172554;
---color-primary-950: #0f172a;
-```
-
-#### Colores de Fondo
+### Colores Semánticos
 
 ```css
---color-background-main: #F5F5F0; /* Fondo principal crema */
---color-background-sidebar: #0B1E3B; /* Fondo sidebar azul oscuro */
---color-background-card: #FFFFFF; /* Fondo de tarjetas */
---color-background-badge: #f0fdf4; /* Fondo de badge sistema activo */
+/* Texto */
+--color-text-primary: #f1f5f9;
+--color-text-secondary: rgba(148, 163, 184, 0.75);
+--color-text-muted: rgba(148, 163, 184, 0.50);
+
+/* Estado */
+--color-success: #22c55e;
+--color-success-light: #4ade80;
+--color-error: #ef4444;
+--color-error-light: #f87171;
+--color-warning: #f59e0b;
+--color-warning-light: #fbbf24;
+--color-info: #60a5fa;
+
+/* Fondos */
+--widget-bg: rgba(15, 23, 42, 0.4);
+--widget-card-bg: rgba(15, 23, 42, 0.7);
+--widget-border: rgba(51, 65, 85, 0.4);
 ```
 
-#### Colores de Texto
+### Gradientes
 
 ```css
---color-text-primary: #1F2937; /* Texto principal */
---color-text-secondary: #6B7280; /* Texto secundario */
---color-text-tertiary: #9CA3AF; /* Texto terciario */
---color-text-inverted: #FFFFFF; /* Texto sobre fondos oscuros */
---color-text-success: #16a34a; /* Texto verde éxito */
---color-text-danger: #ef4444; /* Texto rojo error/peligro */
+--grad-hero: linear-gradient(135deg, #4338ca, #7c3aed 50%, #6d28d9);
+--grad-primary: linear-gradient(90deg, #2563eb, #a855f7);
+--grad-bar: linear-gradient(90deg, #3b82f6, #a855f7);
 ```
 
-#### Colores de Estado
+### Radios (effects.css)
 
 ```css
---color-success-50: #f0fdf4;
---color-success-500: #22c55e; /* Verde para badge activo */
---color-success-600: #16a34a;
---color-danger-500: #ef4444; /* Rojo para errores/alertas */
---color-warning-500: #f59e0b; /* Amarillo para advertencias */
+--radius-xs: 4px;
+--radius-sm: 6px;
+--radius-md: 12px;
+--radius-lg: 16px;
+--radius-xl: 20px;
+--radius-2xl: 28px;
+--radius-full: 9999px;
+--radius-widget: 20px;
+--radius-icon: 10px;
 ```
 
-#### Gradientes
+### Transiciones
 
 ```css
---gradient-primary: linear-gradient(135deg, #2F63FF 0%, #2B57F2 50%, #1E40AF 100%);
---gradient-sidebar: linear-gradient(90deg, #0B1E3B 0%, #1a2f4a 100%);
---gradient-bar: linear-gradient(180deg, #60A5FA 0%, #2F63FF 100%);
+--transition-fast: 150ms ease;
+--transition-normal: 200ms ease;
+--transition-slow: 300ms ease;
 ```
 
-### Tipografía
+---
 
-#### Familias Tipográficas
+## Componentes Base
 
-```css
---font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
---font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
---font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-```
-
-#### Tamaños de Fuente
-
-```css
---font-size-xs: 0.75rem;      /* 12px - Texto muy pequeño, etiquetas */
---font-size-sm: 0.875rem;     /* 14px - Texto secundario */
---font-size-base: 1rem;       /* 16px - Texto base */
---font-size-lg: 1.125rem;     /* 18px - Títulos de sección */
---font-size-xl: 1.25rem;      /* 20px */
---font-size-2xl: 1.5rem;      /* 24px - Títulos de tarjetas */
---font-size-3xl: 1.875rem;    /* 30px */
---font-size-4xl: 2.25rem;     /* 36px - Título principal */
-```
-
-#### Pesos de Fuente
-
-```css
---font-weight-normal: 400;
---font-weight-medium: 500;    /* Texto medio */
---font-weight-semibold: 600;  /* Títulos, etiquetas */
---font-weight-bold: 700;      /* Texto destacado */
-```
-
-#### Altura de Línea
-
-```css
---line-height-none: 1;
---line-height-tight: 1.25;
---line-height-snug: 1.375;
---line-height-normal: 1.5;
---line-height-relaxed: 1.625;
---line-height-loose: 2;
-```
-
-#### Espaciado entre Letras
-
-```css
---letter-spacing-tighter: -0.05em;
---letter-spacing-tight: -0.025em;
---letter-spacing-normal: 0em;
---letter-spacing-wide: 0.025em;
---letter-spacing-wider: 0.05em;  /* Etiquetas, badges */
---letter-spacing-widest: 0.1em;  /* Texto en mayúsculas */
-```
-
-### Espaciado
-
-```css
---spacing-0: 0;
---spacing-px: 1px;
---spacing-0-5: 0.125rem; /* 2px */
---spacing-1: 0.25rem;   /* 4px */
---spacing-2: 0.5rem;    /* 8px */
---spacing-3: 0.75rem;   /* 12px */
---spacing-4: 1rem;      /* 16px - Espaciado base */
---spacing-6: 1.5rem;    /* 24px - Padding de tarjetas */
---spacing-8: 2rem;      /* 32px - Margen entre secciones */
---spacing-12: 3rem;     /* 48px */
---spacing-16: 4rem;     /* 64px */
---spacing-64: 16rem;    /* 256px - Ancho del sidebar */
-```
-
-### Bordes y Sombras
-
-#### Radios de Borde
-
-```css
---border-radius-none: 0;
---border-radius-sm: 0.125rem;  /* 2px */
---border-radius-md: 0.25rem;   /* 4px */
---border-radius-lg: 0.5rem;    /* 8px */
---border-radius-xl: 0.75rem;   /* 12px - Cards */
---border-radius-2xl: 1rem;     /* 16px - Cards destacadas */
---border-radius-full: 9999px;  /* Badges, botones circulares */
-```
-
-#### Sombras
-
-```css
---shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
---shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
---shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
---shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
---shadow-blue-sm: 0 1px 2px rgba(47, 99, 255, 0.1);
---shadow-blue-md: 0 4px 12px rgba(47, 99, 255, 0.15);
---shadow-blue-lg: 0 14px 30px rgba(47, 99, 255, 0.35);
-```
-
-## Componentes
-
-### Componentes Básicos
-
-#### Button
-
-El componente `Button` se utiliza para acciones primarias y secundarias en la interfaz.
+### Button
 
 ```tsx
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/Button/Button';
 
-<Button variant="primary" size="md">
-  Guardar Cambios
-</Button>
+<Button variant="primary" size="md" fullWidth>Guardar</Button>
+<Button variant="outline" icon={<PlusIcon size={14} />}>Añadir</Button>
+<Button variant="danger" loading>Eliminando...</Button>
+<Button variant="ghost" size="sm">Cancelar</Button>
+<Button variant="heroPrimary">CTA sobre gradiente</Button>
 ```
 
-**Variantes:**
-- `primary`: Botón principal con fondo azul
-- `secondary`: Botón secundario con borde azul
-- `outline`: Botón con borde y sin fondo
-- `ghost`: Botón sin borde ni fondo
-- `danger`: Botón rojo para acciones destructivas
+| Prop | Tipo | Default |
+|---|---|---|
+| `variant` | `primary \| secondary \| outline \| ghost \| danger \| heroPrimary \| heroSecondary` | `primary` |
+| `size` | `sm \| md \| lg` | `md` |
+| `fullWidth` | `boolean` | `false` |
+| `icon` | `ReactNode` | — |
+| `iconOnly` | `boolean` | `false` |
+| `loading` | `boolean` | `false` |
 
-**Tamaños:**
-- `sm`: Pequeño
-- `md`: Mediano (por defecto)
-- `lg`: Grande
-
-#### Card
-
-El componente `Card` se utiliza para agrupar contenido relacionado.
+### Badge
 
 ```tsx
-import { Card } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/Badge/Badge';
 
-<Card variant="default" size="md">
-  <Card.Header title="Título de la tarjeta" />
-  <Card.Content>
-    Contenido de la tarjeta
-  </Card.Content>
-  <Card.Footer>
-    <Button variant="primary">Acción</Button>
-  </Card.Footer>
-</Card>
+<Badge variant="success" pill bold dot dotPulse>Completado</Badge>
+<Badge variant="warning" size="sm" pill dot dotPulse>Pendiente</Badge>
+<Badge variant="primary" uppercase>Fase 1</Badge>
 ```
 
-**Variantes:**
-- `default`: Tarjeta estándar con borde claro
-- `primary`: Tarjeta con borde azul
-- `success`: Tarjeta con borde verde
-- `highlight`: Tarjeta con borde izquierdo azul
-- `gradient`: Tarjeta con fondo degradado azul
+| Prop | Tipo | Default |
+|---|---|---|
+| `variant` | `default \| primary \| blue \| success \| danger \| warning \| streak \| bronze \| silver \| gold \| diamond` | `default` |
+| `size` | `sm \| md \| lg` | `md` |
+| `pill` | `boolean` | `false` |
+| `uppercase` | `boolean` | `false` |
+| `bold` | `boolean` | `false` |
+| `dot` | `boolean` | `false` |
+| `dotPulse` | `boolean` | `false` |
+| `icon` | `ReactNode` | — |
 
-**Tamaños:**
-- `sm`: Padding pequeño
-- `md`: Padding mediano (por defecto)
-- `lg`: Padding grande
-- `none`: Sin padding
-
-#### Badge
-
-El componente `Badge` se utiliza para mostrar estados, etiquetas o categorías.
+### Modal
 
 ```tsx
-import { Badge } from '@/components/ui/Badge';
-
-<Badge variant="success" size="md" withDot>
-  SISTEMA ACTIVO
-</Badge>
-```
-
-**Variantes:**
-- `default`: Badge estándar con borde claro
-- `primary`: Badge azul claro con texto azul
-- `success`: Badge verde claro con texto verde
-- `danger`: Badge rojo claro con texto rojo
-- `warning`: Badge amarillo claro con texto amarillo
-- `solid`: Badge azul con texto blanco
-
-**Tamaños:**
-- `sm`: Pequeño
-- `md`: Mediano (por defecto)
-- `lg`: Grande
-
-#### Progress
-
-El componente `Progress` se utiliza para mostrar el progreso de una tarea o proceso.
-
-```tsx
-import { Progress } from '@/components/ui/Progress';
-
-<Progress 
-  value={30} 
-  variant="primary" 
-  size="md"
-  showLabel
-/>
-```
-
-**Variantes:**
-- `default`: Barra de progreso estándar
-- `primary`: Barra de progreso azul
-- `success`: Barra de progreso verde
-- `danger`: Barra de progreso roja
-- `warning`: Barra de progreso amarilla
-- `gradient`: Barra de progreso con degradado
-
-**Tamaños:**
-- `xs`: Extra pequeño
-- `sm`: Pequeño
-- `md`: Mediano (por defecto)
-- `lg`: Grande
-- `xl`: Extra grande
-
-### Componentes Avanzados
-
-#### Modal
-
-El componente `Modal` se utiliza para mostrar contenido en una ventana flotante.
-
-```tsx
-import { Modal } from '@/components/ui/Modal';
+import { Modal } from '@/components/ui/Modal/Modal';
+import { Button } from '@/components/ui/Button/Button';
 
 <Modal
-  isOpen={isOpen}
-  onClose={() => setIsOpen(false)}
-  title="Título del modal"
-  size="md"
+  isOpen={showModal}
+  onClose={() => setShowModal(false)}
+  title="Confirmar acción"
+  size="sm"
   footer={
-    <div className="flex justify-end gap-2">
-      <Button variant="outline" onClick={() => setIsOpen(false)}>
-        Cancelar
-      </Button>
-      <Button variant="primary" onClick={handleSave}>
-        Guardar
-      </Button>
+    <div style={{ display: 'flex', gap: 10 }}>
+      <Button variant="secondary" onClick={close} fullWidth>Cancelar</Button>
+      <Button variant="primary" onClick={confirm} fullWidth>Confirmar</Button>
     </div>
   }
 >
-  Contenido del modal
+  <p>¿Estás seguro de esta acción?</p>
 </Modal>
 ```
 
-**Tamaños:**
-- `sm`: Pequeño
-- `md`: Mediano (por defecto)
-- `lg`: Grande
-- `xl`: Extra grande
-- `full`: Pantalla completa
+| Prop | Tipo | Default |
+|---|---|---|
+| `isOpen` | `boolean` | — |
+| `onClose` | `() => void` | — |
+| `title` | `ReactNode` | — |
+| `size` | `sm \| md \| lg \| xl \| full` | `md` |
+| `closeOnOverlayClick` | `boolean` | `true` |
+| `closeOnEsc` | `boolean` | `true` |
+| `showCloseButton` | `boolean` | `true` |
+| `footer` | `ReactNode` | — |
 
-#### Dropdown
-
-El componente `Dropdown` se utiliza para mostrar una lista de opciones.
+### WidgetWrapper
 
 ```tsx
-import { Dropdown } from '@/components/ui/Dropdown';
+import { WidgetWrapper } from '@/components/ui/WidgetWrapper/WidgetWrapper';
 
-<Dropdown
-  placeholder="Seleccionar"
-  value={value}
-  onChange={setValue}
-  items={[
-    { value: 'option1', label: 'Opción 1' },
-    { value: 'option2', label: 'Opción 2' },
-    { value: 'option3', label: 'Opción 3' },
-  ]}
+<WidgetWrapper glowColor="purple" glowColorSecondary="blue" variant="widget">
+  {/* contenido del widget */}
+</WidgetWrapper>
+```
+
+Reemplaza el patrón repetido: `wrapper > blurBlue + blurPurple + card`.
+
+| Prop | Tipo | Default |
+|---|---|---|
+| `glowColor` | `purple \| blue \| green \| red \| none` | `purple` |
+| `glowColorSecondary` | `purple \| blue \| green \| none` | `blue` |
+| `variant` | `widget \| hero \| card` | `widget` |
+
+### EmptyState
+
+```tsx
+import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
+
+<EmptyState
+  icon="📊"
+  title="Sin resultados para este filtro"
+  description="Prueba a cambiar el periodo o categoría."
+  action={{ label: "Ver todo", onClick: handleReset }}
 />
 ```
 
-También se puede usar como menú contextual:
+### Skeleton
 
 ```tsx
-import { Dropdown } from '@/components/ui/Dropdown';
+import { Skeleton, WidgetSkeleton } from '@/components/ui/Skeleton/Skeleton';
 
-<Dropdown.Menu
-  trigger={<Button variant="outline">Acciones</Button>}
-  alignRight
->
-  <Dropdown.Item onClick={() => console.log('Editar')}>
-    Editar
-  </Dropdown.Item>
-  <Dropdown.Divider />
-  <Dropdown.Item onClick={() => console.log('Eliminar')}>
-    Eliminar
-  </Dropdown.Item>
-</Dropdown.Menu>
+// Línea simple
+<Skeleton width="80%" height={16} />
+
+// Múltiples líneas
+<Skeleton lines={3} height={14} />
+
+// Círculo (avatar)
+<Skeleton circle height={40} />
+
+// Widget completo pre-configurado
+<WidgetSkeleton />
 ```
 
-#### Table
-
-El componente `Table` se utiliza para mostrar datos tabulares.
+### Toast
 
 ```tsx
-import { Table } from '@/components/ui/Table';
+// 1. Envolver la app con ToastProvider (en layout.tsx)
+import { ToastProvider } from '@/components/ui/Toast/Toast';
+<ToastProvider>{children}</ToastProvider>
 
-<Table
-  data={data}
-  columns={[
-    {
-      key: 'name',
-      title: 'Nombre',
-      render: (value) => <strong>{value}</strong>,
-    },
-    {
-      key: 'email',
-      title: 'Email',
-    },
-    {
-      key: 'actions',
-      title: 'Acciones',
-      align: 'right',
-      render: (_, record) => (
-        <Button variant="outline" size="sm">
-          Ver
-        </Button>
-      ),
-    },
-  ]}
-  rowKey="id"
-  pagination={{
-    pageSize: 10,
-    total: data.length,
-  }}
+// 2. Usar el hook en cualquier componente
+import { useToast } from '@/components/ui/Toast/Toast';
+
+const { addToast } = useToast();
+addToast('Decisión guardada', 'success');
+addToast('Error al guardar', 'error');
+addToast('Procesando...', 'info', 5000);
+```
+
+### FormInput
+
+```tsx
+import { FormInput } from '@/components/ui/FormInput/FormInput';
+
+<FormInput
+  label="Email"
+  type="email"
+  value={email}
+  onChange={(e) => setEmail(e.target.value)}
+  error={errors.email}
+  placeholder="tu@email.com"
 />
 ```
 
-#### Form
+Incluye automáticamente: `useId()` para label/input, `aria-invalid`, `aria-describedby`, `role="alert"` en error, `:focus-visible`.
 
-El componente `Form` se utiliza para crear formularios.
-
-```tsx
-import { Form } from '@/components/ui/Form';
-
-<Form onSubmit={handleSubmit}>
-  <Form.Group>
-    <Form.Label htmlFor="name" required>Nombre</Form.Label>
-    <Form.Input
-      id="name"
-      value={name}
-      onChange={(e) => setName(e.target.value)}
-      error={errors.name}
-    />
-    <Form.Hint>Introduce tu nombre completo</Form.Hint>
-  </Form.Group>
-  
-  <Form.Group>
-    <Form.Label htmlFor="email" required>Email</Form.Label>
-    <Form.Input
-      id="email"
-      type="email"
-      value={email}
-      onChange={(e) => setEmail(e.target.value)}
-      error={errors.email}
-    />
-  </Form.Group>
-  
-  <Form.Group>
-    <Form.Checkbox
-      id="terms"
-      label="Acepto los términos y condiciones"
-      checked={terms}
-      onChange={(e) => setTerms(e.target.checked)}
-      error={errors.terms}
-    />
-  </Form.Group>
-  
-  <Form.Actions>
-    <Button variant="outline" type="button">
-      Cancelar
-    </Button>
-    <Button variant="primary" type="submit">
-      Enviar
-    </Button>
-  </Form.Actions>
-</Form>
-```
+---
 
 ## Layout
 
-### AppLayout
+### Estructura general
 
-El componente `AppLayout` es el layout principal de la aplicación. Incluye el sidebar y el contenido principal.
-
-```tsx
-import { AppLayout } from '@/components/layout';
-
-<AppLayout
-  title="Título de la página"
-  subtitle="Subtítulo de la página"
->
-  <AppLayout.Section title="Sección 1">
-    Contenido de la sección 1
-  </AppLayout.Section>
-  
-  <AppLayout.Section title="Sección 2">
-    <AppLayout.Grid columns={2}>
-      <Card>Contenido 1</Card>
-      <Card>Contenido 2</Card>
-    </AppLayout.Grid>
-  </AppLayout.Section>
-</AppLayout>
 ```
-
-### Sidebar
-
-El componente `Sidebar` es la barra lateral de la aplicación. Incluye el logo, el menú principal y la información del usuario.
-
-```tsx
-import { Sidebar } from '@/components/layout';
-
-<Sidebar
-  userName="Nombre de usuario"
-  onLogout={handleLogout}
-/>
-```
-
-### MainContent
-
-El componente `MainContent` es el contenido principal de la aplicación.
-
-```tsx
-import { MainContent } from '@/components/layout';
-
-<MainContent
-  title="Título de la página"
-  subtitle="Subtítulo de la página"
-  withPattern
->
-  <MainContent.Section title="Sección 1">
-    Contenido de la sección 1
-  </MainContent.Section>
-  
-  <MainContent.Grid columns={2}>
-    <Card>Contenido 1</Card>
-    <Card>Contenido 2</Card>
-  </MainContent.Grid>
+<Sidebar />          ← solo desktop (>768px)
+<MainContent>
+  <HeaderStatusBar />
+  <widgets...>
 </MainContent>
+<BottomNav />        ← solo mobile (<768px)
 ```
 
-## Temas
+### Breakpoints
 
-La aplicación soporta temas claro y oscuro. Los temas se pueden cambiar usando el componente `ThemeToggle`.
+| Breakpoint | Ancho | Comportamiento |
+|---|---|---|
+| Mobile | < 768px | BottomNav visible, Sidebar oculto, single-column |
+| Tablet | 768px | Transición: brand panel oculto en auth |
+| Desktop | ≥ 1024px | Sidebar visible, two-column en auth |
 
-```tsx
-import { ThemeToggle } from '@/components/ui/ThemeToggle';
+---
 
-<ThemeToggle />
-```
+## Z-Index Scale
 
-También se puede cambiar el tema programáticamente:
-
-```tsx
-import { applyTheme } from '@/styles/themes';
-
-// Aplicar tema claro
-applyTheme('light');
-
-// Aplicar tema oscuro
-applyTheme('dark');
-
-// Aplicar tema del sistema
-applyTheme('system');
-```
-
-## Buenas Prácticas
-
-### Uso de Tokens
-
-- Siempre utiliza los tokens de diseño en lugar de valores hardcodeados.
-- Utiliza las variables CSS para colores, espaciado, tipografía, etc.
+Definida en `src/styles/tokens/effects.css`:
 
 ```css
-/* Mal */
-.element {
-  color: #2F63FF;
-  margin: 16px;
-  font-size: 14px;
+--z-base: 1;
+--z-dropdown: 50;
+--z-sticky: 100;
+--z-bottomnav: 200;
+--z-daily-modal: 500;
+--z-sidebar: 600;
+--z-modal-overlay: 900;
+--z-toast: 1000;
+```
+
+**Regla:** Nunca usar `z-index` numéricos. Siempre usar `var(--z-*)`.
+
+---
+
+## Reglas Obligatorias
+
+### ❌ Nunca hacer
+
+1. **Colores hex/rgb en línea**: Usar `var(--color-*)` o `var(--widget-*)`
+2. **border-radius numéricos**: Usar `var(--radius-*)`
+3. **transition sin token**: Usar `var(--transition-*)`
+4. **z-index numéricos**: Usar `var(--z-*)`
+5. **Botones custom por widget**: Usar `<Button>`
+6. **Modales custom por widget**: Usar `<Modal>`
+7. **Badges custom por widget**: Usar `<Badge>`
+8. **Inline styles en TSX**: Mover a CSS Module
+9. **CSS global sin scope**: Usar `*.module.css`
+
+### ✅ Siempre hacer
+
+1. Usar CSS Modules (`Component.module.css`)
+2. Importar componentes base para botones, badges, modales
+3. Usar `WidgetWrapper` para contenedores de widgets
+4. Añadir `:focus-visible` a elementos interactivos
+5. Usar `useId()` en formularios para vincular label/input
+6. Usar `role="alert"` en mensajes de error
+7. Verificar contraste WCAG AA (ratio ≥ 4.5:1 para texto)
+
+---
+
+## Accesibilidad
+
+### Focus visible
+Todos los botones e inputs deben tener un estilo `:focus-visible` distinguible:
+
+```css
+.button:focus-visible {
+  outline: 2px solid var(--color-primary-400);
+  outline-offset: 2px;
 }
-
-/* Bien */
-.element {
-  color: var(--color-primary-500);
-  margin: var(--spacing-4);
-  font-size: var(--font-size-sm);
-}
 ```
 
-### Componentes
-
-- Utiliza los componentes del sistema de diseño en lugar de crear nuevos.
-- Si necesitas un componente nuevo, sigue el patrón de los componentes existentes.
-- Utiliza las props de los componentes para personalizar su apariencia.
-
-### Responsive
-
-- Utiliza el sistema de grid para crear layouts responsive.
-- Utiliza los breakpoints de Tailwind CSS para adaptar la interfaz a diferentes tamaños de pantalla.
-
+### Label/Input association
 ```tsx
-<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-  <Card>Contenido 1</Card>
-  <Card>Contenido 2</Card>
-  <Card>Contenido 3</Card>
-</div>
+const inputId = useId();
+<label htmlFor={inputId}>Email</label>
+<input id={inputId} aria-invalid={!!error} aria-describedby={error ? `${inputId}-error` : undefined} />
+{error && <span id={`${inputId}-error`} role="alert">{error}</span>}
 ```
 
-### Accesibilidad
+### Touch targets
+Mínimo 44×44px para elementos interactivos en mobile.
 
-- Utiliza etiquetas semánticas para mejorar la accesibilidad.
-- Asegúrate de que todos los elementos interactivos tienen un buen contraste.
-- Utiliza atributos ARIA cuando sea necesario.
-
-```tsx
-<button
-  aria-label="Cerrar"
-  className="..."
-  onClick={onClose}
->
-  <CloseIcon />
-</button>
-```
-
-### Performance
-
-- Utiliza componentes ligeros y optimizados.
-- Evita renderizados innecesarios.
-- Utiliza lazy loading para componentes pesados.
-
-```tsx
-import { lazy, Suspense } from 'react';
-
-const HeavyComponent = lazy(() => import('./HeavyComponent'));
-
-<Suspense fallback={<div>Cargando...</div>}>
-  <HeavyComponent />
-</Suspense>
-```
