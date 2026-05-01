@@ -6,9 +6,7 @@
   --background: #0d0d14;
   --foreground: #ffffff;
 
-  /* ── Valores por defecto (tema oscuro) — sobrescritos por dark.css / light.css ── */
-
-  /* Fondos */
+  /* ── Fondos ── */
   --color-background-main: #0d0d14;
   --color-background-page: #0d0d14;
   --color-background-card: #16161f;
@@ -19,9 +17,9 @@
   --color-background-bottomnav: #0d0d14;
   --color-background-modal: #16161f;
   --color-background-header: transparent;
-  --color-background-overlay: rgba(0, 0, 0, 0.85);
+  --color-background-overlay: rgba(2, 6, 23, 0.80);
 
-  /* Texto */
+  /* ── Texto ── */
   --color-text-primary: #ffffff;
   --color-text-secondary: rgba(255, 255, 255, 0.55);
   --color-text-muted: rgba(255, 255, 255, 0.35);
@@ -39,7 +37,7 @@
   --color-text-greeting: #ffffff;
   --color-text-sub: rgba(255, 255, 255, 0.55);
 
-  /* Bordes */
+  /* ── Bordes ── */
   --color-border-subtle: rgba(255, 255, 255, 0.08);
   --color-border-card: rgba(255, 255, 255, 0.07);
   --color-border-sidebar: rgba(255, 255, 255, 0.06);
@@ -49,7 +47,7 @@
   --color-border-light: rgba(255, 255, 255, 0.08);
   --color-border-medium: rgba(255, 255, 255, 0.12);
 
-  /* Nav */
+  /* ── Nav ── */
   --nav-item-bg: transparent;
   --nav-item-bg-hover: rgba(255, 255, 255, 0.06);
   --nav-item-bg-active: rgba(255, 255, 255, 0.1);
@@ -62,7 +60,7 @@
   --nav-logout-bg-hover: rgba(255, 69, 58, 0.1);
   --nav-logout-border-hover: rgba(255, 69, 58, 0.3);
 
-  /* Modales */
+  /* ── Modales ── */
   --modal-input-bg: rgba(255, 255, 255, 0.07);
   --modal-cancel-bg: rgba(255, 255, 255, 0.07);
   --modal-cancel-bg-hover: rgba(255, 255, 255, 0.12);
@@ -70,49 +68,43 @@
   --modal-close-bg-hover: rgba(255, 255, 255, 0.14);
   --modal-closebtndash-bg: rgba(0, 0, 0, 0.5);
 
-  /* Header */
+  /* ── Header ── */
   --header-avatar-inner: #1c1c28;
+  --header-avatar-font-size: 16px;
   --header-online-border: #0d0d14;
   --header-iconbtn-bg: rgba(255,255,255,0.08);
   --header-iconbtn-bg-hover: rgba(255,255,255,0.14);
 
-  /* Toggle tema */
+  /* ── Toggle tema ── */
   --theme-toggle-bg: rgba(51, 65, 85, 0.4);
   --theme-toggle-bg-hover: rgba(51, 65, 85, 0.7);
   --theme-toggle-border: rgba(51, 65, 85, 0.5);
   --theme-toggle-color: rgba(148, 163, 184, 0.8);
   --theme-toggle-color-hover: #f1f5f9;
 
-  /* Sombras */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.5);
-  --shadow-xl: 0 24px 48px rgba(0, 0, 0, 0.6);
-  --shadow-blue-md: 0 4px 16px rgba(168, 85, 247, 0.3);
+  /* ── Sombras del tema ── */
   --shadow-sidebar: 1px 0 0 rgba(255, 255, 255, 0.06);
 
-  /* ── Design tokens — coherencia visual global ── */
-
-  /* Colores de texto (legacy) */
+  /* ── Legacy text tokens (usados en widgets vía var(--text-primary)) ── */
   --text-primary:    #ffffff;
   --text-secondary:  rgba(255, 255, 255, 0.55);
   --text-muted:      rgba(255, 255, 255, 0.35);
   --text-label:      rgba(255, 255, 255, 0.45);
 
-  /* Colores de acento */
+  /* ── Colores de acento legacy ── */
   --accent-purple:   #a855f7;
   --accent-blue:     #2563eb;
   --accent-green:    #22c55e;
   --accent-red:      #ef4444;
   --accent-yellow:   #eab308;
 
-  /* Superficies */
+  /* ── Superficies legacy ── */
   --surface-card:    linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
   --surface-inner:   rgba(15, 23, 42, 0.5);
   --border-subtle:   rgba(51, 65, 85, 0.5);
   --border-card:     rgba(51, 65, 85, 0.55);
 
-  /* ── Widget icon wrap — tamaño ÚNICO 34×34px ── */
+  /* ── Widget icon wrap ── */
   --icon-wrap-size:   38px;
   --icon-wrap-radius: 50%;
   --icon-svg-size:    18px;
@@ -123,23 +115,24 @@
   --widget-label-size:   var(--type-label-size);
   --widget-label-weight: var(--type-label-weight);
 
-  /* ── Widget body text (referencia tokens tipográficos) ── */
+  /* ── Widget body text ── */
   --widget-body-size:    var(--type-body-size);
   --widget-row-label:    var(--type-h3-size);
   --widget-row-sub:      var(--type-small-size);
 
-  /* ── Widget padding ── */
+  /* ── Widget layout — tokens unificados ── */
   --widget-padding:      20px;
-  --widget-radius:       20px;
+  --widget-radius:       var(--radius-xl);
   --widget-gap:          12px;
 
-  /* ── Botones ── */
-  --btn-radius:          12px;
+  /* ── Botones — tokens unificados ── */
+  --btn-radius:          var(--radius-md);
   --btn-font-size:       var(--type-btn-size);
   --btn-font-weight:     var(--type-btn-weight);
   --btn-padding-y:       12px;
+  --btn-padding-x:       20px;
 
-  /* ── Gradiente primario ── */
+  /* ── Gradiente primario de botón ── */
   --grad-primary: linear-gradient(90deg, #a855f7, #2563eb);
   --grad-primary-hover: linear-gradient(90deg, #9333ea, #1d4ed8);
 
@@ -149,8 +142,8 @@
   --widget-card-bg: rgba(255, 255, 255, 0.05);
   --widget-border: rgba(255, 255, 255, 0.07);
   --widget-border-hover: rgba(255, 255, 255, 0.14);
-  --widget-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-  --widget-shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.3);
+  --widget-shadow: var(--shadow-md);
+  --widget-shadow-sm: var(--shadow-sm);
   --widget-inner-bg: rgba(255, 255, 255, 0.04);
   --widget-inner-border: rgba(255, 255, 255, 0.06);
   --widget-answer-bg: rgba(255, 255, 255, 0.06);
@@ -185,6 +178,21 @@
   --widget-range-card-bg: rgba(255, 255, 255, 0.06);
   --widget-range-card-border: rgba(255, 255, 255, 0.08);
   --widget-logout-bg: rgba(255, 255, 255, 0.05);
+
+  /* ── Auth page tokens ── */
+  --auth-card-bg: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  --auth-card-border: rgba(51, 65, 85, 0.6);
+  --auth-card-shadow: 0 25px 50px rgba(2, 6, 23, 0.7);
+  --auth-page-bg: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+  --auth-input-bg: rgba(15, 23, 42, 0.6);
+  --auth-input-border: rgba(51, 65, 85, 0.55);
+  --auth-input-focus: rgba(168, 85, 247, 0.5);
+  --auth-label-color: rgba(148, 163, 184, 0.6);
+  --auth-divider: rgba(51, 65, 85, 0.5);
+  --auth-secondary-btn-bg: rgba(30, 41, 59, 0.5);
+  --auth-secondary-btn-border: rgba(51, 65, 85, 0.5);
+  --auth-secondary-btn-color: rgba(203, 213, 225, 0.85);
+  --auth-link-color: #a78bfa;
 }
 
 body {

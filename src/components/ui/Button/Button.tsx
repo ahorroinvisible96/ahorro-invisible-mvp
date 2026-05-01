@@ -3,9 +3,9 @@ import styles from './Button.module.css';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   /**
-   * Variante del botón
+   * Variante visual del botón
    */
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'dangerOutline' | 'cancel' | 'heroPrimary' | 'heroSecondary';
   
   /**
    * Tamaño del botón
@@ -26,6 +26,11 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
    * Botón solo con icono (sin texto)
    */
   iconOnly?: boolean;
+
+  /**
+   * Estado de carga — muestra spinner
+   */
+  loading?: boolean;
   
   /**
    * Contenido del botón
@@ -41,6 +46,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       fullWidth = false,
       icon,
       iconOnly = false,
+      loading = false,
       className = '',
       disabled = false,
       children,
@@ -48,14 +54,16 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref
   ) => {
+    const isDisabled = disabled || loading;
+
     const buttonClasses = [
       styles.button,
       styles[variant],
       styles[size],
       fullWidth ? styles.fullWidth : '',
-      icon && !iconOnly ? styles.withIcon : '',
       iconOnly ? styles.iconOnly : '',
-      disabled ? styles.disabled : '',
+      isDisabled ? styles.disabled : '',
+      loading ? styles.loading : '',
       className
     ].filter(Boolean).join(' ');
 
@@ -63,9 +71,10 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         className={buttonClasses}
-        disabled={disabled}
+        disabled={isDisabled}
         {...props}
       >
+        {loading && <span className={styles.spinner} />}
         {icon}
         {!iconOnly && children}
       </button>

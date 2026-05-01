@@ -1,53 +1,115 @@
 /* 
- * Sistema de tokens de efectos (sombras, bordes) para Ahorro Invisible
- * Basado en la imagen de referencia del dashboard
+ * ═══════════════════════════════════════════════════════════
+ * EFECTOS VISUALES — Ahorro Invisible
+ * Sombras, bordes, radios, transiciones
+ * ═══════════════════════════════════════════════════════════
  */
 
 :root {
-  /* Sombras */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
-  
-  /* Sombras específicas */
-  --shadow-blue-sm: 0 1px 2px rgba(47, 99, 255, 0.1);
-  --shadow-blue-md: 0 4px 12px rgba(47, 99, 255, 0.15);
-  --shadow-blue-lg: 0 14px 30px rgba(47, 99, 255, 0.35);
-  
-  /* Bordes */
-  --border-width-none: 0px;
-  --border-width-thin: 1px;
-  --border-width-thick: 2px;
-  --border-width-thicker: 3px;
-  
-  /* Radios de borde */
-  --border-radius-none: 0;
-  --border-radius-sm: 0.125rem;  /* 2px */
-  --border-radius-md: 0.25rem;   /* 4px */
-  --border-radius-lg: 0.5rem;    /* 8px */
-  --border-radius-xl: 0.75rem;   /* 12px - Cards */
-  --border-radius-2xl: 1rem;     /* 16px - Cards destacadas */
-  --border-radius-3xl: 1.5rem;   /* 24px */
-  --border-radius-full: 9999px;  /* Badges, botones circulares */
-  
-  /* Efectos específicos */
-  --card-border-radius: var(--border-radius-xl);
-  --card-shadow: var(--shadow-sm);
-  --card-hover-shadow: var(--shadow-md);
-  
-  --badge-border-radius: var(--border-radius-full);
-  --badge-border-width: var(--border-width-thin);
-  
-  --button-border-radius: var(--border-radius-full);
-  --button-shadow: var(--shadow-sm);
-  --button-hover-shadow: var(--shadow-blue-md);
-  
-  /* Transiciones */
-  --transition-fast: 150ms;
-  --transition-normal: 300ms;
-  --transition-slow: 500ms;
-  --transition-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  /* ── Border-radius (5 niveles) ────────────────────────── */
+  --radius-sm: 8px;        /* inputs, badges pequeños, dropdown items */
+  --radius-md: 12px;       /* botones, cards secundarias, chips */
+  --radius-lg: 16px;       /* modales, goal cards */
+  --radius-xl: 20px;       /* widgets principales */
+  --radius-2xl: 28px;      /* hero cards (PrimaryGoal, ProfileHero) */
+  --radius-full: 9999px;   /* pills, avatares, badges circulares */
+
+  /* ── Aliases semánticos de radius ─────────────────────── */
+  --radius-input: var(--radius-sm);
+  --radius-btn: var(--radius-md);
+  --radius-card: var(--radius-lg);
+  --radius-widget: var(--radius-xl);
+  --radius-hero: var(--radius-2xl);
+  --radius-pill: var(--radius-full);
+  --radius-badge: var(--radius-sm);
+  --radius-icon: 10px;
+
+  /* ── Border-width ─────────────────────────────────────── */
+  --border-thin: 1px;
+  --border-medium: 1.5px;
+  --border-thick: 2px;
+
+  /* ── Sombras (3 niveles + glow) ───────────────────────── */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+
+  /* Glows de marca */
+  --shadow-glow-purple: 0 4px 14px rgba(168, 85, 247, 0.30);
+  --shadow-glow-blue: 0 4px 14px rgba(37, 99, 235, 0.30);
+  --shadow-glow-brand: 0 4px 14px rgba(99, 102, 241, 0.35);
+
+  /* Sombras específicas de widget */
+  --shadow-widget: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --shadow-widget-sm: 0 4px 16px rgba(0, 0, 0, 0.3);
+  --shadow-widget-hover: 0 12px 40px rgba(0, 0, 0, 0.5);
+
+  /* ── Transiciones ─────────────────────────────────────── */
+  --duration-fast: 150ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+  --duration-slower: 500ms;
+  --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Shortcuts */
+  --transition-fast: var(--duration-fast) var(--ease-default);
+  --transition-normal: var(--duration-normal) var(--ease-default);
+  --transition-slow: var(--duration-slow) var(--ease-default);
+
+  /* ── Z-index scale ────────────────────────────────────── */
+  --z-dropdown: 20;
+  --z-sidebar: 50;
+  --z-modal-overlay: 100;
+  --z-modal: 101;
+  --z-daily-modal: 500;
+  --z-bottomnav: 200;
+  --z-toast: 1000;
+}
+
+/* ── Animaciones compartidas ────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(12px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { transform: translateY(-10px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.5; transform: scale(0.85); }
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.35; }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes wave {
+  0%   { transform: rotate(0deg); }
+  10%  { transform: rotate(18deg); }
+  20%  { transform: rotate(-8deg); }
+  30%  { transform: rotate(18deg); }
+  40%  { transform: rotate(-4deg); }
+  50%  { transform: rotate(10deg); }
+  60%, 100% { transform: rotate(0deg); }
+}
+
+@keyframes gradientShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }

@@ -1,140 +1,133 @@
 /* 
- * Estilos para el componente Badge
- * Basado en la imagen de referencia del dashboard
+ * ═══════════════════════════════════════════════════════════
+ * BADGE — Design System Ahorro Invisible
+ * ═══════════════════════════════════════════════════════════
  */
 
+/* ── Base ── */
 .badge {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  border-radius: var(--badge-border-radius);
-  font-size: var(--badge-text);
-  font-weight: var(--badge-weight);
-  letter-spacing: var(--badge-spacing);
+  gap: 5px;
+  font-weight: 600;
   white-space: nowrap;
-  transition: all var(--transition-fast) var(--transition-ease);
+  border-radius: var(--radius-badge);
+  border: var(--border-thin) solid transparent;
+  transition: all var(--transition-fast);
 }
 
-/* Variantes */
+/* ═══════════════════════════════════════════════════════════
+   TAMAÑOS
+   ═══════════════════════════════════════════════════════════ */
+.sm { font-size: 10px; padding: 2px 7px; gap: 4px; }
+.md { font-size: 11px; padding: 4px 10px; gap: 5px; }
+.lg { font-size: 13px; padding: 5px 12px; gap: 6px; }
+
+/* ═══════════════════════════════════════════════════════════
+   VARIANTES DE COLOR
+   ═══════════════════════════════════════════════════════════ */
 .default {
-  background-color: var(--color-background-card);
+  background: var(--widget-answer-bg);
+  border-color: var(--widget-border);
   color: var(--color-text-secondary);
-  border: var(--border-width-thin) solid var(--color-border-light);
 }
 
 .primary {
-  background-color: var(--color-primary-50);
-  color: var(--color-primary-600);
-  border: var(--border-width-thin) solid var(--color-primary-100);
+  background: rgba(168, 85, 247, 0.12);
+  border-color: rgba(168, 85, 247, 0.25);
+  color: #c084fc;
+}
+
+.blue {
+  background: var(--color-info-muted);
+  border-color: var(--color-info-border);
+  color: #60a5fa;
 }
 
 .success {
-  background-color: var(--color-success-50);
-  color: var(--color-success-600);
-  border: var(--border-width-thin) solid var(--color-border-green);
+  background: var(--color-success-muted);
+  border-color: var(--color-success-border);
+  color: #4ade80;
 }
 
 .danger {
-  background-color: #fee2e2;
-  color: var(--color-danger-500);
-  border: var(--border-width-thin) solid #fecaca;
+  background: var(--color-error-muted);
+  border-color: var(--color-error-border);
+  color: #f87171;
 }
 
 .warning {
-  background-color: #fef3c7;
-  color: var(--color-warning-500);
-  border: var(--border-width-thin) solid #fde68a;
+  background: var(--color-warning-muted);
+  border-color: var(--color-warning-border);
+  color: #facc15;
 }
 
-.solid {
-  background-color: var(--color-primary-500);
-  color: var(--color-text-inverted);
-  border: none;
+.streak {
+  background: var(--color-streak-muted);
+  border-color: var(--color-streak-border);
+  color: #fb923c;
 }
 
-/* Tamaños */
-.sm {
-  padding: 0.25rem 0.5rem;
-  font-size: 0.625rem;
+/* ── Niveles de gamificación ── */
+.bronze {
+  background: rgba(180, 83, 9, 0.2);
+  border-color: rgba(217, 119, 6, 0.4);
+  color: #fbbf24;
 }
 
-.md {
-  padding: 0.375rem 0.75rem;
-  font-size: 0.75rem;
+.silver {
+  background: rgba(100, 116, 139, 0.2);
+  border-color: rgba(148, 163, 184, 0.4);
+  color: #cbd5e1;
 }
 
-.lg {
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
+.gold {
+  background: rgba(234, 179, 8, 0.15);
+  border-color: rgba(234, 179, 8, 0.4);
+  color: #fde047;
 }
 
-/* Badge con icono */
-.withIcon {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
+.diamond {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(96, 165, 250, 0.4);
+  color: #7dd3fc;
 }
 
-.withDot {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
+/* ═══════════════════════════════════════════════════════════
+   MODIFICADORES
+   ═══════════════════════════════════════════════════════════ */
 
-.dot {
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 50%;
-}
-
-.success .dot {
-  background-color: var(--color-success-500);
-}
-
-.primary .dot {
-  background-color: var(--color-primary-500);
-}
-
-.danger .dot {
-  background-color: var(--color-danger-500);
-}
-
-.warning .dot {
-  background-color: var(--color-warning-500);
-}
-
-.default .dot {
-  background-color: var(--color-text-secondary);
-}
-
-/* Animación de pulso para el dot */
-.pulse .dot {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
-/* Variantes de forma */
-.rounded {
-  border-radius: var(--border-radius-md);
-}
-
+/* Pill shape */
 .pill {
-  border-radius: var(--border-radius-full);
+  border-radius: var(--radius-full);
 }
 
-/* Variantes de estilo */
+/* Uppercase label */
 .uppercase {
   text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
+/* Bold weight */
 .bold {
-  font-weight: var(--font-weight-bold);
+  font-weight: 700;
+}
+
+/* ── Punto indicador ── */
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+/* Pulse en el dot */
+.dotPulse {
+  animation: badgePulse 2s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.5; transform: scale(0.8); }
 }

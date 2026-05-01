@@ -1,7 +1,7 @@
 /* ── Container ── */
 .wrapper {
   position: relative;
-  border-radius: 24px;
+  border-radius: var(--radius-widget);
   overflow: hidden;
 }
 
@@ -26,8 +26,8 @@
 .borderLayer {
   position: absolute;
   inset: 0;
-  border-radius: 16px;
-  border: 1px solid var(--widget-border);
+  border-radius: var(--radius-lg);
+  border: var(--border-thin) solid var(--widget-border);
   box-shadow: var(--widget-shadow-sm);
   pointer-events: none;
 }
@@ -48,13 +48,13 @@
 .iconWrap {
   width: 34px;
   height: 34px;
-  border-radius: 10px;
-  background: rgba(37, 99, 235, 0.15);
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: var(--radius-icon);
+  background: var(--color-info-muted);
+  border: var(--border-thin) solid var(--color-info-border);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #60a5fa;
+  color: var(--color-info);
   flex-shrink: 0;
 }
 
@@ -78,10 +78,10 @@
   justify-content: space-between;
   padding: 13px 16px;
   background: var(--widget-list-item-bg);
-  border: 1px solid var(--widget-list-item-border);
-  border-radius: 12px;
+  border: var(--border-thin) solid var(--widget-list-item-border);
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all 180ms ease;
+  transition: all var(--transition-fast);
   width: 100%;
   text-align: left;
   font-family: inherit;
@@ -110,21 +110,21 @@
 }
 
 .itemIconBlue {
-  background: rgba(37, 99, 235, 0.15);
-  border: 1px solid rgba(59, 130, 246, 0.25);
-  color: #60a5fa;
+  background: var(--color-info-muted);
+  border: var(--border-thin) solid rgba(59, 130, 246, 0.25);
+  color: var(--color-info);
 }
 
 .itemIconGreen {
-  background: rgba(34, 197, 94, 0.12);
-  border: 1px solid rgba(34, 197, 94, 0.25);
-  color: #4ade80;
+  background: var(--color-success-muted);
+  border: var(--border-thin) solid var(--color-success-border);
+  color: var(--color-success-light);
 }
 
 .itemIconPurple {
-  background: rgba(168, 85, 247, 0.12);
-  border: 1px solid rgba(168, 85, 247, 0.25);
-  color: #c084fc;
+  background: var(--color-brand-purple-muted);
+  border: var(--border-thin) solid rgba(168, 85, 247, 0.25);
+  color: var(--color-brand-purple-light);
 }
 
 .itemLabel {

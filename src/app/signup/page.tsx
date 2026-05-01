@@ -2,14 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/Button/Button";
-import { Card } from "@/components/ui/Card/Card";
 import { FormInput } from "@/components/ui/FormInput";
 import { analytics } from "@/services/analytics";
 import { storeInitUser } from "@/services/dashboardStore";
 import { authSignUp, authSendMagicLink } from '@/services/authService';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import { saveUserProfileToSupabase } from "@/services/syncService";
+import s from './signup.module.css';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -21,14 +20,10 @@ export default function SignupPage() {
   const [resendInfo, setResendInfo] = useState("");
   
   useEffect(() => {
-    // Establecer el nombre de la pantalla para analytics
     analytics.setScreen('signup');
-    
     try {
-      // Verificar si ya está autenticado
       const isAuthenticated = localStorage.getItem("isAuthenticated");
       if (isAuthenticated === "true") {
-        // Verificar si ya completó el onboarding
         const hasCompletedOnboarding = localStorage.getItem("hasCompletedOnboarding");
         if (hasCompletedOnboarding === "true") {
           router.replace("/dashboard");
@@ -39,8 +34,6 @@ export default function SignupPage() {
     } catch (err) {
       console.error("Error al verificar autenticación:", err);
     }
-    
-    // Registrar evento de inicio de signup
     analytics.signupStarted();
   }, [router]);
   
@@ -61,12 +54,10 @@ export default function SignupPage() {
         analytics.signupError("AUTH_ERROR", authErr ?? "unknown");
         return;
       }
-      // Guardar perfil en Supabase si el usuario es real (no localStorage)
       if (user.id !== 'local') {
         await saveUserProfileToSupabase(user.id, name).catch(() => null);
         storeInitUser(name.trim(), email.trim());
         analytics.signupSuccess();
-        // Supabase requiere verificación de email → mostrar pantalla de confirmación
         setEmailVerificationSent(true);
         return;
       }
@@ -80,31 +71,6 @@ export default function SignupPage() {
       setLoading(false);
     }
   };
-  
-  const inputStyle: React.CSSProperties = {
-    width: '100%',
-    padding: '11px 14px',
-    background: 'rgba(15,23,42,0.6)',
-    border: '1px solid rgba(51,65,85,0.55)',
-    borderRadius: 10,
-    color: '#f1f5f9',
-    fontSize: 14,
-    fontWeight: 400,
-    outline: 'none',
-    boxSizing: 'border-box',
-    fontFamily: 'var(--font-app)',
-    transition: 'border-color 180ms ease',
-  };
-
-  const labelStyle: React.CSSProperties = {
-    display: 'block',
-    fontSize: 11,
-    fontWeight: 600,
-    color: 'rgba(148,163,184,0.6)',
-    textTransform: 'uppercase',
-    letterSpacing: '0.08em',
-    marginBottom: 6,
-  };
 
   async function handleResendVerification() {
     setResendInfo('');
@@ -112,66 +78,34 @@ export default function SignupPage() {
     setResendInfo(err ? `Error: ${err}` : '✅ Email reenviado. Revisa tu bandeja de entrada.');
   }
 
+  /* ═══════════════════════════════════════════════════════
+     PANTALLA: Verificación de email
+     ═══════════════════════════════════════════════════════ */
   if (emailVerificationSent) {
     return (
-      <div style={{
-        minHeight: '100vh', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)',
-        fontFamily: 'var(--font-app)', padding: '24px 16px',
-      }}>
-        <div style={{ width: '100%', maxWidth: 440, textAlign: 'center' }}>
-          <div style={{
-            borderRadius: 20, background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
-            border: '1px solid rgba(51,65,85,0.6)', boxShadow: '0 25px 50px rgba(2,6,23,0.7)',
-            padding: '40px 32px',
-          }}>
-            <div style={{ fontSize: 56, marginBottom: 16 }}>✉️</div>
-            <h2 style={{ fontSize: 18, fontWeight: 700, color: '#f1f5f9', margin: '0 0 12px' }}>Verifica tu email</h2>
-            <p style={{ fontSize: 14, color: 'rgba(148,163,184,0.8)', lineHeight: 1.6, margin: '0 0 8px' }}>
-              Enviamos un enlace de confirmación a:
-            </p>
-            <p style={{ fontSize: 14, fontWeight: 700, color: '#a78bfa', margin: '0 0 24px', wordBreak: 'break-all' }}>
-              {email}
-            </p>
-            <div style={{
-              background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.2)',
-              borderRadius: 12, padding: '12px 16px', marginBottom: 24,
-            }}>
-              <p style={{ fontSize: 13, color: 'rgba(196,181,253,0.8)', margin: 0, lineHeight: 1.5 }}>
+      <div className={s.verifyPage}>
+        <div className={s.verifyContainer}>
+          <div className={s.verifyCard}>
+            <div className={s.verifyEmoji}>✉️</div>
+            <h2 className={s.verifyTitle}>Verifica tu email</h2>
+            <p className={s.verifyText}>Enviamos un enlace de confirmación a:</p>
+            <p className={s.verifyEmail}>{email}</p>
+            <div className={s.verifyInstructions}>
+              <p className={s.verifyInstructionsText}>
                 Haz clic en el enlace del email para activar tu cuenta. Luego inicia sesión normalmente.
               </p>
             </div>
 
             {resendInfo && (
-              <div style={{
-                marginBottom: 16, padding: '10px 14px',
-                background: resendInfo.startsWith('Error') ? 'rgba(239,68,68,0.1)' : 'rgba(22,163,74,0.1)',
-                border: `1px solid ${resendInfo.startsWith('Error') ? 'rgba(239,68,68,0.3)' : 'rgba(22,163,74,0.3)'}`,
-                borderRadius: 10, fontSize: 13,
-                color: resendInfo.startsWith('Error') ? '#fca5a5' : '#4ade80',
-              }}>{resendInfo}</div>
+              <div className={`${s.resendAlert} ${resendInfo.startsWith('Error') ? s.resendAlertError : s.resendAlertSuccess}`}>
+                {resendInfo}
+              </div>
             )}
 
-            <button
-              onClick={() => router.push('/login')}
-              style={{
-                width: '100%', padding: '13px 0', marginBottom: 12,
-                background: 'linear-gradient(90deg, #a855f7, #2563eb)', border: 'none',
-                borderRadius: 10, color: '#fff', fontSize: 14, fontWeight: 600,
-                cursor: 'pointer', fontFamily: 'inherit',
-              }}
-            >
+            <button onClick={() => router.push('/login')} className={s.submitBtn}>
               Ir al login →
             </button>
-            <button
-              onClick={handleResendVerification}
-              style={{
-                width: '100%', padding: '11px 0',
-                background: 'rgba(30,41,59,0.5)', border: '1px solid rgba(51,65,85,0.5)',
-                borderRadius: 10, color: 'rgba(203,213,225,0.7)', fontSize: 13, fontWeight: 400,
-                cursor: 'pointer', fontFamily: 'inherit',
-              }}
-            >
+            <button onClick={handleResendVerification} className={s.resendBtn}>
               ¿No recibiste el email? Reenviar
             </button>
           </div>
@@ -180,309 +114,133 @@ export default function SignupPage() {
     );
   }
 
+  /* ═══════════════════════════════════════════════════════
+     PANTALLA: Formulario de registro
+     ═══════════════════════════════════════════════════════ */
   return (
-    <div style={{
-      minHeight: '100vh',
-      width: '100%',
-      display: 'flex',
-      background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)',
-      fontFamily: 'var(--font-app)',
-    }}>
-      {/* Glow decorativo fijo */}
-      <div style={{
-        position: 'fixed', top: '15%', left: '25%',
-        width: 500, height: 500,
-        background: 'radial-gradient(ellipse, rgba(168,85,247,0.1) 0%, transparent 70%)',
-        pointerEvents: 'none',
-      }} />
-      <div style={{
-        position: 'fixed', bottom: '10%', right: '20%',
-        width: 400, height: 400,
-        background: 'radial-gradient(ellipse, rgba(37,99,235,0.08) 0%, transparent 70%)',
-        pointerEvents: 'none',
-      }} />
+    <div className={s.page}>
+      <div className={s.glowPurple} />
+      <div className={s.glowBlue} />
 
-      {/* ── Layout completo responsive ── */}
-      <div style={{ display: 'flex', width: '100%', minHeight: '100vh' }}>
+      <div className={s.layout}>
+        {/* ── Panel izquierdo: branding ── */}
+        <div className={s.brandPanel}>
+          <div className={s.glowInner} />
 
-        {/* Panel izquierdo — solo ≥ md */}
-        <div style={{
-          flex: '0 0 50%',
-          padding: '48px',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          borderRight: '1px solid rgba(51,65,85,0.3)',
-          position: 'relative',
-          overflow: 'hidden',
-        }} className="hidden md:flex">
-          {/* Glow interior */}
-          <div style={{
-            position: 'absolute', top: -80, left: -80,
-            width: 360, height: 360,
-            background: 'radial-gradient(ellipse, rgba(168,85,247,0.12) 0%, transparent 70%)',
-            pointerEvents: 'none',
-          }} />
-
-          {/* Logo */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{
-              width: 40, height: 40, borderRadius: 12,
-              background: 'linear-gradient(135deg, #a855f7, #2563eb)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: '#fff', fontWeight: 800, fontSize: 20,
-              boxShadow: '0 4px 16px rgba(168,85,247,0.45)',
-              flexShrink: 0,
-            }}>A</div>
+          <div className={s.logo}>
+            <div className={s.logoMark}>A</div>
             <div>
-              <span style={{ color: '#f1f5f9', fontWeight: 700, fontSize: 18 }}>Ahorro </span>
-              <span style={{ color: '#a855f7', fontWeight: 700, fontSize: 18 }}>Invisible</span>
+              <span className={s.logoName}>Ahorro </span>
+              <span className={s.logoPurple}>Invisible</span>
             </div>
           </div>
 
-          {/* Claim principal */}
           <div>
-            <div style={{
-              display: 'inline-flex', alignItems: 'center', gap: 8,
-              padding: '6px 14px',
-              background: 'rgba(168,85,247,0.12)',
-              border: '1px solid rgba(168,85,247,0.25)',
-              borderRadius: 999,
-              marginBottom: 24,
-            }}>
-              <span style={{ fontSize: 13, color: '#c4b5fd', fontWeight: 600 }}>
-                ✦ Ahorro inteligente
-              </span>
-            </div>
-            <h1 style={{
-              fontSize: 32, fontWeight: 800,
-              color: '#f1f5f9', lineHeight: 1.15,
-              margin: '0 0 16px',
-            }}>
+            <div className={s.claimPill}>✦ Ahorro inteligente</div>
+            <h1 className={s.claimTitle}>
               Tu dinero crece<br />
-              <span style={{ background: 'linear-gradient(90deg, #a855f7, #60a5fa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                sin que te des cuenta.
-              </span>
+              <span className={s.claimGradient}>sin que te des cuenta.</span>
             </h1>
-            <p style={{ fontSize: 14, color: 'rgba(148,163,184,0.75)', lineHeight: 1.6, margin: 0 }}>
+            <p className={s.claimSub}>
               Pequeñas decisiones diarias.<br />Grandes resultados a largo plazo.
             </p>
 
-            {/* Feature pills */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 36 }}>
+            <div className={s.features}>
               {[
                 { icon: '🎯', text: 'Define objetivos y sigue tu progreso' },
                 { icon: '⚡', text: 'Decisiones diarias que generan ahorro real' },
                 { icon: '📈', text: 'Visualiza tu evolución en el tiempo' },
               ].map((f) => (
-                <div key={f.text} style={{
-                  display: 'flex', alignItems: 'center', gap: 12,
-                  padding: '12px 16px',
-                  background: 'rgba(255,255,255,0.04)',
-                  border: '1px solid rgba(51,65,85,0.4)',
-                  borderRadius: 12,
-                }}>
-                  <span style={{ fontSize: 18 }}>{f.icon}</span>
-                  <span style={{ fontSize: 14, color: 'rgba(203,213,225,0.85)', fontWeight: 400 }}>{f.text}</span>
+                <div key={f.text} className={s.featureItem}>
+                  <span className={s.featureIcon}>{f.icon}</span>
+                  <span className={s.featureText}>{f.text}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          <p style={{ fontSize: 12, color: 'rgba(100,116,139,0.6)', margin: 0 }}>
-            © 2026 Ahorro Invisible. Todos los derechos reservados.
-          </p>
+          <p className={s.copyright}>© 2026 Ahorro Invisible. Todos los derechos reservados.</p>
         </div>
 
-        {/* ── Panel derecho — formulario ── */}
-        <div style={{
-          flex: 1,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '24px 16px',
-        }}>
-          <div style={{ width: '100%', maxWidth: 440 }}>
+        {/* ── Panel derecho: formulario ── */}
+        <div className={s.formPanel}>
+          <div className={s.formContainer}>
 
             {/* Logo mobile */}
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: 10,
-              marginBottom: 32,
-            }} className="flex md:hidden">
-              <div style={{
-                width: 36, height: 36, borderRadius: 10,
-                background: 'linear-gradient(135deg, #a855f7, #2563eb)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#fff', fontWeight: 800, fontSize: 18,
-                boxShadow: '0 4px 14px rgba(168,85,247,0.4)',
-              }}>A</div>
+            <div className={s.logoMobile}>
+              <div className={s.logoMobileMark}>A</div>
               <div>
-                <span style={{ color: '#f1f5f9', fontWeight: 700, fontSize: 16 }}>Ahorro </span>
-                <span style={{ color: '#a855f7', fontWeight: 700, fontSize: 16 }}>Invisible</span>
+                <span className={s.logoMobileName}>Ahorro </span>
+                <span className={s.logoMobilePurple}>Invisible</span>
               </div>
             </div>
 
             {/* Card */}
-            <div style={{
-              position: 'relative',
-              borderRadius: 20,
-              background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
-              border: '1px solid rgba(51,65,85,0.6)',
-              boxShadow: '0 25px 50px rgba(2,6,23,0.7)',
-              overflow: 'hidden',
-              padding: '32px 28px',
-            }}>
-              {/* Glow interior */}
-              <div style={{
-                position: 'absolute', top: -40, right: -40,
-                width: 200, height: 200,
-                background: 'radial-gradient(ellipse, rgba(168,85,247,0.1) 0%, transparent 70%)',
-                pointerEvents: 'none',
-              }} />
+            <div className={s.card}>
+              <div className={s.cardGlow} />
 
-              {/* Header */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-                <div style={{
-                  width: 34, height: 34, borderRadius: 10,
-                  background: 'linear-gradient(135deg, #a855f7, #2563eb)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 16, flexShrink: 0,
-                  boxShadow: '0 4px 14px rgba(168,85,247,0.3)',
-                }}>✨</div>
-                <span style={{
-                  fontSize: 11, fontWeight: 600,
-                  color: 'rgba(148,163,184,0.7)',
-                  letterSpacing: '0.1em',
-                  textTransform: 'uppercase',
-                }}>PASO 1 DE 4 · REGISTRO</span>
+              <div className={s.stepHeader}>
+                <div className={s.stepIcon}>✨</div>
+                <span className={s.stepLabel}>PASO 1 DE 4 · REGISTRO</span>
               </div>
 
-              <h2 style={{
-                fontSize: 18, fontWeight: 700,
-                color: '#f1f5f9', margin: '0 0 6px',
-              }}>Crea tu cuenta</h2>
-              <p style={{
-                fontSize: 13, color: 'rgba(148,163,184,0.75)',
-                margin: '0 0 28px', lineHeight: 1.5,
-              }}>
-                Comienza a ahorrar sin darte cuenta.
-              </p>
+              <h2 className={s.cardTitle}>Crea tu cuenta</h2>
+              <p className={s.cardSub}>Comienza a ahorrar sin darte cuenta.</p>
 
-              {/* Error */}
-              {error && (
-                <div style={{
-                  marginBottom: 20,
-                  padding: '10px 14px',
-                  background: 'rgba(239,68,68,0.1)',
-                  border: '1px solid rgba(239,68,68,0.3)',
-                  borderRadius: 10,
-                  fontSize: 13, color: '#fca5a5',
-                }}>
-                  {error}
-                </div>
-              )}
+              {error && <div className={s.errorAlert}>{error}</div>}
 
-              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <form onSubmit={handleSubmit} className={s.form}>
+                <FormInput
+                  variant="auth"
+                  label="Email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="tu@email.com"
+                />
 
-                <div>
-                  <label style={labelStyle}>Email</label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="tu@email.com"
-                    style={inputStyle}
-                    onFocus={(e) => { e.target.style.borderColor = 'rgba(168,85,247,0.5)'; }}
-                    onBlur={(e) => { e.target.style.borderColor = 'rgba(51,65,85,0.55)'; }}
-                  />
-                </div>
+                <FormInput
+                  variant="auth"
+                  label="Nombre"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Tu nombre"
+                />
 
-                <div>
-                  <label style={labelStyle}>Nombre</label>
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Tu nombre"
-                    style={inputStyle}
-                    onFocus={(e) => { e.target.style.borderColor = 'rgba(168,85,247,0.5)'; }}
-                    onBlur={(e) => { e.target.style.borderColor = 'rgba(51,65,85,0.55)'; }}
-                  />
-                </div>
+                <FormInput
+                  variant="auth"
+                  label="Contraseña"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Mínimo 8 caracteres"
+                />
 
-                <div>
-                  <label style={labelStyle}>Contraseña</label>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Mínimo 8 caracteres"
-                    style={inputStyle}
-                    onFocus={(e) => { e.target.style.borderColor = 'rgba(168,85,247,0.5)'; }}
-                    onBlur={(e) => { e.target.style.borderColor = 'rgba(51,65,85,0.55)'; }}
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  style={{
-                    width: '100%', padding: '13px 0', marginTop: 4,
-                    background: loading ? 'rgba(168,85,247,0.4)' : 'linear-gradient(90deg, #a855f7, #2563eb)',
-                    border: 'none', borderRadius: 10,
-                    color: '#fff', fontSize: 14, fontWeight: 600,
-                    cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
-                    boxShadow: '0 4px 14px rgba(168,85,247,0.35)',
-                    transition: 'all 200ms ease',
-                  }}
-                >
+                <button type="submit" disabled={loading} className={s.submitBtn}>
                   {loading ? 'Creando cuenta...' : (isSupabaseConfigured ? 'Crear cuenta →' : 'Empezar →')}
                 </button>
-
               </form>
 
-              <p style={{
-                textAlign: 'center', marginTop: 20,
-                fontSize: 12, color: 'rgba(100,116,139,0.6)',
-                lineHeight: 1.5,
-              }}>
+              <p className={s.legal}>
                 Al registrarte aceptas nuestros{' '}
-                <a href="/terms" style={{ color: '#a78bfa', textDecoration: 'none' }}>Términos de servicio</a>
+                <a href="/terms" className={s.legalLink}>Términos de servicio</a>
                 {' '}y{' '}
-                <a href="/privacy" style={{ color: '#a78bfa', textDecoration: 'none' }}>Política de privacidad</a>
+                <a href="/privacy" className={s.legalLink}>Política de privacidad</a>
               </p>
 
-              {/* Separador */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 24 }}>
-                <div style={{ flex: 1, height: 1, background: 'rgba(51,65,85,0.5)' }} />
-                <span style={{ fontSize: 12, color: 'rgba(100,116,139,0.5)' }}>¿Ya tienes cuenta?</span>
-                <div style={{ flex: 1, height: 1, background: 'rgba(51,65,85,0.5)' }} />
+              <div className={s.divider}>
+                <div className={s.dividerLine} />
+                <span className={s.dividerText}>¿Ya tienes cuenta?</span>
+                <div className={s.dividerLine} />
               </div>
 
-              <button
-                onClick={() => router.push('/login')}
-                style={{
-                  width: '100%', marginTop: 12, padding: '13px 0',
-                  background: 'rgba(30,41,59,0.5)',
-                  border: '1px solid rgba(51,65,85,0.5)',
-                  borderRadius: 10,
-                  color: 'rgba(203,213,225,0.85)',
-                  fontSize: 14, fontWeight: 600,
-                  cursor: 'pointer', fontFamily: 'inherit',
-                  transition: 'all 180ms ease',
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(168,85,247,0.4)'; e.currentTarget.style.color = '#c4b5fd'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(51,65,85,0.5)'; e.currentTarget.style.color = 'rgba(203,213,225,0.85)'; }}
-              >
+              <button onClick={() => router.push('/login')} className={s.secondaryBtn}>
                 Iniciar sesión →
               </button>
             </div>
 
-            <p style={{
-              textAlign: 'center', marginTop: 20,
-              fontSize: 13, color: 'rgba(148,163,184,0.4)',
-            }}>
-              Solo 3 preguntas más y estarás listo ✨
-            </p>
+            <p className={s.footerHint}>Solo 3 preguntas más y estarás listo ✨</p>
           </div>
         </div>
       </div>

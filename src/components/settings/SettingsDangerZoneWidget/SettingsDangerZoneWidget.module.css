@@ -1,7 +1,7 @@
 /* ── Container ── */
 .wrapper {
   position: relative;
-  border-radius: 24px;
+  border-radius: var(--radius-widget);
   overflow: hidden;
 }
 
@@ -26,8 +26,8 @@
 .borderLayer {
   position: absolute;
   inset: 0;
-  border-radius: 16px;
-  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: var(--radius-lg);
+  border: var(--border-thin) solid rgba(239, 68, 68, 0.25);
   box-shadow: var(--widget-shadow-sm);
   pointer-events: none;
 }
@@ -48,13 +48,13 @@
 .iconWrap {
   width: 34px;
   height: 34px;
-  border-radius: 10px;
-  background: rgba(239, 68, 68, 0.15);
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: var(--radius-icon);
+  background: var(--color-error-muted);
+  border: var(--border-thin) solid var(--color-error-border);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #f87171;
+  color: var(--color-error-light);
   flex-shrink: 0;
 }
 
@@ -82,15 +82,15 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: var(--btn-padding-y, 11px) 18px;
+  padding: var(--btn-padding-y) 18px;
   background: transparent;
-  border: 1.5px solid rgba(239, 68, 68, 0.4);
-  border-radius: var(--btn-radius, 10px);
-  color: #f87171;
-  font-size: var(--btn-font-size, 14px);
+  border: var(--border-medium) solid rgba(239, 68, 68, 0.4);
+  border-radius: var(--radius-btn);
+  color: var(--color-error-light);
+  font-size: var(--btn-font-size);
   font-weight: 700;
   cursor: pointer;
-  transition: all 200ms ease;
+  transition: all var(--transition-normal);
   font-family: inherit;
 }
 

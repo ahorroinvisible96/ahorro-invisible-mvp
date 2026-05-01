@@ -1,7 +1,7 @@
 /* ── Container ── */
 .wrapper {
   position: relative;
-  border-radius: 24px;
+  border-radius: var(--radius-widget);
   overflow: hidden;
 }
 
@@ -26,8 +26,8 @@
 .borderLayer {
   position: absolute;
   inset: 0;
-  border-radius: 16px;
-  border: 1px solid var(--widget-border);
+  border-radius: var(--radius-lg);
+  border: var(--border-thin) solid var(--widget-border);
   box-shadow: var(--widget-shadow-sm);
   pointer-events: none;
 }
@@ -51,8 +51,8 @@
 .iconWrap {
   width: 28px;
   height: 28px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #a855f7, #2563eb);
+  border-radius: var(--radius-sm);
+  background: var(--grad-brand-135);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -87,14 +87,14 @@
 /* ── Chips ── */
 .chip {
   padding: 5px 12px;
-  border-radius: 999px;
-  border: 1px solid var(--widget-border);
+  border-radius: var(--radius-full);
+  border: var(--border-thin) solid var(--widget-border);
   background: var(--widget-range-selector-bg);
   color: var(--color-text-secondary);
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 180ms ease;
+  transition: all var(--transition-fast);
   white-space: nowrap;
 }
 

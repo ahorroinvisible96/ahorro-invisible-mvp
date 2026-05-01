@@ -1,128 +1,222 @@
 /* 
- * Estilos para el componente Button
- * Basado en la imagen de referencia del dashboard
+ * ═══════════════════════════════════════════════════════════
+ * BUTTON — Design System Ahorro Invisible
+ * ═══════════════════════════════════════════════════════════
  */
 
+/* ── Base ── */
 .button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-weight: var(--font-weight-medium);
-  border-radius: var(--button-border-radius);
-  transition: all var(--transition-fast) var(--transition-ease);
+  gap: 8px;
+  border: none;
   cursor: pointer;
-  text-align: center;
   white-space: nowrap;
   outline: none;
-  border: none;
+  font-family: inherit;
+  font-size: var(--btn-font-size, 14px);
+  font-weight: var(--btn-font-weight, 600);
+  border-radius: var(--btn-radius, var(--radius-md));
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
 }
 
-/* Variantes */
+.button:active:not(.disabled) {
+  transform: scale(0.98);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   VARIANTES
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Primary: gradiente de marca ── */
 .primary {
-  background-color: var(--color-primary-500);
-  color: var(--color-text-inverted);
+  background: var(--grad-primary);
+  color: #fff;
+  box-shadow: var(--shadow-glow-brand);
 }
 
-.primary:hover {
-  background-color: var(--color-primary-600);
-  box-shadow: var(--button-hover-shadow);
+.primary:hover:not(.disabled) {
+  background: var(--grad-primary-hover);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+  transform: scale(1.02);
 }
 
+/* ── Secondary: fondo translúcido + borde ── */
 .secondary {
-  background-color: var(--color-background-card);
-  color: var(--color-primary-500);
-  border: var(--border-width-thin) solid var(--color-primary-500);
+  background: var(--auth-secondary-btn-bg);
+  color: var(--auth-secondary-btn-color);
+  border: var(--border-thin) solid var(--auth-secondary-btn-border);
 }
 
-.secondary:hover {
-  background-color: var(--color-primary-50);
+.secondary:hover:not(.disabled) {
+  border-color: rgba(168, 85, 247, 0.4);
+  color: #c4b5fd;
 }
 
+/* ── Outline: transparente con borde de acento ── */
 .outline {
-  background-color: transparent;
-  color: var(--color-primary-500);
-  border: var(--border-width-thin) solid currentColor;
+  background: transparent;
+  color: var(--color-info);
+  border: var(--border-medium) solid rgba(96, 165, 250, 0.4);
 }
 
-.outline:hover {
-  background-color: var(--color-primary-50);
+.outline:hover:not(.disabled) {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: var(--color-info);
 }
 
+/* ── Ghost: sin fondo ni borde ── */
 .ghost {
-  background-color: transparent;
-  color: var(--color-primary-500);
+  background: transparent;
+  color: var(--color-info);
 }
 
-.ghost:hover {
-  background-color: var(--color-primary-50);
+.ghost:hover:not(.disabled) {
+  background: rgba(59, 130, 246, 0.08);
 }
 
+/* ── Danger: acción destructiva ── */
 .danger {
-  background-color: var(--color-danger-500);
-  color: var(--color-text-inverted);
+  background: linear-gradient(90deg, #dc2626, #b91c1c);
+  color: #fff;
 }
 
-.danger:hover {
-  filter: brightness(0.9);
+.danger:hover:not(.disabled) {
+  background: linear-gradient(90deg, #b91c1c, #991b1b);
 }
 
-/* Tamaños */
+/* ── Danger outline ── */
+.dangerOutline {
+  background: transparent;
+  color: var(--color-error-light);
+  border: var(--border-medium) solid var(--color-error-border);
+}
+
+.dangerOutline:hover:not(.disabled) {
+  background: var(--color-error-muted);
+  border-color: rgba(239, 68, 68, 0.45);
+  color: var(--color-error-pale);
+}
+
+/* ── Cancel: estilo de widget cancel ── */
+.cancel {
+  background: var(--widget-cancel-bg);
+  color: var(--color-text-secondary);
+  border: var(--border-thin) solid var(--widget-adjust-border);
+}
+
+.cancel:hover:not(.disabled) {
+  background: var(--widget-cancel-hover);
+  color: var(--color-text-primary);
+}
+
+/* ── Hero primary: blanco sólido (sobre gradientes hero) ── */
+.heroPrimary {
+  background: rgba(255, 255, 255, 0.96);
+  color: #3b0764;
+  font-weight: 700;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.22);
+}
+
+.heroPrimary:hover:not(.disabled) {
+  background: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.28);
+}
+
+/* ── Hero secondary: frosted glass (sobre gradientes hero) ── */
+.heroSecondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.88);
+  border: var(--border-thin) solid rgba(255, 255, 255, 0.28);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.heroSecondary:hover:not(.disabled) {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.4);
+  color: #ffffff;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TAMAÑOS
+   ═══════════════════════════════════════════════════════════ */
+
 .sm {
-  font-size: var(--font-size-xs);
-  padding: 0.375rem 0.75rem;
-  height: 2rem;
+  font-size: 12px;
+  padding: 6px 12px;
+  height: 32px;
 }
 
 .md {
-  font-size: var(--font-size-sm);
-  padding: 0.5rem 1rem;
-  height: 2.5rem;
+  font-size: 14px;
+  padding: var(--btn-padding-y) var(--btn-padding-x);
+  height: 40px;
 }
 
 .lg {
-  font-size: var(--font-size-base);
-  padding: 0.625rem 1.25rem;
-  height: 3rem;
+  font-size: 14px;
+  padding: 14px 24px;
+  height: 48px;
 }
 
-/* Estados */
+/* ═══════════════════════════════════════════════════════════
+   ESTADOS
+   ═══════════════════════════════════════════════════════════ */
+
 .disabled,
 .disabled:hover {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
   box-shadow: none;
+  transform: none !important;
 }
 
-/* Botón con icono */
-.withIcon {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
+/* ── Loading: spinner + texto tenue ── */
+.loading {
+  color: transparent;
+  pointer-events: none;
 }
 
-.iconOnly {
-  padding: 0;
-  width: 2.5rem;
-  height: 2.5rem;
+.spinner {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
   border-radius: 50%;
+  animation: btnSpin 0.6s linear infinite;
 }
 
-.iconOnly.sm {
-  width: 2rem;
-  height: 2rem;
+@keyframes btnSpin {
+  to { transform: rotate(360deg); }
 }
 
-.iconOnly.lg {
-  width: 3rem;
-  height: 3rem;
-}
+/* ═══════════════════════════════════════════════════════════
+   MODIFICADORES
+   ═══════════════════════════════════════════════════════════ */
 
-/* Botón full width */
 .fullWidth {
   width: 100%;
 }
 
-/* Animación */
-.button:active {
-  transform: translateY(1px);
+.iconOnly {
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.iconOnly.sm {
+  width: 32px;
+  height: 32px;
+}
+
+.iconOnly.lg {
+  width: 48px;
+  height: 48px;
 }

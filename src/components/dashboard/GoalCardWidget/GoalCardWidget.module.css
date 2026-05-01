@@ -1,10 +1,10 @@
 /* ── Card container ── */
 .card {
   position: relative;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
   cursor: pointer;
-  transition: transform 200ms ease;
+  transition: transform var(--transition-normal);
 }
 
 .card:hover {
@@ -31,7 +31,7 @@
   position: absolute;
   inset: 0;
   opacity: 0.2;
-  transition: opacity 500ms ease;
+  transition: opacity var(--transition-slow);
   pointer-events: none;
 }
 
@@ -61,11 +61,11 @@
 .borderLayer {
   position: absolute;
   inset: 0;
-  border-radius: 20px;
-  border: 1px solid var(--widget-border);
+  border-radius: var(--radius-xl);
+  border: var(--border-thin) solid var(--widget-border);
   box-shadow: var(--widget-shadow-sm);
   pointer-events: none;
-  transition: border-color 300ms ease;
+  transition: border-color var(--transition-slow);
 }
 
 /* ── Layer 4: contenido ── */
@@ -93,13 +93,13 @@
 .goalIconWrap {
   width: 40px;
   height: 40px;
-  border-radius: 10px;
+  border-radius: var(--radius-icon);
   background: var(--widget-icon-bg);
-  border: 1px solid var(--widget-icon-border);
+  border: var(--border-thin) solid var(--widget-icon-border);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #c084fc;
+  color: var(--color-brand-purple-light);
   flex-shrink: 0;
 }
 
@@ -118,11 +118,11 @@
   align-items: center;
   gap: 6px;
   padding: 4px 12px;
-  border-radius: 8px;
-  background: rgba(59, 130, 246, 0.1);
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: var(--radius-sm);
+  background: var(--color-info-muted);
+  border: var(--border-thin) solid var(--color-info-border);
   backdrop-filter: blur(4px);
-  color: #60a5fa;
+  color: var(--color-info);
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -135,10 +135,10 @@
   display: inline-flex;
   align-items: center;
   padding: 4px 12px;
-  border-radius: 8px;
-  background: rgba(34, 197, 94, 0.1);
-  border: 1px solid rgba(34, 197, 94, 0.3);
-  color: #4ade80;
+  border-radius: var(--radius-sm);
+  background: var(--color-success-muted);
+  border: var(--border-thin) solid var(--color-success-border);
+  color: var(--color-success-light);
   font-size: 11px;
   font-weight: 700;
   flex-shrink: 0;
@@ -284,20 +284,20 @@
 /* Botón "Hacer principal" */
 .makePrimaryBtn {
   padding: 6px 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 12px;
   font-weight: 500;
-  color: #60a5fa;
-  background: rgba(59, 130, 246, 0.1);
-  border: 1px solid rgba(59, 130, 246, 0.2);
+  color: var(--color-info);
+  background: var(--color-info-muted);
+  border: var(--border-thin) solid rgba(59, 130, 246, 0.2);
   cursor: pointer;
-  transition: all 200ms ease;
+  transition: all var(--transition-normal);
   white-space: nowrap;
 }
 
 .makePrimaryBtn:hover {
   background: rgba(59, 130, 246, 0.2);
-  border-color: rgba(59, 130, 246, 0.4);
+  border-color: var(--color-info-border);
 }
 
 /* Botón editar (icono) */
@@ -307,12 +307,12 @@
   justify-content: center;
   width: 34px;
   height: 34px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: var(--widget-edit-bg);
-  border: 1px solid var(--widget-edit-border);
+  border: var(--border-thin) solid var(--widget-edit-border);
   color: var(--color-text-secondary);
   cursor: pointer;
-  transition: all 200ms ease;
+  transition: all var(--transition-normal);
 }
 
 .editBtn:hover {
@@ -337,18 +337,18 @@
   justify-content: center;
   width: 34px;
   height: 34px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: var(--widget-edit-bg);
-  border: 1px solid var(--widget-edit-border);
+  border: var(--border-thin) solid var(--widget-edit-border);
   color: var(--color-text-secondary);
   cursor: pointer;
-  transition: all 200ms ease;
+  transition: all var(--transition-normal);
 }
 
 .archiveBtn:hover {
-  background: rgba(239, 68, 68, 0.1);
-  border-color: rgba(239, 68, 68, 0.3);
-  color: #f87171;
+  background: var(--color-error-muted);
+  border-color: var(--color-error-border);
+  color: var(--color-error-light);
 }
 
 .archiveBtn:disabled {

@@ -1,0 +1,90 @@
+/* 
+ * ═══════════════════════════════════════════════════════════
+ * WIDGET WRAPPER — Design System Ahorro Invisible
+ * Patrón base: bgGradient + glow orbs + border + content
+ * ═══════════════════════════════════════════════════════════
+ */
+
+/* ── Base wrapper ── */
+.wrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+.variant_widget { border-radius: var(--radius-xl); }
+.variant_hero   { border-radius: var(--radius-2xl); }
+.variant_card   { border-radius: var(--radius-lg); }
+
+.clickable { cursor: pointer; }
+.clickable:hover { transform: translateY(-1px); }
+
+/* ── Layer 1: fondo ── */
+.bgGradient {
+  position: absolute;
+  inset: 0;
+  background: var(--widget-bg);
+}
+
+/* ── Layer 2: glow overlay ── */
+.glowOverlay {
+  position: absolute;
+  inset: 0;
+  opacity: 0.25;
+  pointer-events: none;
+  transition: opacity var(--transition-slow);
+}
+
+.wrapper:hover .glowOverlay {
+  opacity: 0.35;
+}
+
+/* Glow orbe superior-derecha */
+.glow1 {
+  position: absolute;
+  top: -40px;
+  right: -60px;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  filter: blur(45px);
+}
+
+/* Glow orbe inferior-izquierda */
+.glow2 {
+  position: absolute;
+  bottom: -60px;
+  left: -40px;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  filter: blur(45px);
+}
+
+/* Colores de glow */
+.glow_purple { background: rgba(168, 85, 247, 0.22); }
+.glow_blue   { background: rgba(59, 130, 246, 0.18); }
+.glow_green  { background: rgba(34, 197, 94, 0.15); }
+.glow_red    { background: rgba(239, 68, 68, 0.12); }
+
+/* ── Layer 3: borde ── */
+.borderLayer {
+  position: absolute;
+  inset: 0;
+  border: var(--border-thin) solid var(--widget-border);
+  pointer-events: none;
+  transition: border-color var(--transition-slow);
+}
+
+.variant_widget .borderLayer { border-radius: var(--radius-xl); }
+.variant_hero .borderLayer   { border-radius: var(--radius-2xl); }
+.variant_card .borderLayer   { border-radius: var(--radius-lg); }
+
+.wrapper:hover .borderLayer {
+  border-color: var(--widget-border-hover);
+}
+
+/* ── Layer 4: contenido ── */
+.content {
+  position: relative;
+  padding: var(--widget-padding);
+}

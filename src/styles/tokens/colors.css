@@ -1,50 +1,82 @@
 /* 
- * Sistema de tokens de colores para Ahorro Invisible
- * Basado en la imagen de referencia del dashboard
+ * ═══════════════════════════════════════════════════════════
+ * SISTEMA DE COLORES — Ahorro Invisible
+ * Paleta real: dark fintech (púrpura + azul)
+ * ═══════════════════════════════════════════════════════════
+ *
+ * REGLA: toda la app usa estos tokens. Nunca hardcodear colores.
  */
 
 :root {
-  /* Colores primarios */
-  --color-primary-50: #eef4ff;
-  --color-primary-100: #e0eaff;
-  --color-primary-200: #c7d7fe;
-  --color-primary-300: #a5bcfd;
-  --color-primary-400: #819dfc;
-  --color-primary-500: #2F63FF; /* Color principal azul */
-  --color-primary-600: #2B57F2;
-  --color-primary-700: #1E40AF;
-  --color-primary-800: #1e3a8a;
-  --color-primary-900: #172554;
-  --color-primary-950: #0f172a;
+  /* ── Colores de marca ─────────────────────────────────── */
+  --color-brand-purple: #a855f7;
+  --color-brand-purple-hover: #9333ea;
+  --color-brand-purple-light: #c084fc;
+  --color-brand-purple-muted: rgba(168, 85, 247, 0.15);
 
-  /* Colores de fondo */
-  --color-background-main: #F5F5F0; /* Fondo principal crema */
-  --color-background-sidebar: #0B1E3B; /* Fondo sidebar azul oscuro */
-  --color-background-card: #FFFFFF; /* Fondo de tarjetas */
-  --color-background-badge: #f0fdf4; /* Fondo de badge sistema activo */
+  --color-brand-blue: #2563eb;
+  --color-brand-blue-hover: #1d4ed8;
+  --color-brand-blue-light: #60a5fa;
+  --color-brand-blue-muted: rgba(37, 99, 235, 0.15);
 
-  /* Colores de texto */
-  --color-text-primary: #1F2937; /* Texto principal */
-  --color-text-secondary: #6B7280; /* Texto secundario */
-  --color-text-tertiary: #9CA3AF; /* Texto terciario */
-  --color-text-inverted: #FFFFFF; /* Texto sobre fondos oscuros */
-  --color-text-success: #16a34a; /* Texto verde éxito */
-  --color-text-danger: #ef4444; /* Texto rojo error/peligro */
+  /* ── Gradientes de marca ──────────────────────────────── */
+  --grad-brand: linear-gradient(90deg, #a855f7, #2563eb);
+  --grad-brand-hover: linear-gradient(90deg, #9333ea, #1d4ed8);
+  --grad-brand-135: linear-gradient(135deg, #a855f7, #2563eb);
+  --grad-brand-icon: linear-gradient(135deg, #a855f7, #9333ea, #2563eb);
 
-  /* Colores de estado */
-  --color-success-50: #f0fdf4;
-  --color-success-500: #22c55e; /* Verde para badge activo */
-  --color-success-600: #16a34a;
-  --color-danger-500: #ef4444; /* Rojo para errores/alertas */
-  --color-warning-500: #f59e0b; /* Amarillo para advertencias */
+  /* Gradiente hero (PrimaryGoalHero, ProfileHero) */
+  --grad-hero: linear-gradient(145deg,
+    #7c3aed 0%, #5b21b6 18%, #4338ca 42%,
+    #3730a3 62%, #1d4ed8 82%, #1e40af 100%);
+  --grad-hero-shadow:
+    0 28px 64px -12px rgba(79, 70, 229, 0.55),
+    0 8px 24px -4px rgba(109, 40, 217, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
 
-  /* Colores de borde */
-  --color-border-light: #f3f4f6; /* Bordes claros */
-  --color-border-blue: #dbeafe; /* Bordes azules claros */
-  --color-border-green: #bbf7d0; /* Bordes verdes claros */
+  /* ── Colores semánticos ───────────────────────────────── */
+  --color-success: #22c55e;
+  --color-success-light: #4ade80;
+  --color-success-muted: rgba(34, 197, 94, 0.12);
+  --color-success-border: rgba(34, 197, 94, 0.25);
 
-  /* Gradientes */
-  --gradient-primary: linear-gradient(135deg, #2F63FF 0%, #2B57F2 50%, #1E40AF 100%);
-  --gradient-sidebar: linear-gradient(90deg, #0B1E3B 0%, #1a2f4a 100%);
-  --gradient-bar: linear-gradient(180deg, #60A5FA 0%, #2F63FF 100%);
+  --color-error: #ef4444;
+  --color-error-light: #f87171;
+  --color-error-pale: #fca5a5;
+  --color-error-muted: rgba(239, 68, 68, 0.10);
+  --color-error-border: rgba(239, 68, 68, 0.25);
+
+  --color-warning: #f59e0b;
+  --color-warning-light: #fbbf24;
+  --color-warning-muted: rgba(245, 158, 11, 0.12);
+  --color-warning-border: rgba(245, 158, 11, 0.25);
+
+  --color-info: #60a5fa;
+  --color-info-light: #93c5fd;
+  --color-info-muted: rgba(59, 130, 246, 0.15);
+  --color-info-border: rgba(59, 130, 246, 0.30);
+
+  /* ── Streak / gamificación ────────────────────────────── */
+  --color-streak: #fb923c;
+  --color-streak-muted: rgba(251, 146, 60, 0.12);
+  --color-streak-border: rgba(251, 146, 60, 0.25);
+
+  /* ── Niveles de gamificación ──────────────────────────── */
+  --color-level-bronze: #d97706;
+  --color-level-silver: #94a3b8;
+  --color-level-gold: #eab308;
+  --color-level-diamond: #60a5fa;
+
+  /* ── Slate (grises usados en toda la app) ─────────────── */
+  --slate-50: #f8fafc;
+  --slate-100: #f1f5f9;
+  --slate-200: #e2e8f0;
+  --slate-300: #cbd5e1;
+  --slate-400: #94a3b8;
+  --slate-500: #64748b;
+  --slate-600: #475569;
+  --slate-700: #334155;
+  --slate-800: #1e293b;
+  --slate-900: #0f172a;
+  --slate-950: #0d0d14;
 }

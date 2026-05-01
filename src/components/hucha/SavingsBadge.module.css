@@ -1,0 +1,147 @@
+/* 
+ * ═══════════════════════════════════════════════════════════
+ * SAVINGS BADGE — Ahorro Invisible
+ * Migrado de inline styles a CSS Modules
+ * ═══════════════════════════════════════════════════════════
+ */
+
+.badge {
+  width: 100%;
+  background: linear-gradient(to right, 
+    rgba(16, 185, 129, 0.10), 
+    rgba(20, 184, 166, 0.10), 
+    rgba(6, 182, 212, 0.10));
+  border: 2px solid rgba(16, 185, 129, 0.30);
+  border-radius: var(--radius-xl);
+  padding: 16px 20px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.badge:hover {
+  border-color: rgba(52, 211, 153, 0.50);
+  box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.20);
+}
+
+/* ── Icono ── */
+.iconWrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.iconBox {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, #34d399, #2dd4bf, #22d3ee);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(52, 211, 153, 0.35);
+}
+
+.sparklesBadge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(251, 191, 36, 0.5);
+}
+
+/* ── Contenido ── */
+.content {
+  flex: 1;
+  min-width: 0;
+}
+
+.label {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(52, 211, 153, 0.70);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 2px;
+}
+
+.valueRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.amount {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--slate-100);
+  font-family: ui-monospace, monospace;
+  letter-spacing: -0.02em;
+}
+
+.statusBadge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  background: rgba(52, 211, 153, 0.15);
+  border: 1px solid rgba(52, 211, 153, 0.30);
+  color: #34d399;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.description {
+  font-size: 12px;
+  color: rgba(148, 163, 184, 0.75);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ── Flecha derecha ── */
+.arrowCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.arrowBox {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-icon);
+  background: rgba(52, 211, 153, 0.08);
+  border: 1px solid rgba(52, 211, 153, 0.20);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-normal);
+}
+
+.badge:hover .arrowBox {
+  background: rgba(52, 211, 153, 0.15);
+  border-color: rgba(52, 211, 153, 0.35);
+}
+
+.arrowLabel {
+  font-size: 9px;
+  color: rgba(52, 211, 153, 0.55);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}

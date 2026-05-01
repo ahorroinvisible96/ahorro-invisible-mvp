@@ -1,0 +1,160 @@
+/* 
+ * ═══════════════════════════════════════════════════════════
+ * LOGIN PAGE — CSS Modules
+ * Migrado desde inline styles, comparte tokens con signup
+ * ═══════════════════════════════════════════════════════════
+ */
+
+/* ── Página ── */
+.page { composes: page from '../signup/signup.module.css'; }
+.glowPurple { composes: glowPurple from '../signup/signup.module.css'; }
+.glowBlue { composes: glowBlue from '../signup/signup.module.css'; }
+.layout { composes: layout from '../signup/signup.module.css'; }
+
+/* ── Brand panel (reutiliza signup) ── */
+.brandPanel { composes: brandPanel from '../signup/signup.module.css'; }
+.logo { composes: logo from '../signup/signup.module.css'; }
+.logoMark { composes: logoMark from '../signup/signup.module.css'; }
+.logoName { composes: logoName from '../signup/signup.module.css'; }
+.logoPurple { composes: logoPurple from '../signup/signup.module.css'; }
+.copyright { composes: copyright from '../signup/signup.module.css'; }
+
+.claimTitle { composes: claimTitle from '../signup/signup.module.css'; }
+.claimGradient { composes: claimGradient from '../signup/signup.module.css'; }
+.claimSub { composes: claimSub from '../signup/signup.module.css'; }
+.features { composes: features from '../signup/signup.module.css'; }
+.featureItem { composes: featureItem from '../signup/signup.module.css'; }
+.featureIcon { composes: featureIcon from '../signup/signup.module.css'; }
+.featureText { composes: featureText from '../signup/signup.module.css'; }
+
+/* ── Form panel (reutiliza signup) ── */
+.formPanel { composes: formPanel from '../signup/signup.module.css'; }
+.formContainer { composes: formContainer from '../signup/signup.module.css'; }
+.logoMobile { composes: logoMobile from '../signup/signup.module.css'; }
+.logoMobileMark { composes: logoMobileMark from '../signup/signup.module.css'; }
+.logoMobileName { composes: logoMobileName from '../signup/signup.module.css'; }
+.logoMobilePurple { composes: logoMobilePurple from '../signup/signup.module.css'; }
+.card { composes: card from '../signup/signup.module.css'; }
+.cardGlow { composes: cardGlow from '../signup/signup.module.css'; }
+.cardTitle { composes: cardTitle from '../signup/signup.module.css'; }
+.cardSub { composes: cardSub from '../signup/signup.module.css'; }
+.form { composes: form from '../signup/signup.module.css'; }
+.submitBtn { composes: submitBtn from '../signup/signup.module.css'; }
+.errorAlert { composes: errorAlert from '../signup/signup.module.css'; }
+.infoAlert { composes: infoAlert from '../signup/signup.module.css'; }
+.divider { composes: divider from '../signup/signup.module.css'; }
+.dividerLine { composes: dividerLine from '../signup/signup.module.css'; }
+.dividerText { composes: dividerText from '../signup/signup.module.css'; }
+.secondaryBtn { composes: secondaryBtn from '../signup/signup.module.css'; }
+
+/* ── Estilos propios de login ── */
+
+/* Mode toggle tabs */
+.modeToggle {
+  display: flex;
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: var(--radius-input);
+  padding: 3px;
+  margin-bottom: 20px;
+  gap: 3px;
+}
+
+.modeBtn {
+  flex: 1;
+  padding: 8px 0;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: rgba(148, 163, 184, 0.6);
+  font-size: 13px;
+  font-weight: 400;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  font-family: inherit;
+}
+
+.modeBtnActive {
+  background: rgba(168, 85, 247, 0.25);
+  color: #c4b5fd;
+  font-weight: 600;
+}
+
+/* Password row (label + forgot link) */
+.passwordRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.forgotLink {
+  background: none;
+  border: none;
+  color: rgba(148, 163, 184, 0.5);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  font-family: inherit;
+}
+
+/* Back to login button */
+.backBtn {
+  background: none;
+  border: none;
+  color: rgba(148, 163, 184, 0.6);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 12px;
+  font-family: inherit;
+}
+
+.resetTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--slate-100);
+  margin: 0 0 4px;
+}
+
+.resetSub {
+  font-size: 13px;
+  color: rgba(148, 163, 184, 0.6);
+  margin: 0;
+}
+
+/* Custom checkbox */
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkboxBox {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.checkboxBoxChecked {
+  background: var(--grad-brand-135);
+  border: none;
+}
+
+.checkboxBoxUnchecked {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(51, 65, 85, 0.55);
+}
+
+.checkboxText {
+  font-size: 13px;
+  color: rgba(148, 163, 184, 0.8);
+  font-weight: 500;
+}
