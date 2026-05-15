@@ -31,7 +31,7 @@ export function SidebarNavigationWidget({
   };
 
   return (
-    <nav className={styles.sidebar}>
+    <nav className={styles.sidebar} data-widget-cat="system">
       <div className={styles.logo}>
         <div className={styles.logoMark}>AI</div>
         <div>

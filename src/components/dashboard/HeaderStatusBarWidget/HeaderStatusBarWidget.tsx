@@ -45,7 +45,7 @@ export function HeaderStatusBarWidget({
   const medal = getMedalConfig(totalSaved);
 
   return (
-    <div className={styles.header}>
+    <div className={styles.header} data-widget-cat="summary">
 
       {/* ── Left: avatar + saludo ── */}
       <div className={styles.leftGroup}>

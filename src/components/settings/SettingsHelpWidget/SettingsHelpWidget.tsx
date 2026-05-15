@@ -38,7 +38,7 @@ export function SettingsHelpWidget(): React.ReactElement {
   }
 
   return (
-    <div className={styles.wrapper}>
+    <div className={styles.wrapper} data-widget-cat="insight">
       <div className={styles.bgGradient} />
       <div className={styles.glowPurple} />
       <div className={styles.borderLayer} />

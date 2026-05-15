@@ -32,6 +32,14 @@
   pointer-events: none;
 }
 
+/* ── Categoría: insight — acento info sutil ── */
+.wrapper[data-widget-cat="insight"] .borderLayer {
+  border-color: var(--widget-cat-insight-border);
+}
+.wrapper[data-widget-cat="insight"]:hover .borderLayer {
+  border-color: rgba(59, 130, 246, 0.18);
+}
+
 .content {
   position: relative;
   padding: 20px;

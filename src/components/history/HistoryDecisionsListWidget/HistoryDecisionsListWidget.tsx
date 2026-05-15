@@ -148,11 +148,11 @@ export function HistoryDecisionsListWidget({
         justifyContent: 'space-between',
         padding: '12px 16px',
         background: 'rgba(15,23,42,0.6)',
-        border: '1px solid rgba(51,65,85,0.4)',
+        border: '1px solid var(--widget-cat-insight-border, rgba(51,65,85,0.4))',
         borderRadius: collapsed ? 16 : '16px 16px 0 0',
         marginBottom: collapsed ? 0 : 0,
         cursor: 'pointer',
-      }} onClick={toggle}>
+      }} onClick={toggle} data-widget-cat="insight">
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center',

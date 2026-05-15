@@ -32,6 +32,14 @@
   pointer-events: none;
 }
 
+/* ── Categoría: summary — glow neutro reducido ── */
+.wrapper[data-widget-cat="summary"] .borderLayer {
+  border-color: var(--widget-cat-summary-border);
+}
+.wrapper[data-widget-cat="summary"] .glowGreen {
+  opacity: 0.6;
+}
+
 .content {
   position: relative;
   padding: 18px 20px;

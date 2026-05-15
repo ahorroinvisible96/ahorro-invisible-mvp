@@ -68,6 +68,17 @@
   transition: border-color var(--transition-slow);
 }
 
+/* ── Categoría: progress — acento verde-azul sutil ── */
+.card[data-widget-cat="progress"] .borderLayer {
+  border-color: var(--widget-cat-progress-border);
+}
+.card[data-widget-cat="progress"]:hover .borderLayer {
+  border-color: rgba(34, 197, 94, 0.22);
+}
+.card[data-widget-cat="progress"] .glowOverlay {
+  opacity: 0.22;
+}
+
 /* ── Layer 4: contenido ── */
 .content {
   position: relative;

@@ -49,6 +49,17 @@
   pointer-events: none;
 }
 
+/* ── Categoría: motivation — acento púrpura-dorado sutil ── */
+.wrapper[data-widget-cat="motivation"] .borderLayer {
+  border-color: var(--widget-cat-motivation-border);
+}
+.wrapper[data-widget-cat="motivation"]:hover .borderLayer {
+  border-color: rgba(192, 132, 252, 0.24);
+}
+.wrapper[data-widget-cat="motivation"] .glowBlue {
+  background: var(--widget-cat-motivation-glow);
+}
+
 .content {
   position: relative;
   padding: 20px;

@@ -31,7 +31,7 @@ export function SettingsDangerZoneWidget({
                          '🔴 Última confirmación — pulsa para borrar';
 
   return (
-    <div className={styles.wrapper}>
+    <div className={styles.wrapper} data-widget-cat="system">
       <div className={styles.bgGradient} />
       <div className={styles.glowRed} />
       <div className={styles.borderLayer} />

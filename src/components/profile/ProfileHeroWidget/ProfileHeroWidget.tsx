@@ -21,7 +21,7 @@ export function ProfileHeroWidget({ userName, email }: ProfileHeroWidgetProps): 
   const displayName = userName.trim() || 'Usuario';
 
   return (
-    <div className={styles.wrapper}>
+    <div className={styles.wrapper} data-widget-cat="motivation">
       {/* Orbes de profundidad — igual que PrimaryGoalHeroWidget */}
       <div className={styles.blurBlue} />
       <div className={styles.blurPurple} />

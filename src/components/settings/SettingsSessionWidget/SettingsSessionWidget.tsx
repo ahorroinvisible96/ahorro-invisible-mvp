@@ -13,7 +13,7 @@ export function SettingsSessionWidget({
 }: SettingsSessionWidgetProps): React.ReactElement {
   const { collapsed, toggle } = useWidgetCollapse('settings_session', false);
   return (
-    <div className={styles.wrapper}>
+    <div className={styles.wrapper} data-widget-cat="system">
       <div className={styles.bgGradient} />
       <div className={styles.glowGreen} />
       <div className={styles.borderLayer} />

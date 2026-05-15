@@ -52,6 +52,17 @@
   pointer-events: none;
 }
 
+/* ── Categoría: progress — acento verde-azul sutil ── */
+.wrapper[data-widget-cat="progress"] .borderLayer {
+  border-color: var(--widget-cat-progress-border);
+}
+.wrapper[data-widget-cat="progress"]:hover .borderLayer {
+  border-color: rgba(34, 197, 94, 0.22);
+}
+.wrapper[data-widget-cat="progress"] .glowPurple {
+  background: var(--widget-cat-progress-glow);
+}
+
 /* ── Layer 4: contenido ── */
 .content {
   position: relative;

@@ -32,6 +32,14 @@
   pointer-events: none;
 }
 
+/* ── Categoría: decision — acento azul sutil ── */
+.wrapper[data-widget-cat="decision"] .borderLayer {
+  border-color: var(--widget-cat-decision-border);
+}
+.wrapper[data-widget-cat="decision"]:hover .borderLayer {
+  border-color: rgba(59, 130, 246, 0.24);
+}
+
 .content {
   position: relative;
   padding: 18px 20px;

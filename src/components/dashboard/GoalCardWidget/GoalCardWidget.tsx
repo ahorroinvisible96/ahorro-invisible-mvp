@@ -41,6 +41,7 @@ export function GoalCardWidget({
     <div
       className={styles.card}
       onClick={() => onOpenGoal(goal.id)}
+      data-widget-cat="progress"
     >
       {/* Layer 1: fondo gradiente */}
       <div className={styles.bgGradient} />

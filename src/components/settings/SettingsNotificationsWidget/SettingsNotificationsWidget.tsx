@@ -84,7 +84,7 @@ export function SettingsNotificationsWidget(): React.ReactElement {
   const statusColor = enabled ? '#4ade80' : 'rgba(148,163,184,0.5)';
 
   return (
-    <div className={styles.wrapper}>
+    <div className={styles.wrapper} data-widget-cat="system">
       <div className={styles.bgGradient} />
       <div className={styles.glowYellow} />
       <div className={styles.borderLayer} />

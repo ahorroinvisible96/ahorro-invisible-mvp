@@ -2,6 +2,7 @@
  * ═══════════════════════════════════════════════════════════
  * WIDGET WRAPPER — Design System Ahorro Invisible
  * Patrón base: bgGradient + glow orbs + border + content
+ * + Categorías funcionales (action, progress, decision, etc.)
  * ═══════════════════════════════════════════════════════════
  */
 
@@ -65,6 +66,7 @@
 .glow_blue   { background: rgba(59, 130, 246, 0.18); }
 .glow_green  { background: rgba(34, 197, 94, 0.15); }
 .glow_red    { background: rgba(239, 68, 68, 0.12); }
+.glow_gold   { background: rgba(234, 179, 8, 0.15); }
 
 /* ── Layer 3: borde ── */
 .borderLayer {
@@ -87,4 +89,79 @@
 .content {
   position: relative;
   padding: var(--widget-padding);
+}
+
+/* ═══════════════════════════════════════════════════════════
+ * CATEGORÍAS FUNCIONALES — diferenciación sutil (~10-15%)
+ * Cada categoría ajusta: glow opacity, border accent, hover
+ * ═══════════════════════════════════════════════════════════ */
+
+/* ── ACTION: CTA principal, acento púrpura, glow medio ── */
+.cat_action .glowOverlay { opacity: 0.30; }
+.cat_action:hover .glowOverlay { opacity: 0.40; }
+.cat_action .borderLayer {
+  border-color: var(--widget-cat-action-border);
+}
+.cat_action:hover .borderLayer {
+  border-color: rgba(168, 85, 247, 0.28);
+}
+
+/* ── PROGRESS: avance, acento verde-azul, glow medio-bajo ── */
+.cat_progress .glowOverlay { opacity: 0.22; }
+.cat_progress:hover .glowOverlay { opacity: 0.32; }
+.cat_progress .borderLayer {
+  border-color: var(--widget-cat-progress-border);
+}
+.cat_progress:hover .borderLayer {
+  border-color: rgba(34, 197, 94, 0.22);
+}
+
+/* ── DECISION: elegir/filtrar, acento azul, glow bajo-medio ── */
+.cat_decision .glowOverlay { opacity: 0.20; }
+.cat_decision:hover .glowOverlay { opacity: 0.30; }
+.cat_decision .borderLayer {
+  border-color: var(--widget-cat-decision-border);
+}
+.cat_decision:hover .borderLayer {
+  border-color: rgba(59, 130, 246, 0.24);
+}
+
+/* ── INSIGHT: editorial/sobrio, glow bajo ── */
+.cat_insight .glowOverlay { opacity: 0.15; }
+.cat_insight:hover .glowOverlay { opacity: 0.22; }
+.cat_insight .borderLayer {
+  border-color: var(--widget-cat-insight-border);
+}
+.cat_insight:hover .borderLayer {
+  border-color: rgba(59, 130, 246, 0.18);
+}
+
+/* ── MOTIVATION: emocional contenido, glow medio ── */
+.cat_motivation .glowOverlay { opacity: 0.25; }
+.cat_motivation:hover .glowOverlay { opacity: 0.35; }
+.cat_motivation .borderLayer {
+  border-color: var(--widget-cat-motivation-border);
+}
+.cat_motivation:hover .borderLayer {
+  border-color: rgba(192, 132, 252, 0.24);
+}
+
+/* ── SUMMARY: neutro, glow bajo o ninguno ── */
+.cat_summary .glowOverlay { opacity: 0.10; }
+.cat_summary:hover .glowOverlay { opacity: 0.18; }
+.cat_summary .borderLayer {
+  border-color: var(--widget-cat-summary-border);
+}
+.cat_summary:hover .borderLayer {
+  border-color: rgba(148, 163, 184, 0.14);
+}
+
+/* ── SYSTEM: sobrio, glow mínimo ── */
+.cat_system .glowOverlay { opacity: 0.08; }
+.cat_system:hover .glowOverlay { opacity: 0.14; }
+.cat_system .borderLayer {
+  border-color: var(--widget-cat-system-border);
+}
+.cat_system:hover .borderLayer {
+  border-color: rgba(100, 116, 139, 0.12);
 }

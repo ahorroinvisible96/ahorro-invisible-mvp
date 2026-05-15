@@ -13,7 +13,7 @@ import { PlusIcon } from '@/components/ui/AppIcons';
 
 function EmptyState({ onCreateGoal }: { onCreateGoal: () => void }): React.ReactElement {
   return (
-    <div className={styles.wrapper}>
+    <div className={styles.wrapper} data-widget-cat="progress">
       <div className={styles.blurBlue} />
       <div className={styles.blurPurple} />
       <div className={styles.card}>
@@ -66,7 +66,7 @@ export function PrimaryGoalHeroWidget({
   const progressWidth = mounted ? d.progressPct : 0;
 
   return (
-    <div className={`${styles.wrapper} ${isHeader ? styles.wrapperHeader : ''}`}>
+    <div className={`${styles.wrapper} ${isHeader ? styles.wrapperHeader : ''}`} data-widget-cat="progress">
       {!isHeader && <div className={styles.blurBlue} />}
       {!isHeader && <div className={styles.blurPurple} />}
 

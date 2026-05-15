@@ -87,4 +87,27 @@
   --color-primary-500: var(--color-brand-purple);
   --color-primary-600: var(--color-brand-purple-hover);
   --color-primary-700: #7c3aed;
+
+  /* ── Acentos por categoría funcional de widget ────────── */
+  --widget-cat-action-accent:     var(--color-brand-purple);
+  --widget-cat-action-glow:       rgba(168, 85, 247, 0.22);
+  --widget-cat-action-border:     rgba(168, 85, 247, 0.18);
+  --widget-cat-progress-accent:   var(--color-success);
+  --widget-cat-progress-glow:     rgba(34, 197, 94, 0.15);
+  --widget-cat-progress-border:   rgba(34, 197, 94, 0.12);
+  --widget-cat-decision-accent:   var(--color-brand-blue);
+  --widget-cat-decision-glow:     rgba(59, 130, 246, 0.18);
+  --widget-cat-decision-border:   rgba(59, 130, 246, 0.14);
+  --widget-cat-insight-accent:    var(--color-info);
+  --widget-cat-insight-glow:      rgba(59, 130, 246, 0.12);
+  --widget-cat-insight-border:    rgba(59, 130, 246, 0.10);
+  --widget-cat-motivation-accent: var(--color-brand-purple-light);
+  --widget-cat-motivation-glow:   rgba(192, 132, 252, 0.18);
+  --widget-cat-motivation-border: rgba(192, 132, 252, 0.14);
+  --widget-cat-summary-accent:    var(--slate-400);
+  --widget-cat-summary-glow:      rgba(148, 163, 184, 0.10);
+  --widget-cat-summary-border:    rgba(148, 163, 184, 0.08);
+  --widget-cat-system-accent:     var(--slate-500);
+  --widget-cat-system-glow:       rgba(100, 116, 139, 0.08);
+  --widget-cat-system-border:     rgba(100, 116, 139, 0.06);
 }

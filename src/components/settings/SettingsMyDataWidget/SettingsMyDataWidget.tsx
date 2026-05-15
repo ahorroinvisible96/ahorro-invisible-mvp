@@ -13,7 +13,7 @@ export function SettingsMyDataWidget({
 }: SettingsMyDataWidgetProps): React.ReactElement {
   const { collapsed, toggle } = useWidgetCollapse('settings_my_data', false);
   return (
-    <div className={styles.wrapper}>
+    <div className={styles.wrapper} data-widget-cat="system">
       <div className={styles.bgGradient} />
       <div className={styles.glowBlue} />
       <div className={styles.borderLayer} />

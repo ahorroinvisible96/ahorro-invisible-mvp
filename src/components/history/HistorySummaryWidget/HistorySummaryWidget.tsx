@@ -19,7 +19,7 @@ export function HistorySummaryWidget({
   totalSaved,
 }: HistorySummaryWidgetProps): React.ReactElement {
   return (
-    <div className={styles.wrapper}>
+    <div className={styles.wrapper} data-widget-cat="summary">
       <div className={styles.bgGradient} />
       <div className={styles.glowGreen} />
       <div className={styles.borderLayer} />

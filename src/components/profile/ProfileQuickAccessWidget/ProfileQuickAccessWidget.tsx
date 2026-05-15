@@ -35,7 +35,7 @@ export function ProfileQuickAccessWidget({
   ];
 
   return (
-    <div className={styles.wrapper}>
+    <div className={styles.wrapper} data-widget-cat="action">
       <div className={styles.bgGradient} />
       <div className={styles.glowBlue} />
       <div className={styles.borderLayer} />

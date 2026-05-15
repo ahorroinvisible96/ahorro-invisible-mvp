@@ -127,7 +127,7 @@ export function IncomeRangeWidget({
   return (
     <>
       {/* ── Widget principal ── */}
-      <div className={styles.wrapper}>
+      <div className={styles.wrapper} data-widget-cat="decision">
         <div className={styles.glowPurple} />
         <div className={styles.glowBlue} />
 

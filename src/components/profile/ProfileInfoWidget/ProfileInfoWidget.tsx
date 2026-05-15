@@ -24,7 +24,7 @@ export function ProfileInfoWidget({
   }
 
   return (
-    <div className={styles.wrapper}>
+    <div className={styles.wrapper} data-widget-cat="summary">
       <div className={styles.bgGradient} />
       <div className={styles.glowPurple} />
       <div className={styles.borderLayer} />

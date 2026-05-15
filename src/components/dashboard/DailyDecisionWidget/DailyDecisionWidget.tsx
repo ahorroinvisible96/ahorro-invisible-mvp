@@ -190,7 +190,7 @@ export function DailyDecisionWidget({
   if (daily.status === 'completed') {
     return (
       <>
-        <div className={`${styles.wrapper} ${isHeader ? styles.wrapperHeader : ''}`}>
+        <div className={`${styles.wrapper} ${isHeader ? styles.wrapperHeader : ''}`} data-widget-cat="action">
           {!isHeader && <div className={styles.blurBlue} />}
           {!isHeader && <div className={styles.blurPurple} />}
           <div className={`${styles.card} ${isHeader ? styles.cardHeader : ''}`}>
@@ -295,7 +295,7 @@ export function DailyDecisionWidget({
 
   // ── Render ───────────────────────────────────────────────────────────────
   return (
-    <div className={`${styles.wrapper} ${isHeader ? styles.wrapperHeader : ''}`}>
+    <div className={`${styles.wrapper} ${isHeader ? styles.wrapperHeader : ''}`} data-widget-cat="action">
       {!isHeader && <div className={styles.blurBlue} />}
       {!isHeader && <div className={styles.blurPurple} />}
       <div className={`${styles.card} ${isHeader ? styles.cardHeader : ''}`}>

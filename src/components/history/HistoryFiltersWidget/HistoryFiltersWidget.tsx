@@ -30,7 +30,7 @@ export function HistoryFiltersWidget({
 }: HistoryFiltersWidgetProps): React.ReactElement {
   const { collapsed, toggle } = useWidgetCollapse('history_filters', false);
   return (
-    <div className={styles.wrapper}>
+    <div className={styles.wrapper} data-widget-cat="decision">
       <div className={styles.bgGradient} />
       <div className={styles.glowPurple} />
       <div className={styles.borderLayer} />

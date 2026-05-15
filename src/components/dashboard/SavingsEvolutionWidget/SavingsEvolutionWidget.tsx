@@ -537,7 +537,7 @@ export function SavingsEvolutionWidget({
       : [];
 
   return (
-    <div className={styles.wrapper}>
+    <div className={styles.wrapper} data-widget-cat="progress">
       <div className={styles.bgGradient} />
       <div className={styles.glowOverlay}>
         <div className={styles.glowPurple} />

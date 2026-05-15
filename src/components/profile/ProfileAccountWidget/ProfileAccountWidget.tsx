@@ -13,7 +13,7 @@ export function ProfileAccountWidget({
 }: ProfileAccountWidgetProps): React.ReactElement {
   const { collapsed, toggle } = useWidgetCollapse('profile_account', false);
   return (
-    <div className={styles.wrapper}>
+    <div className={styles.wrapper} data-widget-cat="system">
       <div className={styles.bgGradient} />
       <div className={styles.glowRed} />
       <div className={styles.borderLayer} />

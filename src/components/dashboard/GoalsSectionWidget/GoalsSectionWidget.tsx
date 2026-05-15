@@ -16,7 +16,7 @@ export function GoalsSectionWidget({
   const { collapsed, toggle } = useWidgetCollapse('goals_section', true);
 
   return (
-    <div>
+    <div data-widget-cat="progress">
       <div className={styles.header} onClick={toggle} style={{ cursor: 'pointer' }}>
         {/* Lado izquierdo: icono + título */}
         <div className={styles.left}>

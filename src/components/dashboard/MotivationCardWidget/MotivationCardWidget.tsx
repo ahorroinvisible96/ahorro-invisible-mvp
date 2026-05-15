@@ -90,7 +90,7 @@ export function MotivationCardWidget({
   const nextLevelCfg = LEVELS[LEVELS.indexOf(levelCfg) + 1] ?? null;
 
   return (
-    <div className={styles.wrapper}>
+    <div className={styles.wrapper} data-widget-cat="motivation">
       <div className={styles.bgGradient} />
       <div className={styles.glowOverlay}>
         <div className={styles.glowPurple} />

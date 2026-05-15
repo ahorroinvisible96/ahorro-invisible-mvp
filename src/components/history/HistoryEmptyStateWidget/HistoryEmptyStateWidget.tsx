@@ -9,7 +9,7 @@ export function HistoryEmptyStateWidget({
   onGoToDashboard,
 }: HistoryEmptyStateWidgetProps): React.ReactElement {
   return (
-    <div className={styles.wrapper}>
+    <div className={styles.wrapper} data-widget-cat="summary">
       <div className={styles.bgGradient} />
       <div className={styles.glowBlue} />
       <div className={styles.borderLayer} />

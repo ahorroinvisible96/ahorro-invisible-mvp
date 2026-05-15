@@ -62,6 +62,17 @@
   border: 1px solid var(--widget-border);
 }
 
+/* ── Categoría: action — borde activo sutil ── */
+.wrapper[data-widget-cat="action"] .card {
+  border-color: var(--widget-cat-action-border);
+}
+.wrapper[data-widget-cat="action"]:hover .card {
+  border-color: rgba(168, 85, 247, 0.28);
+}
+.wrapper[data-widget-cat="action"] .blurPurple {
+  background: var(--widget-cat-action-glow);
+}
+
 /* ── Header ── */
 .header {
   display: flex;
