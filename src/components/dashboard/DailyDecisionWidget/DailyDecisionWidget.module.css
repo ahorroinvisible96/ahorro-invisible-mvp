@@ -25,41 +25,43 @@
   padding: 0 0 4px !important;
 }
 
+/* ── Glow orbs — más sutiles para glassmorphism Revolut-style ── */
 .blurBlue {
   position: absolute;
-  top: -50px;
-  right: -50px;
-  width: 200px;
-  height: 200px;
+  top: -60px;
+  right: -60px;
+  width: 220px;
+  height: 220px;
   border-radius: 50%;
-  background: rgba(59, 130, 246, 0.18);
-  filter: blur(60px);
+  background: rgba(59, 130, 246, 0.10);
+  filter: blur(70px);
   pointer-events: none;
   z-index: 0;
 }
 
 .blurPurple {
   position: absolute;
-  bottom: -50px;
-  left: -50px;
-  width: 200px;
-  height: 200px;
+  bottom: -60px;
+  left: -60px;
+  width: 220px;
+  height: 220px;
   border-radius: 50%;
-  background: rgba(168, 85, 247, 0.15);
-  filter: blur(60px);
+  background: rgba(168, 85, 247, 0.08);
+  filter: blur(70px);
   pointer-events: none;
   z-index: 0;
 }
 
-/* ── Card glassmorphism ── */
+/* ── Card glassmorphism — Revolut-style frosted glass ── */
 .card {
   position: relative;
   z-index: 1;
-  background: var(--widget-card-bg);
-  backdrop-filter: blur(4px);
-  border-radius: var(--radius-xl);
-  padding: 20px 22px 22px;
-  border: 1px solid var(--widget-border);
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: var(--radius-2xl);
+  padding: 22px 22px 24px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
 }
 
 /* ── Categoría: action — borde activo sutil ── */

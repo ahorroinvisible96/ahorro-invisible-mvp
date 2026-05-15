@@ -730,14 +730,16 @@ export default function DashboardPage() {
             {/* Banner: anti-abandono */}
             {summary.lowActivityAlert && !lowActivityDismissed && (
               <div style={{
-                background: 'linear-gradient(135deg, rgba(99,102,241,0.12), rgba(168,85,247,0.08))',
-                border: '1px solid rgba(99,102,241,0.30)',
-                borderRadius: 16,
+                background: 'rgba(255,255,255,0.06)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255,255,255,0.10)',
+                borderRadius: 20,
                 padding: '16px 18px',
                 display: 'flex',
                 alignItems: 'center',
                 gap: 14,
-                boxShadow: '0 4px 20px rgba(99,102,241,0.12)',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
               }}>
                 {/* Icono SVG — coherente con el Design System, sin emoji */}
                 <div style={{

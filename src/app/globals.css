@@ -120,10 +120,10 @@
   --widget-row-label:    var(--type-h3-size);
   --widget-row-sub:      var(--type-small-size);
 
-  /* ── Widget layout — tokens unificados ── */
-  --widget-padding:      20px;
-  --widget-radius:       var(--radius-xl);
-  --widget-gap:          12px;
+  /* ── Widget layout — tokens unificados (Revolut-inspired) ── */
+  --widget-padding:      22px;
+  --widget-radius:       var(--radius-2xl);
+  --widget-gap:          14px;
 
   /* ── Botones — tokens unificados ── */
   --btn-radius:          var(--radius-md);
@@ -136,45 +136,45 @@
   --grad-primary: linear-gradient(90deg, #a855f7, #2563eb);
   --grad-primary-hover: linear-gradient(90deg, #9333ea, #1d4ed8);
 
-  /* ── Variables estructurales de widgets (dark por defecto) ── */
-  --widget-bg: #16161f;
-  --widget-bg-alt: #1a1a26;
+  /* ── Variables estructurales de widgets — glassmorphism Revolut-style ── */
+  --widget-bg: rgba(255, 255, 255, 0.06);
+  --widget-bg-alt: rgba(255, 255, 255, 0.04);
   --widget-card-bg: rgba(255, 255, 255, 0.05);
-  --widget-border: rgba(255, 255, 255, 0.07);
-  --widget-border-hover: rgba(255, 255, 255, 0.14);
-  --widget-shadow: var(--shadow-md);
-  --widget-shadow-sm: var(--shadow-sm);
+  --widget-border: rgba(255, 255, 255, 0.10);
+  --widget-border-hover: rgba(255, 255, 255, 0.18);
+  --widget-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+  --widget-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.10);
   --widget-inner-bg: rgba(255, 255, 255, 0.04);
   --widget-inner-border: rgba(255, 255, 255, 0.06);
   --widget-answer-bg: rgba(255, 255, 255, 0.06);
-  --widget-answer-border: rgba(255, 255, 255, 0.1);
-  --widget-answer-hover-bg: rgba(255, 255, 255, 0.1);
-  --widget-answer-hover-border: rgba(255, 255, 255, 0.2);
+  --widget-answer-border: rgba(255, 255, 255, 0.10);
+  --widget-answer-hover-bg: rgba(255, 255, 255, 0.10);
+  --widget-answer-hover-border: rgba(255, 255, 255, 0.20);
   --widget-range-selector-bg: rgba(255, 255, 255, 0.06);
-  --widget-track-bg: rgba(255, 255, 255, 0.08);
-  --widget-track-bg-light: rgba(255, 255, 255, 0.08);
+  --widget-track-bg: rgba(255, 255, 255, 0.10);
+  --widget-track-bg-light: rgba(255, 255, 255, 0.10);
   --widget-icon-bg: rgba(255, 255, 255, 0.08);
   --widget-icon-border: rgba(255, 255, 255, 0.0);
   --widget-action-bg: rgba(255, 255, 255, 0.07);
-  --widget-action-border: rgba(255, 255, 255, 0.1);
+  --widget-action-border: rgba(255, 255, 255, 0.10);
   --widget-cancel-bg: rgba(255, 255, 255, 0.07);
-  --widget-cancel-hover: rgba(255, 255, 255, 0.12);
+  --widget-cancel-hover: rgba(255, 255, 255, 0.14);
   --widget-input-bg: rgba(255, 255, 255, 0.07);
   --widget-input-bg-alt: rgba(255, 255, 255, 0.06);
-  --widget-modal-bg: #1a1a26;
+  --widget-modal-bg: rgba(30, 20, 50, 0.95);
   --widget-list-item-bg: rgba(255, 255, 255, 0.05);
   --widget-list-item-border: rgba(255, 255, 255, 0.07);
-  --widget-list-item-hover: rgba(255, 255, 255, 0.09);
+  --widget-list-item-hover: rgba(255, 255, 255, 0.10);
   --widget-divider: rgba(255, 255, 255, 0.07);
   --widget-divider-light: rgba(255, 255, 255, 0.06);
   --widget-adjust-bg: rgba(255, 255, 255, 0.07);
-  --widget-adjust-border: rgba(255, 255, 255, 0.1);
-  --widget-adjust-hover: rgba(255, 255, 255, 0.12);
-  --widget-tooltip-bg: #1a1a26;
-  --widget-slider-track: rgba(255, 255, 255, 0.1);
+  --widget-adjust-border: rgba(255, 255, 255, 0.10);
+  --widget-adjust-hover: rgba(255, 255, 255, 0.14);
+  --widget-tooltip-bg: rgba(30, 20, 50, 0.95);
+  --widget-slider-track: rgba(255, 255, 255, 0.10);
   --widget-edit-bg: rgba(255, 255, 255, 0.06);
   --widget-edit-border: rgba(255, 255, 255, 0.08);
-  --widget-edit-hover: rgba(255, 255, 255, 0.1);
+  --widget-edit-hover: rgba(255, 255, 255, 0.10);
   --widget-range-card-bg: rgba(255, 255, 255, 0.06);
   --widget-range-card-border: rgba(255, 255, 255, 0.08);
   --widget-logout-bg: rgba(255, 255, 255, 0.05);

@@ -2,7 +2,7 @@
 
 /* ── Variable de espaciado ──────────────────────────────────────────── */
 :root {
-  --dashboard-section-gap: 20px;
+  --dashboard-section-gap: 16px;
   --header-zone-padding-h: 20px;
   --header-zone-padding-v: 24px;
 }
@@ -14,7 +14,14 @@
   min-height: calc(100vh - 32px);
   box-sizing: border-box;
   overflow-x: hidden;
-  background: #08080f;
+  /* Revolut-style: gradiente púrpura continuo que cubre toda la pantalla */
+  background: linear-gradient(170deg,
+    #1a0533 0%,
+    #220845 25%,
+    #2d0d52 50%,
+    #1c0a3a 75%,
+    #110720 100%
+  );
 }
 
 @media (min-width: 768px) {
@@ -30,12 +37,8 @@
    Contiene: perfil de usuario + widget de objetivo diario
    ══════════════════════════════════════════════════════════════════════ */
 .headerZone {
-  background: linear-gradient(160deg,
-    #1a0533 0%,
-    #2d0d52 30%,
-    #3b1270 60%,
-    #4a1a8a 100%
-  );
+  /* El header ahora comparte el gradiente con .page — sin fondo propio duro */
+  background: transparent;
   padding: var(--header-zone-padding-v) 0 32px;
   position: relative;
   overflow: hidden;
@@ -87,22 +90,22 @@
    Contiene: widgets funcionales (objetivos, evolución, motivación…)
    ══════════════════════════════════════════════════════════════════════ */
 .contentZone {
-  background: #08080f;
+  /* Transparent: hereda el gradiente de .page — sin corte de color */
+  background: transparent;
   padding: 24px 0;
   min-height: 0;
-  /* Transición suave desde el header: elimina el corte brusco */
   position: relative;
 }
 
-/* Fade gradient que cubre la transición header→content */
+/* Fade gradient más suave header→content */
 .contentZone::before {
   content: '';
   position: absolute;
-  top: -32px;
+  top: -48px;
   left: 0;
   right: 0;
-  height: 32px;
-  background: linear-gradient(to bottom, transparent, #08080f);
+  height: 48px;
+  background: linear-gradient(to bottom, transparent, rgba(17, 7, 32, 0.35));
   pointer-events: none;
   z-index: 2;
 }
