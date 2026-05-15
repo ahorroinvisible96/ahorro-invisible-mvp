@@ -729,15 +729,36 @@ export default function DashboardPage() {
 
             {/* Banner: anti-abandono */}
             {summary.lowActivityAlert && !lowActivityDismissed && (
-              <div style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.25)', borderRadius: 14, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 14 }}>
-                <span style={{ fontSize: 28, flexShrink: 0 }}>💪</span>
+              <div style={{
+                background: 'linear-gradient(135deg, rgba(99,102,241,0.12), rgba(168,85,247,0.08))',
+                border: '1px solid rgba(99,102,241,0.30)',
+                borderRadius: 16,
+                padding: '16px 18px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 14,
+                boxShadow: '0 4px 20px rgba(99,102,241,0.12)',
+              }}>
+                <div style={{
+                  width: 44, height: 44, borderRadius: 12,
+                  background: 'rgba(99,102,241,0.18)',
+                  border: '1px solid rgba(99,102,241,0.3)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 22, flexShrink: 0,
+                }}>💪</div>
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 13, fontWeight: 700, color: '#818cf8', margin: '0 0 2px' }}>Llevas unos días sin registrar</p>
-                  <p style={{ fontSize: 12, color: 'rgba(148,163,184,0.7)', margin: 0 }}>Solo necesitas una decisión hoy para retomar el hábito.</p>
+                  <p style={{ fontSize: 14, fontWeight: 700, color: '#a5b4fc', margin: '0 0 3px' }}>Llevas unos días sin registrar</p>
+                  <p style={{ fontSize: 12, color: 'rgba(148,163,184,0.75)', margin: 0, lineHeight: 1.5 }}>Solo necesitas una decisión hoy para retomar el hábito.</p>
                 </div>
-                <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-                  <button onClick={() => router.push('/daily')} style={{ padding: '8px 12px', border: 'none', borderRadius: 10, background: '#4f46e5', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>Decidir →</button>
-                  <button onClick={() => setLowActivityDismissed(true)} style={{ padding: '8px 10px', border: '1px solid rgba(51,65,85,0.5)', borderRadius: 10, background: 'transparent', color: 'rgba(148,163,184,0.6)', fontSize: 12, cursor: 'pointer' }}>✕</button>
+                <div style={{ display: 'flex', gap: 8, flexShrink: 0, alignItems: 'center' }}>
+                  <button
+                    onClick={() => router.push('/daily')}
+                    style={{ padding: '10px 16px', border: 'none', borderRadius: 12, background: 'linear-gradient(90deg,#6366f1,#8b5cf6)', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 14px rgba(99,102,241,0.35)' }}
+                  >Decidir →</button>
+                  <button
+                    onClick={() => setLowActivityDismissed(true)}
+                    style={{ width: 32, height: 32, border: '1px solid rgba(51,65,85,0.5)', borderRadius: 8, background: 'transparent', color: 'rgba(148,163,184,0.6)', fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  >✕</button>
                 </div>
               </div>
             )}

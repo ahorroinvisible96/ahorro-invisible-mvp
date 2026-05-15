@@ -402,7 +402,7 @@ export function DailyDecisionWidget({
             disabled={!canConfirm}
             loading={submitting && !confirmed}
             onClick={handleConfirm}
-            className={styles.btnConfirm}
+            className={`${styles.btnConfirm} ${!hasAmount && !confirmed ? styles.btnConfirmZero : ''}`}
           >
             {confirmed ? (
               <span className={styles.confirmedContent}>
@@ -411,7 +411,7 @@ export function DailyDecisionWidget({
                 </svg>
                 Decisión Confirmada
               </span>
-            ) : Number(customAmount) > 0 ? `Registrar ahorro de ${Number(customAmount).toLocaleString('es-ES')}€` : 'Hoy no he ahorrado (0 €)'}
+            ) : Number(customAmount) > 0 ? `Registrar ${Number(customAmount).toLocaleString('es-ES')} €` : 'No he ahorrado hoy'}
           </Button>
         )}
 

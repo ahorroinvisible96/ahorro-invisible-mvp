@@ -183,29 +183,27 @@
   text-overflow: ellipsis;
 }
 
-.horizonChip {
-  display: inline-flex;
+/* ── Botón editar: icono lápiz discreto ── */
+.editIconBtn {
+  display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 4px 10px;
-  border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.14);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: rgba(255, 255, 255, 0.88);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  flex-shrink: 0;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: rgba(255, 255, 255, 0.6);
   cursor: pointer;
-  transition: background 150ms ease, border-color 150ms ease;
+  transition: all var(--transition-normal);
+  flex-shrink: 0;
   font-family: inherit;
 }
 
-.horizonChip:hover {
-  background: rgba(255, 255, 255, 0.22);
-  border-color: rgba(255, 255, 255, 0.35);
+.editIconBtn:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.28);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 /* ── Title ── */

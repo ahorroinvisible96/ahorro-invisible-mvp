@@ -45,14 +45,15 @@
   flex: 1;
   padding: 8px 4px;
   text-decoration: none;
-  /* Inactivo: claramente apagado */
-  color: rgba(148, 163, 184, 0.50);
+  /* Inactivo: legible pero claramente apagado */
+  color: rgba(148, 163, 184, 0.65);
   transition: color var(--transition-fast);
   min-width: 0;
+  position: relative;
 }
 
 .item:hover {
-  color: rgba(255, 255, 255, 0.70);
+  color: rgba(255, 255, 255, 0.80);
 }
 
 /* Activo: máximo contraste */
@@ -78,7 +79,7 @@
 
 /* ── Label ── */
 .label {
-  font-size: var(--type-nav-size);
+  font-size: 11px;
   font-weight: var(--type-nav-weight);
   letter-spacing: var(--type-nav-ls);
   white-space: nowrap;
@@ -90,6 +91,20 @@
 
 .itemActive .label {
   font-weight: 700;
+}
+
+/* Dot indicador de activo bajo el icono */
+.itemActive::after {
+  content: '';
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #a855f7;
+  box-shadow: 0 0 6px rgba(168, 85, 247, 0.7);
 }
 
 /* ── Botón central Decisión Diaria ── */
