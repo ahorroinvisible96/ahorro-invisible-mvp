@@ -1,6 +1,6 @@
 // Archivo layout.tsx limpiado para despliegue
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Geist, Inter } from "next/font/google";
 import "./globals.css";
 import "@/styles/tokens/index.css"; // Importar tokens CSS
 import ThemeInit from '@/components/providers/ThemeInit';
@@ -9,13 +9,27 @@ import SyncProvider from '@/components/providers/SyncProvider';
 import { ToastProvider } from '@/components/ui/Toast/Toast';
 import { Analytics } from "@vercel/analytics/next";
 
+/**
+ * Geist — sans-serif geométrica premium (Vercel)
+ * Rol: Display, títulos, métricas, botones, labels, nav
+ */
+const geist = Geist({
+  variable: "--font-geist",
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "500", "600", "700", "800", "900"],
+});
+
+/**
+ * Inter — sans-serif humanista
+ * Rol: Body, small, caption, textos de apoyo y lectura larga
+ */
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
   display: "swap",
+  weight: ["400", "500", "600"],
 });
-
-
 
 export const metadata: Metadata = {
   title: "Ahorro Invisible - Ahorra de forma inteligente",
@@ -58,9 +72,7 @@ export default function RootLayout({
           }
         ` }} />
       </head>
-      <body
-        className={`${inter.variable} antialiased`}
-      >
+      <body className={`${geist.variable} ${inter.variable} antialiased`}>
         {/* Inicializa el tema en el cliente */}
         <ThemeInit />
         <PostHogProvider>
