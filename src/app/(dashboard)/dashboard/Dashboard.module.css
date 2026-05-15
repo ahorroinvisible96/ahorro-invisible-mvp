@@ -14,13 +14,14 @@
   min-height: calc(100vh - 32px);
   box-sizing: border-box;
   overflow-x: hidden;
-  /* Revolut-style: gradiente púrpura continuo que cubre toda la pantalla */
-  background: linear-gradient(170deg,
-    #1a0533 0%,
-    #220845 25%,
-    #2d0d52 50%,
-    #1c0a3a 75%,
-    #110720 100%
+  /* Degradado vertical: violeta intenso arriba → navy oscuro abajo */
+  background: linear-gradient(180deg,
+    #3b1278 0%,
+    #2a0e5c 15%,
+    #1e0a45 30%,
+    #140830 50%,
+    #0d0620 70%,
+    #0a0518 100%
   );
 }
 
@@ -44,31 +45,31 @@
   overflow: hidden;
 }
 
-/* Orbe decorativo superior-derecho */
+/* Orbe decorativo superior-derecho — sutil, no dominante */
 .headerZone::before {
   content: '';
   position: absolute;
-  top: -80px;
-  right: -60px;
-  width: 300px;
-  height: 300px;
+  top: -100px;
+  right: -80px;
+  width: 350px;
+  height: 350px;
   border-radius: 50%;
-  background: rgba(139, 92, 246, 0.25);
-  filter: blur(80px);
+  background: rgba(139, 92, 246, 0.12);
+  filter: blur(100px);
   pointer-events: none;
 }
 
-/* Orbe decorativo inferior-izquierdo */
+/* Orbe decorativo inferior-izquierdo — sutil */
 .headerZone::after {
   content: '';
   position: absolute;
-  bottom: -60px;
-  left: -40px;
-  width: 250px;
-  height: 250px;
+  bottom: -80px;
+  left: -60px;
+  width: 300px;
+  height: 300px;
   border-radius: 50%;
-  background: rgba(109, 40, 217, 0.3);
-  filter: blur(70px);
+  background: rgba(109, 40, 217, 0.10);
+  filter: blur(100px);
   pointer-events: none;
 }
 
@@ -97,15 +98,15 @@
   position: relative;
 }
 
-/* Fade gradient más suave header→content */
+/* Fade ya no necesario — el gradiente fluye naturalmente */
 .contentZone::before {
   content: '';
   position: absolute;
-  top: -48px;
+  top: -40px;
   left: 0;
   right: 0;
-  height: 48px;
-  background: linear-gradient(to bottom, transparent, rgba(17, 7, 32, 0.35));
+  height: 40px;
+  background: transparent;
   pointer-events: none;
   z-index: 2;
 }

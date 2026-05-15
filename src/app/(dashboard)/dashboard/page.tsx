@@ -730,16 +730,16 @@ export default function DashboardPage() {
             {/* Banner: anti-abandono */}
             {summary.lowActivityAlert && !lowActivityDismissed && (
               <div style={{
-                background: 'rgba(255,255,255,0.06)',
-                backdropFilter: 'blur(20px)',
-                WebkitBackdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255,255,255,0.10)',
+                background: 'rgba(10,8,25,0.50)',
+                backdropFilter: 'blur(16px)',
+                WebkitBackdropFilter: 'blur(16px)',
+                border: '1px solid rgba(255,255,255,0.06)',
                 borderRadius: 20,
-                padding: '16px 18px',
+                padding: '18px 20px',
                 display: 'flex',
                 alignItems: 'center',
                 gap: 14,
-                boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.20)',
               }}>
                 {/* Icono SVG — coherente con el Design System, sin emoji */}
                 <div style={{
@@ -839,19 +839,19 @@ export default function DashboardPage() {
               <div style={{ display: 'flex', gap: 12 }}>
               <button
                 onClick={() => router.push('/goals')}
-                style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px 16px', background: 'rgba(15,23,42,0.7)', border: '1px solid rgba(51,65,85,0.5)', borderRadius: 14, cursor: 'pointer', color: 'rgba(241,245,249,0.9)', fontSize: 14, fontWeight: 700 }}
+                style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px 16px', background: 'rgba(10,8,25,0.50)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, cursor: 'pointer', color: 'rgba(241,245,249,0.85)', fontSize: 14, fontWeight: 600, backdropFilter: 'blur(16px)', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.5"/>
                 </svg>
                 Ver objetivos
               </button>
               <button
                 onClick={() => router.push('/goals')}
-                style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px 16px', background: 'linear-gradient(135deg, rgba(168,85,247,0.25), rgba(37,99,235,0.25))', border: '1px solid rgba(168,85,247,0.4)', borderRadius: 14, cursor: 'pointer', color: '#c4b5fd', fontSize: 14, fontWeight: 700 }}
+                style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px 16px', background: 'linear-gradient(135deg, rgba(168,85,247,0.18), rgba(37,99,235,0.18))', border: '1px solid rgba(168,85,247,0.15)', borderRadius: 16, cursor: 'pointer', color: '#c4b5fd', fontSize: 14, fontWeight: 600, backdropFilter: 'blur(16px)', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="12" y1="4" x2="12" y2="20"/><line x1="4" y1="12" x2="20" y2="12"/>
                 </svg>
                 Añadir objetivo
               </button>
