@@ -826,7 +826,11 @@ export default function DashboardPage() {
             />
 
             {/* ── Accesos rápidos a Objetivos ── */}
-            <div style={{ display: 'flex', gap: 12 }}>
+            <div>
+              <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.09em', color: 'rgba(148,163,184,0.45)', margin: '0 0 10px 2px' }}>
+                Objetivos
+              </p>
+              <div style={{ display: 'flex', gap: 12 }}>
               <button
                 onClick={() => router.push('/goals')}
                 style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px 16px', background: 'rgba(15,23,42,0.7)', border: '1px solid rgba(51,65,85,0.5)', borderRadius: 14, cursor: 'pointer', color: 'rgba(241,245,249,0.9)', fontSize: 14, fontWeight: 700 }}
@@ -845,7 +849,8 @@ export default function DashboardPage() {
                 </svg>
                 Añadir objetivo
               </button>
-            </div>
+              </div>{/* /buttons row */}
+            </div>{/* /section objetivos */}
 
             <SavingsBadge
               balance={summary.hucha.balance}

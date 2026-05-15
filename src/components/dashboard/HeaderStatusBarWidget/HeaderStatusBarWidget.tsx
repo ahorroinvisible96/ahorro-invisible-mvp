@@ -50,7 +50,7 @@ export function HeaderStatusBarWidget({
       {/* ── Left: avatar + saludo ── */}
       <div className={styles.leftGroup}>
 
-        {/* Avatar */}
+        {/* Avatar con badge de racha encima */}
         <div className={styles.avatarWrap} onClick={onOpenProfile} role="button" aria-label="Ver perfil">
           <div className={styles.avatarRing}>
             <div className={styles.avatarInner}>
@@ -60,6 +60,15 @@ export function HeaderStatusBarWidget({
               }
             </div>
           </div>
+          {/* Badge de racha sobre el avatar */}
+          {streak > 0 && (
+            <div className={styles.avatarStreakBadge} title={`${streak} días de racha`}>
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor" style={{ color: '#fb923c' }}>
+                <path d="M12 2C8.5 6 7 9 8 12c-2-1.5-2.5-4-2-6C3 8 1 12 1 14c0 5 4.9 8 11 8s11-3 11-8c0-4-3-7-5-8 1 2.5.5 5-1 6.5.5-2.5-.5-6-5-8z"/>
+              </svg>
+              <span className={styles.avatarStreakNum}>{streak}</span>
+            </div>
+          )}
         </div>
 
         {/* Texto: solo saludo, sin racha */}

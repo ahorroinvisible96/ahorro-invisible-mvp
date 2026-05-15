@@ -90,6 +90,21 @@
   background: #08080f;
   padding: 24px 0;
   min-height: 0;
+  /* Transición suave desde el header: elimina el corte brusco */
+  position: relative;
+}
+
+/* Fade gradient que cubre la transición header→content */
+.contentZone::before {
+  content: '';
+  position: absolute;
+  top: -32px;
+  left: 0;
+  right: 0;
+  height: 32px;
+  background: linear-gradient(to bottom, transparent, #08080f);
+  pointer-events: none;
+  z-index: 2;
 }
 
 /* ── Wrapper interior: padding consistente igual al container ── */

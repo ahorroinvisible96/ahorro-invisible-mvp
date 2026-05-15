@@ -124,12 +124,19 @@ export function PrimaryGoalHeroWidget({
             </div>
 
             {/* Progress bar */}
-            <div className={styles.progressTrack}>
-              {d.progressPct === 0 && (
-                <span className={styles.progressLabel}>Comienza tu ahorro</span>
-              )}
-              <div className={styles.progressFill} style={{ width: `${progressWidth}%` }}>
-                {d.progressPct > 0 && <div className={styles.shimmer} />}
+            <div className={styles.progressBarArea}>
+              {/* % label visualmente conectado a la barra */}
+              <div className={styles.progressBarLabel}>
+                <span className={styles.progressBarLabelPct}>{d.progressPct}% conseguido</span>
+                <span className={styles.progressBarLabelTarget}>{formatEUR(goal.targetAmount)}</span>
+              </div>
+              <div className={styles.progressTrack}>
+                {d.progressPct === 0 && (
+                  <span className={styles.progressLabel}>Comienza tu ahorro</span>
+                )}
+                <div className={styles.progressFill} style={{ width: `${progressWidth}%` }}>
+                  {d.progressPct > 0 && <div className={styles.shimmer} />}
+                </div>
               </div>
             </div>
 

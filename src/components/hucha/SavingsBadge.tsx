@@ -43,12 +43,12 @@ export function SavingsBadge({ balance, hasActiveGoals, onClick }: SavingsBadgeP
         </p>
       </div>
 
-      {/* Flecha + indicador */}
-      <div className={s.arrowCol}>
-        <div className={s.arrowBox}>
-          <ChevronRight size={18} color="#34d399" strokeWidth={2.5} />
-        </div>
-        <span className={s.arrowLabel}>Asignar</span>
+      {/* CTA: Asignar — botón visible con tamaño mínimo táctil */}
+      <div className={s.assignCta}>
+        <span className={s.assignCtaText}>Asignar</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+        </svg>
       </div>
     </button>
   );

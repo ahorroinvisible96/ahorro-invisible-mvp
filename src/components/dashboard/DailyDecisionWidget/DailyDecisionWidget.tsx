@@ -328,7 +328,10 @@ export function DailyDecisionWidget({
               <span className={styles.amountUnit}>€</span>
             </div>
             <p className={styles.amountHint}>
-              💡 Típico: {todayQuestion.suggestedAmount} € · Si no ahorraste nada, deja 0
+              <svg className={styles.amountHintIcon} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+              </svg>
+              Típico: {todayQuestion.suggestedAmount} € · Si no ahorraste nada, deja 0
             </p>
           </div>
         </div>}
@@ -366,8 +369,10 @@ export function DailyDecisionWidget({
                           <TargetIcon size={12} className={styles.goalIcon} />
                           <span className={styles.goalBtnTitle}>{g.title}</span>
                         </div>
-                        <ChevronRightIcon size={14}
-                          className={isSelected ? styles.goalChevronActive : styles.goalChevronDefault}/>
+                        {/* % badge: visible en todas, más prominente en seleccionada */}
+                        <span className={`${styles.goalPctBadge} ${isSelected ? styles.goalPctBadgeSelected : ''}`}>
+                          {pct}%
+                        </span>
                       </div>
                       <div className={styles.goalProgress}>
                         <div className={styles.goalAmounts}>
@@ -396,23 +401,25 @@ export function DailyDecisionWidget({
 
         {/* ── Botón confirmar ── */}
         {!collapsed && (
-          <Button
-            variant="primary"
-            fullWidth
-            disabled={!canConfirm}
-            loading={submitting && !confirmed}
-            onClick={handleConfirm}
-            className={`${styles.btnConfirm} ${!hasAmount && !confirmed ? styles.btnConfirmZero : ''}`}
-          >
-            {confirmed ? (
-              <span className={styles.confirmedContent}>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="20 6 9 17 4 12"/>
-                </svg>
-                Decisión Confirmada
-              </span>
-            ) : Number(customAmount) > 0 ? `Registrar ${Number(customAmount).toLocaleString('es-ES')} €` : 'No he ahorrado hoy'}
-          </Button>
+          <div className={!hasAmount && !confirmed ? styles.btnConfirmZeroWrap : undefined}>
+            <Button
+              variant="primary"
+              fullWidth={!(!hasAmount && !confirmed)}
+              disabled={!canConfirm}
+              loading={submitting && !confirmed}
+              onClick={handleConfirm}
+              className={`${styles.btnConfirm} ${!hasAmount && !confirmed ? styles.btnConfirmZero : ''}`}
+            >
+              {confirmed ? (
+                <span className={styles.confirmedContent}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  Decisión Confirmada
+                </span>
+              ) : Number(customAmount) > 0 ? `Registrar ${Number(customAmount).toLocaleString('es-ES')} €` : 'No he ahorrado hoy'}
+            </Button>
+          </div>
         )}
 
       </div>
