@@ -739,13 +739,17 @@ export default function DashboardPage() {
                 gap: 14,
                 boxShadow: '0 4px 20px rgba(99,102,241,0.12)',
               }}>
+                {/* Icono SVG — coherente con el Design System, sin emoji */}
                 <div style={{
-                  width: 44, height: 44, borderRadius: 12,
-                  background: 'rgba(99,102,241,0.18)',
-                  border: '1px solid rgba(99,102,241,0.3)',
+                  width: 36, height: 36, borderRadius: 10,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 22, flexShrink: 0,
-                }}>💪</div>
+                  color: 'rgba(165,180,252,0.70)', flexShrink: 0,
+                }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                    <circle cx="12" cy="12" r="4"/>
+                  </svg>
+                </div>
                 <div style={{ flex: 1 }}>
                   <p style={{ fontSize: 14, fontWeight: 700, color: '#a5b4fc', margin: '0 0 3px' }}>Llevas unos días sin registrar</p>
                   <p style={{ fontSize: 12, color: 'rgba(148,163,184,0.75)', margin: 0, lineHeight: 1.5 }}>Solo necesitas una decisión hoy para retomar el hábito.</p>

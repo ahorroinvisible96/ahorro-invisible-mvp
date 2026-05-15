@@ -18,7 +18,14 @@ function EmptyState({ onCreateGoal }: { onCreateGoal: () => void }): React.React
       <div className={styles.blurPurple} />
       <div className={styles.card}>
         <div className={styles.emptyState}>
-          <div className={styles.emptyIcon}>🎯</div>
+          {/* SVG target — igual que TargetIcon del Design System */}
+          <div className={styles.emptyIcon}>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'rgba(148,163,184,0.40)' }}>
+              <circle cx="12" cy="12" r="8.5"/>
+              <circle cx="12" cy="12" r="3.5"/>
+              <circle cx="12" cy="12" r="1" strokeWidth="0" fill="currentColor"/>
+            </svg>
+          </div>
           <p className={styles.emptyTitle}>Sin objetivo principal</p>
           <p className={styles.emptySubtitle}>Define un objetivo para empezar a ahorrar.</p>
           <Button variant="primary" fullWidth onClick={onCreateGoal}>
@@ -137,7 +144,11 @@ export function PrimaryGoalHeroWidget({
             {/* Sub-goal context: hacia meta final */}
             {goal.finalGoalAmount && goal.finalGoalAmount > goal.targetAmount && (
               <div className={styles.subGoalContext}>
-                <span className={styles.subGoalIcon}>🗺️</span>
+                {/* SVG ruta — sin emoji */}
+                <svg className={styles.subGoalIcon} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 17l4-4 4 4 4-6 4 2"/>
+                  <line x1="3" y1="21" x2="21" y2="21"/>
+                </svg>
                 <p className={styles.subGoalText}>
                   Paso {(goal.subGoalIndex ?? 0) + 1} hacia tu objetivo final de{' '}
                   <strong>{formatEUR(goal.finalGoalAmount)}</strong>

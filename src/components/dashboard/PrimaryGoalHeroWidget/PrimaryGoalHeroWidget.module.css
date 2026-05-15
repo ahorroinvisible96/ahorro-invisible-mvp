@@ -137,7 +137,10 @@
 }
 
 .subGoalIcon {
-  font-size: 14px;
+  /* SVG icono — sin font-size, flexible para SVG */
+  flex-shrink: 0;
+  color: rgba(255, 255, 255, 0.50);
+  margin-top: 1px;
 }
 
 .subGoalText {
@@ -509,12 +512,12 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.18);
-  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 26px;
+  /* Preparado para SVG: sin font-size */
 }
 
 .emptyTitle {

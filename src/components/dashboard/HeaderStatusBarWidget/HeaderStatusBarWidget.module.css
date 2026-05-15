@@ -120,10 +120,12 @@
   letter-spacing: -0.3px;
 }
 
+/* SVG onda — sin animación de emoji, solo alineado */
 .waveEmoji {
-  display: inline-block;
-  animation: wave 2.5s ease-in-out infinite;
-  transform-origin: 70% 80%;
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  opacity: 0.55;
 }
 
 .sub {

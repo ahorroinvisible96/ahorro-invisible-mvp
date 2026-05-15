@@ -75,7 +75,13 @@ export function HeaderStatusBarWidget({
         <div className={styles.infoGroup}>
           <h1 className={styles.greeting}>
             Hola, {firstName}
-            <span className={styles.waveEmoji} aria-hidden>👋</span>
+            {/* SVG onda — misma familia visual que AppIcons */}
+            <svg aria-hidden width="20" height="20" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"
+              style={{ color: 'rgba(255,255,255,0.55)', flexShrink: 0, marginLeft: 2 }}>
+              <path d="M5 12c0-2 1.5-3 3-2s3 3 5 3 3-1 3-3"/>
+              <path d="M5 17c0-2 1.5-3 3-2s3 3 5 3 3-1 3-3"/>
+            </svg>
           </h1>
         </div>
       </div>
