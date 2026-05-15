@@ -502,7 +502,7 @@ export function SavingsEvolutionWidget({
   );
   const [goalDropdownOpen, setGoalDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const { collapsed, toggle } = useWidgetCollapse('savings_evolution', true);
+  const { collapsed, toggle } = useWidgetCollapse('savings_evolution', false);
 
   useEffect(() => {
     if (!goalDropdownOpen) return;

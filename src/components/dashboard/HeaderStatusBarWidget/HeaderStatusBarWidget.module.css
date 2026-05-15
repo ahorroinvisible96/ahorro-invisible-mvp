@@ -26,24 +26,25 @@
   cursor: pointer;
 }
 
-/* Badge de racha: llama + número sobre el avatar */
+/* Badge de racha: llama + número sobre el avatar — más grande y visible */
 .avatarStreakBadge {
   position: absolute;
-  bottom: -4px;
-  right: -5px;
+  bottom: -5px;
+  right: -7px;
   display: flex;
   align-items: center;
-  gap: 2px;
-  background: rgba(17, 10, 5, 0.9);
-  border: 1.5px solid rgba(251, 146, 60, 0.6);
+  gap: 3px;
+  background: rgba(12, 6, 2, 0.92);
+  border: 2px solid rgba(251, 146, 60, 0.75);
   border-radius: var(--radius-full);
-  padding: 2px 5px 2px 4px;
-  box-shadow: 0 0 8px rgba(251, 146, 60, 0.35);
+  padding: 3px 6px 3px 5px;
+  box-shadow: 0 0 10px rgba(251, 146, 60, 0.45), 0 2px 6px rgba(0,0,0,0.5);
   z-index: 2;
+  min-height: 20px;
 }
 
 .avatarStreakNum {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
   color: #fb923c;
   line-height: 1;

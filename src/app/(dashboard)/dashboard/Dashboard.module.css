@@ -141,6 +141,12 @@
   gap: var(--dashboard-section-gap);
 }
 
+/* Banners de motivación/inactividad: gap más pequeño entre sí y con el widget de decisión */
+.mainCol > *:has(+ #daily-decision-widget),
+.mainCol > *:has(+ * + #daily-decision-widget) {
+  margin-bottom: calc(-1 * (var(--dashboard-section-gap) - 8px));
+}
+
 .sideCol {
   display: flex;
   flex-direction: column;

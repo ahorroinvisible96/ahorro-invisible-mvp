@@ -363,10 +363,12 @@
   -webkit-backdrop-filter: blur(12px);
 }
 
-.infoIcon {
-  font-size: 15px;
+/* SVG icon — coherente con Design System */
+.infoIconSvg {
   flex-shrink: 0;
   margin-top: 1px;
+  color: rgba(255, 255, 255, 0.7);
+  opacity: 0.85;
 }
 
 .infoText {

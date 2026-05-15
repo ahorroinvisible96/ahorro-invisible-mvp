@@ -146,6 +146,12 @@ export function DailyDecisionWidget({
   const { collapsed, toggle } = useWidgetCollapse('daily_decision', false);
   const { addToast } = useToast();
 
+  // Fix #4: objetivo primario siempre primero en la lista
+  const sortedGoals = [
+    ...activeGoals.filter(g => g.id === primaryGoal?.id),
+    ...activeGoals.filter(g => g.id !== primaryGoal?.id),
+  ];
+
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [selectedGoalId, setSelectedGoalId] = useState<string>(
     primaryGoal?.id ?? activeGoals[0]?.id ?? '',
@@ -302,7 +308,11 @@ export function DailyDecisionWidget({
 
         <WidgetHeader completed={confirmed} collapsed={collapsed} onToggle={toggle} isHeader={isHeader} />
 
-        {!collapsed && <h2 className={styles.title}>{todayQuestion.text}</h2>}
+        {!collapsed && (
+          <h2 className={styles.title} style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+            {todayQuestion.text}
+          </h2>
+        )}
         {collapsed && (
           <p className={styles.collapsedPreview} onClick={toggle}>{todayQuestion.text}</p>
         )}
@@ -351,7 +361,7 @@ export function DailyDecisionWidget({
               </div>
             ) : (
               <div className={styles.goalList}>
-                {activeGoals.map((g) => {
+                {sortedGoals.map((g) => {
                   const isSelected = selectedGoalId === g.id;
                   const pct = Math.min(100, Math.round((g.currentAmount / g.targetAmount) * 100));
                   return (
@@ -369,7 +379,7 @@ export function DailyDecisionWidget({
                           <TargetIcon size={12} className={styles.goalIcon} />
                           <span className={styles.goalBtnTitle}>{g.title}</span>
                         </div>
-                        {/* % badge: visible en todas, más prominente en seleccionada */}
+                        {/* % badge: visible en todas, azul-indigo en la seleccionada */}
                         <span className={`${styles.goalPctBadge} ${isSelected ? styles.goalPctBadgeSelected : ''}`}>
                           {pct}%
                         </span>

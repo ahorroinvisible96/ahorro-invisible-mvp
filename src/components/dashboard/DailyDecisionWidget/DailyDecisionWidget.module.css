@@ -228,9 +228,9 @@
 .amountInput {
   flex: 1;
   padding: 14px 16px;
-  background: rgba(15, 23, 42, 0.85);
-  /* Borde visible en reposo — el usuario sabe que puede tocar aquí */
-  border: 2px solid rgba(99, 102, 241, 0.35);
+  background: rgba(20, 24, 55, 0.92);
+  /* Borde indigo claro en reposo — campo claramente interactivo */
+  border: 2px solid rgba(99, 102, 241, 0.55);
   border-radius: var(--radius-md);
   color: var(--color-text-primary);
   font-size: 28px;
@@ -243,12 +243,12 @@
 }
 
 .amountInput:focus {
-  border-color: rgba(99, 102, 241, 0.75);
-  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+  border-color: rgba(99, 102, 241, 0.90);
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.18);
 }
 
 .amountInput::placeholder {
-  color: rgba(100, 116, 139, 0.35);
+  color: rgba(100, 116, 139, 0.30);
 }
 
 .amountInputActive {
@@ -387,26 +387,26 @@
   /* override: cuando el importe es 0, bajar el peso visual */
 }
 
-/* Estado sin importe: link de texto sutil — no compite con el CTA principal */
+/* Estado sin importe: link claro — más visible que antes pero sin competir con el CTA */
 .btnConfirmZero {
   background: transparent !important;
-  border: none !important;
+  border: 1px solid rgba(100, 116, 139, 0.25) !important;
   box-shadow: none !important;
-  color: rgba(100, 116, 139, 0.60) !important;
-  font-weight: 400 !important;
+  color: rgba(148, 163, 184, 0.70) !important;
+  font-weight: 500 !important;
   font-size: 13px !important;
-  text-decoration: underline;
-  text-decoration-style: dashed;
-  text-underline-offset: 3px;
-  padding: 8px 16px !important;
+  text-decoration: none;
+  padding: 9px 20px !important;
   width: auto !important;
   display: inline-flex !important;
   margin: 0 auto !important;
+  border-radius: var(--radius-md) !important;
 }
 
 .btnConfirmZero:hover:not(:disabled) {
-  background: transparent !important;
-  color: rgba(148, 163, 184, 0.80) !important;
+  background: rgba(51, 65, 85, 0.25) !important;
+  color: rgba(203, 213, 225, 0.90) !important;
+  border-color: rgba(100, 116, 139, 0.45) !important;
 }
 
 /* Wrapper centrador para el link "no he ahorrado" */
@@ -631,8 +631,11 @@
 }
 
 .goalBtn:hover:not(:disabled) {
-  border-color: rgba(99, 102, 241, 0.3);
-  background: rgba(99, 102, 241, 0.06);
+  border-color: rgba(99, 102, 241, 0.40);
+  background: rgba(99, 102, 241, 0.08);
+  /* Borde izquierdo de acento: comunica que la card es seleccionable */
+  border-left: 3px solid rgba(99, 102, 241, 0.55);
+  padding-left: 12px;
 }
 
 .goalBtnSelected {

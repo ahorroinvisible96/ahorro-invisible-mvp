@@ -109,17 +109,11 @@ export function PrimaryGoalHeroWidget({
         {/* Cuerpo colapsable */}
         {!collapsed && (
           <>
-            {/* Amounts */}
+            {/* Amounts — solo importe, sin chip % duplicado */}
             <div className={styles.amountsRow}>
               <div className={styles.amountsLeft}>
                 <span className={styles.currentAmount}>{formatEUR(goal.currentAmount)}</span>
                 <span className={styles.targetAmount}>/ {formatEUR(goal.targetAmount)}</span>
-              </div>
-              <div className={styles.pctChip}>
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>
-                </svg>
-                {d.progressPct}%
               </div>
             </div>
 
@@ -154,7 +148,10 @@ export function PrimaryGoalHeroWidget({
             {/* Info box */}
             {!d.isCompleted ? (
               <div className={styles.infoBox}>
-                <span className={styles.infoIcon}>✶</span>
+                {/* SVG info icon — coherente con el Design System */}
+                <svg className={styles.infoIconSvg} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+                </svg>
                 <div>
                   <p className={styles.infoText}>
                     Te faltan <strong>{formatEUR(d.remainingAmount)}</strong>.
@@ -168,7 +165,9 @@ export function PrimaryGoalHeroWidget({
               </div>
             ) : (
               <div className={styles.infoBox}>
-                <span className={styles.infoIcon}>🏆</span>
+                <svg className={styles.infoIconSvg} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
                 <p className={styles.infoText}>¡Meta alcanzada! ¿Cuál es tu próximo objetivo?</p>
               </div>
             )}
