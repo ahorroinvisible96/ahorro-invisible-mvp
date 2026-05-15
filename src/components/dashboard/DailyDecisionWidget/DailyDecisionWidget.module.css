@@ -101,24 +101,20 @@
   cursor: pointer;
 }
 
+/* Icono de widget — sin caja, solo el trazo */
 .iconBadge {
-  width: var(--icon-wrap-size, 34px);
-  height: var(--icon-wrap-size, 34px);
-  border-radius: var(--icon-wrap-radius, 10px);
-  background: linear-gradient(135deg, #6366f1, #a855f7);
+  width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: rgba(148, 163, 184, 0.60);
   flex-shrink: 0;
 }
 
-/* On gradient background: frosted white badge */
+/* On gradient background: ligeramente más brillante */
 .iconBadgeHeader {
-  background: rgba(255, 255, 255, 0.18);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  color: rgba(255, 255, 255, 0.55);
 }
 
 .headerLabel {

@@ -1,14 +1,13 @@
 /**
  * AppIcons — Sistema de iconografía central de Ahorro Invisible
  *
- * ESTÁNDAR:
- *   - strokeWidth: 1.5
- *   - fill: none  (excepto puntos o fills explícitos)
+ * ESTÁNDAR v2 — Geométrico minimalista:
+ *   - strokeWidth: 1.2  (más fino, menos protagonismo)
+ *   - fill: none        (sin rellenos, solo trazo)
  *   - strokeLinecap: round
  *   - strokeLinejoin: round
  *   - viewBox: 0 0 24 24
- *
- * Todos los iconos de la app deben importarse desde aquí.
+ *   - Paths simplificados: formas puras, sin detalles decorativos
  */
 
 import React from 'react';
@@ -17,55 +16,64 @@ type IconProps = { size?: number; className?: string; style?: React.CSSPropertie
 const base = (size: number, style?: React.CSSProperties) => ({
   width: size, height: size, viewBox: '0 0 24 24',
   fill: 'none', stroke: 'currentColor',
-  strokeWidth: 1.5, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const,
+  strokeWidth: 1.2, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const,
   style,
 });
 
 // ── Navegación ────────────────────────────────────────────────────────────────
 
-/** Casa: tejado triangular + cuerpo con puerta */
+/** Casa: tejado en V + cuerpo rectangular */
 export const HomeIcon = ({ size = 24, className, style }: IconProps) => (
   <svg {...base(size, style)} className={className}>
-    <path d="M4 10.5L12 4l8 6.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-9.5z"/>
-    <rect x="9" y="14" width="6" height="7" rx="0.5"/>
+    <path d="M3 11.5L12 4l9 7.5"/>
+    <path d="M5 10v10h5v-5h4v5h5V10"/>
   </svg>
 );
 
-/** Rombo con punto: objetivos */
+/** Círculo objetivo con punto central — mira de precisión */
 export const TargetIcon = ({ size = 24, className, style }: IconProps) => (
   <svg {...base(size, style)} className={className}>
-    <path d="M12 3L21 12L12 21L3 12Z"/>
-    <circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none"/>
+    <circle cx="12" cy="12" r="8.5"/>
+    <circle cx="12" cy="12" r="3.5"/>
+    <circle cx="12" cy="12" r="1" strokeWidth="0" fill="currentColor"/>
   </svg>
 );
 
-/** Relámpago: decisión / acción rápida */
+/** Relámpago: dos líneas oblicuas que forman una Z */
 export const BoltIcon = ({ size = 24, className, style }: IconProps) => (
   <svg {...base(size, style)} className={className}>
-    <path d="M13 3L5 13h7l-1 8 9-10h-7l1-8z"/>
+    <path d="M13 2L4 14h8l-1 8 9-12h-8z"/>
   </svg>
 );
 
-/** Barras ascendentes: historial / progreso */
+/** Tres líneas verticales de distinta altura — historial */
 export const BarChartIcon = ({ size = 24, className, style }: IconProps) => (
   <svg {...base(size, style)} className={className}>
-    <rect x="3"  y="13" width="4" height="8"  rx="1"/>
-    <rect x="10" y="8"  width="4" height="13" rx="1"/>
-    <rect x="17" y="3"  width="4" height="18" rx="1"/>
+    <line x1="5"  y1="21" x2="5"  y2="13"/>
+    <line x1="12" y1="21" x2="12" y2="8"/>
+    <line x1="19" y1="21" x2="19" y2="3"/>
   </svg>
 );
 
-/** Persona: perfil / usuario */
+/** Cabeza + hombros: perfil */
 export const UserIcon = ({ size = 24, className, style }: IconProps) => (
   <svg {...base(size, style)} className={className}>
-    <circle cx="12" cy="7" r="4"/>
-    <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+    <circle cx="12" cy="7.5" r="4"/>
+    <path d="M3.5 20.5c0-4.1 3.8-7 8.5-7s8.5 2.9 8.5 7"/>
   </svg>
 );
 
 // ── Acciones ──────────────────────────────────────────────────────────────────
 
-/** Engranaje: ajustes */
+/** Lápiz diagonal simple — editar */
+export const EditIcon = ({ size = 24, className, style }: IconProps) => (
+  <svg {...base(size, style)} className={className}>
+    <path d="M16 3l5 5L8 21H3v-5z"/>
+    <line x1="13" y1="6" x2="18" y2="11"/>
+  </svg>
+);
+
+/** Engranaje de 8 radios — ajustes */
 export const SettingsIcon = ({ size = 24, className, style }: IconProps) => (
   <svg {...base(size, style)} className={className}>
     <circle cx="12" cy="12" r="3"/>
@@ -73,7 +81,7 @@ export const SettingsIcon = ({ size = 24, className, style }: IconProps) => (
   </svg>
 );
 
-/** Puerta con flecha: logout / salir */
+/** Puerta con flecha: salir */
 export const LogoutIcon = ({ size = 24, className, style }: IconProps) => (
   <svg {...base(size, style)} className={className}>
     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
@@ -82,15 +90,7 @@ export const LogoutIcon = ({ size = 24, className, style }: IconProps) => (
   </svg>
 );
 
-/** Lápiz minimalista: editar */
-export const EditIcon = ({ size = 24, className, style }: IconProps) => (
-  <svg {...base(size, style)} className={className}>
-    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-  </svg>
-);
-
-/** Bandeja apilada: archivar */
+/** Bandeja + tapa: archivar */
 export const ArchiveIcon = ({ size = 24, className, style }: IconProps) => (
   <svg {...base(size, style)} className={className}>
     <rect x="2" y="4" width="20" height="5" rx="1"/>
@@ -99,7 +99,7 @@ export const ArchiveIcon = ({ size = 24, className, style }: IconProps) => (
   </svg>
 );
 
-/** Cruz: cerrar / eliminar */
+/** Cruz diagonal: cerrar */
 export const CloseIcon = ({ size = 24, className, style }: IconProps) => (
   <svg {...base(size, style)} className={className}>
     <line x1="18" y1="6" x2="6" y2="18"/>
@@ -107,22 +107,22 @@ export const CloseIcon = ({ size = 24, className, style }: IconProps) => (
   </svg>
 );
 
-/** Más: añadir */
+/** Cruz vertical: añadir */
 export const PlusIcon = ({ size = 24, className, style }: IconProps) => (
   <svg {...base(size, style)} className={className}>
-    <line x1="12" y1="5" x2="12" y2="19"/>
-    <line x1="5" y1="12" x2="19" y2="12"/>
+    <line x1="12" y1="4" x2="12" y2="20"/>
+    <line x1="4" y1="12" x2="20" y2="12"/>
   </svg>
 );
 
-/** Flecha derecha: navegar / avanzar */
+/** Ángulo derecho: navegar adelante */
 export const ChevronRightIcon = ({ size = 24, className, style }: IconProps) => (
   <svg {...base(size, style)} className={className}>
     <polyline points="9 18 15 12 9 6"/>
   </svg>
 );
 
-/** Flecha abajo: expandir */
+/** Ángulo abajo: expandir */
 export const ChevronDownIcon = ({ size = 24, className, style }: IconProps) => (
   <svg {...base(size, style)} className={className}>
     <polyline points="6 9 12 15 18 9"/>
@@ -137,7 +137,7 @@ export const BellIcon = ({ size = 24, className, style }: IconProps) => (
   </svg>
 );
 
-/** Candado: seguridad / sesión */
+/** Rectángulo + arco: candado */
 export const LockIcon = ({ size = 24, className, style }: IconProps) => (
   <svg {...base(size, style)} className={className}>
     <rect x="3" y="11" width="18" height="11" rx="2"/>
@@ -145,48 +145,38 @@ export const LockIcon = ({ size = 24, className, style }: IconProps) => (
   </svg>
 );
 
-/** Escudo: datos / privacidad */
+/** Escudo: privacidad */
 export const ShieldIcon = ({ size = 24, className, style }: IconProps) => (
   <svg {...base(size, style)} className={className}>
     <path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.25C18.25 22.15 22 17.25 22 12V7L12 2z"/>
   </svg>
 );
 
-/** Signo de interrogación: ayuda / FAQ */
+/** Círculo con signo de interrogación: ayuda */
 export const HelpIcon = ({ size = 24, className, style }: IconProps) => (
   <svg {...base(size, style)} className={className}>
     <circle cx="12" cy="12" r="9"/>
-    <path d="M9 9a3 3 0 0 1 6 0c0 2-3 3-3 3"/>
-    <circle cx="12" cy="17" r="0.5" fill="currentColor" stroke="none"/>
+    <path d="M9.5 9a3 3 0 0 1 5.5 1c0 1.5-2 2.5-2.5 3.5"/>
+    <line x1="12" y1="17" x2="12.01" y2="17"/>
   </svg>
 );
 
-/** Tendencia al alza: progreso / crecimiento */
+/** Línea con ángulo al alza: tendencia positiva */
 export const TrendingUpIcon = ({ size = 24, className, style }: IconProps) => (
   <svg {...base(size, style)} className={className}>
-    <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
-    <polyline points="16 7 22 7 22 13"/>
+    <polyline points="2 18 9 11 13 15 22 4"/>
+    <polyline points="16 4 22 4 22 10"/>
   </svg>
 );
 
-/** Estrella: destacado / primario */
+/** Estrella de 5 puntas: destacado — solo trazo, sin fill */
 export const StarIcon = ({ size = 24, className, style }: IconProps) => (
-  <svg {...base(size, style)} className={className} fill="currentColor">
+  <svg {...base(size, style)} className={className}>
     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
   </svg>
 );
 
-/** Calendario: tiempo / fecha */
-export const CalendarIcon = ({ size = 24, className, style }: IconProps) => (
-  <svg {...base(size, style)} className={className}>
-    <rect x="3" y="4" width="18" height="18" rx="2"/>
-    <line x1="16" y1="2" x2="16" y2="6"/>
-    <line x1="8"  y1="2" x2="8"  y2="6"/>
-    <line x1="3"  y1="10" x2="21" y2="10"/>
-  </svg>
-);
-
-/** Documento / archivo */
+/** Rectángulo con líneas internas: documento */
 export const FileIcon = ({ size = 24, className, style }: IconProps) => (
   <svg {...base(size, style)} className={className}>
     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -196,25 +186,35 @@ export const FileIcon = ({ size = 24, className, style }: IconProps) => (
   </svg>
 );
 
-/** Círculo de alerta: advertencia */
+/** Círculo con línea y punto: alerta */
 export const AlertIcon = ({ size = 24, className, style }: IconProps) => (
   <svg {...base(size, style)} className={className}>
     <circle cx="12" cy="12" r="9"/>
-    <line x1="12" y1="8" x2="12" y2="12"/>
-    <circle cx="12" cy="16" r="0.5" fill="currentColor" stroke="none"/>
+    <line x1="12" y1="8" x2="12" y2="13"/>
+    <line x1="12" y1="16" x2="12.01" y2="16"/>
   </svg>
 );
 
-/** Capas apiladas: logo / marca */
+/** Calendario: fecha */
+export const CalendarIcon = ({ size = 24, className, style }: IconProps) => (
+  <svg {...base(size, style)} className={className}>
+    <rect x="3" y="4" width="18" height="18" rx="2"/>
+    <line x1="16" y1="2" x2="16" y2="6"/>
+    <line x1="8"  y1="2" x2="8"  y2="6"/>
+    <line x1="3"  y1="10" x2="21" y2="10"/>
+  </svg>
+);
+
+/** Tres capas: logo / marca */
 export const BrandIcon = ({ size = 24, className, style }: IconProps) => (
-  <svg {...base(size, style)} className={className} strokeWidth={2}>
+  <svg {...base(size, style)} className={className}>
     <path d="M12 2L2 7l10 5 10-5-10-5z"/>
     <path d="M2 17l10 5 10-5"/>
     <path d="M2 12l10 5 10-5"/>
   </svg>
 );
 
-/** Export / descarga */
+/** Flecha con bandeja: exportar */
 export const DownloadIcon = ({ size = 24, className, style }: IconProps) => (
   <svg {...base(size, style)} className={className}>
     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -223,7 +223,7 @@ export const DownloadIcon = ({ size = 24, className, style }: IconProps) => (
   </svg>
 );
 
-/** Borrar / papelera */
+/** Papelera: eliminar */
 export const TrashIcon = ({ size = 24, className, style }: IconProps) => (
   <svg {...base(size, style)} className={className}>
     <polyline points="3 6 5 6 21 6"/>
@@ -235,58 +235,56 @@ export const TrashIcon = ({ size = 24, className, style }: IconProps) => (
 
 // ── Gamificación ──────────────────────────────────────────────────────────────
 
-/** Fuego: rachas / streaks */
+/** Llama simple — racha de días */
 export const FlameIcon = ({ size = 24, className, style }: IconProps) => (
   <svg {...base(size, style)} className={className}>
-    <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3 1.07.56 2 1.56 2 3a2.5 2.5 0 0 1-2.5 2.5z"/>
-    <path d="M12 2c1.7 1.3 3 3.5 3 6 0 4.1-3.4 7.5-7.5 7.5a7.5 7.5 0 0 1-1.2-.1c-.4-.1-.7.2-.6.6.6 2.3 2.7 4 5.3 4a6.5 6.5 0 0 0 5-10.7C15 7.5 13.5 5.5 12 2z"/>
+    <path d="M12 2c0 5-5 8-5 13a5 5 0 0 0 10 0c0-3-2-5-2-7-1 1.5-1.5 3-1.5 4a2.5 2.5 0 0 1-5 0c0-3 3.5-6 3.5-10z"/>
   </svg>
 );
 
-/** Brote: nivel inicial / semilla */
+/** Brote minimalista: nivel semilla */
 export const SproutIcon = ({ size = 24, className, style }: IconProps) => (
   <svg {...base(size, style)} className={className}>
-    <path d="M7 20h10"/>
-    <path d="M10 20c0-3.5 1.5-6.5 3-9"/>
-    <path d="M13 11c1-1.5 3-2 5-2"/>
-    <path d="M13 11c-1-1.5-3-2-5-2"/>
-    <path d="M13 11c1-1.5 1.5-4.5 1.5-6.5"/>
+    <line x1="12" y1="22" x2="12" y2="11"/>
+    <path d="M12 11c1-2 4-3.5 6-3.5-0.5 2.5-3 4.5-6 3.5z"/>
+    <path d="M12 15c-1-2-4-3-5.5-2.5 0.5 2 2.5 3.5 5.5 2.5z"/>
   </svg>
 );
 
-/** Medalla: niveles bronce / plata / oro */
+/** Círculo con cinta: medalla */
 export const MedalIcon = ({ size = 24, className, style }: IconProps) => (
   <svg {...base(size, style)} className={className}>
-    <circle cx="12" cy="8" r="6"/>
-    <path d="M8.21 13.89L7 23l5-3 5 3-1.21-9.11"/>
+    <circle cx="12" cy="8.5" r="5.5"/>
+    <path d="M8.5 13.5L7 22l5-2.5L17 22l-1.5-8.5"/>
   </svg>
 );
 
-/** Diamante: nivel experto */
+/** Rombo con línea media: diamante */
 export const DiamondIcon = ({ size = 24, className, style }: IconProps) => (
   <svg {...base(size, style)} className={className}>
-    <path d="M6 3h12l4 6-10 12L2 9z"/>
-    <path d="M11 3L8 9l4 12 4-12-3-6"/>
-    <path d="M2.5 9h19"/>
+    <path d="M6 3h12l4 5.5L12 21 2 8.5z"/>
+    <line x1="2" y1="8.5" x2="22" y2="8.5"/>
+    <line x1="12" y1="3" x2="8" y2="8.5"/>
+    <line x1="12" y1="3" x2="16" y2="8.5"/>
   </svg>
 );
 
-/** Corona: niveles máximos */
+/** Tres picos + base: corona */
 export const CrownIcon = ({ size = 24, className, style }: IconProps) => (
   <svg {...base(size, style)} className={className}>
-    <path d="M2 18h20l1-9-6 4-5-8-5 8-6-4z"/>
-    <path d="M7 14h10"/>
+    <path d="M3 17h18l2-11-6.5 4.5L12 4l-4.5 6.5L2 6z"/>
+    <line x1="3" y1="17" x2="21" y2="17"/>
   </svg>
 );
 
-/** Trofeo: logros globales */
+/** Copa con asas: trofeo */
 export const TrophyIcon = ({ size = 24, className, style }: IconProps) => (
   <svg {...base(size, style)} className={className}>
-    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
-    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
-    <path d="M4 22h16"/>
-    <path d="M10 14.66V17c0 .55.45 1 1 1h2c.55 0 1-.45 1-1v-2.34"/>
-    <path d="M12 18v4"/>
-    <path d="M6 4v7a6 6 0 0 0 12 0V4Z"/>
+    <path d="M6 4v7a6 6 0 0 0 12 0V4z"/>
+    <path d="M6 7H3.5a2.5 2.5 0 0 1 0-5H6"/>
+    <path d="M18 7h2.5a2.5 2.5 0 0 0 0-5H18"/>
+    <line x1="9" y1="17" x2="15" y2="17"/>
+    <path d="M9 17v3h6v-3"/>
+    <line x1="4" y1="21" x2="20" y2="21"/>
   </svg>
 );

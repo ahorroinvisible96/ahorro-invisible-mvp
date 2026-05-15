@@ -85,16 +85,14 @@
   gap: 12px;
 }
 
+/* Icono sin caja — solo el trazo, alineado */
 .iconWrap {
-  width: var(--icon-wrap-size, 34px);
-  height: var(--icon-wrap-size, 34px);
-  border-radius: var(--icon-wrap-radius, 10px);
-  background: linear-gradient(135deg, #a855f7, #9333ea, #2563eb);
-  box-shadow: 0 4px 14px rgba(168, 85, 247, 0.3);
+  width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: rgba(148, 163, 184, 0.55);
   flex-shrink: 0;
 }
 
