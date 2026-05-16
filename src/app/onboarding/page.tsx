@@ -29,12 +29,13 @@ type AvatarKey     = UserAvatar;
 type SavingsHabit  = 'nunca' | 'algo' | 'suelo' | 'bastante';
 
 // Porcentaje de ahorro por hábito (NUNCA se muestra al usuario)
-const SAVINGS_PCT: Record<SavingsHabit, number> = {
+export const SAVINGS_PCT: Record<SavingsHabit, number> = {
   nunca:    0.05,
   algo:     0.10,
   suelo:    0.15,
   bastante: 0.20,
 };
+export type { SavingsHabit };
 
 // ─── Preguntas pasos 1–3 (avatar comportamental) ───────────────────────────────
 interface OnboardingOption { value: AvatarKey; label: string; sub: string; }
@@ -117,13 +118,13 @@ export function computeGoalPhases(amount: number, months: number) {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-function fmtEUR(n: number): string {
+export function fmtEUR(n: number): string {
   return new Intl.NumberFormat('es-ES', {
     style: 'currency', currency: 'EUR', maximumFractionDigits: 0,
   }).format(n);
 }
 
-const PHASE_CONFIGS = [
+export const PHASE_CONFIGS = [
   { emoji: '⚡', color: '#60a5fa', rgba: '96,165,250'  },
   { emoji: '🔥', color: '#818cf8', rgba: '129,140,248' },
   { emoji: '🎯', color: '#a855f7', rgba: '168,85,247'  },
