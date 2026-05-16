@@ -21,8 +21,10 @@
 
 /* ── Box ── */
 .box {
-  background: linear-gradient(135deg, var(--slate-900) 0%, var(--slate-800) 50%, var(--slate-900) 100%);
-  border: var(--border-thin) solid rgba(51, 65, 85, 0.6);
+  background: rgba(12, 8, 28, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-2xl);
   padding: 0;
   width: 100%;
@@ -34,7 +36,7 @@
 /* ── Header ── */
 .header {
   padding: 24px 24px 20px;
-  border-bottom: 1px solid rgba(51, 65, 85, 0.4);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -77,8 +79,8 @@
   width: 34px;
   height: 34px;
   border-radius: var(--radius-icon);
-  background: rgba(30, 41, 59, 0.6);
-  border: var(--border-thin) solid rgba(51, 65, 85, 0.5);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   color: rgba(148, 163, 184, 0.7);
   cursor: pointer;
   display: flex;
@@ -89,7 +91,7 @@
 }
 
 .closeBtn:hover {
-  background: rgba(30, 41, 59, 0.9);
+  background: rgba(255, 255, 255, 0.10);
   color: var(--slate-100);
 }
 
@@ -190,8 +192,8 @@
 }
 
 .emptyCard {
-  background: rgba(30, 41, 59, 0.5);
-  border: var(--border-thin) solid rgba(51, 65, 85, 0.4);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: var(--radius-lg);
   padding: 24px 20px;
   text-align: center;
@@ -268,8 +270,8 @@
 
 .select {
   width: 100%;
-  background: rgba(15, 23, 42, 0.8);
-  border: var(--border-thin) solid rgba(51, 65, 85, 0.6);
+  background: rgba(10, 8, 25, 0.80);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-md);
   padding: 12px 44px 12px 14px;
   font-size: 14px;
@@ -310,8 +312,8 @@
   flex: 1;
   padding: 12px 10px;
   border-radius: var(--radius-md);
-  border: 2px solid rgba(51, 65, 85, 0.4);
-  background: rgba(15, 23, 42, 0.5);
+  border: 2px solid rgba(255, 255, 255, 0.06);
+  background: rgba(10, 8, 25, 0.50);
   cursor: pointer;
   text-align: center;
   transition: all var(--transition-fast);
@@ -385,8 +387,8 @@
 
 .partialInput {
   width: 100%;
-  background: rgba(15, 23, 42, 0.8);
-  border: var(--border-thin) solid rgba(51, 65, 85, 0.6);
+  background: rgba(10, 8, 25, 0.80);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-md);
   padding: 12px 44px 12px 14px;
   font-size: 15px;
@@ -440,8 +442,8 @@
   flex: 1;
   padding: 13px 0;
   border-radius: var(--radius-md);
-  border: var(--border-thin) solid rgba(51, 65, 85, 0.5);
-  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.05);
   color: rgba(203, 213, 225, 0.8);
   font-size: 14px;
   font-weight: 600;
@@ -451,7 +453,7 @@
 }
 
 .cancelBtn:hover {
-  background: rgba(30, 41, 59, 0.8);
+  background: rgba(255, 255, 255, 0.10);
 }
 
 .cancelBtn:focus-visible {

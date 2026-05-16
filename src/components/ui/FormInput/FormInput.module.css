@@ -75,7 +75,7 @@
 /* ── Variante auth (fondo más oscuro, para auth pages) ── */
 .authVariant {
   background: var(--auth-input-bg, rgba(15, 23, 42, 0.6));
-  border-color: var(--auth-input-border, rgba(51, 65, 85, 0.55));
+  border-color: var(--auth-input-border, rgba(255, 255, 255, 0.06));
 }
 
 .authVariant:focus {

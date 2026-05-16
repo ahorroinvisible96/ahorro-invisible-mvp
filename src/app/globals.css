@@ -99,10 +99,10 @@
   --accent-yellow:   #eab308;
 
   /* ── Superficies legacy ── */
-  --surface-card:    linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-  --surface-inner:   rgba(15, 23, 42, 0.5);
-  --border-subtle:   rgba(51, 65, 85, 0.5);
-  --border-card:     rgba(51, 65, 85, 0.55);
+  --surface-card:    rgba(10, 8, 25, 0.55);
+  --surface-inner:   rgba(10, 8, 25, 0.40);
+  --border-subtle:   rgba(255, 255, 255, 0.06);
+  --border-card:     rgba(255, 255, 255, 0.06);
 
   /* ── Widget icon wrap ── */
   --icon-wrap-size:   38px;
@@ -179,18 +179,18 @@
   --widget-range-card-border: rgba(255, 255, 255, 0.06);
   --widget-logout-bg: rgba(255, 255, 255, 0.04);
 
-  /* ── Auth page tokens ── */
-  --auth-card-bg: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-  --auth-card-border: rgba(51, 65, 85, 0.6);
-  --auth-card-shadow: 0 25px 50px rgba(2, 6, 23, 0.7);
-  --auth-page-bg: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
-  --auth-input-bg: rgba(15, 23, 42, 0.6);
-  --auth-input-border: rgba(51, 65, 85, 0.55);
+  /* ── Auth page tokens — dark navy ── */
+  --auth-card-bg: linear-gradient(135deg, rgba(12, 8, 28, 0.95) 0%, rgba(18, 12, 38, 0.95) 100%);
+  --auth-card-border: rgba(255, 255, 255, 0.08);
+  --auth-card-shadow: 0 25px 50px rgba(2, 6, 23, 0.8);
+  --auth-page-bg: linear-gradient(180deg, #2a0e5c 0%, #1e0a45 30%, #140830 60%, #0a0518 100%);
+  --auth-input-bg: rgba(10, 8, 25, 0.60);
+  --auth-input-border: rgba(255, 255, 255, 0.08);
   --auth-input-focus: rgba(168, 85, 247, 0.5);
   --auth-label-color: rgba(148, 163, 184, 0.6);
-  --auth-divider: rgba(51, 65, 85, 0.5);
-  --auth-secondary-btn-bg: rgba(30, 41, 59, 0.5);
-  --auth-secondary-btn-border: rgba(51, 65, 85, 0.5);
+  --auth-divider: rgba(255, 255, 255, 0.06);
+  --auth-secondary-btn-bg: rgba(255, 255, 255, 0.05);
+  --auth-secondary-btn-border: rgba(255, 255, 255, 0.06);
   --auth-secondary-btn-color: rgba(203, 213, 225, 0.85);
   --auth-link-color: #a78bfa;
 }

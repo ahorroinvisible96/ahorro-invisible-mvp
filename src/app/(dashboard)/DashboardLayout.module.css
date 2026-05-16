@@ -42,8 +42,8 @@
   width: 32px;
   height: 32px;
   border-radius: 10px;
-  background: rgba(15, 23, 42, 0.85);
-  border: 1px solid rgba(51, 65, 85, 0.6);
+  background: rgba(10, 8, 25, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   color: rgba(148, 163, 184, 0.8);
   display: flex;
   align-items: center;
@@ -54,7 +54,7 @@
 }
 
 .closeBtn:hover {
-  background: rgba(30, 41, 59, 0.95);
-  border-color: rgba(96, 165, 250, 0.4);
+  background: rgba(20, 15, 40, 0.95);
+  border-color: rgba(168, 85, 247, 0.20);
   color: #f1f5f9;
 }

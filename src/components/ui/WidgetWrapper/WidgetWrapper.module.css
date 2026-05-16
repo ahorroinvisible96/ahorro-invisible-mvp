@@ -12,9 +12,9 @@
   overflow: hidden;
 }
 
-.variant_widget { border-radius: var(--radius-xl); }
+.variant_widget { border-radius: var(--radius-2xl); }
 .variant_hero   { border-radius: var(--radius-2xl); }
-.variant_card   { border-radius: var(--radius-lg); }
+.variant_card   { border-radius: var(--radius-xl); }
 
 .clickable { cursor: pointer; }
 .clickable:hover { transform: translateY(-1px); }
@@ -24,6 +24,8 @@
   position: absolute;
   inset: 0;
   background: var(--widget-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
 /* ── Layer 2: glow overlay ── */
@@ -61,12 +63,12 @@
   filter: blur(45px);
 }
 
-/* Colores de glow */
-.glow_purple { background: rgba(168, 85, 247, 0.22); }
-.glow_blue   { background: rgba(59, 130, 246, 0.18); }
-.glow_green  { background: rgba(34, 197, 94, 0.15); }
-.glow_red    { background: rgba(239, 68, 68, 0.12); }
-.glow_gold   { background: rgba(234, 179, 8, 0.15); }
+/* Colores de glow — reducidos para el navy glass */
+.glow_purple { background: rgba(168, 85, 247, 0.10); }
+.glow_blue   { background: rgba(59, 130, 246, 0.08); }
+.glow_green  { background: rgba(34, 197, 94, 0.07); }
+.glow_red    { background: rgba(239, 68, 68, 0.06); }
+.glow_gold   { background: rgba(234, 179, 8, 0.07); }
 
 /* ── Layer 3: borde ── */
 .borderLayer {
@@ -77,9 +79,9 @@
   transition: border-color var(--transition-slow);
 }
 
-.variant_widget .borderLayer { border-radius: var(--radius-xl); }
+.variant_widget .borderLayer { border-radius: var(--radius-2xl); }
 .variant_hero .borderLayer   { border-radius: var(--radius-2xl); }
-.variant_card .borderLayer   { border-radius: var(--radius-lg); }
+.variant_card .borderLayer   { border-radius: var(--radius-xl); }
 
 .wrapper:hover .borderLayer {
   border-color: var(--widget-border-hover);

@@ -10,7 +10,7 @@
   min-height: calc(100vh - 32px);
   box-sizing: border-box;
   overflow-x: hidden;
-  background: #08080f;
+  background: linear-gradient(180deg, #062a18 0%, #052215 20%, #0a1a10 45%, #0d0620 70%, #0a0518 100%);
   animation: pageFadeIn 300ms ease both;
 }
 
@@ -32,12 +32,7 @@
    Contiene: título + métricas clave (decisiones + ahorro)
    ══════════════════════════════════════════════════════════════════════ */
 .headerZone {
-  background: linear-gradient(160deg,
-    #021a0f 0%,
-    #063320 30%,
-    #0a4f31 60%,
-    #0e7548 100%
-  );
+  background: transparent;
   padding: 28px 0 32px;
   position: relative;
   overflow: hidden;
@@ -48,13 +43,13 @@
 .headerZone::before {
   content: '';
   position: absolute;
-  top: -60px;
-  right: -50px;
-  width: 260px;
-  height: 260px;
+  top: -80px;
+  right: -60px;
+  width: 300px;
+  height: 300px;
   border-radius: 50%;
-  background: rgba(16, 185, 129, 0.25);
-  filter: blur(70px);
+  background: rgba(16, 185, 129, 0.10);
+  filter: blur(100px);
   pointer-events: none;
 }
 
@@ -62,13 +57,13 @@
 .headerZone::after {
   content: '';
   position: absolute;
-  bottom: -50px;
-  left: -40px;
-  width: 220px;
-  height: 220px;
+  bottom: -60px;
+  left: -50px;
+  width: 260px;
+  height: 260px;
   border-radius: 50%;
-  background: rgba(52, 211, 153, 0.18);
-  filter: blur(60px);
+  background: rgba(52, 211, 153, 0.08);
+  filter: blur(100px);
   pointer-events: none;
 }
 
@@ -170,8 +165,8 @@
 }
 
 .metricCard {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 16px;
   padding: 16px;
   display: flex;
@@ -213,7 +208,7 @@
    ZONA 2: CONTENIDO — fondo sólido oscuro (filtros + lista)
    ══════════════════════════════════════════════════════════════════════ */
 .contentZone {
-  background: #08080f;
+  background: transparent;
   padding: 24px 0 80px;
   animation: contentSlideUp 450ms cubic-bezier(0.22, 1, 0.36, 1) 80ms both;
 }
@@ -269,8 +264,10 @@
 
 /* ── Tarjeta base (lista iOS) ── */
 .listCard {
-  background: #111111;
-  border-radius: 16px;
+  background: rgba(10, 8, 25, 0.50);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 18px;
   border: 1px solid rgba(255, 255, 255, 0.06);
   overflow: hidden;
 }
@@ -347,7 +344,7 @@
   left: 0;
   right: 0;
   min-width: 160px;
-  background: #1a1a26;
+  background: rgba(10, 8, 25, 0.70);
   border: 1px solid rgba(255, 255, 255, 0.10);
   border-radius: 14px;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.50), 0 0 0 1px rgba(255,255,255,0.04);

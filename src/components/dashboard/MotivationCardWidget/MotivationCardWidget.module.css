@@ -303,7 +303,7 @@
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: rgba(51, 65, 85, 0.6);
+  background: rgba(255, 255, 255, 0.08);
   border: var(--border-thin) solid rgba(71, 85, 105, 0.5);
   transition: all var(--transition-slow);
 }
