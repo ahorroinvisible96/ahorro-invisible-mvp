@@ -57,7 +57,12 @@ export function AIInsightWidget() {
       } catch {}
     } catch (err) {
       console.error('Error fetching AI insight:', err);
-      setError('No pudimos conectar con Gemini. Inténtalo más tarde.');
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes('429') || msg.includes('quota')) {
+        setError('Gemini tiene un límite por minuto. Espera un momento e inténtalo de nuevo.');
+      } else {
+        setError(msg || 'No pudimos conectar con Gemini. Inténtalo más tarde.');
+      }
     } finally {
       setLoading(false);
     }

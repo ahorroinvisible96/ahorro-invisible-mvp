@@ -76,14 +76,15 @@ Genera un mensaje de insight personalizado y motivador para esta semana.
 `.trim();
 
     const gemini = getGemini();
-    const model = gemini.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = gemini.getGenerativeModel({ model: 'gemini-2.0-flash' });
     const result = await model.generateContent(context);
     const text = result.response.text().trim();
 
     return { insight: text };
-  } catch (err) {
-    console.error('[gemini] generateWeeklyInsight error:', err);
-    return { insight: '', error: String(err) };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error('[gemini] generateWeeklyInsight error:', msg);
+    return { insight: '', error: msg };
   }
 }
 
@@ -123,8 +124,9 @@ Perfil del usuario:
     const result = await model.generateContent(context);
 
     return { insight: result.response.text().trim() };
-  } catch (err) {
-    console.error('[gemini] suggestGoal error:', err);
-    return { insight: '', error: String(err) };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error('[gemini] suggestGoal error:', msg);
+    return { insight: '', error: msg };
   }
 }
