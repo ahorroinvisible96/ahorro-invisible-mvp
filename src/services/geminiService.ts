@@ -76,7 +76,7 @@ Genera un mensaje de insight personalizado y motivador para esta semana.
 `.trim();
 
     const gemini = getGemini();
-    const model = gemini.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    const model = gemini.getGenerativeModel({ model: 'gemini-2.5-flash' });
     const result = await model.generateContent(context);
     const text = result.response.text().trim();
 
