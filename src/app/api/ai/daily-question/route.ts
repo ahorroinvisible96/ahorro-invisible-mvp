@@ -28,6 +28,7 @@ import {
   type DailyQuestion,
 } from '@/services/dailyQuestionsBank';
 import type { AIQuestionDecision } from '@/services/ai/questionOutputSchema';
+import { getCurrentTimeSlot4 } from '@/services/ai/baseQuestionMatrix';
 
 // ── Scoring de compatibilidad pregunta ↔ decisión IA ─────────────────────
 
@@ -153,8 +154,8 @@ export async function POST(req: NextRequest) {
     // ── 2. Construir contexto IA ────────────────────────────────────────
     const aiContext = await buildAIContext(userId);
 
-    // ── 3. Pedir decisión a Gemini ──────────────────────────────────────
-    const { decision, fromAI } = await askGeminiForQuestionDecision(aiContext);
+    // ── 3. Pedir decisión a Gemini (incluye pregunta base de la matriz) ─
+    const { decision, fromAI, baseQuestion } = await askGeminiForQuestionDecision(aiContext);
 
     // Si la IA dice skip_today → respetar
     if (decision.decision_type === 'skip_today') {
@@ -170,28 +171,35 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // ── 4. Seleccionar pregunta del banco ───────────────────────────────
+    // ── 4. Seleccionar pregunta ──────────────────────────────────────────
     const todayQuestionIds = interactions.map(i => i.question_id);
     const recentIds = [
       ...todayQuestionIds,
       ...aiContext.recent_question_ids.slice(0, 10),
     ];
 
-    // Filtrar banco
-    const candidates = DAILY_QUESTIONS_BANK
-      .filter(q => q.active !== false)
-      .filter(q => !todayQuestionIds.includes(q.id)); // No repetir hoy
+    let selected: DailyQuestion | undefined;
 
-    // Scoring
-    const scored = candidates
-      .map(q => ({
-        question: q,
-        score: scoreQuestionForDecision(q, decision, recentIds),
-      }))
-      .sort((a, b) => b.score - a.score);
+    // Si la IA dice mantener la pregunta base y no se ha mostrado hoy
+    if (!decision.should_change_question && !todayQuestionIds.includes(baseQuestion.questionId)) {
+      selected = getQuestionById(baseQuestion.questionId);
+    }
 
-    // Elegir top 1
-    const selected = scored[0]?.question;
+    // Si hay que cambiar, o la base no estaba disponible → scoring
+    if (!selected) {
+      const candidates = DAILY_QUESTIONS_BANK
+        .filter(q => q.active !== false)
+        .filter(q => !todayQuestionIds.includes(q.id));
+
+      const scored = candidates
+        .map(q => ({
+          question: q,
+          score: scoreQuestionForDecision(q, decision, recentIds),
+        }))
+        .sort((a, b) => b.score - a.score);
+
+      selected = scored[0]?.question;
+    }
 
     if (!selected) {
       // Fallback absoluto: elegir aleatoria del banco
@@ -244,9 +252,12 @@ export async function POST(req: NextRequest) {
       yearly_delta: selected.yearlyDelta,
       label_impact: selected.labelImpact,
       time_slot: timeSlot,
+      time_slot_4: getCurrentTimeSlot4(),
       is_retry: currentAttempt > 1,
       attempt_number: currentAttempt,
       already_answered: false,
+      used_base_question: selected.id === baseQuestion.questionId,
+      base_question_id: baseQuestion.questionId,
       ai_decision: {
         decision_type: decision.decision_type,
         question_intent: decision.question_intent,

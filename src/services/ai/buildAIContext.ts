@@ -12,7 +12,7 @@ import { getSupabase } from '../geminiService';
 
 // ── Tipos ──────────────────────────────────────────────────────────────────
 
-export type TimeWindow = 'Mañana' | 'Tarde' | 'Noche';
+export type TimeWindow = 'Madrugada' | 'Mañana' | 'Tarde' | 'Noche';
 
 export interface AIContext {
   // Perfil avatar
@@ -67,9 +67,10 @@ function getMadridDate(): Date {
 
 export function getCurrentTimeWindow(): TimeWindow {
   const hour = getMadridDate().getHours();
+  if (hour >= 0 && hour < 6) return 'Madrugada';
   if (hour >= 6 && hour < 14) return 'Mañana';
-  if (hour >= 14 && hour < 21) return 'Tarde';
-  return 'Noche';
+  if (hour >= 14 && hour < 20) return 'Tarde';
+  return 'Noche'; // 20-24
 }
 
 export function getMadridDateString(): string {
