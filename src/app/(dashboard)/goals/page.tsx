@@ -25,6 +25,7 @@ import { TargetIcon, PlusIcon } from '@/components/ui/AppIcons';
 import { WidgetSkeleton } from '@/components/ui/Skeleton/Skeleton';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { useToast } from '@/components/ui/Toast/Toast';
+import { computeGoalPhases, PHASE_CONFIGS, fmtEUR as goalFmt, SAVINGS_PCT, type SavingsHabit as SavingsHabitType } from '@/app/onboarding/page';
 import styles from './Goals.module.css';
 
 function formatEUR(n: number) {
@@ -57,59 +58,271 @@ function GoalModal({
   onSave,
   onClose,
   hucha,
+  incomeRange,
 }: {
   mode: ModalMode;
   initial?: Goal;
   onSave: (data: { title: string; targetAmount: number; horizonMonths: number; applyHucha: boolean }) => void;
   onClose: () => void;
   hucha: Hucha;
+  incomeRange?: { min: number; max: number; currency: string } | null;
 }) {
   const [title, setTitle] = useState(initial?.title ?? '');
   const [amount, setAmount] = useState(String(initial?.targetAmount ?? ''));
   const [months, setMonths] = useState(String(initial?.horizonMonths ?? '12'));
   const [applyHucha, setApplyHucha] = useState(false);
   const [err, setErr] = useState('');
-  const showHuchaOption = mode === 'create' && hucha.balance > 0;
 
-  function submit() {
-    setErr('');
-    if (!title.trim()) { setErr('Escribe un nombre.'); return; }
-    const a = Number(amount);
-    if (!a || a <= 0) { setErr('Introduce una cantidad válida.'); return; }
-    const m = Number(months);
-    if (!m || m < 1) { setErr('El horizonte debe ser al menos 1 mes.'); return; }
-    onSave({ title: title.trim(), targetAmount: a, horizonMonths: m, applyHucha });
+  // ── Create mode: multi-step state ─────────────────────────────────────────
+  const [createStep, setCreateStep] = useState<1 | 2 | 'roadmap'>(1);
+  const [horizonMonths, setHorizonMonths] = useState(3);
+  const [goalAmount, setGoalAmount] = useState(0);
+  const [goalInputValue, setGoalInputValue] = useState('');
+  const [hasAutoFilled, setHasAutoFilled] = useState(false);
+
+  const incomeMid = React.useMemo(() => {
+    if (incomeRange) return Math.round((incomeRange.min + incomeRange.max) / 2);
+    return 1_750;
+  }, [incomeRange]);
+
+  const savingsHabit = React.useMemo<SavingsHabitType>(() => {
+    if (typeof window === 'undefined') return 'algo';
+    try {
+      const raw = localStorage.getItem('onboardingData');
+      if (raw) { const d = JSON.parse(raw); if (d.savingsHabit) return d.savingsHabit as SavingsHabitType; }
+    } catch { /* fallback */ }
+    return 'algo';
+  }, []);
+
+  const savingsPct = SAVINGS_PCT[savingsHabit] ?? 0.10;
+  const recMonthly = Math.max(50, Math.round(incomeMid * savingsPct));
+  const recTotal = recMonthly * horizonMonths;
+  const monthlyGoal = goalAmount > 0 ? goalAmount / horizonMonths : 0;
+  const isOver30 = goalAmount > 0 && monthlyGoal > incomeMid * 0.30;
+  const isOverRec = goalAmount > 0 && goalAmount > recTotal && !isOver30;
+
+  React.useEffect(() => {
+    if (mode === 'create' && createStep === 2 && !hasAutoFilled) {
+      const total = recMonthly * horizonMonths;
+      setGoalAmount(total); setGoalInputValue(String(total)); setHasAutoFilled(true);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [createStep]);
+
+  React.useEffect(() => { if (goalAmount > 0) setGoalInputValue(String(goalAmount)); }, [goalAmount]);
+
+  const phases = computeGoalPhases(Math.max(50, goalAmount || recTotal), horizonMonths);
+
+  function handleGoalInputBlur() {
+    const num = parseInt(goalInputValue.replace(/\D/g, ''), 10);
+    if (!isNaN(num) && num >= 50) setGoalAmount(num);
+    else setGoalInputValue(String(goalAmount));
   }
 
+  const showHuchaOption = mode === 'create' && hucha.balance > 0;
+
+  // ── EDIT MODE: simple form ────────────────────────────────────────────────
+  if (mode === 'edit') {
+    function submitEdit() {
+      setErr('');
+      if (!title.trim()) { setErr('Escribe un nombre.'); return; }
+      const a = Number(amount); if (!a || a <= 0) { setErr('Cantidad válida.'); return; }
+      const m = Number(months); if (!m || m < 1) { setErr('Mínimo 1 mes.'); return; }
+      onSave({ title: title.trim(), targetAmount: a, horizonMonths: m, applyHucha: false });
+    }
+    return (
+      <div style={S.overlay} onClick={onClose}>
+        <div style={S.box} onClick={e => e.stopPropagation()}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h2 style={S.modalTitle}>Editar objetivo</h2>
+            <button style={S.btnClose} onClick={onClose}>✕</button>
+          </div>
+          {err && <p style={S.errorBox}>{err}</p>}
+          <div><label style={S.label}>Nombre</label><input value={title} onChange={e => setTitle(e.target.value)} placeholder="Ej: Viaje" style={S.input} autoFocus /></div>
+          <div><label style={S.label}>Meta (€)</label><input type="number" min="1" value={amount} onChange={e => setAmount(e.target.value)} style={S.input} /></div>
+          <div><label style={S.label}>Horizonte (meses)</label><input type="number" min="1" value={months} onChange={e => setMonths(e.target.value)} style={S.input} /></div>
+          <div style={{ display: 'flex', gap: 10, paddingTop: 4 }}>
+            <button style={S.btnCancel} onClick={onClose}>Cancelar</button>
+            <button style={S.btnSave} onClick={submitEdit}>Guardar</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── CREATE MODE: multi-step ───────────────────────────────────────────────
+
+  function handleCreateNext() {
+    setErr('');
+    if (createStep === 1) {
+      if (!title.trim()) { setErr('Escribe un nombre.'); return; }
+      setCreateStep(2);
+    } else if (createStep === 2) {
+      const num = parseInt(goalInputValue.replace(/\D/g, ''), 10);
+      const resolved = !isNaN(num) && num >= 50 ? num : goalAmount;
+      if (resolved <= 0) { setErr('Mínimo 50€.'); return; }
+      setGoalAmount(resolved);
+      onSave({ title: title.trim(), targetAmount: resolved, horizonMonths, applyHucha });
+      setCreateStep('roadmap');
+    }
+  }
+
+  // ── ROADMAP SCREEN ────────────────────────────────────────────────────────
+  if (createStep === 'roadmap') {
+    return (
+      <div style={S.overlay} onClick={onClose}>
+        <div style={{ ...S.box, maxHeight: '90vh', overflowY: 'auto' as const }} onClick={e => e.stopPropagation()}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h2 style={S.modalTitle}>Tu recorrido</h2>
+            <button style={S.btnClose} onClick={onClose}>✕</button>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.2)', borderRadius: 12, padding: '10px 16px' }}>
+            <span style={{ fontSize: 18 }}>🏆</span>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: '#fbbf24' }}>{title}</div>
+              <div style={{ fontSize: 11, color: 'rgba(251,191,36,0.6)' }}>{goalFmt(goalAmount)} · {horizonMonths} {horizonMonths === 1 ? 'mes' : 'meses'}</div>
+            </div>
+          </div>
+          <p style={{ fontSize: 12, color: 'rgba(148,163,184,0.55)', margin: '4px 0 0', lineHeight: 1.5 }}>Hemos dividido tu reto en pequeñas fases para que el progreso sea visible desde el primer día.</p>
+          <div style={{ maxHeight: 340, overflowY: 'auto', paddingRight: 2, marginTop: 8 }}>
+            {phases.map((phase, i) => {
+              const isLast = i === phases.length - 1;
+              const conf = isLast ? { emoji: '🏆', color: '#fbbf24', rgba: '251,191,36' } : PHASE_CONFIGS[Math.min(i, PHASE_CONFIGS.length - 1)];
+              const nextConf = PHASE_CONFIGS[Math.min(i + 1, PHASE_CONFIGS.length - 1)];
+              const prevTarget = i > 0 ? phases[i - 1].target : 0;
+              const increment = phase.target - prevTarget;
+              return (
+                <div key={i} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 36, flexShrink: 0 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: '50%', background: isLast ? 'linear-gradient(135deg,#fbbf24,#f97316)' : `rgba(${conf.rgba},0.15)`, border: `2px solid rgba(${conf.rgba},${isLast ? 0.8 : 0.4})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, boxShadow: isLast ? '0 0 18px rgba(251,191,36,0.4)' : `0 0 8px rgba(${conf.rgba},0.2)` }}>{conf.emoji}</div>
+                    {!isLast && <div style={{ width: 2, flex: 1, minHeight: 20, background: `linear-gradient(to bottom, rgba(${conf.rgba},0.4), rgba(${nextConf.rgba},0.25))`, margin: '3px 0' }} />}
+                  </div>
+                  <div style={{ flex: 1, paddingTop: 6, paddingBottom: isLast ? 4 : 18 }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, marginBottom: 3 }}>
+                      <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', color: `rgba(${conf.rgba},0.85)`, textTransform: 'uppercase' }}>{phase.label}</span>
+                      <span style={{ fontSize: 16, fontWeight: 700, color: isLast ? '#fbbf24' : conf.color, flexShrink: 0 }}>{goalFmt(phase.target)}</span>
+                    </div>
+                    <div style={{ fontSize: 11, color: 'rgba(148,163,184,0.5)', lineHeight: 1.4 }}>
+                      {isLast ? '🏆 ¡Objetivo alcanzado!' : phase.type === 'week' ? `Ahorra ${goalFmt(increment)} esta semana` : `+${goalFmt(increment)} este mes · acumulas ${goalFmt(phase.target)}`}
+                    </div>
+                    {!isLast && <div style={{ height: 1, background: `rgba(${conf.rgba},0.1)`, marginTop: 10 }} />}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div style={{ background: 'rgba(168,85,247,0.07)', border: '1px solid rgba(168,85,247,0.2)', borderRadius: 12, padding: '12px 14px', display: 'flex', alignItems: 'flex-start', gap: 10, marginTop: 4 }}>
+            <span style={{ fontSize: 16, flexShrink: 0 }}>💜</span>
+            <p style={{ fontSize: 12, color: 'rgba(148,163,184,0.7)', margin: 0, lineHeight: 1.5 }}>Cada pequeña fase que superes es una victoria real.</p>
+          </div>
+          <button onClick={onClose} style={{ ...S.btnSave, marginTop: 4, width: '100%' }}>¡Empezar! 🚀</button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── STEP 1 & 2 ────────────────────────────────────────────────────────────
   return (
     <div style={S.overlay} onClick={onClose}>
-      <div style={S.box} onClick={e => e.stopPropagation()}>
+      <div style={{ ...S.box, maxHeight: '90vh', overflowY: 'auto' as const }} onClick={e => e.stopPropagation()}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={S.modalTitle}>{mode === 'create' ? 'Nuevo objetivo' : 'Editar objetivo'}</h2>
+          <h2 style={S.modalTitle}>{createStep === 1 ? 'Nuevo objetivo' : 'Define la meta'}</h2>
           <button style={S.btnClose} onClick={onClose}>✕</button>
         </div>
+        {/* Progress */}
+        <div style={{ display: 'flex', gap: 6 }}>
+          {[1, 2].map(s => (
+            <div key={s} style={{ flex: 1, height: 4, borderRadius: 999, background: s <= createStep ? 'linear-gradient(90deg,#a855f7,#2563eb)' : 'rgba(255,255,255,0.06)', transition: 'all 300ms', boxShadow: s <= createStep ? '0 0 8px rgba(168,85,247,0.4)' : 'none' }} />
+          ))}
+        </div>
         {err && <p style={S.errorBox}>{err}</p>}
-        <div><label style={S.label}>Nombre</label>
-          <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Ej: Viaje a Japón" style={S.input} autoFocus />
-        </div>
-        <div><label style={S.label}>Meta (€)</label>
-          <input type="number" min="1" value={amount} onChange={e => setAmount(e.target.value)} placeholder="2000" style={S.input} />
-        </div>
-        <div><label style={S.label}>Horizonte (meses)</label>
-          <input type="number" min="1" value={months} onChange={e => setMonths(e.target.value)} style={S.input} />
-        </div>
-        {showHuchaOption && (
-          <label style={{ display: 'flex', alignItems: 'flex-start', gap: 12, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.25)', borderRadius: 12, padding: '12px 14px', cursor: 'pointer' }}>
-            <input type="checkbox" checked={applyHucha} onChange={e => setApplyHucha(e.target.checked)} style={{ marginTop: 2, accentColor: '#a855f7', width: 16, height: 16, flexShrink: 0 }} />
-            <span style={{ fontSize: 13, color: '#fbbf24', lineHeight: 1.4 }}>
-              <strong>Asignar saldo de la Hucha</strong><br />
-              <span style={{ color: 'rgba(251,191,36,0.7)', fontSize: 12 }}>Transferir {formatEUR(hucha.balance)} al nuevo objetivo</span>
-            </span>
-          </label>
-        )}
+
+        {createStep === 1 && (<>
+          <div><label style={S.label}>¿Cómo se llama tu objetivo?</label>
+            <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Viaje, emergencia, formación..." style={S.input} autoFocus />
+          </div>
+          <div><label style={S.label}>¿En cuántos meses?</label>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {[1, 2, 3, 6, 12].map(m => {
+                const isSel = horizonMonths === m; const isRec = m === 3;
+                return (
+                  <button key={m} onClick={() => { setHorizonMonths(m); setHasAutoFilled(false); }}
+                    style={{ flex: 1, padding: '10px 0', borderRadius: 10, position: 'relative', background: isSel ? 'linear-gradient(135deg,#a855f7,#2563eb)' : 'rgba(10,8,25,0.50)', border: isSel ? 'none' : isRec ? '1px solid rgba(168,85,247,0.35)' : '1px solid rgba(255,255,255,0.06)', color: isSel ? '#fff' : isRec ? '#c4b5fd' : 'rgba(148,163,184,0.55)', fontSize: 13, fontWeight: isSel ? 700 : 600, cursor: 'pointer', boxShadow: isSel ? '0 4px 14px rgba(168,85,247,0.3)' : 'none', fontFamily: 'inherit', transition: 'all 200ms' }}>
+                    {m}m
+                    {isRec && !isSel && <div style={{ position: 'absolute', top: -8, left: '50%', transform: 'translateX(-50%)', background: 'linear-gradient(90deg,#a855f7,#2563eb)', borderRadius: 999, padding: '1px 6px', fontSize: 8, fontWeight: 700, color: '#fff', whiteSpace: 'nowrap', pointerEvents: 'none' }}>★ REC</div>}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </>)}
+
+        {createStep === 2 && (<>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(168,85,247,0.06)', border: '1px solid rgba(168,85,247,0.15)', borderRadius: 12, padding: '10px 14px' }}>
+            <span style={{ fontSize: 15 }}>🎯</span>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#e2e8f0' }}>{title}</div>
+              <div style={{ fontSize: 11, color: 'rgba(148,163,184,0.5)' }}>{horizonMonths} {horizonMonths === 1 ? 'mes' : 'meses'}</div>
+            </div>
+          </div>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <label style={{ ...S.label, margin: 0 }}>¿Cuánto quieres ahorrar?</label>
+              <div style={{ fontSize: 11, color: 'rgba(168,85,247,0.7)', fontWeight: 600 }}>Recomendamos: {goalFmt(recTotal)}</div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'stretch', background: 'rgba(10,8,25,0.60)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, overflow: 'hidden' }}>
+              <button onClick={() => setGoalAmount(a => Math.max(50, a - 50))} style={{ width: 52, background: 'rgba(255,255,255,0.04)', color: 'rgba(148,163,184,0.8)', fontSize: 26, flexShrink: 0, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>−</button>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '8px 4px' }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
+                  <input type="number" inputMode="numeric" value={goalInputValue} onChange={e => setGoalInputValue(e.target.value)} onBlur={handleGoalInputBlur}
+                    style={{ background: 'transparent', border: 'none', outline: 'none', color: '#f1f5f9', fontWeight: 800, fontSize: 26, letterSpacing: '-0.5px', fontFamily: 'inherit', textAlign: 'right', width: `${Math.max(3, String(goalInputValue).length)}ch`, minWidth: '3ch', maxWidth: '10ch' } as React.CSSProperties} />
+                  <span style={{ fontSize: 16, fontWeight: 700, color: 'rgba(241,245,249,0.5)', flexShrink: 0 }}>€</span>
+                </div>
+                <div style={{ fontSize: 10, color: 'rgba(148,163,184,0.3)', marginTop: 2 }}>toca para escribir · o usa los botones</div>
+              </div>
+              <button onClick={() => setGoalAmount(a => a + 50)} style={{ width: 52, background: 'rgba(255,255,255,0.04)', color: 'rgba(148,163,184,0.8)', fontSize: 26, flexShrink: 0, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>+</button>
+            </div>
+          </div>
+          {/* Validation */}
+          {goalAmount > 0 && (
+            isOver30 ? (
+              <div style={{ background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.22)', borderRadius: 14, padding: '14px 16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}><span style={{ fontSize: 16 }}>💡</span><span style={{ fontSize: 12, fontWeight: 700, color: '#fbbf24' }}>Una meta muy ambiciosa</span></div>
+                <p style={{ fontSize: 12, color: 'rgba(251,191,36,0.8)', margin: '0 0 8px', lineHeight: 1.6 }}>Te recomendamos empezar con una cantidad más cómoda.</p>
+                <button onClick={() => { setGoalAmount(recTotal); setGoalInputValue(String(recTotal)); }} style={{ width: '100%', padding: '9px', borderRadius: 10, background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.28)', color: '#fbbf24', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>Empezar con {goalFmt(recTotal)} →</button>
+              </div>
+            ) : isOverRec ? (
+              <div style={{ background: 'rgba(168,85,247,0.07)', border: '1px solid rgba(168,85,247,0.2)', borderRadius: 14, padding: '14px 16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}><span style={{ fontSize: 16 }}>💜</span><span style={{ fontSize: 12, fontWeight: 700, color: '#c4b5fd' }}>Una propuesta amigable</span></div>
+                <button onClick={() => { setGoalAmount(recTotal); setGoalInputValue(String(recTotal)); }} style={{ width: '100%', padding: '9px', borderRadius: 10, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.28)', color: '#c4b5fd', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>Usar {goalFmt(recTotal)} →</button>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(16,185,129,0.07)', border: '1px solid rgba(16,185,129,0.18)', borderRadius: 10, padding: '10px 14px' }}>
+                <span style={{ fontSize: 15 }}>✅</span><span style={{ fontSize: 12, color: '#34d399' }}>¡Buen punto de partida!</span>
+              </div>
+            )
+          )}
+          {/* Hucha option */}
+          {showHuchaOption && (
+            <label style={{ display: 'flex', alignItems: 'flex-start', gap: 12, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.25)', borderRadius: 12, padding: '12px 14px', cursor: 'pointer' }}>
+              <input type="checkbox" checked={applyHucha} onChange={e => setApplyHucha(e.target.checked)} style={{ marginTop: 2, accentColor: '#a855f7', width: 16, height: 16, flexShrink: 0 }} />
+              <span style={{ fontSize: 13, color: '#fbbf24', lineHeight: 1.4 }}>
+                <strong>Asignar saldo de la Hucha</strong><br />
+                <span style={{ color: 'rgba(251,191,36,0.7)', fontSize: 12 }}>Transferir {formatEUR(hucha.balance)} al nuevo objetivo</span>
+              </span>
+            </label>
+          )}
+        </>)}
+
         <div style={{ display: 'flex', gap: 10, paddingTop: 4 }}>
-          <button style={S.btnCancel} onClick={onClose}>Cancelar</button>
-          <button style={S.btnSave} onClick={submit}>{mode === 'create' ? 'Crear objetivo' : 'Guardar'}</button>
+          {createStep === 1 ? (
+            <button style={S.btnCancel} onClick={onClose}>Cancelar</button>
+          ) : (
+            <button style={S.btnCancel} onClick={() => setCreateStep(1)}>Atrás</button>
+          )}
+          <button style={{ ...S.btnSave, opacity: (createStep === 1 && !title.trim()) ? 0.5 : 1 }} onClick={handleCreateNext} disabled={createStep === 1 && !title.trim()}>
+            {createStep === 1 ? 'Siguiente →' : 'Ver mi plan →'}
+          </button>
         </div>
       </div>
     </div>
@@ -348,9 +561,8 @@ export default function GoalsPage() {
     if (newGoal) syncGoalToSupabase(newGoal).catch(() => null);
     const userId = localStorage.getItem('supabaseUserId');
     if (userId) pushLocalDataToSupabase(userId).catch(() => null);
-    setModalMode(null);
+    // No cerramos el modal: el GoalModal mostrará el roadmap de fases
     refresh();
-    addToast('Objetivo creado correctamente', 'success');
   };
 
   const handleEdit = (data: { title: string; targetAmount: number; horizonMonths: number; applyHucha: boolean }) => {
@@ -443,8 +655,9 @@ export default function GoalsPage() {
           mode={modalMode}
           initial={modalMode === 'edit' ? editingGoal ?? undefined : undefined}
           onSave={modalMode === 'create' ? handleCreate : handleEdit}
-          onClose={() => { setModalMode(null); setEditingGoal(null); }}
+          onClose={() => { setModalMode(null); setEditingGoal(null); if (modalMode === 'create') addToast('Objetivo creado correctamente', 'success'); }}
           hucha={hucha}
+          incomeRange={summary?.incomeRange}
         />
       )}
       {archivingGoal && (
