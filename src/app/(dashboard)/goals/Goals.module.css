@@ -163,7 +163,7 @@
 }
 
 .metricCard {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(148, 163, 184, 0.15);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 16px;
   padding: 14px 15px;
@@ -258,7 +258,7 @@
    GOAL CARD — Premium Glass Design
    ══════════════════════════════════════════════════════════════ */
 .goalCard {
-  background: rgba(10, 8, 25, 0.50);
+  background: rgba(148, 163, 184, 0.15);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.06);
