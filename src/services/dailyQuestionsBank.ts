@@ -19,6 +19,11 @@
 
 import type { AvatarKey, SubavatarKey } from './profilingService';
 
+// ── Tipos de metadatos IA ────────────────────────────────────────────────────
+export type HabitPrinciple = 'obvious' | 'attractive' | 'easy' | 'satisfying';
+export type QuestionDifficulty = 'low' | 'medium' | 'high';
+export type QuestionTone = 'motivador' | 'reflexivo' | 'preventivo' | 'celebratorio' | 'neutral';
+
 // ── Interface ────────────────────────────────────────────────────────────────
 export interface DailyQuestion {
   id:                        string;
@@ -54,9 +59,24 @@ export interface DailyQuestion {
   yearlyDelta:               number;
   /** Descripción corta del impacto */
   labelImpact:               string;
+
+  // ── Metadatos IA (auto-derivados) ──────────────────────────────────────
+  /** Si la pregunta está activa (false = retirada sin eliminar) */
+  active:                    boolean;
+  /** Intención conductual de la pregunta */
+  intent:                    string;
+  /** Principio de hábito (Atomic Habits) */
+  habit_principle:           HabitPrinciple;
+  /** Tono del mensaje */
+  tone:                      QuestionTone;
+  /** Dificultad percibida para el usuario */
+  difficulty:                QuestionDifficulty;
+  /** Si es pregunta experimental (nueva, sin datos de rendimiento) */
+  experimental:              boolean;
 }
 
 // Helper para construir preguntas de forma compacta
+// Los nuevos metadatos se derivan automáticamente de los campos existentes
 function q(
   id: string, text: string, suggestedAmount: number,
   habitCategory: string, bestDays: string, bestTimeWindow: string, monthPhase: string,
@@ -65,10 +85,40 @@ function q(
   scenarioWeight: number, priorityBase: number, cooldownDays: number,
   monthlyDelta: number, yearlyDelta: number, labelImpact: string,
 ): DailyQuestion {
-  return { id, text, suggestedAmount, habitCategory, bestDays, bestTimeWindow, monthPhase,
+  // Auto-derivar intent de habitCategory + subavatar
+  const intent = sp ? `${habitCategory.toLowerCase()}_${sp}` : habitCategory.toLowerCase();
+
+  // Auto-derivar habit_principle del tono/contenido
+  let habit_principle: HabitPrinciple = 'easy';
+  if (text.includes('evitad') || text.includes('resistid') || text.includes('cerrado')) habit_principle = 'obvious';
+  else if (text.includes('reflexi') || text.includes('revisad') || text.includes('revis')) habit_principle = 'satisfying';
+  else if (text.includes('propuesto') || text.includes('racha') || text.includes('celebr')) habit_principle = 'attractive';
+
+  // Auto-derivar tone
+  let tone: QuestionTone = 'neutral';
+  if (text.includes('racha') || text.includes('progreso') || text.includes('celebr')) tone = 'celebratorio';
+  else if (text.includes('reflexi') || text.includes('revis') || text.includes('Domingo')) tone = 'reflexivo';
+  else if (text.includes('evitad') || text.includes('parad') || text.includes('resisti')) tone = 'preventivo';
+  else if (text.includes('ahorrad') || text.includes('consegui')) tone = 'motivador';
+
+  // Auto-derivar difficulty del suggestedAmount
+  let difficulty: QuestionDifficulty = 'low';
+  if (suggestedAmount >= 15) difficulty = 'high';
+  else if (suggestedAmount >= 6) difficulty = 'medium';
+
+  return {
+    id, text, suggestedAmount, habitCategory, bestDays, bestTimeWindow, monthPhase,
     targetAvatarPrimary: ap, targetAvatarSecondary: as2,
     targetSubavatarPrimary: sp, targetSubavatarSecondary: ss,
-    scenarioWeight, priorityBase, cooldownDays, monthlyDelta, yearlyDelta, labelImpact };
+    scenarioWeight, priorityBase, cooldownDays, monthlyDelta, yearlyDelta, labelImpact,
+    // Metadatos IA auto-derivados
+    active: true,
+    intent,
+    habit_principle,
+    tone,
+    difficulty,
+    experimental: false,
+  };
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
