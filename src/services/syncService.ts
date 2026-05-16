@@ -197,7 +197,7 @@ export async function pullDataFromSupabase(
   try {
     const [profileRes, goalsRes, decisionsRes, huchaRes] = await Promise.all([
       supabase.from('user_profiles').select('*').eq('id', userId).single(),
-      supabase.from('goals').select('*').eq('user_id', userId).eq('archived', false),
+      supabase.from('goals').select('*').eq('user_id', userId),
       supabase.from('decisions').select('*').eq('user_id', userId).order('date', { ascending: true }),
       supabase.from('hucha').select('*').eq('user_id', userId).single(),
     ]);
@@ -244,6 +244,138 @@ export async function pullDataFromSupabase(
     return { success: true };
   } catch (err) {
     return { success: false, error: String(err) };
+  }
+}
+
+// ─── Pull + Merge: sincronizar Supabase → localStorage sin machacar ──────────
+// Toma lo más reciente de cada goal/decision comparando updatedAt/createdAt
+export async function pullAndMergeFromSupabase(
+  userId: string,
+): Promise<{ success: boolean; merged: number; error?: string }> {
+  if (!isSupabaseConfigured || !supabase) {
+    return { success: false, merged: 0, error: 'Supabase no configurado.' };
+  }
+
+  try {
+    // Verificar sesión
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      const { error: refreshErr } = await supabase.auth.refreshSession();
+      if (refreshErr) return { success: false, merged: 0, error: 'Sin sesión activa' };
+    }
+
+    const [profileRes, goalsRes, decisionsRes, huchaRes] = await Promise.all([
+      supabase.from('user_profiles').select('*').eq('id', userId).single(),
+      supabase.from('goals').select('*').eq('user_id', userId),
+      supabase.from('decisions').select('*').eq('user_id', userId).order('date', { ascending: true }),
+      supabase.from('hucha').select('*').eq('user_id', userId).single(),
+    ]);
+
+    const remoteGoals = (goalsRes.data ?? []) as Record<string, unknown>[];
+    const remoteDecisions = (decisionsRes.data ?? []) as Record<string, unknown>[];
+    const remoteHucha = huchaRes.data;
+    const remoteProfile = profileRes.data;
+
+    // Leer store local actual
+    let localRaw: string | null = null;
+    try { localRaw = localStorage.getItem(STORAGE_KEY); } catch { /* SSR */ }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let local: Record<string, any> = {};
+    if (localRaw) try { local = JSON.parse(localRaw); } catch { local = {}; }
+
+    const localGoals = (local.goals ?? []) as Record<string, unknown>[];
+    const localDecisions = (local.decisions ?? []) as Record<string, unknown>[];
+    let merged = 0;
+
+    // ── Merge Goals ─────────────────────────────────────────────────────────
+    const goalMap = new Map<string, Record<string, unknown>>();
+    for (const g of localGoals) goalMap.set(g.id as string, g);
+    for (const rg of remoteGoals) {
+      const localG = {
+        id: rg.id as string,
+        title: rg.title as string,
+        targetAmount: Number(rg.target_amount ?? 0),
+        currentAmount: Number(rg.current_amount ?? 0),
+        horizonMonths: Number(rg.horizon_months ?? 12),
+        isPrimary: Boolean(rg.is_primary),
+        archived: Boolean(rg.archived),
+        createdAt: (rg.created_at as string) ?? '',
+        updatedAt: (rg.updated_at as string) ?? '',
+        source: (rg.source as string) ?? 'dashboard',
+        completedAt: (rg.completed_at as string) ?? null,
+      };
+      const existing = goalMap.get(localG.id);
+      if (!existing) {
+        // Goal solo existe en remoto → añadir
+        goalMap.set(localG.id, localG);
+        merged++;
+      } else {
+        // Ambos existen → el más reciente gana
+        const localUpdated = new Date(existing.updatedAt as string || '2000-01-01').getTime();
+        const remoteUpdated = new Date(localG.updatedAt || '2000-01-01').getTime();
+        if (remoteUpdated > localUpdated) {
+          goalMap.set(localG.id, localG);
+          merged++;
+        }
+      }
+    }
+
+    // ── Merge Decisions ──────────────────────────────────────────────────────
+    const decMap = new Map<string, Record<string, unknown>>();
+    for (const d of localDecisions) decMap.set(d.id as string, d);
+    for (const rd of remoteDecisions) {
+      const localD = {
+        id: rd.id as string,
+        date: rd.date as string,
+        questionId: rd.question_id as string,
+        answerKey: (rd.answer_key as string) ?? '',
+        goalId: (rd.goal_id as string) ?? '',
+        deltaAmount: Number(rd.delta_amount ?? 0),
+        monthlyProjection: Number(rd.monthly_projection ?? 0),
+        yearlyProjection: Number(rd.yearly_projection ?? 0),
+        createdAt: (rd.created_at as string) ?? '',
+      };
+      if (!decMap.has(localD.id)) {
+        decMap.set(localD.id, localD);
+        merged++;
+      }
+    }
+
+    // ── Merge Profile ────────────────────────────────────────────────────────
+    if (remoteProfile) {
+      if (!local.userName || local.userName === 'Usuario') {
+        local.userName = remoteProfile.name ?? local.userName;
+      }
+      if (!local.incomeRange && remoteProfile.income_range) {
+        local.incomeRange = remoteProfile.income_range;
+      }
+      if (!local.moneyFeeling && remoteProfile.money_feeling) {
+        local.moneyFeeling = remoteProfile.money_feeling;
+      }
+    }
+
+    // ── Merge Hucha ──────────────────────────────────────────────────────────
+    if (remoteHucha) {
+      const localBalance = local.hucha?.balance ?? 0;
+      const remoteBalance = remoteHucha.balance ?? 0;
+      // Tomar el mayor balance (más conservador)
+      if (remoteBalance > localBalance) {
+        local.hucha = { balance: remoteBalance, entries: remoteHucha.entries ?? [] };
+        merged++;
+      }
+    }
+
+    // ── Guardar merge ────────────────────────────────────────────────────────
+    local.goals = Array.from(goalMap.values());
+    local.decisions = Array.from(decMap.values());
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(local));
+    localStorage.setItem('supabase_last_sync', new Date().toISOString());
+
+    console.log(`[sync] pullAndMerge: ${merged} registros mergeados`);
+    return { success: true, merged };
+  } catch (err) {
+    console.error('[sync] pullAndMerge error:', err);
+    return { success: false, merged: 0, error: String(err) };
   }
 }
 

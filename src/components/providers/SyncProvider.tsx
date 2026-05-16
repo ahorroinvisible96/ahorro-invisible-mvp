@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { pushLocalDataToSupabase, pullDataFromSupabase } from "@/services/syncService";
+import { pushLocalDataToSupabase, pullDataFromSupabase, pullAndMergeFromSupabase } from "@/services/syncService";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 
 export default function SyncProvider({ children }: { children: React.ReactNode }) {
@@ -37,13 +37,22 @@ export default function SyncProvider({ children }: { children: React.ReactNode }
     if (!isSupabaseConfigured) return;
 
     let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+    let isSyncing = false;
 
-    function syncAll() {
+    async function syncAll() {
       if (debounceTimer) clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => {
+      debounceTimer = setTimeout(async () => {
         const userId = localStorage.getItem("supabaseUserId");
-        if (!userId) return;
-        pushLocalDataToSupabase(userId).catch(() => null);
+        if (!userId || isSyncing) return;
+        isSyncing = true;
+        try {
+          // 1. Pull + merge primero (traer cambios de otros dispositivos)
+          await pullAndMergeFromSupabase(userId).catch(() => null);
+          // 2. Después push (enviar cambios locales)
+          await pushLocalDataToSupabase(userId).catch(() => null);
+        } finally {
+          isSyncing = false;
+        }
       }, 2000);
     }
 
