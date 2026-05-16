@@ -346,8 +346,8 @@ export function DailyDecisionWidget({
           </div>
         </div>}
 
-        {/* ── Selector de objetivo ── */}
-        {!collapsed && (
+        {/* ── Selector de objetivo (solo visible si hay importe) ── */}
+        {!collapsed && hasAmount && (
           <div className={styles.goalSection}>
             {activeGoals.length === 0 ? (
               <div className={styles.noGoalsBox}>
