@@ -188,7 +188,7 @@ export function PrimaryGoalHeroWidget({
               {!d.isCompleted ? (
                 dailyCompleted ? (
                   <Button
-                    variant="primary"
+                    variant="heroPrimary"
                     fullWidth
                     icon={<PlusIcon size={14} />}
                     onClick={onAddExtraSaving}
@@ -196,12 +196,12 @@ export function PrimaryGoalHeroWidget({
                     Añadir Fondos
                   </Button>
                 ) : (
-                  <Button variant="primary" fullWidth onClick={onGoToDailyDecision}>
+                  <Button variant="heroPrimary" fullWidth onClick={onGoToDailyDecision}>
                     Ir a Decisión Diaria
                   </Button>
                 )
               ) : (
-                <Button variant="primary" fullWidth onClick={onCreateGoal}>
+                <Button variant="heroPrimary" fullWidth onClick={onCreateGoal}>
                   Crear nueva meta
                 </Button>
               )}

@@ -9,7 +9,7 @@
   min-height: calc(100vh - 32px);
   box-sizing: border-box;
   overflow-x: hidden;
-  background: linear-gradient(180deg, #2a0e5c 0%, #1e0a45 20%, #140830 45%, #0d0620 70%, #0a0518 100%);
+  background: linear-gradient(180deg, #4A8AA0 0%, #2E657C 30%, #153D50 60%, #061821 100%);
   animation: pageFadeIn 300ms ease both;
 }
 
@@ -45,7 +45,7 @@
   width: 300px;
   height: 300px;
   border-radius: 50%;
-  background: rgba(139, 92, 246, 0.12);
+  background: rgba(74, 138, 160, 0.20);
   filter: blur(100px);
   pointer-events: none;
 }
@@ -58,7 +58,7 @@
   width: 260px;
   height: 260px;
   border-radius: 50%;
-  background: rgba(99, 102, 241, 0.10);
+  background: rgba(46, 101, 124, 0.15);
   filter: blur(100px);
   pointer-events: none;
 }
