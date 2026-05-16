@@ -22,6 +22,7 @@ import { HeaderStatusBarWidget } from '@/components/dashboard/HeaderStatusBarWid
 import { DailyDecisionWidget } from '@/components/dashboard/DailyDecisionWidget';
 import { SavingsEvolutionWidget } from '@/components/dashboard/SavingsEvolutionWidget';
 import { PrimaryGoalHeroWidget } from '@/components/dashboard/PrimaryGoalHeroWidget';
+import { AIInsightWidget } from '@/components/dashboard/AIInsightWidget/AIInsightWidget';
 import styles from './Dashboard.module.css';
 
 // ── Estilos dark glassmorphism compartidos ────────────────────────────────────
@@ -1118,6 +1119,9 @@ export default function DashboardPage() {
               onGoToDailyQuestion={() => router.push('/daily')}
               goals={activeGoals}
             />
+
+            {/* ── AI Insight Widget ── */}
+            <AIInsightWidget />
 
             {/* ── Accesos rápidos a Objetivos ── */}
             <div>
