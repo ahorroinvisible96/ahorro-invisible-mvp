@@ -8,6 +8,7 @@ import {
   storeDeleteDecision,
   storeEditDecision,
 } from '@/services/dashboardStore';
+import { DAILY_QUESTIONS_BANK } from '@/services/dailyQuestionsBank';
 
 const STORAGE_KEY = 'ahorro_invisible_dashboard_v1';
 
@@ -29,23 +30,61 @@ export type HistoryDecisionItem = DailyDecision & {
 
 const CUTOFF_DAYS: Record<string, number> = { '7d': 7, '30d': 30, '90d': 90 };
 
+/**
+ * Resuelve el texto humano de una pregunta.
+ * Busca primero en el legacy pool (20 preguntas) y después
+ * en el banco completo de 135 preguntas.
+ * NUNCA devuelve un ID técnico al usuario.
+ */
 function getQuestionText(questionId: string): string {
-  if (questionId === 'extra_saving') return 'Ahorro extra';
-  return DAILY_QUESTIONS.find((q) => q.questionId === questionId)?.text ?? questionId;
+  if (questionId === 'extra_saving') return 'Ahorro añadido manualmente';
+  if (questionId === 'grace_day') return 'Día de gracia';
+
+  // 1. Buscar en legacy pool
+  const legacy = DAILY_QUESTIONS.find((q) => q.questionId === questionId);
+  if (legacy) return legacy.text;
+
+  // 2. Buscar en banco de 135 preguntas (IDs tipo Q_CI_01, Q_FS_02, etc.)
+  const bankQ = DAILY_QUESTIONS_BANK.find((q) => q.id === questionId);
+  if (bankQ) return bankQ.text;
+
+  // 3. Fallback humano: nunca mostrar IDs técnicos
+  if (questionId.startsWith('Q_')) return 'Decisión de ahorro';
+  return questionId;
 }
 
+/**
+ * Resuelve la etiqueta de respuesta a un texto legible.
+ * Evita mostrar claves internas como answer keys crudas.
+ */
 function getAnswerLabel(questionId: string, answerKey: string): string {
-  if (questionId === 'extra_saving') return answerKey;
+  if (questionId === 'extra_saving') return 'Ahorro manual';
+  if (questionId === 'grace_day') return 'Sin pregunta';
   if (answerKey === 'zero') return 'Sin ahorro';
   if (answerKey === 'saved') return 'Ahorrado';
+  if (answerKey === 'skip') return 'Omitido';
+  if (answerKey === 'grace_day') return 'Día de gracia';
+  // Si es un número, mostrar como "X €"
+  const num = Number(answerKey);
+  if (!isNaN(num) && answerKey !== '') return `${num} €`;
   return answerKey;
 }
 
 function getCategory(questionId: string, answerKey: string): string {
   if (questionId === 'extra_saving') return 'extra';
-  return DAILY_DECISION_RULES.find(
+  if (questionId === 'grace_day') return 'otro';
+
+  // Buscar en reglas legacy
+  const rule = DAILY_DECISION_RULES.find(
     (r) => r.questionId === questionId && r.answerKey === answerKey,
-  )?.category ?? 'otro';
+  );
+  if (rule) return rule.category;
+
+  // Buscar categoría del banco de 135
+  const bankQ = DAILY_QUESTIONS_BANK.find((q) => q.id === questionId);
+  if (bankQ) return bankQ.habitCategory;
+
+  return 'otro';
 }
 
 type UseHistorySummaryReturn = {

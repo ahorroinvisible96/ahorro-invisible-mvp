@@ -1,39 +1,14 @@
 "use client";
 
-import { useEffect, useCallback, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { analytics } from '@/services/analytics';
 import { useHistorySummary } from '@/hooks/useHistorySummary';
-import type { HistoryDecisionItem } from '@/hooks/useHistorySummary';
 import { HistoryDecisionsListWidget } from '@/components/history/HistoryDecisionsListWidget/HistoryDecisionsListWidget';
 import { HistoryEmptyStateWidget } from '@/components/history/HistoryEmptyStateWidget/HistoryEmptyStateWidget';
 import styles from './History.module.css';
-import { BarChartIcon, DownloadIcon } from '@/components/ui/AppIcons';
+import { BarChartIcon } from '@/components/ui/AppIcons';
 import { WidgetSkeleton } from '@/components/ui/Skeleton/Skeleton';
-import { useToast } from '@/components/ui/Toast/Toast';
-
-// ── Helper CSV ────────────────────────────────────────────────────────────────
-function exportCSV(decisions: HistoryDecisionItem[]): void {
-  const header = ['Fecha', 'Categoría', 'Pregunta', 'Respuesta', 'Ahorro (€)', 'Objetivo', 'Proyección mensual (€)', 'Proyección anual (€)'];
-  const rows = decisions.map((d) => [
-    d.date,
-    d.category,
-    `"${d.questionText.replace(/"/g, '""')}"`,
-    `"${d.answerLabel.replace(/"/g, '""')}"`,
-    d.deltaAmount.toFixed(2),
-    `"${(d.goalTitle ?? '').replace(/"/g, '""')}"`,
-    d.monthlyProjection.toFixed(2),
-    d.yearlyProjection.toFixed(2),
-  ]);
-  const csv = [header.join(','), ...rows.map((r) => r.join(','))].join('\n');
-  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `ahorro-invisible-historial-${new Date().toISOString().split('T')[0]}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
-}
 
 function formatEUR(amount: number): string {
   return new Intl.NumberFormat('es-ES', {
@@ -56,7 +31,6 @@ export default function HistoryPage() {
   const router = useRouter();
   const {
     goals,
-    categories,
     filters,
     setFilters,
     filtered,
@@ -80,17 +54,9 @@ export default function HistoryPage() {
   useEffect(() => {
     if (!rangeOpen && !goalOpen) return;
     const handleClick = () => { setRangeOpen(false); setGoalOpen(false); };
-    // Defer para que no cierre inmediatamente al abrir
     const t = setTimeout(() => document.addEventListener('click', handleClick), 0);
     return () => { clearTimeout(t); document.removeEventListener('click', handleClick); };
   }, [rangeOpen, goalOpen]);
-
-  const { addToast } = useToast();
-
-  const handleExport = useCallback(() => {
-    exportCSV(filtered);
-    addToast(`${filtered.length} decisiones exportadas a CSV`, 'success');
-  }, [filtered, addToast]);
 
   const hasActiveFilters =
     filters.range !== 'all' ||
@@ -111,19 +77,22 @@ export default function HistoryPage() {
   // Métricas para el header
   const totalDecisions = filtered.length;
   const totalAmount    = totalSaved;
+  const avgPerDecision = totalDecisions > 0 ? totalAmount / totalDecisions : 0;
+
+  // Calcular mejores días
+  const daysWithSavings = new Set(filtered.filter(d => d.deltaAmount > 0).map(d => d.date)).size;
 
   return (
     <div className={styles.page}>
 
       {/* ══════════════════════════════════════════════════════════════════════
-          ZONA 1 — HEADER PRINCIPAL (degradado verde-esmeralda)
-          Contenido prioritario: título + métricas clave de actividad
+          ZONA 1 — HEADER PRINCIPAL (degradado navy-índigo, igual que Objetivos)
           ══════════════════════════════════════════════════════════════════════ */}
       <div className={styles.headerZone}>
         <div className={styles.zoneInner}>
           <div className={styles.headerContent}>
 
-            {/* Fila superior: icono + título + botón exportar */}
+            {/* Fila superior: icono + título */}
             <div className={styles.headerTop}>
               <div className={styles.headerLeft}>
                 <div className={styles.headerIconWrap}>
@@ -134,17 +103,6 @@ export default function HistoryPage() {
                   <h1 className={styles.headerTitle}>Historial</h1>
                 </div>
               </div>
-
-              {filtered.length > 0 && (
-                <button
-                  className={styles.exportBtn}
-                  onClick={handleExport}
-                  title="Exportar a CSV"
-                >
-                  <DownloadIcon size={14} />
-                  CSV
-                </button>
-              )}
             </div>
 
             {/* ── Filtros integrados: Periodo + Objetivo ── */}
@@ -226,7 +184,7 @@ export default function HistoryPage() {
             {/* Divisor */}
             <div className={styles.headerDivider} />
 
-            {/* Métricas clave: decisiones + ahorro */}
+            {/* Métricas clave: 3 tarjetas (igual que Objetivos) */}
             <div className={styles.metricsRow}>
               <div className={styles.metricCard}>
                 <span className={styles.metricLabel}>Decisiones</span>
@@ -236,14 +194,21 @@ export default function HistoryPage() {
                 </span>
               </div>
               <div className={styles.metricCard}>
-                <span className={styles.metricLabel}>Ahorro generado</span>
-                <span className={styles.metricValueGreen}>
+                <span className={styles.metricLabel}>Ahorro</span>
+                <span className={styles.metricValueAccent}>
                   {totalAmount > 0 ? '+' : ''}{formatEUR(totalAmount)}
                 </span>
                 <span className={styles.metricSub}>
-                  {totalDecisions > 0
-                    ? `~${formatEUR(totalAmount / totalDecisions)} por decisión`
-                    : 'sin decisiones aún'}
+                  acumulado
+                </span>
+              </div>
+              <div className={styles.metricCard}>
+                <span className={styles.metricLabel}>Media</span>
+                <span className={styles.metricValue}>
+                  {formatEUR(avgPerDecision)}
+                </span>
+                <span className={styles.metricSub}>
+                  {daysWithSavings > 0 ? `${daysWithSavings} días activos` : 'por decisión'}
                 </span>
               </div>
             </div>
@@ -253,8 +218,7 @@ export default function HistoryPage() {
       </div>
 
       {/* ══════════════════════════════════════════════════════════════════════
-          ZONA 2 — CONTENIDO SECUNDARIO (fondo oscuro sólido)
-          Filtros de periodo + lista completa de decisiones
+          ZONA 2 — CONTENIDO (fondo oscuro, lista de decisiones)
           ══════════════════════════════════════════════════════════════════════ */}
       <div className={styles.contentZone}>
         <div className={styles.zoneInner}>

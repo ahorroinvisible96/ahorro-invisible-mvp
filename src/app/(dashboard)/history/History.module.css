@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════
-   HISTORY PAGE — Estructura idéntica a Dashboard / Goals / Settings
-   headerZone (verde-esmeralda) + contentZone (oscuro sólido)
+   HISTORY PAGE — Dark Fintech Premium · Navy/Índigo palette
+   Visualmente alineada con Goals page
    ═══════════════════════════════════════════════════════════ */
 
 /* ── Página principal — rompe el padding del container ── */
@@ -10,7 +10,7 @@
   min-height: calc(100vh - 32px);
   box-sizing: border-box;
   overflow-x: hidden;
-  background: linear-gradient(180deg, #062a18 0%, #052215 20%, #0a1a10 45%, #0d0620 70%, #0a0518 100%);
+  background: linear-gradient(180deg, #1a0e3e 0%, #150a35 20%, #100828 45%, #0d0620 70%, #0a0518 100%);
   animation: pageFadeIn 300ms ease both;
 }
 
@@ -28,8 +28,7 @@
 }
 
 /* ══════════════════════════════════════════════════════════════════════
-   ZONA 1: HEADER — degradado verde-esmeralda (identidad del historial)
-   Contiene: título + métricas clave (decisiones + ahorro)
+   ZONA 1: HEADER — degradado índigo-púrpura (alineado con Goals)
    ══════════════════════════════════════════════════════════════════════ */
 .headerZone {
   background: transparent;
@@ -39,7 +38,7 @@
   animation: heroSlideUp 400ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-/* Orbe decorativo superior-derecho */
+/* Orbe decorativo superior-derecho — índigo */
 .headerZone::before {
   content: '';
   position: absolute;
@@ -48,12 +47,12 @@
   width: 300px;
   height: 300px;
   border-radius: 50%;
-  background: rgba(16, 185, 129, 0.10);
+  background: rgba(99, 102, 241, 0.12);
   filter: blur(100px);
   pointer-events: none;
 }
 
-/* Orbe decorativo inferior-izquierdo */
+/* Orbe decorativo inferior-izquierdo — púrpura */
 .headerZone::after {
   content: '';
   position: absolute;
@@ -62,7 +61,7 @@
   width: 260px;
   height: 260px;
   border-radius: 50%;
-  background: rgba(52, 211, 153, 0.08);
+  background: rgba(168, 85, 247, 0.08);
   filter: blur(100px);
   pointer-events: none;
 }
@@ -81,7 +80,7 @@
   gap: 20px;
 }
 
-/* Fila superior: icono + título + botón exportar */
+/* Fila superior: icono + título */
 .headerTop {
   display: flex;
   align-items: center;
@@ -99,12 +98,12 @@
   width: 48px;
   height: 48px;
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.10);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgba(255, 255, 255, 0.85);
+  color: #818cf8;
   flex-shrink: 0;
 }
 
@@ -130,48 +129,27 @@
   margin: 0;
 }
 
-/* Botón CSV exportar */
-.exportBtn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  color: rgba(255, 255, 255, 0.70);
-  font-size: var(--type-small-size);
-  font-weight: var(--type-body-strong-weight);
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: background 150ms ease;
-}
-.exportBtn:hover {
-  background: rgba(255, 255, 255, 0.14);
-  color: rgba(255, 255, 255, 0.90);
-}
-
 /* Divisor */
 .headerDivider {
   height: 1px;
   background: rgba(255, 255, 255, 0.07);
 }
 
-/* ── Métricas principales (2 tarjetas lado a lado) ── */
+/* ── Métricas principales (3 tarjetas como en Goals) ── */
 .metricsRow {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
 }
 
 .metricCard {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 16px;
-  padding: 16px;
+  padding: 14px 12px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
 }
 
 .metricLabel {
@@ -190,10 +168,10 @@
   line-height: var(--type-display-lh);
 }
 
-.metricValueGreen {
+.metricValueAccent {
   font-size: var(--type-metric-lg-size);
   font-weight: var(--type-metric-lg-weight);
-  color: #4ade80;
+  color: #a78bfa;
   letter-spacing: var(--type-h1-ls);
   line-height: var(--type-display-lh);
 }
@@ -205,7 +183,7 @@
 }
 
 /* ══════════════════════════════════════════════════════════════════════
-   ZONA 2: CONTENIDO — fondo sólido oscuro (filtros + lista)
+   ZONA 2: CONTENIDO — fondo sólido oscuro (lista de decisiones)
    ══════════════════════════════════════════════════════════════════════ */
 .contentZone {
   background: transparent;
@@ -281,7 +259,7 @@
   z-index: 10;
 }
 
-/* Wrapper de cada dropdown (position: relative para anclar el menú) */
+/* Wrapper de cada dropdown */
 .dropdownWrap {
   position: relative;
   flex: 1;
@@ -296,15 +274,15 @@
   gap: 8px;
   padding: 10px 14px;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.18);
   cursor: pointer;
   transition: all 150ms ease;
 }
 
 .dropdownTrigger:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(99, 102, 241, 0.14);
+  border-color: rgba(99, 102, 241, 0.28);
 }
 
 .dropdownLabel {
@@ -344,8 +322,10 @@
   left: 0;
   right: 0;
   min-width: 160px;
-  background: rgba(10, 8, 25, 0.70);
-  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(15, 10, 40, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(99, 102, 241, 0.15);
   border-radius: 14px;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.50), 0 0 0 1px rgba(255,255,255,0.04);
   overflow: hidden;
@@ -377,7 +357,7 @@
 }
 
 .dropdownItem:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(99, 102, 241, 0.08);
   color: rgba(255, 255, 255, 0.85);
 }
 
@@ -386,14 +366,14 @@
 }
 
 .dropdownItemActive {
-  color: #34d399;
+  color: #a78bfa;
   font-weight: 600;
-  background: rgba(16, 185, 129, 0.08);
+  background: rgba(168, 85, 247, 0.10);
 }
 
 .dropdownItemActive:hover {
-  background: rgba(16, 185, 129, 0.12);
-  color: #34d399;
+  background: rgba(168, 85, 247, 0.16);
+  color: #c4b5fd;
 }
 
 /* ── Loading ── */
