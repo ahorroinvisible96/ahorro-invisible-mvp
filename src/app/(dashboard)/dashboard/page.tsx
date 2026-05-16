@@ -837,8 +837,8 @@ export default function DashboardPage() {
   const handleSaveGoal = (data: { title: string; targetAmount: number; horizonMonths: number }) => {
     createGoal({ title: data.title, targetAmount: data.targetAmount, horizonMonths: data.horizonMonths });
     analytics.goalCreated(`goal_${Date.now()}`, activeGoals.length === 0, data.targetAmount, data.horizonMonths);
-    setShowCreateGoal(false);
-    addToast('Objetivo creado correctamente', 'success');
+    // No cerramos el modal aquí — el CreateGoalModal mostrará el roadmap de fases
+    // y se cerrará solo cuando el usuario pulse "¡Empezar!"
   };
 
   const handleEditGoal = (goalId: string) => {
@@ -894,7 +894,7 @@ export default function DashboardPage() {
       {showCreateGoal && (
         <CreateGoalModal
           onSave={handleSaveGoal}
-          onClose={() => setShowCreateGoal(false)}
+          onClose={() => { setShowCreateGoal(false); addToast('Objetivo creado correctamente', 'success'); }}
           incomeRange={summary?.incomeRange}
         />
       )}
