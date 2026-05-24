@@ -14,15 +14,7 @@
   min-height: calc(100vh - 32px);
   box-sizing: border-box;
   overflow-x: hidden;
-  /* Degradado vertical: violeta intenso arriba → navy oscuro abajo */
-  background: linear-gradient(180deg,
-    #3b1278 0%,
-    #2a0e5c 15%,
-    #1e0a45 30%,
-    #140830 50%,
-    #0d0620 70%,
-    #0a0518 100%
-  );
+  background: #061821;
 }
 
 @media (min-width: 768px) {
@@ -38,8 +30,8 @@
    Contiene: perfil de usuario + widget de objetivo diario
    ══════════════════════════════════════════════════════════════════════ */
 .headerZone {
-  /* El header ahora comparte el gradiente con .page — sin fondo propio duro */
-  background: transparent;
+  /* Degradado teal solo en el header */
+  background: linear-gradient(180deg, #4A8AA0 0%, #2E657C 40%, #153D50 75%, #061821 100%);
   padding: var(--header-zone-padding-v) 0 32px;
   position: relative;
   overflow: hidden;
