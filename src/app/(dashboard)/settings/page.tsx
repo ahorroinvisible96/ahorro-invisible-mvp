@@ -7,6 +7,7 @@ import { storeResetAllData, storeExportData, buildSummary } from '@/services/das
 import { authSignOut } from '@/services/authService';
 import { resetUserDataInSupabase } from '@/services/syncService';
 import { getTheme } from '@/styles/themes';
+import { DAILY_QUESTIONS_BANK } from '@/services/dailyQuestionsBank';
 import { SettingsMyDataWidget } from '@/components/settings/SettingsMyDataWidget/SettingsMyDataWidget';
 import { SettingsNotificationsWidget } from '@/components/settings/SettingsNotificationsWidget/SettingsNotificationsWidget';
 import { SettingsSessionWidget } from '@/components/settings/SettingsSessionWidget/SettingsSessionWidget';
@@ -67,6 +68,50 @@ export default function SettingsPage() {
     a.click();
     URL.revokeObjectURL(url);
     addToast('Datos exportados correctamente', 'success');
+  }, [addToast]);
+
+  const handleDownloadQuestions = useCallback(() => {
+    const escapeCSV = (val: any): string => {
+      if (val === null || val === undefined) return '';
+      let str = String(val);
+      str = str.replace(/\r?\n|\r/g, ' ');
+      if (str.includes('"') || str.includes(',') || str.includes(';') || str.includes('\t')) {
+        str = `"${str.replace(/"/g, '""')}"`;
+      }
+      return str;
+    };
+
+    const headers = [
+      'ID', 'Pregunta', 'Importe Sugerido (€)', 'Categoría de Gasto', 'Días Óptimos',
+      'Franja Horaria', 'Fase del Mes', 'Avatar Principal', 'Avatar Secundario',
+      'Subavatar Principal', 'Subavatar Secundario', 'Peso Escenario (1-3)',
+      'Prioridad Base (1-10)', 'Días Enfriamiento', 'Ahorro Mensual Est. (€)',
+      'Ahorro Anual Est. (€)', 'Impacto Estimado', 'Intención Conductual',
+      'Principio de Hábito', 'Tono', 'Dificultad'
+    ];
+
+    const rows = DAILY_QUESTIONS_BANK.map(q => [
+      q.id, q.text, q.suggestedAmount, q.habitCategory, q.bestDays,
+      q.bestTimeWindow, q.monthPhase, q.targetAvatarPrimary, q.targetAvatarSecondary,
+      q.targetSubavatarPrimary, q.targetSubavatarSecondary, q.scenarioWeight,
+      q.priorityBase, q.cooldownDays, q.monthlyDelta, q.yearlyDelta,
+      q.labelImpact, q.intent, q.habit_principle, q.tone, q.difficulty
+    ]);
+
+    const csvContent = [
+      headers.map(escapeCSV).join(','),
+      ...rows.map(row => row.map(escapeCSV).join(','))
+    ].join('\n');
+
+    const bom = '\uFEFF';
+    const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `banco_de_preguntas_ahorro_invisible.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    addToast('Banco de preguntas descargado correctamente', 'success');
   }, [addToast]);
 
   const handleResetOnboarding = useCallback(() => {
@@ -181,6 +226,7 @@ export default function SettingsPage() {
                 <SettingsMyDataWidget
                   onExport={handleExport}
                   onResetOnboarding={handleResetOnboarding}
+                  onDownloadQuestions={handleDownloadQuestions}
                 />
               </div>
             </div>

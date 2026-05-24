@@ -10,6 +10,7 @@ import { ShieldIcon, DownloadIcon } from '@/components/ui/AppIcons';
 export function SettingsMyDataWidget({
   onExport,
   onResetOnboarding,
+  onDownloadQuestions,
 }: SettingsMyDataWidgetProps): React.ReactElement {
   const { collapsed, toggle } = useWidgetCollapse('settings_my_data', false);
   return (
@@ -38,6 +39,18 @@ export function SettingsMyDataWidget({
                 <DownloadIcon size={13} />
                 Exportar
               </button>
+            </div>
+            <div className={styles.row}>
+              <div className={styles.rowTexts}>
+                <p className={styles.rowLabel}>Banco de preguntas</p>
+                <p className={styles.rowSub}>Descarga un CSV con las 135 preguntas de la app</p>
+              </div>
+              {onDownloadQuestions && (
+                <button className={styles.actionBtn} onClick={onDownloadQuestions}>
+                  <DownloadIcon size={13} />
+                  Descargar CSV
+                </button>
+              )}
             </div>
             <div className={styles.row}>
               <div className={styles.rowTexts}>
