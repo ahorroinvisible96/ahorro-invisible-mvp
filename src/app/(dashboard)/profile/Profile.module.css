@@ -17,7 +17,7 @@
   min-height: calc(100vh - 32px);
   box-sizing: border-box;
   overflow-x: hidden;
-  background: #061821;
+  background: #0A0517;
   animation: pageFadeIn 300ms ease both;
 }
 
@@ -39,7 +39,7 @@
    Contiene: avatar, nombre de usuario, ingresos mensuales
    ══════════════════════════════════════════════════════════════════════ */
 .headerZone {
-  background: linear-gradient(180deg, #4A8AA0 0%, #2E657C 40%, #153D50 75%, #061821 100%);
+  background: linear-gradient(180deg, #3D8BD3 0%, #1A093E 100%);
   padding: var(--profile-zone-padding-v) 0 32px;
   position: relative;
   overflow: hidden;

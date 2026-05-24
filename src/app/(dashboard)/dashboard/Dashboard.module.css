@@ -14,7 +14,7 @@
   min-height: calc(100vh - 32px);
   box-sizing: border-box;
   overflow-x: hidden;
-  background: #061821;
+  background: #0A0517;
 }
 
 @media (min-width: 768px) {
@@ -31,7 +31,7 @@
    ══════════════════════════════════════════════════════════════════════ */
 .headerZone {
   /* Degradado teal solo en el header */
-  background: linear-gradient(180deg, #4A8AA0 0%, #2E657C 40%, #153D50 75%, #061821 100%);
+  background: linear-gradient(180deg, #391377 0%, #1A093E 100%);
   padding: var(--header-zone-padding-v) 0 32px;
   position: relative;
   overflow: hidden;
