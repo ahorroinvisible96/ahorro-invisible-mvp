@@ -9,7 +9,7 @@ import { hasCompletedProfiling } from '@/services/profilingService';
 import { ProfilingModal } from '@/components/profile/ProfilingModal/ProfilingModal';
 import type { IncomeRange } from '@/types/Dashboard';
 import styles from './Profile.module.css';
-import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { getTheme, applyTheme, Theme } from '@/styles/themes';
 import { WidgetSkeleton } from '@/components/ui/Skeleton/Skeleton';
 import { useToast } from '@/components/ui/Toast/Toast';
 import {
@@ -126,6 +126,8 @@ export default function ProfilePage() {
   const [profilingOpen, setProfilingOpen]       = useState(false);
   const [profilingDone, setProfilingDone]       = useState(false);
   const { addToast } = useToast();
+  // Estado de tema
+  const [currentTheme, setCurrentTheme] = useState<Theme>('dark');
 
   const toggleIncomeVisibility = useCallback(() => {
     setIncomeVisible(v => {
@@ -155,6 +157,8 @@ export default function ProfilePage() {
     if (savedVisible === '0') setIncomeVisible(false);
     // Comprobar si ya completó profiling
     setProfilingDone(hasCompletedProfiling());
+    // Inicializar tema actual
+    setCurrentTheme(getTheme());
     analytics.profileViewed();
     setLoading(false);
   }, [router]);
@@ -308,23 +312,23 @@ export default function ProfilePage() {
                 className={styles.personalizationCard}
                 onClick={() => setProfilingOpen(true)}
               >
-                <div className={styles.personalizationIcon}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                <div className={styles.personalizationIconBig}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                     strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26Z" />
                   </svg>
                 </div>
                 <div className={styles.personalizationContent}>
                   <span className={styles.personalizationTitle}>
-                    {profilingDone ? 'Personalización completada' : 'Personaliza aún más tu experiencia'}
+                    {profilingDone ? 'Personalización completada' : 'Personaliza tu experiencia'}
                   </span>
                   <span className={styles.personalizationSub}>
                     {profilingDone
-                      ? 'Tu perfil ya está optimizado. Puedes repetirlo cuando quieras.'
-                      : 'Responde unas preguntas rápidas para mejorar tu experiencia'}
+                      ? 'Tu perfil está optimizado. Puedes repetirlo cuando quieras.'
+                      : 'Responde unas preguntas rápidas para mejorar tus recomendaciones'}
                   </span>
                 </div>
-                <ChevronRightIcon size={14} className={styles.listRowChevron} />
+                <ChevronRightIcon size={16} className={styles.listRowChevron} />
               </button>
             </div>
 
@@ -351,7 +355,7 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* ─── Bloque: Apariencia (modo oscuro / claro) ─── */}
+            {/* ─── Bloque: Apariencia — selector segmentado inline ─── */}
             <div className={styles.sectionGroup}>
               <p className={styles.sectionLabel}>APARIENCIA</p>
               <div className={styles.listCard}>
@@ -362,8 +366,21 @@ export default function ProfilePage() {
                       <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
                     </svg>
                   </span>
-                  <span className={styles.listRowLabel}>Modo de pantalla</span>
-                  <ThemeToggle />
+                  <span className={styles.listRowLabel}>Modo</span>
+                  <div className={styles.themeSegmented}>
+                    <button
+                      className={`${styles.themeSegBtn} ${currentTheme === 'light' ? styles.themeSegActive : ''}`}
+                      onClick={() => { setCurrentTheme('light'); applyTheme('light'); }}
+                    >
+                      ☀️ Claro
+                    </button>
+                    <button
+                      className={`${styles.themeSegBtn} ${currentTheme === 'dark' ? styles.themeSegActive : ''}`}
+                      onClick={() => { setCurrentTheme('dark'); applyTheme('dark'); }}
+                    >
+                      🌙 Oscuro
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

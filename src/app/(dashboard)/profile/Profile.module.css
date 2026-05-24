@@ -569,21 +569,23 @@
 .personalizationCard {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
   width: 100%;
-  padding: 16px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, rgba(168, 85, 247, 0.06), rgba(59, 130, 246, 0.04));
-  border: 1px solid rgba(168, 85, 247, 0.12);
+  padding: 20px 18px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.12), rgba(59, 130, 246, 0.08));
+  border: 1px solid rgba(168, 85, 247, 0.22);
   cursor: pointer;
   text-align: left;
   transition: all 250ms ease;
+  box-shadow: 0 4px 20px rgba(168, 85, 247, 0.06);
 }
 
 .personalizationCard:hover {
-  background: linear-gradient(135deg, rgba(168, 85, 247, 0.10), rgba(59, 130, 246, 0.06));
-  border-color: rgba(168, 85, 247, 0.25);
-  box-shadow: 0 0 20px rgba(168, 85, 247, 0.08);
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.18), rgba(59, 130, 246, 0.12));
+  border-color: rgba(168, 85, 247, 0.35);
+  box-shadow: 0 6px 28px rgba(168, 85, 247, 0.14);
+  transform: translateY(-1px);
 }
 
 .personalizationIcon {
@@ -599,24 +601,76 @@
   flex-shrink: 0;
 }
 
+.personalizationIconBig {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.25), rgba(99, 102, 241, 0.18));
+  border: 1px solid rgba(168, 85, 247, 0.30);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #c084fc;
+  flex-shrink: 0;
+  box-shadow: 0 0 16px rgba(168, 85, 247, 0.12);
+}
+
 .personalizationContent {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
   min-width: 0;
 }
 
 .personalizationTitle {
-  font-size: var(--type-body-size);
-  font-weight: var(--type-body-strong-weight);
-  color: rgba(255, 255, 255, 0.85);
+  font-size: 15px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.90);
   line-height: 1.2;
 }
 
 .personalizationSub {
   font-size: var(--type-caption-size);
   font-weight: 400;
-  color: rgba(148, 163, 184, 0.50);
+  color: rgba(148, 163, 184, 0.55);
   line-height: 1.4;
 }
+
+/* ── Selector segmentado de tema ── */
+.themeSegmented {
+  display: flex;
+  gap: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.themeSegBtn {
+  padding: 7px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(148, 163, 184, 0.6);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 150ms ease;
+  white-space: nowrap;
+}
+
+.themeSegBtn:hover {
+  color: rgba(241, 245, 249, 0.8);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.themeSegActive {
+  color: #fff;
+  background: rgba(168, 85, 247, 0.30);
+}
+
+.themeSegActive:hover {
+  background: rgba(168, 85, 247, 0.38);
+  color: #fff;
+}
+
