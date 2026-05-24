@@ -301,30 +301,7 @@ export default function ProfilePage() {
         <div className={styles.zoneInner}>
           <div className={styles.contentCol}>
 
-            {/* ─── Bloque: Acceso rápido ─── */}
-            <div className={styles.sectionGroup}>
-              <p className={styles.sectionLabel}>ACCESO RÁPIDO</p>
-              <div className={styles.listCard}>
-                <ListRow
-                  icon={<TargetIcon size={16} />}
-                  label="Mis objetivos"
-                  onClick={() => router.push('/goals')}
-                />
-                <ListRow
-                  icon={<BarChartIcon size={16} />}
-                  label="Historial de ahorro"
-                  onClick={() => router.push('/history')}
-                />
-                <ListRow
-                  icon={<SettingsIcon size={16} />}
-                  label="Configuración avanzada"
-                  onClick={() => router.push('/settings')}
-                  last
-                />
-              </div>
-            </div>
-
-            {/* ─── Bloque: Personalización ─── */}
+            {/* ─── Bloque: Personalización (PRIMERO después del header) ─── */}
             <div className={styles.sectionGroup}>
               <p className={styles.sectionLabel}>PERSONALIZACIÓN</p>
               <button
@@ -349,6 +326,29 @@ export default function ProfilePage() {
                 </div>
                 <ChevronRightIcon size={14} className={styles.listRowChevron} />
               </button>
+            </div>
+
+            {/* ─── Bloque: Acceso rápido ─── */}
+            <div className={styles.sectionGroup}>
+              <p className={styles.sectionLabel}>ACCESO RÁPIDO</p>
+              <div className={styles.listCard}>
+                <ListRow
+                  icon={<TargetIcon size={16} />}
+                  label="Mis objetivos"
+                  onClick={() => router.push('/goals')}
+                />
+                <ListRow
+                  icon={<BarChartIcon size={16} />}
+                  label="Historial de ahorro"
+                  onClick={() => router.push('/history')}
+                />
+                <ListRow
+                  icon={<SettingsIcon size={16} />}
+                  label="Configuración avanzada"
+                  onClick={() => router.push('/settings')}
+                  last
+                />
+              </div>
             </div>
 
             {/* ─── Bloque: Apariencia (modo oscuro / claro) ─── */}

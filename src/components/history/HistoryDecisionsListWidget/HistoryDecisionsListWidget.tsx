@@ -4,15 +4,12 @@ import React, { useState } from 'react';
 import type { HistoryDecisionItem } from '@/hooks/useHistorySummary';
 import type { HistoryDecisionsListWidgetProps } from './HistoryDecisionsListWidget.types';
 import styles from './HistoryDecisionsListWidget.module.css';
-import { useWidgetCollapse } from '@/hooks/useWidgetCollapse';
-import { CollapseChevron } from '@/components/dashboard/CollapsibleWidget/CollapsibleWidget';
-import { CloseIcon, EditIcon, TrashIcon, CalendarIcon, BarChartIcon } from '@/components/ui/AppIcons';
+import { CloseIcon, EditIcon, TrashIcon } from '@/components/ui/AppIcons';
 
 function formatDate(dateString: string): string {
   return new Intl.DateTimeFormat('es-ES', {
     day: '2-digit',
     month: 'short',
-    year: 'numeric',
   }).format(new Date(dateString));
 }
 
@@ -45,8 +42,7 @@ function DeleteModal({
           </button>
         </div>
         <p className={styles.modalText}>
-          Se eliminará <strong style={{ color: '#f1f5f9' }}>{decision.questionText}</strong> del{' '}
-          <strong style={{ color: '#f1f5f9' }}>{formatDate(decision.date)}</strong> y se revertirán{' '}
+          Se eliminará <strong style={{ color: '#f1f5f9' }}>{decision.questionText}</strong> y se revertirán{' '}
           <strong style={{ color: '#4ade80' }}>{formatEUR(decision.deltaAmount)}</strong> del objetivo asociado.
         </p>
         <div className={styles.modalFooter}>
@@ -93,8 +89,7 @@ function EditModal({
 
         <p className={styles.modalText}>
           Modifica la cantidad ahorrada para{' '}
-          <strong style={{ color: '#f1f5f9' }}>{decision.questionText}</strong>{' '}
-          del <strong style={{ color: '#f1f5f9' }}>{formatDate(decision.date)}</strong>.
+          <strong style={{ color: '#f1f5f9' }}>{decision.questionText}</strong>.
         </p>
 
         {error && (
@@ -125,7 +120,7 @@ function EditModal({
   );
 }
 
-// ── Componente principal ─────────────────────────────────────────────────────
+// ── Componente principal — Lista simple ──────────────────────────────────────
 export function HistoryDecisionsListWidget({
   decisions,
   onOpenDecision,
@@ -134,106 +129,49 @@ export function HistoryDecisionsListWidget({
 }: HistoryDecisionsListWidgetProps): React.ReactElement {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const { collapsed, toggle } = useWidgetCollapse('history_decisions_list', false);
 
   const deletingDecision = decisions.find((d) => d.id === deletingId) ?? null;
   const editingDecision = decisions.find((d) => d.id === editingId) ?? null;
 
   return (
     <>
-      {/* Header colapsable */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '12px 16px',
-        background: 'rgba(15,23,42,0.6)',
-        border: '1px solid var(--widget-cat-insight-border, rgba(51,65,85,0.4))',
-        borderRadius: collapsed ? 16 : '16px 16px 0 0',
-        marginBottom: collapsed ? 0 : 0,
-        cursor: 'pointer',
-      }} onClick={toggle} data-widget-cat="insight">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            width: 28, height: 28, borderRadius: 8,
-            background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)',
-            color: '#818cf8', flexShrink: 0,
-          }}>
-            <BarChartIcon size={14} />
-          </div>
-          <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(241,245,249,0.9)', letterSpacing: '0.03em' }}>
-            DECISIONES REGISTRADAS
-          </span>
-          <span style={{ fontSize: 12, color: 'rgba(148,163,184,0.6)', fontWeight: 500 }}>
-            {decisions.length} en total
-          </span>
-        </div>
-        <CollapseChevron collapsed={collapsed} onToggle={toggle} />
-      </div>
-
-      {!collapsed && <div className={styles.list}>
-        {decisions.map((d) => (
+      <div className={styles.simpleList}>
+        {decisions.map((d, i) => (
           <div
             key={d.id}
-            className={styles.card}
-            onClick={() => onOpenDecision(d.id)}
+            className={`${styles.row} ${i < decisions.length - 1 ? styles.rowBorder : ''}`}
           >
-            <div className={styles.cardBg} />
-            <div className={`${styles.cardBorder} ${d.isExtra ? styles.cardBorderExtra : ''}`} />
+            {/* Fecha */}
+            <span className={styles.rowDate}>{formatDate(d.date)}</span>
 
-            <div className={styles.cardContent}>
-              <div className={styles.mainRow}>
-                {/* Columna izquierda */}
-                <div className={styles.leftCol}>
-                  <div className={styles.badgeRow}>
-                    <span className={styles.badgeDate}>
-                      <CalendarIcon size={10} />
-                      {formatDate(d.date)}
-                    </span>
-                    {d.goalTitle && (
-                      <span className={styles.badgeGoal}>{d.goalTitle}</span>
-                    )}
-                    {d.isExtra && (
-                      <span className={styles.badgeExtra}>✦ Extra</span>
-                    )}
-                  </div>
-                  <p className={styles.questionText}>{d.questionText}</p>
-                  <p className={styles.answerText}>{d.answerLabel}</p>
-                </div>
+            {/* Texto de la pregunta (truncado) */}
+            <span className={styles.rowQuestion}>{d.questionText}</span>
 
-                {/* Columna derecha */}
-                <div className={styles.rightCol}>
-                  <span className={`${styles.amount} ${d.deltaAmount === 0 ? styles.amountZero : ''}`}>
-                    {d.deltaAmount > 0 ? '+' : ''}{formatEUR(d.deltaAmount)}
-                  </span>
-                  {d.monthlyProjection > 0 && (
-                    <span className={styles.monthlyHint}>{formatEUR(d.monthlyProjection)}/mes</span>
-                  )}
+            {/* Importe */}
+            <span className={`${styles.rowAmount} ${d.deltaAmount === 0 ? styles.rowAmountZero : ''}`}>
+              {d.deltaAmount > 0 ? '+' : ''}{formatEUR(d.deltaAmount)}
+            </span>
 
-                  {/* Botones editar / eliminar */}
-                  <div className={styles.actions} onClick={(e) => e.stopPropagation()}>
-                    <button
-                      className={styles.btnEdit}
-                      title="Editar cantidad"
-                      onClick={(e) => { e.stopPropagation(); setEditingId(d.id); }}
-                    >
-                      <EditIcon size={13} />
-                    </button>
-                    <button
-                      className={styles.btnDelete}
-                      title="Eliminar ahorro"
-                      onClick={(e) => { e.stopPropagation(); setDeletingId(d.id); }}
-                    >
-                      <TrashIcon size={13} />
-                    </button>
-                  </div>
-                </div>
-              </div>
+            {/* Acciones mini */}
+            <div className={styles.rowActions}>
+              <button
+                className={styles.rowBtn}
+                title="Editar"
+                onClick={(e) => { e.stopPropagation(); setEditingId(d.id); }}
+              >
+                <EditIcon size={12} />
+              </button>
+              <button
+                className={`${styles.rowBtn} ${styles.rowBtnDanger}`}
+                title="Eliminar"
+                onClick={(e) => { e.stopPropagation(); setDeletingId(d.id); }}
+              >
+                <TrashIcon size={12} />
+              </button>
             </div>
           </div>
         ))}
-      </div>}
+      </div>
 
       {/* Modal eliminar */}
       {deletingDecision && (
