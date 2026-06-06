@@ -1,0 +1,382 @@
+/* ═══════════════════════════════════════════════════════
+   Daily Decision — Full-screen page (CSS Module)
+   Matches the design system: #0A0517 base, glassmorphism,
+   tokens, proper spacing, animations.
+   ═══════════════════════════════════════════════════════ */
+
+/* ── Page wrapper ── */
+.page {
+  min-height: 100vh;
+  background: #0A0517;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 16px calc(80px + env(safe-area-inset-bottom));
+}
+
+/* ── Content container ── */
+.content {
+  width: 100%;
+  max-width: 480px;
+}
+
+/* ── Back link ── */
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-bottom: 24px;
+  padding: 8px 12px 8px 4px;
+  border-radius: 10px;
+  transition: all 200ms ease;
+  min-height: 44px;
+}
+
+.backBtn:hover {
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* ── Question card ── */
+.questionCard {
+  background: rgba(10, 8, 25, 0.55);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 20px;
+  padding: 28px 24px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.20);
+  margin-bottom: 20px;
+  animation: cardSlideUp 400ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.questionLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.55);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.questionTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: #f1f5f9;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* ── Amount input card ── */
+.amountCard {
+  background: rgba(10, 8, 25, 0.55);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 18px;
+  padding: 24px 20px;
+  border: 2px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 16px;
+  transition: border-color 200ms ease;
+  animation: cardSlideUp 400ms cubic-bezier(0.16, 1, 0.3, 1) 80ms both;
+}
+
+.amountCardActive {
+  border-color: rgba(74, 222, 128, 0.3);
+}
+
+.amountLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.55);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 14px;
+  transition: color 200ms ease;
+}
+
+.amountLabelActive {
+  color: #86efac;
+}
+
+.amountRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.amountInputWrap {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.amountInput {
+  width: 100%;
+  padding: 14px 50px 14px 16px;
+  background: rgba(10, 8, 25, 0.6);
+  border: 1.5px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  color: #f1f5f9;
+  font-size: 28px;
+  font-weight: 800;
+  outline: none;
+  text-align: right;
+  transition: all 200ms ease;
+  font-family: inherit;
+  letter-spacing: -0.02em;
+}
+
+.amountInput:focus {
+  border-color: rgba(99, 102, 241, 0.5);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.amountInputActive {
+  border-color: rgba(74, 222, 128, 0.4);
+  color: #4ade80;
+}
+
+.amountInputActive:focus {
+  border-color: rgba(74, 222, 128, 0.5);
+  box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.08);
+}
+
+.amountInput::placeholder {
+  color: rgba(148, 163, 184, 0.25);
+}
+
+.amountUnit {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 20px;
+  font-weight: 700;
+  color: rgba(148, 163, 184, 0.4);
+  pointer-events: none;
+  transition: color 200ms ease;
+}
+
+.amountUnitActive {
+  color: rgba(74, 222, 128, 0.7);
+}
+
+.amountHint {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.55);
+  margin-top: 10px;
+  margin-bottom: 0;
+}
+
+/* ── Savings confirmation banner ── */
+.savingsBanner {
+  background: rgba(22, 163, 74, 0.12);
+  border: 1px solid rgba(22, 163, 74, 0.3);
+  border-radius: 14px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  animation: cardSlideUp 300ms ease;
+}
+
+.savingsLabel {
+  font-size: 14px;
+  font-weight: 700;
+  color: #86efac;
+  margin: 0;
+}
+
+.savingsAmount {
+  font-size: 24px;
+  font-weight: 800;
+  color: #4ade80;
+}
+
+/* ── Goal selector ── */
+.goalSection {
+  margin-bottom: 16px;
+  animation: cardSlideUp 400ms cubic-bezier(0.16, 1, 0.3, 1) 120ms both;
+}
+
+.goalLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.55);
+  margin-bottom: 8px;
+  display: block;
+}
+
+.goalSelect {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1.5px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  font-size: 14px;
+  color: #f1f5f9;
+  background: rgba(10, 8, 25, 0.55);
+  cursor: pointer;
+  font-family: inherit;
+  min-height: 44px;
+  transition: border-color 200ms ease;
+}
+
+.goalSelect:focus {
+  border-color: rgba(99, 102, 241, 0.5);
+  outline: none;
+}
+
+/* ── CTA Button ── */
+.btnConfirm {
+  width: 100%;
+  padding: 16px 0;
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 200ms ease;
+  font-family: inherit;
+  min-height: 52px;
+  animation: cardSlideUp 400ms cubic-bezier(0.16, 1, 0.3, 1) 160ms both;
+}
+
+.btnConfirmSave {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  box-shadow: 0 4px 20px rgba(34, 197, 94, 0.25);
+}
+
+.btnConfirmSave:hover {
+  box-shadow: 0 6px 24px rgba(34, 197, 94, 0.35);
+  transform: translateY(-1px);
+}
+
+.btnConfirmZero {
+  background: #2563eb;
+}
+
+.btnConfirmZero:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.btnConfirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* ── Hint footer ── */
+.hint {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.55);
+  text-align: center;
+  margin-top: 14px;
+}
+
+/* ── Status screens (loading, no-goals, completed) ── */
+.statusScreen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #0A0517;
+  padding: 24px;
+}
+
+.statusEmoji {
+  font-size: 52px;
+  margin-bottom: 16px;
+  animation: emojiBounce 600ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes emojiBounce {
+  from { opacity: 0; transform: scale(0.5); }
+  50% { transform: scale(1.1); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.statusTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.statusSubtitle {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.55);
+  margin-bottom: 24px;
+  text-align: center;
+  max-width: 300px;
+  line-height: 1.5;
+}
+
+.statusActions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 300px;
+}
+
+.btnPrimary {
+  padding: 14px 0;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  font-family: inherit;
+  min-height: 48px;
+  transition: all 200ms ease;
+}
+
+.btnPrimary:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.btnSecondary {
+  padding: 14px 0;
+  background: transparent;
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.55);
+  font-family: inherit;
+  min-height: 48px;
+  transition: all 200ms ease;
+}
+
+.btnSecondary:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* ── Animations ── */
+@keyframes cardSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

@@ -14,6 +14,7 @@ import { pushLocalDataToSupabase, syncDecisionToSupabase, syncGoalToSupabase } f
 import type { Goal } from "@/types/Dashboard";
 import { FillBlankInput } from "@/components/daily/FillBlankInput/FillBlankInput";
 import { ChoiceQuestion } from "@/components/daily/ChoiceQuestion/ChoiceQuestion";
+import styles from "./Daily.module.css";
 
 type Phase = 'loading' | 'no-goals' | 'completed' | 'pending' | 'confirming' | 'error';
 
@@ -87,7 +88,6 @@ export default function DailyPage() {
   // Focus en el input cuando se muestra la pregunta
   useEffect(() => {
     if (phase === 'pending' && inputRef.current) {
-      // Delay para que el render se complete
       const t = setTimeout(() => inputRef.current?.focus(), 300);
       return () => clearTimeout(t);
     }
@@ -153,54 +153,43 @@ export default function DailyPage() {
     router.push('/dashboard');
   };
 
-  const DARK = {
-    page: '#0f172a',
-    card: '#1e293b',
-    cardBorder: 'rgba(51,65,85,0.6)',
-    textPrimary: '#f1f5f9',
-    textSecondary: 'rgba(148,163,184,0.85)',
-    textMuted: 'rgba(148,163,184,0.5)',
-    border: 'rgba(51,65,85,0.55)',
-    selectedBg: 'rgba(37,99,235,0.18)',
-    selectedBorder: '#2563eb',
-    green: { bg: 'rgba(22,163,74,0.12)', border: 'rgba(22,163,74,0.3)', text: '#4ade80', label: '#86efac' },
-    accent: '#2563eb',
-  };
-
+  // ── Loading ────────────────────────────────────────────────────────────
   if (phase === 'loading') {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: DARK.page }}>
-        <span style={{ color: DARK.textMuted, fontSize: 14 }}>Cargando...</span>
+      <div className={styles.statusScreen}>
+        <span className={styles.statusSubtitle}>Cargando...</span>
       </div>
     );
   }
 
+  // ── No goals ──────────────────────────────────────────────────────────
   if (phase === 'no-goals') {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: DARK.page, padding: 24 }}>
-        <div style={{ fontSize: 48, marginBottom: 16 }}>🎯</div>
-        <h2 style={{ fontSize: 18, fontWeight: 700, color: DARK.textPrimary, marginBottom: 8, textAlign: 'center' }}>Crea un objetivo primero</h2>
-        <p style={{ fontSize: 14, color: DARK.textSecondary, marginBottom: 24, textAlign: 'center' }}>Necesitas al menos un objetivo activo para registrar tu decisión diaria.</p>
-        <button onClick={() => router.push('/dashboard')} style={{ padding: '12px 24px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: 12, cursor: 'pointer', fontWeight: 600, fontSize: 14 }}>
+      <div className={styles.statusScreen}>
+        <div className={styles.statusEmoji}>🎯</div>
+        <h2 className={styles.statusTitle}>Crea un objetivo primero</h2>
+        <p className={styles.statusSubtitle}>Necesitas al menos un objetivo activo para registrar tu decisión diaria.</p>
+        <button onClick={() => router.push('/dashboard')} className={styles.btnPrimary}>
           Ir al dashboard
         </button>
       </div>
     );
   }
 
+  // ── Completed / Confirming ────────────────────────────────────────────
   if (phase === 'completed' || phase === 'confirming') {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: DARK.page, padding: 24 }}>
-        <div style={{ fontSize: 56, marginBottom: 16 }}>✅</div>
-        <h2 style={{ fontSize: 20, fontWeight: 700, color: DARK.textPrimary, marginBottom: 8, textAlign: 'center' }}>¡Decisión registrada!</h2>
-        <p style={{ fontSize: 14, color: DARK.textSecondary, marginBottom: 24, textAlign: 'center' }}>Ya tomaste tu decisión de hoy. Vuelve mañana.</p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%', maxWidth: 300 }}>
+      <div className={styles.statusScreen}>
+        <div className={styles.statusEmoji}>✅</div>
+        <h2 className={styles.statusTitle}>¡Decisión registrada!</h2>
+        <p className={styles.statusSubtitle}>Ya tomaste tu decisión de hoy. Vuelve mañana.</p>
+        <div className={styles.statusActions}>
           {completedDecisionId && (
-            <button onClick={() => router.push(`/impact/${completedDecisionId}`)} style={{ padding: '12px 0', background: '#2563eb', color: '#fff', border: 'none', borderRadius: 12, cursor: 'pointer', fontWeight: 600, fontSize: 14 }}>
+            <button onClick={() => router.push(`/impact/${completedDecisionId}`)} className={styles.btnPrimary}>
               Ver impacto
             </button>
           )}
-          <button onClick={() => router.push('/dashboard')} style={{ padding: '12px 0', background: 'transparent', border: `1.5px solid ${DARK.border}`, borderRadius: 12, cursor: 'pointer', fontWeight: 500, fontSize: 14, color: DARK.textSecondary }}>
+          <button onClick={() => router.push('/dashboard')} className={styles.btnSecondary}>
             Volver al dashboard
           </button>
         </div>
@@ -210,24 +199,17 @@ export default function DailyPage() {
 
   if (!question) return null;
 
+  // ── Pending: main question UI ─────────────────────────────────────────
   return (
-    <div style={{ minHeight: '100vh', background: DARK.page, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '32px 16px' }}>
-      <div style={{ width: '100%', maxWidth: 480 }}>
-        <button onClick={handleSkip} style={{ background: 'none', border: 'none', color: DARK.textSecondary, fontSize: 13, cursor: 'pointer', marginBottom: 24, padding: 0 }}>
+    <div className={styles.page}>
+      <div className={styles.content}>
+        <button onClick={handleSkip} className={styles.backBtn}>
           ← Dashboard
         </button>
 
         {/* Pregunta / Escenario */}
-        <div style={{
-          background: DARK.card,
-          borderRadius: 20,
-          padding: '28px 24px',
-          border: `1px solid ${DARK.cardBorder}`,
-          marginBottom: 20,
-        }}>
-          <p style={{ fontSize: 11, fontWeight: 700, color: DARK.textMuted, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 12 }}>
-            Decisión del día
-          </p>
+        <div className={styles.questionCard}>
+          <p className={styles.questionLabel}>Decisión del día</p>
 
           {/* Formato: fill_blank */}
           {question.format === 'fill_blank' && question.blankOptions && (
@@ -253,34 +235,17 @@ export default function DailyPage() {
 
           {/* Formato: amount (solo texto) */}
           {(question.format === 'amount' || !question.format) && (
-            <h1 style={{ fontSize: 20, fontWeight: 700, color: DARK.textPrimary, lineHeight: 1.4, marginBottom: 0 }}>
-              {question.text}
-            </h1>
+            <h1 className={styles.questionTitle}>{question.text}</h1>
           )}
         </div>
 
         {/* Input de importe */}
-        <div style={{
-          background: DARK.card,
-          borderRadius: 18,
-          padding: '24px 20px',
-          border: `2px solid ${hasAmount ? DARK.green.border : DARK.cardBorder}`,
-          marginBottom: 16,
-          transition: 'border-color 0.2s',
-        }}>
-          <p style={{
-            fontSize: 12, fontWeight: 700,
-            color: hasAmount ? DARK.green.label : DARK.textMuted,
-            textTransform: 'uppercase', letterSpacing: '0.06em',
-            marginBottom: 14, transition: 'color 0.2s',
-          }}>
+        <div className={`${styles.amountCard} ${hasAmount ? styles.amountCardActive : ''}`}>
+          <p className={`${styles.amountLabel} ${hasAmount ? styles.amountLabelActive : ''}`}>
             ¿Cuánto te has ahorrado?
           </p>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{
-              position: 'relative', flex: 1, display: 'flex', alignItems: 'center',
-            }}>
+          <div className={styles.amountRow}>
+            <div className={styles.amountInputWrap}>
               <input
                 ref={inputRef}
                 type="number"
@@ -290,69 +255,30 @@ export default function DailyPage() {
                 value={savedAmount}
                 onChange={(e) => setSavedAmount(e.target.value)}
                 placeholder="0"
-                style={{
-                  width: '100%',
-                  padding: '14px 50px 14px 16px',
-                  background: 'rgba(15,23,42,0.6)',
-                  border: `1.5px solid ${hasAmount ? 'rgba(74,222,128,0.4)' : 'rgba(51,65,85,0.5)'}`,
-                  borderRadius: 14,
-                  color: hasAmount ? '#4ade80' : DARK.textPrimary,
-                  fontSize: 28,
-                  fontWeight: 800,
-                  outline: 'none',
-                  textAlign: 'right',
-                  transition: 'all 0.2s',
-                  fontFamily: 'inherit',
-                }}
+                className={`${styles.amountInput} ${hasAmount ? styles.amountInputActive : ''}`}
               />
-              <span style={{
-                position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)',
-                fontSize: 20, fontWeight: 700,
-                color: hasAmount ? 'rgba(74,222,128,0.7)' : 'rgba(148,163,184,0.4)',
-                pointerEvents: 'none', transition: 'color 0.2s',
-              }}>€</span>
+              <span className={`${styles.amountUnit} ${hasAmount ? styles.amountUnitActive : ''}`}>€</span>
             </div>
           </div>
-
-          {/* Nota */}
-          <p style={{
-            fontSize: 12, color: DARK.textMuted, marginTop: 10, marginBottom: 0,
-          }}>
-            Si no ahorraste nada, deja 0
-          </p>
+          <p className={styles.amountHint}>Si no ahorraste nada, deja 0</p>
         </div>
 
+        {/* Banner de ahorro */}
         {hasAmount && (
-          <div style={{
-            background: DARK.green.bg,
-            border: `1px solid ${DARK.green.border}`,
-            borderRadius: 14,
-            padding: '16px 20px',
-            marginBottom: 16,
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            animation: 'fadeIn 0.3s ease',
-          }}>
-            <p style={{ fontSize: 14, fontWeight: 700, color: DARK.green.label, margin: 0 }}>
-              ¡Genial! Has ahorrado hoy
-            </p>
-            <span style={{ fontSize: 24, fontWeight: 800, color: DARK.green.text }}>
-              +{formatEUR(parsedAmount)}
-            </span>
+          <div className={styles.savingsBanner}>
+            <p className={styles.savingsLabel}>¡Genial! Has ahorrado hoy</p>
+            <span className={styles.savingsAmount}>+{formatEUR(parsedAmount)}</span>
           </div>
         )}
 
-
-
         {/* Selector de objetivo */}
         {goals.length > 1 && (
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ fontSize: 13, fontWeight: 600, color: DARK.textSecondary, marginBottom: 8, display: 'block' }}>Asignar a objetivo</label>
+          <div className={styles.goalSection}>
+            <label className={styles.goalLabel}>Asignar a objetivo</label>
             <select
               value={selectedGoalId}
               onChange={(e) => setSelectedGoalId(e.target.value)}
-              style={{ width: '100%', padding: '10px 14px', border: `1.5px solid ${DARK.border}`, borderRadius: 10, fontSize: 14, color: DARK.textPrimary, background: DARK.card, cursor: 'pointer' }}
+              className={styles.goalSelect}
             >
               {goals.map((g) => (
                 <option key={g.id} value={g.id}>{g.title}{g.isPrimary ? ' (principal)' : ''}</option>
@@ -365,38 +291,15 @@ export default function DailyPage() {
         <button
           onClick={handleConfirm}
           disabled={!selectedGoalId}
-          style={{
-            width: '100%',
-            padding: '16px 0',
-            background: hasAmount
-              ? 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'
-              : DARK.accent,
-            color: '#fff',
-            border: 'none',
-            borderRadius: 14,
-            fontSize: 16,
-            fontWeight: 700,
-            cursor: 'pointer',
-            transition: 'all 0.15s',
-            boxShadow: hasAmount ? '0 4px 20px rgba(34,197,94,0.25)' : 'none',
-          }}
+          className={`${styles.btnConfirm} ${hasAmount ? styles.btnConfirmSave : styles.btnConfirmZero}`}
         >
           {hasAmount ? `Registrar ahorro de ${formatEUR(parsedAmount)}` : 'Hoy no he ahorrado (0 €)'}
         </button>
 
-        <p style={{
-          fontSize: 11, color: DARK.textMuted, textAlign: 'center', marginTop: 12,
-        }}>
+        <p className={styles.hint}>
           Cualquier respuesta es válida. Lo importante es ser consciente.
         </p>
       </div>
-
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(-6px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
     </div>
   );
 }
