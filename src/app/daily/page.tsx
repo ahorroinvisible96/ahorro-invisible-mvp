@@ -12,6 +12,8 @@ import {
 } from "@/services/dashboardStore";
 import { pushLocalDataToSupabase, syncDecisionToSupabase, syncGoalToSupabase } from "@/services/syncService";
 import type { Goal } from "@/types/Dashboard";
+import { FillBlankInput } from "@/components/daily/FillBlankInput/FillBlankInput";
+import { ChoiceQuestion } from "@/components/daily/ChoiceQuestion/ChoiceQuestion";
 
 type Phase = 'loading' | 'no-goals' | 'completed' | 'pending' | 'confirming' | 'error';
 
@@ -30,6 +32,9 @@ export default function DailyPage() {
   const [currentTimeWindow, setCurrentTimeWindow] = useState<string>(() =>
     typeof window !== 'undefined' ? getCurrentTimeWindow() : 'Mañana'
   );
+  // ── Estado para señal de avatar (fill_blank / choice) ─────────────────
+  const [signalValue, setSignalValue] = useState<string | null>(null);
+  const [customText, setCustomText] = useState<string>('');
   const inputRef = useRef<HTMLInputElement>(null);
   const today = new Date().toISOString().split('T')[0];
 
@@ -95,7 +100,12 @@ export default function DailyPage() {
     if (!question || !selectedGoalId) return;
     setPhase('confirming');
 
-    const answerKey = hasAmount ? 'saved' : 'zero';
+    const signalKey = signalValue === '__custom__'
+      ? `custom:${customText}`
+      : signalValue ?? '';
+    const answerKey = signalKey
+      ? (hasAmount ? `saved|${signalKey}` : `zero|${signalKey}`)
+      : (hasAmount ? 'saved' : 'zero');
     analytics.dailyAnswerSubmitted(today, question.questionId, answerKey, selectedGoalId, goals.find(g => g.id === selectedGoalId)?.isPrimary ?? false);
 
     const isFirstDecision = (() => {
@@ -218,9 +228,35 @@ export default function DailyPage() {
           <p style={{ fontSize: 11, fontWeight: 700, color: DARK.textMuted, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 12 }}>
             Decisión del día
           </p>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: DARK.textPrimary, lineHeight: 1.4, marginBottom: 0 }}>
-            {question.text}
-          </h1>
+
+          {/* Formato: fill_blank */}
+          {question.format === 'fill_blank' && question.blankOptions && (
+            <FillBlankInput
+              sentence={question.text}
+              options={question.blankOptions.map(o => ({ label: o.label, value: o.value }))}
+              value={signalValue}
+              customText={customText}
+              onSelect={setSignalValue}
+              onCustomTextChange={setCustomText}
+            />
+          )}
+
+          {/* Formato: choice */}
+          {question.format === 'choice' && question.choiceOptions && (
+            <ChoiceQuestion
+              question={question.text}
+              options={question.choiceOptions.map(o => ({ label: o.label, value: o.value }))}
+              value={signalValue}
+              onSelect={setSignalValue}
+            />
+          )}
+
+          {/* Formato: amount (solo texto) */}
+          {(question.format === 'amount' || !question.format) && (
+            <h1 style={{ fontSize: 20, fontWeight: 700, color: DARK.textPrimary, lineHeight: 1.4, marginBottom: 0 }}>
+              {question.text}
+            </h1>
+          )}
         </div>
 
         {/* Input de importe */}

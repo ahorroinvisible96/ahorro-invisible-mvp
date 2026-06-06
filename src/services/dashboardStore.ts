@@ -16,6 +16,7 @@ import {
 } from './questionSelectionEngine';
 import type { UserProfile } from './questionSelectionEngine';
 import { getQuestionById } from './dailyQuestionsBank';
+import type { QuestionFormat, BlankOption, ChoiceOption } from './dailyQuestionsBank';
 import type { AvatarKey } from './profilingService';
 import { STORAGE_KEY } from '@/lib/constants';
 
@@ -80,6 +81,9 @@ export const DAILY_DECISION_RULES: DailyDecisionRule[] = [
 export type DailyQuestion = {
   questionId: string;
   text: string;
+  format?: QuestionFormat;
+  blankOptions?: BlankOption[];
+  choiceOptions?: ChoiceOption[];
   suggestedAmount?: number;
   monthlyDelta?: number;
   yearlyDelta?: number;
@@ -243,13 +247,24 @@ export function getTodayQuestion(): DailyQuestion {
       const prof = JSON.parse(profRaw) as { avatarScores?: Record<string, number> };
       if (prof.avatarScores) {
         if (avatarScores) {
-          // Merge: sumar ambos
           for (const k of Object.keys(prof.avatarScores) as AvatarKey[]) {
             avatarScores[k] = (avatarScores[k] ?? 0) + (prof.avatarScores[k] ?? 0);
           }
         } else {
           avatarScores = prof.avatarScores as Record<AvatarKey, number>;
         }
+      }
+    }
+    // Sumar señales acumuladas de respuestas diarias (fill_blank, choice)
+    const dailySignals = localStorage.getItem('daily_avatar_signals');
+    if (dailySignals) {
+      const signals = JSON.parse(dailySignals) as Record<string, number>;
+      if (avatarScores) {
+        for (const k of Object.keys(signals) as AvatarKey[]) {
+          avatarScores[k] = (avatarScores[k] ?? 0) + (signals[k] ?? 0);
+        }
+      } else {
+        avatarScores = signals as Record<AvatarKey, number>;
       }
     }
   } catch { /* fallthrough */ }
@@ -1239,7 +1254,81 @@ export function storeSubmitDecision(
   }
 
   persistStore(state);
+
+  // ── Procesar señal de avatar desde la respuesta ─────────────────────────
+  // El answerKey puede contener una señal: "saved|comodo", "zero|custom:algo"
+  const signalParts = answerKey.split('|');
+  if (signalParts.length > 1) {
+    const signalKey = signalParts[1];
+    const bankQ = getQuestionById(questionId);
+
+    if (bankQ && signalKey && !signalKey.startsWith('custom:')) {
+      // Respuesta cerrada: buscar en blankOptions o choiceOptions
+      const allOptions = [
+        ...(bankQ.blankOptions ?? []),
+        ...(bankQ.choiceOptions ?? []),
+      ];
+      const matched = allOptions.find(o => o.value === signalKey);
+
+      if (matched) {
+        accumulateAvatarSignal(matched.avatar as AvatarKey, matched.weight);
+      }
+    } else if (signalKey?.startsWith('custom:')) {
+      // Respuesta libre: guardar para análisis asíncrono por IA
+      const customText = signalKey.slice(7); // quitar "custom:"
+      if (customText.length >= 3) {
+        queueFreeTextForAnalysis(customText, bankQ?.text ?? '');
+      }
+    }
+  }
+
   return buildSummary(currentRange);
+}
+
+/**
+ * Acumula una señal de avatar en localStorage.
+ * Esto actualiza los scores que luego usa el motor de selección probabilística.
+ */
+function accumulateAvatarSignal(avatar: AvatarKey, weight: number): void {
+  try {
+    const key = 'daily_avatar_signals';
+    const raw = localStorage.getItem(key);
+    const scores: Record<AvatarKey, number> = raw
+      ? JSON.parse(raw)
+      : { comodo: 0, social: 0, impulsivo: 0, desordenado: 0 };
+
+    scores[avatar] = (scores[avatar] ?? 0) + weight;
+    localStorage.setItem(key, JSON.stringify(scores));
+
+    // También actualizar el onboardingData para que el motor los lea
+    const onbRaw = localStorage.getItem('onboardingData');
+    if (onbRaw) {
+      const onb = JSON.parse(onbRaw);
+      const merged = { ...onb.avatarScores ?? {} };
+      merged[avatar] = (merged[avatar] ?? 0) + weight;
+      onb.avatarScores = merged;
+      localStorage.setItem('onboardingData', JSON.stringify(onb));
+    }
+  } catch { /* silently ignore */ }
+}
+
+/**
+ * Encola una respuesta libre para análisis asíncrono por IA.
+ * El análisis se dispara en background sin bloquear la UI.
+ */
+function queueFreeTextForAnalysis(text: string, questionContext: string): void {
+  // Disparar análisis en background (fire-and-forget)
+  fetch('/api/ai/analyze-signal', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text, questionContext }),
+  }).then(async (res) => {
+    if (!res.ok) return;
+    const data = await res.json() as { avatar: AvatarKey | null; weight: number };
+    if (data.avatar) {
+      accumulateAvatarSignal(data.avatar, data.weight);
+    }
+  }).catch(() => { /* silently ignore */ });
 }
 
 // ─── Progreso de objetivo: puntos para gráfica ───────────────────────────────

@@ -1,0 +1,91 @@
+.wrapper {
+  margin-bottom: 16px;
+}
+
+.question {
+  font-size: 18px;
+  font-weight: 700;
+  color: #f1f5f9;
+  line-height: 1.4;
+  margin: 0 0 16px;
+  text-align: center;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 16px;
+  background: rgba(30, 41, 59, 0.6);
+  border: 1.5px solid rgba(51, 65, 85, 0.5);
+  border-radius: 12px;
+  color: rgba(203, 213, 225, 0.85);
+  font-size: 15px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 200ms ease;
+  text-align: left;
+}
+
+.option:hover {
+  background: rgba(99, 102, 241, 0.08);
+  border-color: rgba(99, 102, 241, 0.35);
+}
+
+.optionSelected {
+  background: rgba(168, 85, 247, 0.12);
+  border-color: rgba(168, 85, 247, 0.5);
+  color: #e2e8f0;
+}
+
+.optionSelected:hover {
+  background: rgba(168, 85, 247, 0.16);
+}
+
+.optionDisabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.optionIndex {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: rgba(51, 65, 85, 0.5);
+  color: rgba(148, 163, 184, 0.7);
+  font-size: 12px;
+  font-weight: 800;
+  flex-shrink: 0;
+  transition: all 200ms ease;
+}
+
+.optionSelected .optionIndex {
+  background: rgba(168, 85, 247, 0.3);
+  color: #c4b5fd;
+}
+
+.optionLabel {
+  flex: 1;
+}
+
+.optionCheck {
+  flex-shrink: 0;
+  color: #a855f7;
+  animation: checkAppear 200ms ease;
+}
+
+@keyframes checkAppear {
+  from { opacity: 0; transform: scale(0.5); }
+  to { opacity: 1; transform: scale(1); }
+}

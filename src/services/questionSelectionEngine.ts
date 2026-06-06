@@ -16,6 +16,9 @@
 import {
   DAILY_QUESTIONS_BANK,
   type DailyQuestion,
+  type QuestionFormat,
+  type BlankOption,
+  type ChoiceOption,
 } from './dailyQuestionsBank';
 import type { AvatarKey } from './profilingService';
 
@@ -407,11 +410,17 @@ export function getContextualDailyQuestion(
 export function toDashboardQuestion(q: DailyQuestion): {
   questionId: string;
   text: string;
+  format: QuestionFormat;
+  blankOptions?: BlankOption[];
+  choiceOptions?: ChoiceOption[];
   tags: string[];
 } {
   return {
     questionId: q.id,
     text: q.text,
+    format: q.format,
+    blankOptions: q.blankOptions,
+    choiceOptions: q.choiceOptions,
     tags: [q.habitCategory, q.targetAvatarPrimary].filter(Boolean),
   };
 }

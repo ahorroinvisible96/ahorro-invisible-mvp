@@ -22,13 +22,37 @@ import type { AvatarKey } from './profilingService';
 // ── Tipos de metadatos IA ────────────────────────────────────────────────────
 export type HabitPrinciple = 'obvious' | 'attractive' | 'easy' | 'satisfying';
 export type QuestionDifficulty = 'low' | 'medium' | 'high';
-export type QuestionTone = 'motivador' | 'reflexivo' | 'preventivo' | 'celebratorio' | 'neutral';
+export type QuestionTone = 'motivador' | 'reflexivo' | 'preventivo' | 'celebratorio' | 'neutral' | 'directo';
+export type QuestionFormat = 'amount' | 'fill_blank' | 'choice';
+
+export interface BlankOption {
+  label: string;       // Texto visible: "tranquilo", "social", etc.
+  value: string;       // ID interno
+  avatar: AvatarKey;   // Avatar al que suma puntos
+  weight: number;      // Peso de la señal (1-3)
+}
+
+export interface ChoiceOption {
+  label: string;       // Texto de la opción completa
+  value: string;       // ID interno
+  avatar: AvatarKey;   // Avatar al que suma puntos
+  weight: number;      // Peso de la señal (1-3)
+}
 
 // ── Interface ────────────────────────────────────────────────────────────────
 export interface DailyQuestion {
   id:                        string;
   /** Escenario de ahorro que se muestra al usuario */
   text:                      string;
+
+  // ── Formato de la pregunta ───────────────────────────────────────────
+  /** 'amount' = solo importe, 'fill_blank' = frase + hueco, 'choice' = opciones */
+  format:                    QuestionFormat;
+  /** Para fill_blank: opciones del desplegable (3 sugeridas; "Otro" es implícito) */
+  blankOptions?:             BlankOption[];
+  /** Para choice: opciones de elección completa */
+  choiceOptions?:            ChoiceOption[];
+
   /** Importe sugerido como referencia (hint visual, no obligatorio) */
   suggestedAmount:           number;
   /** Categoría del hábito de gasto */
@@ -105,6 +129,7 @@ function q(
     id, text, suggestedAmount, habitCategory, bestDays, bestTimeWindow, monthPhase,
     targetAvatarPrimary: ap, targetAvatarSecondary: as2,
     scenarioWeight, priorityBase, cooldownDays, monthlyDelta, yearlyDelta, labelImpact,
+    format: 'amount',
     // Metadatos IA auto-derivados
     active: true,
     intent,
@@ -324,6 +349,370 @@ const Q_CONSTRUCTOR: DailyQuestion[] = [
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// 10. PREGUNTAS MIXTAS (fill_blank + choice) — 18 preguntas
+//     Mix inteligente de formatos para mejor señal de avatar
+// ═══════════════════════════════════════════════════════════════════════════════
+const Q_MIXED: DailyQuestion[] = [
+  // ── FILL_BLANK: Frases incompletas con desplegable ──────────────────────
+  {
+    id: 'Q_FB_01',
+    format: 'fill_blank',
+    text: 'Cuando elijo un plan, suelo priorizar algo más ____.',
+    blankOptions: [
+      { label: 'cómodo', value: 'comodo', avatar: 'comodo', weight: 2 },
+      { label: 'diferente', value: 'diferente', avatar: 'desordenado', weight: 2 },
+      { label: 'emocionante', value: 'emocionante', avatar: 'impulsivo', weight: 2 },
+    ],
+    suggestedAmount: 0,
+    habitCategory: 'Preferencia personal',
+    bestDays: 'Cualquier día',
+    bestTimeWindow: 'Cualquiera',
+    monthPhase: 'Cualquiera',
+    targetAvatarPrimary: 'comodo',
+    targetAvatarSecondary: 'impulsivo',
+    scenarioWeight: 3,
+    priorityBase: 9,
+    cooldownDays: 7,
+    monthlyDelta: 0,
+    yearlyDelta: 0,
+    labelImpact: '',
+    active: true,
+    intent: 'preferencia_planes',
+    habit_principle: 'obvious',
+    tone: 'reflexivo',
+    difficulty: 'low',
+    experimental: true,
+  },
+  {
+    id: 'Q_FB_02',
+    format: 'fill_blank',
+    text: 'En un grupo, normalmente me sale ser más ____.',
+    blankOptions: [
+      { label: 'observador', value: 'observador', avatar: 'comodo', weight: 2 },
+      { label: 'protagonista', value: 'protagonista', avatar: 'social', weight: 2 },
+      { label: 'organizador', value: 'organizador', avatar: 'desordenado', weight: 2 },
+    ],
+    suggestedAmount: 0,
+    habitCategory: 'Rol social',
+    bestDays: 'Cualquier día',
+    bestTimeWindow: 'Tarde',
+    monthPhase: 'Cualquiera',
+    targetAvatarPrimary: 'social',
+    targetAvatarSecondary: 'comodo',
+    scenarioWeight: 3,
+    priorityBase: 9,
+    cooldownDays: 7,
+    monthlyDelta: 0,
+    yearlyDelta: 0,
+    labelImpact: '',
+    active: true,
+    intent: 'rol_grupal',
+    habit_principle: 'obvious',
+    tone: 'reflexivo',
+    difficulty: 'low',
+    experimental: true,
+  },
+  {
+    id: 'Q_FB_03',
+    format: 'fill_blank',
+    text: 'Si tengo que decidir rápido, me guío más por ____.',
+    blankOptions: [
+      { label: 'lo que siento', value: 'sentimiento', avatar: 'impulsivo', weight: 2 },
+      { label: 'lo que tiene sentido', value: 'logica', avatar: 'desordenado', weight: 2 },
+      { label: 'lo que me recomiendan', value: 'recomendacion', avatar: 'social', weight: 2 },
+    ],
+    suggestedAmount: 0,
+    habitCategory: 'Toma de decisiones',
+    bestDays: 'Cualquier día',
+    bestTimeWindow: 'Cualquiera',
+    monthPhase: 'Cualquiera',
+    targetAvatarPrimary: 'impulsivo',
+    targetAvatarSecondary: 'social',
+    scenarioWeight: 3,
+    priorityBase: 9,
+    cooldownDays: 7,
+    monthlyDelta: 0,
+    yearlyDelta: 0,
+    labelImpact: '',
+    active: true,
+    intent: 'estilo_decision',
+    habit_principle: 'obvious',
+    tone: 'reflexivo',
+    difficulty: 'low',
+    experimental: true,
+  },
+  {
+    id: 'Q_FB_04',
+    format: 'fill_blank',
+    text: 'Una experiencia ideal para mí tendría que ser ____.',
+    blankOptions: [
+      { label: 'relajante', value: 'relajante', avatar: 'comodo', weight: 2 },
+      { label: 'intensa', value: 'intensa', avatar: 'impulsivo', weight: 2 },
+      { label: 'memorable', value: 'memorable', avatar: 'social', weight: 2 },
+    ],
+    suggestedAmount: 0,
+    habitCategory: 'Preferencia experiencial',
+    bestDays: 'Viernes, Sábado',
+    bestTimeWindow: 'Tarde',
+    monthPhase: 'Cualquiera',
+    targetAvatarPrimary: 'comodo',
+    targetAvatarSecondary: 'social',
+    scenarioWeight: 3,
+    priorityBase: 8,
+    cooldownDays: 7,
+    monthlyDelta: 0,
+    yearlyDelta: 0,
+    labelImpact: '',
+    active: true,
+    intent: 'preferencia_experiencia',
+    habit_principle: 'attractive',
+    tone: 'reflexivo',
+    difficulty: 'low',
+    experimental: true,
+  },
+  {
+    id: 'Q_FB_05',
+    format: 'fill_blank',
+    text: 'Cuando veo algo que me gusta en una tienda online, lo primero que hago es ____.',
+    blankOptions: [
+      { label: 'comprarlo', value: 'comprar', avatar: 'impulsivo', weight: 3 },
+      { label: 'añadirlo al carrito y pensarlo', value: 'pensar', avatar: 'comodo', weight: 2 },
+      { label: 'preguntarle a alguien', value: 'preguntar', avatar: 'social', weight: 2 },
+    ],
+    suggestedAmount: 15,
+    habitCategory: 'Compra online',
+    bestDays: 'Cualquier día',
+    bestTimeWindow: 'Noche',
+    monthPhase: 'Cualquiera',
+    targetAvatarPrimary: 'impulsivo',
+    targetAvatarSecondary: 'comodo',
+    scenarioWeight: 3,
+    priorityBase: 9,
+    cooldownDays: 5,
+    monthlyDelta: 60,
+    yearlyDelta: 720,
+    labelImpact: 'Pensar antes de comprar online ahorra ~60 €/mes',
+    active: true,
+    intent: 'control_compra_online',
+    habit_principle: 'obvious',
+    tone: 'reflexivo',
+    difficulty: 'medium',
+    experimental: true,
+  },
+  {
+    id: 'Q_FB_06',
+    format: 'fill_blank',
+    text: 'Mi relación con el dinero la definiría como más bien ____.',
+    blankOptions: [
+      { label: 'despreocupada', value: 'despreocupada', avatar: 'desordenado', weight: 3 },
+      { label: 'emocional', value: 'emocional', avatar: 'impulsivo', weight: 2 },
+      { label: 'práctica', value: 'practica', avatar: 'comodo', weight: 2 },
+    ],
+    suggestedAmount: 0,
+    habitCategory: 'Autoconocimiento financiero',
+    bestDays: 'Domingo',
+    bestTimeWindow: 'Mañana',
+    monthPhase: 'Cualquiera',
+    targetAvatarPrimary: 'desordenado',
+    targetAvatarSecondary: 'impulsivo',
+    scenarioWeight: 3,
+    priorityBase: 9,
+    cooldownDays: 14,
+    monthlyDelta: 0,
+    yearlyDelta: 0,
+    labelImpact: '',
+    active: true,
+    intent: 'autoconocimiento_dinero',
+    habit_principle: 'obvious',
+    tone: 'reflexivo',
+    difficulty: 'low',
+    experimental: true,
+  },
+
+  // ── CHOICE: Preguntas completas con opciones ──────────────────────────
+  {
+    id: 'Q_CH_01',
+    format: 'choice',
+    text: '¿Qué pesa más para ti cuando eliges una experiencia?',
+    choiceOptions: [
+      { label: 'Sentirme cómodo y seguro', value: 'comodidad', avatar: 'comodo', weight: 2 },
+      { label: 'Descubrir algo nuevo', value: 'novedad', avatar: 'impulsivo', weight: 2 },
+      { label: 'Compartirlo con alguien', value: 'compartir', avatar: 'social', weight: 2 },
+      { label: 'Que sea sencillo y sin líos', value: 'sencillo', avatar: 'desordenado', weight: 2 },
+    ],
+    suggestedAmount: 0,
+    habitCategory: 'Preferencia personal',
+    bestDays: 'Cualquier día',
+    bestTimeWindow: 'Cualquiera',
+    monthPhase: 'Cualquiera',
+    targetAvatarPrimary: 'comodo',
+    targetAvatarSecondary: 'social',
+    scenarioWeight: 3,
+    priorityBase: 9,
+    cooldownDays: 7,
+    monthlyDelta: 0,
+    yearlyDelta: 0,
+    labelImpact: '',
+    active: true,
+    intent: 'preferencia_experiencial',
+    habit_principle: 'obvious',
+    tone: 'reflexivo',
+    difficulty: 'low',
+    experimental: true,
+  },
+  {
+    id: 'Q_CH_02',
+    format: 'choice',
+    text: '¿Prefieres planes que sabes que van a salir bien o planes con más sorpresa?',
+    choiceOptions: [
+      { label: 'Planes seguros, sin riesgo', value: 'seguro', avatar: 'comodo', weight: 2 },
+      { label: 'Un poco de sorpresa está bien', value: 'algo_sorpresa', avatar: 'social', weight: 2 },
+      { label: 'Cuanto más improviso, mejor', value: 'improvisar', avatar: 'impulsivo', weight: 2 },
+      { label: 'Me da igual, lo que surja', value: 'lo_que_surja', avatar: 'desordenado', weight: 2 },
+    ],
+    suggestedAmount: 0,
+    habitCategory: 'Estilo de planificación',
+    bestDays: 'Viernes, Sábado',
+    bestTimeWindow: 'Tarde',
+    monthPhase: 'Cualquiera',
+    targetAvatarPrimary: 'impulsivo',
+    targetAvatarSecondary: 'comodo',
+    scenarioWeight: 3,
+    priorityBase: 8,
+    cooldownDays: 7,
+    monthlyDelta: 0,
+    yearlyDelta: 0,
+    labelImpact: '',
+    active: true,
+    intent: 'tolerancia_incertidumbre',
+    habit_principle: 'obvious',
+    tone: 'reflexivo',
+    difficulty: 'low',
+    experimental: true,
+  },
+  {
+    id: 'Q_CH_03',
+    format: 'choice',
+    text: 'Cuando algo no encaja contigo, ¿qué haces?',
+    choiceOptions: [
+      { label: 'Lo descarto rápido y busco otra cosa', value: 'descartar', avatar: 'impulsivo', weight: 2 },
+      { label: 'Intento adaptarme', value: 'adaptar', avatar: 'comodo', weight: 2 },
+      { label: 'Pregunto a otros qué harían', value: 'consultar', avatar: 'social', weight: 2 },
+      { label: 'Ni lo pienso mucho, sigo adelante', value: 'pasar', avatar: 'desordenado', weight: 2 },
+    ],
+    suggestedAmount: 0,
+    habitCategory: 'Reacción ante desajuste',
+    bestDays: 'Cualquier día',
+    bestTimeWindow: 'Noche',
+    monthPhase: 'Cualquiera',
+    targetAvatarPrimary: 'impulsivo',
+    targetAvatarSecondary: 'desordenado',
+    scenarioWeight: 3,
+    priorityBase: 8,
+    cooldownDays: 7,
+    monthlyDelta: 0,
+    yearlyDelta: 0,
+    labelImpact: '',
+    active: true,
+    intent: 'estilo_adaptacion',
+    habit_principle: 'obvious',
+    tone: 'reflexivo',
+    difficulty: 'medium',
+    experimental: true,
+  },
+  {
+    id: 'Q_CH_04',
+    format: 'choice',
+    text: '¿Qué te cuesta más a la hora de controlar tus gastos?',
+    choiceOptions: [
+      { label: 'Renunciar a la comodidad', value: 'comodidad', avatar: 'comodo', weight: 3 },
+      { label: 'Decir que no a planes con gente', value: 'planes', avatar: 'social', weight: 3 },
+      { label: 'Resistir cuando algo me apetece mucho', value: 'impulso', avatar: 'impulsivo', weight: 3 },
+      { label: 'Saber en qué me lo gasto realmente', value: 'visibilidad', avatar: 'desordenado', weight: 3 },
+    ],
+    suggestedAmount: 10,
+    habitCategory: 'Dificultad principal',
+    bestDays: 'Cualquier día',
+    bestTimeWindow: 'Noche',
+    monthPhase: 'Cualquiera',
+    targetAvatarPrimary: 'comodo',
+    targetAvatarSecondary: 'impulsivo',
+    scenarioWeight: 3,
+    priorityBase: 10,
+    cooldownDays: 10,
+    monthlyDelta: 40,
+    yearlyDelta: 480,
+    labelImpact: 'Identificar tu punto débil es el primer paso',
+    active: true,
+    intent: 'diagnostico_principal',
+    habit_principle: 'obvious',
+    tone: 'reflexivo',
+    difficulty: 'medium',
+    experimental: true,
+  },
+  {
+    id: 'Q_CH_05',
+    format: 'choice',
+    text: '¿Cómo sueles sentirte después de un gasto que no tenías planeado?',
+    choiceOptions: [
+      { label: 'Satisfecho, me lo merecía', value: 'satisfecho', avatar: 'comodo', weight: 2 },
+      { label: 'Culpable, no debería haberlo hecho', value: 'culpable', avatar: 'impulsivo', weight: 3 },
+      { label: 'Normal, es parte de vivir', value: 'normal', avatar: 'desordenado', weight: 2 },
+      { label: 'Depende de si estaba con gente', value: 'depende_gente', avatar: 'social', weight: 2 },
+    ],
+    suggestedAmount: 0,
+    habitCategory: 'Emoción post-gasto',
+    bestDays: 'Cualquier día',
+    bestTimeWindow: 'Noche',
+    monthPhase: 'Cualquiera',
+    targetAvatarPrimary: 'impulsivo',
+    targetAvatarSecondary: 'comodo',
+    scenarioWeight: 3,
+    priorityBase: 9,
+    cooldownDays: 10,
+    monthlyDelta: 0,
+    yearlyDelta: 0,
+    labelImpact: '',
+    active: true,
+    intent: 'emociones_gasto',
+    habit_principle: 'satisfying',
+    tone: 'reflexivo',
+    difficulty: 'medium',
+    experimental: true,
+  },
+  {
+    id: 'Q_CH_06',
+    format: 'choice',
+    text: 'Si te llega una notificación de oferta flash (-40%), ¿qué haces?',
+    choiceOptions: [
+      { label: 'La miro y compro si me gusta', value: 'compro', avatar: 'impulsivo', weight: 3 },
+      { label: 'La ignoro, no necesito nada', value: 'ignoro', avatar: 'comodo', weight: 2 },
+      { label: 'Se la mando a alguien por si le interesa', value: 'comparto', avatar: 'social', weight: 2 },
+      { label: 'Ni la abro', value: 'ni_abro', avatar: 'desordenado', weight: 1 },
+    ],
+    suggestedAmount: 20,
+    habitCategory: 'Reacción a ofertas',
+    bestDays: 'Cualquier día',
+    bestTimeWindow: 'Tarde',
+    monthPhase: 'Cualquiera',
+    targetAvatarPrimary: 'impulsivo',
+    targetAvatarSecondary: 'social',
+    scenarioWeight: 3,
+    priorityBase: 9,
+    cooldownDays: 5,
+    monthlyDelta: 60,
+    yearlyDelta: 720,
+    labelImpact: 'Ignorar ofertas flash ahorra ~60 €/mes',
+    active: true,
+    intent: 'resistencia_ofertas',
+    habit_principle: 'obvious',
+    tone: 'directo',
+    difficulty: 'medium',
+    experimental: true,
+  },
+];
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // Banco completo y helpers
 // ═══════════════════════════════════════════════════════════════════════════════
 export const DAILY_QUESTIONS_BANK: DailyQuestion[] = [
@@ -336,6 +725,7 @@ export const DAILY_QUESTIONS_BANK: DailyQuestion[] = [
   ...Q_MICROFUGAS,
   ...Q_SIN_SISTEMA,
   ...Q_CONSTRUCTOR,
+  ...Q_MIXED,
 ];
 
 /** Buscar una pregunta por ID */
