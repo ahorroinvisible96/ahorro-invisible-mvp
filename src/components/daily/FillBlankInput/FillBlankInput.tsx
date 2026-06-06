@@ -91,6 +91,7 @@ export function FillBlankInput({
 
           {isOpen && (
             <div className={styles.dropdown}>
+              <p className={styles.dropdownLabel}>Elige una opción</p>
               {options.map((opt) => (
                 <button
                   key={opt.value}
@@ -100,7 +101,7 @@ export function FillBlankInput({
                 >
                   {opt.label}
                   {value === opt.value && (
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <svg className={styles.dropdownCheck} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                       <polyline points="20 6 9 17 4 12"/>
                     </svg>
                   )}
@@ -112,7 +113,12 @@ export function FillBlankInput({
                 className={`${styles.dropdownOption} ${styles.dropdownOptionOther} ${isCustom ? styles.dropdownOptionSelected : ''}`}
                 onClick={() => handleSelect('__custom__')}
               >
-                Otro...
+                ✏️ Otro...
+                {isCustom && (
+                  <svg className={styles.dropdownCheck} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                )}
               </button>
             </div>
           )}
