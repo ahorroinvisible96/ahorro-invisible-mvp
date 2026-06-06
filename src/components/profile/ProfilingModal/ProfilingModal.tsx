@@ -35,7 +35,6 @@ export function ProfilingModal({ onClose, onCompleted }: ProfilingModalProps) {
       questionIdx: qIndex,
       optionIdx: optIdx,
       avatar: option.avatar,
-      subavatar: option.subavatar,
     };
 
     setAnimating(true);

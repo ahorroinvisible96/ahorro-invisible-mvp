@@ -23,7 +23,6 @@ export interface QuestionInteraction {
   answer_key: string | null;
   saved_amount: number;
   avatar_dominant: string | null;
-  avatar_secondary: string | null;
   avatar_confidence: number;
   ai_decision_type: string;
   ai_decision_reason: string;
@@ -45,7 +44,6 @@ export async function logQuestionImpression(params: {
   timeSlot: string;
   attemptNumber: number;
   avatarDominant: string | null;
-  avatarSecondary: string | null;
   avatarConfidence: number;
   aiDecision: AIQuestionDecision;
   fromAI: boolean;
@@ -63,7 +61,6 @@ export async function logQuestionImpression(params: {
       answer_key: null,
       saved_amount: 0,
       avatar_dominant: params.avatarDominant,
-      avatar_secondary: params.avatarSecondary,
       avatar_confidence: params.avatarConfidence,
       ai_decision_type: params.aiDecision.decision_type,
       ai_decision_reason: params.aiDecision.reason,
@@ -100,7 +97,6 @@ export async function logQuestionAnswer(params: {
   savedAmount: number;
   attemptNumber: number;
   avatarDominant: string | null;
-  avatarSecondary: string | null;
   avatarConfidence: number;
 }): Promise<{ ok: boolean; error?: string }> {
   try {
@@ -144,7 +140,6 @@ export async function logQuestionAnswer(params: {
         answer_key: params.answerKey,
         saved_amount: params.savedAmount,
         avatar_dominant: params.avatarDominant,
-        avatar_secondary: params.avatarSecondary,
         avatar_confidence: params.avatarConfidence,
         ai_decision_type: 'select_question',
         ai_decision_reason: 'respuesta directa sin impresión previa',

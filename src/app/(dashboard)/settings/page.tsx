@@ -84,7 +84,7 @@ export default function SettingsPage() {
     const headers = [
       'ID', 'Pregunta', 'Importe Sugerido (€)', 'Categoría de Gasto', 'Días Óptimos',
       'Franja Horaria', 'Fase del Mes', 'Avatar Principal', 'Avatar Secundario',
-      'Subavatar Principal', 'Subavatar Secundario', 'Peso Escenario (1-3)',
+      'Peso Escenario (1-3)',
       'Prioridad Base (1-10)', 'Días Enfriamiento', 'Ahorro Mensual Est. (€)',
       'Ahorro Anual Est. (€)', 'Impacto Estimado', 'Intención Conductual',
       'Principio de Hábito', 'Tono', 'Dificultad'
@@ -93,7 +93,7 @@ export default function SettingsPage() {
     const rows = DAILY_QUESTIONS_BANK.map(q => [
       q.id, q.text, q.suggestedAmount, q.habitCategory, q.bestDays,
       q.bestTimeWindow, q.monthPhase, q.targetAvatarPrimary, q.targetAvatarSecondary,
-      q.targetSubavatarPrimary, q.targetSubavatarSecondary, q.scenarioWeight,
+      q.scenarioWeight,
       q.priorityBase, q.cooldownDays, q.monthlyDelta, q.yearlyDelta,
       q.labelImpact, q.intent, q.habit_principle, q.tone, q.difficulty
     ]);

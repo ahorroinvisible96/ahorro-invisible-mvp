@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
     const supabase = getSupabase();
     const { data: profile } = await supabase
       .from('user_profiles')
-      .select('avatar, subavatar, avatar_scores')
+      .select('avatar, avatar_scores')
       .eq('id', userId)
       .single();
 
@@ -67,7 +67,6 @@ export async function POST(req: NextRequest) {
       savedAmount,
       attemptNumber: body.attempt_number ?? currentAttempt,
       avatarDominant: profile?.avatar ?? null,
-      avatarSecondary: profile?.subavatar ?? null,
       avatarConfidence,
     });
 

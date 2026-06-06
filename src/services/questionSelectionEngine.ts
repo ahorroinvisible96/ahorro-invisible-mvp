@@ -2,7 +2,7 @@
  * Question Selection Engine — Motor contextual de selección de preguntas
  *
  * Combina tres variables para elegir la pregunta diaria más relevante:
- *   1. Perfil del usuario (avatar + subavatar)
+ *   1. Perfil del usuario (avatar)
  *   2. Día de la semana
  *   3. Franja horaria actual
  *
@@ -17,7 +17,7 @@ import {
   DAILY_QUESTIONS_BANK,
   type DailyQuestion,
 } from './dailyQuestionsBank';
-import type { AvatarKey, SubavatarKey } from './profilingService';
+import type { AvatarKey } from './profilingService';
 
 // ── Franjas horarias ─────────────────────────────────────────────────────────
 export type TimeWindow = 'Madrugada' | 'Mañana' | 'Tarde' | 'Noche';
@@ -71,7 +71,6 @@ export function getTemporalContext(): TemporalContext {
 // ── Perfil del usuario ───────────────────────────────────────────────────────
 export interface UserProfile {
   avatar: AvatarKey | 'constructor' | null;
-  subavatar: SubavatarKey | null;
   streak: number;
 }
 
@@ -155,8 +154,6 @@ function matchesMonthPhase(questionPhase: string, contextPhase: TemporalContext[
  * Pesos de scoring:
  *   +40  — Avatar primario coincide con el del usuario
  *   +25  — Avatar secundario coincide
- *   +20  — Subavatar primario coincide
- *   +15  — Subavatar secundario coincide
  *   +20  — Día de la semana encaja con bestDays
  *   +15  — Franja horaria encaja con bestTimeWindow
  *   +10  — Fase del mes encaja con monthPhase
@@ -180,15 +177,6 @@ export function scoreQuestions(
       // Match avatar secundario
       if (q.targetAvatarSecondary === profile.avatar) {
         score += 25;
-      }
-    }
-
-    if (profile.subavatar) {
-      if (q.targetSubavatarPrimary === profile.subavatar) {
-        score += 20;
-      }
-      if (q.targetSubavatarSecondary === profile.subavatar) {
-        score += 15;
       }
     }
 
@@ -239,7 +227,7 @@ function hashSeed(seed: string): number {
 /**
  * Selecciona la pregunta más relevante para el momento actual.
  *
- * @param profile   Perfil del usuario (avatar, subavatar, racha)
+ * @param profile   Perfil del usuario (avatar, racha)
  * @param ctx       Contexto temporal (día, franja, fase del mes)
  * @param excludeIds   IDs de preguntas ya respondidas recientemente
  * @returns La pregunta seleccionada
@@ -250,28 +238,17 @@ export function selectQuestion(
   excludeIds: string[] = [],
 ): DailyQuestion {
   // ── Pre-filtrar el pool según lo que sabemos del perfil ──────────────────
-  // Si sabemos avatar pero NO subavatar → restringir a los 2 bloques de 15
-  // del avatar (30 preguntas). Esto evita que preguntas de otros avatares
-  // se cuelen solo por buen match temporal.
+  // Si sabemos avatar → restringir a los bloques del avatar (30 preguntas).
+  // Esto evita que preguntas de otros avatares se cuelen solo por buen match temporal.
   let pool = DAILY_QUESTIONS_BANK;
 
-  if (profile.avatar && !profile.subavatar) {
-    // Sin subavatar: usar los 30 del avatar conocido
+  if (profile.avatar) {
     const avatarPool = DAILY_QUESTIONS_BANK.filter(
       q => q.targetAvatarPrimary === profile.avatar
     );
     // Solo usar el pool filtrado si tiene suficientes preguntas
     if (avatarPool.length >= 5) {
       pool = avatarPool;
-    }
-  } else if (profile.avatar && profile.subavatar) {
-    // Con subavatar: priorizar las 15 del subavatar, pero incluir las
-    // 15 del otro sub del mismo avatar como respaldo
-    const subavatarPool = DAILY_QUESTIONS_BANK.filter(
-      q => q.targetAvatarPrimary === profile.avatar
-    );
-    if (subavatarPool.length >= 5) {
-      pool = subavatarPool;
     }
   }
   // Si avatar es null (no sabemos nada): pool completo de 135
@@ -286,16 +263,6 @@ export function selectQuestion(
       }
       if (q.targetAvatarSecondary === profile.avatar) {
         score += 25;
-      }
-    }
-
-    if (profile.subavatar) {
-      // Subavatar conocido: bonus fuerte para su bloque de 15
-      if (q.targetSubavatarPrimary === profile.subavatar) {
-        score += 20;
-      }
-      if (q.targetSubavatarSecondary === profile.subavatar) {
-        score += 15;
       }
     }
 
@@ -349,7 +316,7 @@ export function selectQuestion(
  * Lógica:
  *   1. Si ya respondió hoy → no se cambia, se devuelve la que respondió
  *   2. Si NO respondió → se selecciona la más relevante para:
- *      - Su perfil (avatar + subavatar)
+ *      - Su perfil (avatar)
  *      - El día actual
  *      - La franja horaria actual
  *   3. La pregunta puede cambiar entre franjas (mañana → tarde → noche)
@@ -399,6 +366,6 @@ export function toDashboardQuestion(q: DailyQuestion): {
     monthlyDelta: q.monthlyDelta,
     yearlyDelta: q.yearlyDelta,
     labelImpact: q.labelImpact,
-    tags: [q.habitCategory, q.targetAvatarPrimary, q.targetSubavatarPrimary].filter(Boolean),
+    tags: [q.habitCategory, q.targetAvatarPrimary].filter(Boolean),
   };
 }

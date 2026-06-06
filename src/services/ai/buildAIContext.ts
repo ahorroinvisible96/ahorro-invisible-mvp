@@ -17,7 +17,6 @@ export type TimeWindow = 'Madrugada' | 'Mañana' | 'Tarde' | 'Noche';
 export interface AIContext {
   // Perfil avatar
   avatar_dominant: string | null;
-  avatar_secondary: string | null;
   avatar_confidence: number;
   avatar_scores: Record<string, number> | null;
 
@@ -96,7 +95,7 @@ export async function buildAIContext(userId: string): Promise<AIContext> {
   // ── Leer datos de Supabase en paralelo ───────────────────────────────────
   const [profileRes, goalsRes, decisionsRes, interactionsRes] = await Promise.all([
     supabase.from('user_profiles')
-      .select('avatar, subavatar, avatar_scores, streak_current')
+      .select('avatar, avatar_scores, streak_current')
       .eq('id', userId)
       .single(),
     supabase.from('goals')
@@ -172,7 +171,6 @@ export async function buildAIContext(userId: string): Promise<AIContext> {
 
   return {
     avatar_dominant: profile?.avatar ?? null,
-    avatar_secondary: profile?.subavatar ?? null,
     avatar_confidence: profile?.avatar_scores ? 0.8 : 0.5,
     avatar_scores: profile?.avatar_scores ?? null,
 

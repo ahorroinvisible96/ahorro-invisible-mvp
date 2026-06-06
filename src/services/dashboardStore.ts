@@ -16,7 +16,7 @@ import {
   type UserProfile,
 } from './questionSelectionEngine';
 import { getQuestionById } from './dailyQuestionsBank';
-import type { AvatarKey, SubavatarKey } from './profilingService';
+import type { AvatarKey } from './profilingService';
 import { STORAGE_KEY } from '@/lib/constants';
 
 // STORAGE_KEY importado desde @/lib/constants
@@ -170,7 +170,7 @@ const FEELING_TAGS: Record<string, string[]> = {
  * Obtiene la pregunta del día usando el motor contextual de selección.
  *
  * Combina:
- *   1. Perfil del usuario (avatar + subavatar)
+ *   1. Perfil del usuario (avatar)
  *   2. Día de la semana
  *   3. Franja horaria actual (Mañana / Tarde / Noche)
  *
@@ -182,7 +182,6 @@ const FEELING_TAGS: Record<string, string[]> = {
 export function getTodayQuestion(): DailyQuestion {
   // ── Leer perfil del usuario ──────────────────────────────────────────────
   let userAvatar: UserAvatar | null = null;
-  let userSubavatar: string | null = null;
   let streak = 0;
   let answeredToday = false;
   let lastQuestionId: string | null = null;
@@ -194,15 +193,6 @@ export function getTodayQuestion(): DailyQuestion {
       if (raw) {
         const parsed = JSON.parse(raw) as StoreState;
         userAvatar = (parsed.userAvatar ?? null) as UserAvatar | null;
-
-        // Leer subavatar del profiling
-        const profilingRaw = localStorage.getItem('profilingResults');
-        if (profilingRaw) {
-          try {
-            const profiling = JSON.parse(profilingRaw) as { subavatar?: string };
-            userSubavatar = profiling.subavatar ?? null;
-          } catch { /* fallthrough */ }
-        }
 
         // Calcular racha y si ya respondió hoy
         const today = new Date().toISOString().split('T')[0];
@@ -239,7 +229,6 @@ export function getTodayQuestion(): DailyQuestion {
   // ── Usar motor contextual del banco de 135 preguntas ─────────────────────
   const profile: UserProfile = {
     avatar: userAvatar as AvatarKey | 'constructor' | null,
-    subavatar: (userSubavatar as SubavatarKey) ?? null,
     streak,
   };
 

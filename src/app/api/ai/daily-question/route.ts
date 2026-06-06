@@ -220,7 +220,6 @@ export async function POST(req: NextRequest) {
         ai_decision: { ...decision, reason: 'fallback: no candidates matched' },
         avatar_context: {
           dominant: aiContext.avatar_dominant,
-          secondary: aiContext.avatar_secondary,
           confidence: aiContext.avatar_confidence,
         },
       });
@@ -234,7 +233,6 @@ export async function POST(req: NextRequest) {
       timeSlot,
       attemptNumber: currentAttempt,
       avatarDominant: aiContext.avatar_dominant,
-      avatarSecondary: aiContext.avatar_secondary,
       avatarConfidence: aiContext.avatar_confidence,
       aiDecision: decision,
       fromAI,
@@ -274,7 +272,6 @@ export async function POST(req: NextRequest) {
       },
       avatar_context: {
         dominant: aiContext.avatar_dominant,
-        secondary: aiContext.avatar_secondary,
         confidence: aiContext.avatar_confidence,
       },
     });
