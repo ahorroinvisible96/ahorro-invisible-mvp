@@ -122,7 +122,12 @@ export function ProfilingModal({ onClose, onCompleted }: ProfilingModalProps) {
                   <span className={styles.optionLetter}>
                     {String.fromCharCode(65 + i)}
                   </span>
-                  <span className={styles.optionText}>{opt.text}</span>
+                  <span className={styles.optionText}>
+                    {opt.text}
+                    {opt.sub && (
+                      <span className={styles.optionSub}>{opt.sub}</span>
+                    )}
+                  </span>
                 </button>
               ))}
             </div>

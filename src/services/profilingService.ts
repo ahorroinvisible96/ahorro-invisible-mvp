@@ -1,11 +1,17 @@
 /**
  * Profiling Service — Lógica de perfilado por avatar
  *
- * 4 preguntas extra óptimas para segmentar entre los 4 avatares.
- * Cada una ataca un ángulo diferente del comportamiento de gasto.
+ * 4 preguntas de personalización para refinar el avatar del usuario.
+ * Cada pregunta tiene un peso distinto según su poder diagnóstico:
  *
- * Scoring:
- *   +2 puntos al avatar asociado
+ *   P1 (Sistema):      2 puntos — Nivel real de organización
+ *   P2 (Fricción):     2 puntos — Tipo de intervención ideal
+ *   P3 (Aspiracional): 1 punto  — Tipo de ayuda deseada (la más débil)
+ *   P4 (Autopsia):     3 puntos — Análisis del error pasado real (la más fuerte)
+ *
+ * Total personalización: 8 puntos máx por avatar (54% del peso total)
+ * Total onboarding:      6 puntos máx por avatar (46% del peso total)
+ * Gran total (7 preguntas): 13 puntos máx por avatar
  */
 
 // ── Tipos ────────────────────────────────────────────────────────────────────
@@ -27,64 +33,68 @@ export interface ProfilingResult {
 // ── Preguntas ────────────────────────────────────────────────────────────────
 export interface ProfilingOption {
   text:      string;
+  sub?:      string;   // Subtexto (voz interior del usuario)
   avatar:    AvatarKey;
 }
 
 export interface ProfilingQuestion {
   id:      string;
   text:    string;
+  weight:  number;     // Peso de la pregunta en el scoring
   options: [ProfilingOption, ProfilingOption, ProfilingOption, ProfilingOption];
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 4 PREGUNTAS EXTRA — las mejores para segmentar avatar
+// 4 PREGUNTAS DE PERSONALIZACIÓN
 //
-//   EX1: Momento de vulnerabilidad
-//   EX2: Nivel real de planificación
-//   EX3: Tipo de intervención ideal
-//   EX4: Forma típica del error
-//
-// Cobertura: los 4 avatares en cada pregunta
+//   P1: Sistema — ¿Cómo te organizas? (2 pts)
+//   P2: Fricción — ¿Qué te ayudaría antes de gastar? (2 pts)
+//   P3: Aspiracional — ¿Qué tipo de ayuda necesitas? (1 pt)
+//   P4: Autopsia — ¿Cómo fue tu último gasto que te molestó? (3 pts) ⭐
 // ═══════════════════════════════════════════════════════════════════════════════
 export const PROFILING_QUESTIONS: ProfilingQuestion[] = [
   {
-    id: 'EX1',
-    text: '¿Cuándo te resulta más difícil gastar bien?',
-    options: [
-      { text: 'Cuando voy con prisa, cansado o sin ganas de pensar', avatar: 'comodo' },
-      { text: 'Cuando hay un plan o gente de por medio', avatar: 'social' },
-      { text: 'Por la noche o cuando me da el antojo', avatar: 'impulsivo' },
-      { text: 'No es un momento concreto; se me va poco a poco', avatar: 'desordenado' },
-    ],
-  },
-  {
-    id: 'EX2',
+    id: 'P1',
     text: '¿Cómo te organizas normalmente con tus gastos del día a día?',
+    weight: 2,
     options: [
-      { text: 'Improviso bastante y eso me hace pagar de más', avatar: 'comodo' },
-      { text: 'Más o menos bien, salvo cuando surgen planes', avatar: 'social' },
-      { text: 'No planifico mucho mis compras o caprichos', avatar: 'impulsivo' },
-      { text: 'No llevo un sistema claro ni reviso mucho', avatar: 'desordenado' },
+      { text: 'Tiro de lo que me resulta más fácil; rara vez comparo opciones', avatar: 'comodo' },
+      { text: 'Más o menos bien, pero cuando surge un plan se me descontrola', avatar: 'social' },
+      { text: 'Voy comprando según lo que me apetece en cada momento', avatar: 'impulsivo' },
+      { text: 'No llevo un control real; no sé cuánto gasto ni en qué exactamente', avatar: 'desordenado' },
     ],
   },
   {
-    id: 'EX3',
+    id: 'P2',
     text: '¿Qué te ayudaría más justo antes de gastar?',
+    weight: 2,
     options: [
-      { text: 'Una opción fácil para elegir mejor sin complicarme', avatar: 'comodo' },
-      { text: 'Un aviso antes de un plan o una salida', avatar: 'social' },
-      { text: 'Algo que me haga parar unos segundos antes de comprar', avatar: 'impulsivo' },
-      { text: 'Ver claro cuánto llevo gastado y en qué', avatar: 'desordenado' },
+      { text: 'Tener una alternativa fácil y lista para elegir mejor sin esfuerzo', avatar: 'comodo' },
+      { text: 'Que me avise antes de una salida o un plan para ir preparado', avatar: 'social' },
+      { text: 'Algo que me haga parar 5 segundos antes de darle a "comprar"', avatar: 'impulsivo' },
+      { text: 'Ver de un vistazo cuánto llevo gastado hoy, esta semana y este mes', avatar: 'desordenado' },
     ],
   },
   {
-    id: 'EX4',
-    text: 'Cuando haces un gasto que luego te molesta, ¿cómo suele ser?',
+    id: 'P3',
+    text: '¿Qué tipo de ayuda te vendría mejor para empezar a ahorrar?',
+    weight: 1,
     options: [
-      { text: 'Uno repetido que hago por comodidad o rapidez', avatar: 'comodo' },
-      { text: 'Uno social que acaba siendo más caro de lo que pensaba', avatar: 'social' },
-      { text: 'Uno impulsivo que no tenía pensado hacer', avatar: 'impulsivo' },
-      { text: 'Uno pequeño que parecía poco, pero se suma a otros', avatar: 'desordenado' },
+      { text: 'Ideas prácticas y sencillas para gastar menos sin complicarme la vida', sub: 'Quiero soluciones que no requieran esfuerzo', avatar: 'comodo' },
+      { text: 'Estrategias para controlarme en salidas sin dejar de disfrutar', sub: 'Quiero seguir haciendo planes pero gastando menos', avatar: 'social' },
+      { text: 'Un freno que me ayude a no comprar lo primero que me llama la atención', sub: 'Necesito esa pausa antes de actuar', avatar: 'impulsivo' },
+      { text: 'Visibilidad: saber a dónde va mi dinero y sentir que lo controlo', sub: 'Quiero dejar de sorprenderme a final de mes', avatar: 'desordenado' },
+    ],
+  },
+  {
+    id: 'P4',
+    text: 'Cuando haces un gasto que luego te molesta, ¿cómo suele ser?',
+    weight: 3,
+    options: [
+      { text: 'Algo que hago siempre por rutina o pereza: pido lo mismo sin buscar alternativa', avatar: 'comodo' },
+      { text: 'Dije que sí a un plan y acabé gastando el doble de lo que esperaba', avatar: 'social' },
+      { text: 'Vi algo, me gustó en el momento y lo compré sin haberlo pensado antes', avatar: 'impulsivo' },
+      { text: 'Fueron varios gastos pequeños que por separado no parecían nada, pero al sumarlos…', avatar: 'desordenado' },
     ],
   },
 ];
@@ -97,13 +107,16 @@ function emptyAvatarScores(): Record<AvatarKey, number> {
 }
 
 export function computeProfilingResult(answers: ProfilingAnswer[]): ProfilingResult {
-  const avatarScores    = emptyAvatarScores();
+  const avatarScores = emptyAvatarScores();
 
   for (const a of answers) {
-    avatarScores[a.avatar]       += 2;
+    // Usar el peso de la pregunta correspondiente
+    const question = PROFILING_QUESTIONS[a.questionIdx];
+    const weight = question ? question.weight : 2;
+    avatarScores[a.avatar] += weight;
   }
 
-  const primaryAvatar    = AVATAR_KEYS.reduce((max, k) => avatarScores[k] > avatarScores[max] ? k : max, AVATAR_KEYS[0]);
+  const primaryAvatar = AVATAR_KEYS.reduce((max, k) => avatarScores[k] > avatarScores[max] ? k : max, AVATAR_KEYS[0]);
 
   return {
     primaryAvatar,
