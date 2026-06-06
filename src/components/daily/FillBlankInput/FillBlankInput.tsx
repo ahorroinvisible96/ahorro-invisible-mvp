@@ -53,6 +53,16 @@ export function FillBlankInput({
     return () => document.removeEventListener('mousedown', handleClick);
   }, [isOpen]);
 
+  // Lock body scroll when dropdown is open on mobile
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [isOpen]);
+
   // Focus custom input when "Otro" selected
   useEffect(() => {
     if (isCustom && customInputRef.current) {
@@ -76,7 +86,7 @@ export function FillBlankInput({
     <div className={styles.wrapper}>
       <p className={styles.sentence}>
         <span>{before}</span>
-        <span className={styles.blankContainer} ref={dropdownRef}>
+        <span className={styles.blankContainer}>
           <button
             type="button"
             className={`${styles.blankButton} ${displayValue ? styles.blankFilled : ''} ${disabled ? styles.blankDisabled : ''}`}
@@ -88,43 +98,50 @@ export function FillBlankInput({
               <polyline points="6 9 12 15 18 9"/>
             </svg>
           </button>
+        </span>
+        <span>{after}</span>
+      </p>
 
-          {isOpen && (
-            <div className={styles.dropdown}>
-              <p className={styles.dropdownLabel}>Elige una opción</p>
-              {options.map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  className={`${styles.dropdownOption} ${value === opt.value ? styles.dropdownOptionSelected : ''}`}
-                  onClick={() => handleSelect(opt.value)}
-                >
-                  {opt.label}
-                  {value === opt.value && (
-                    <svg className={styles.dropdownCheck} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="20 6 9 17 4 12"/>
-                    </svg>
-                  )}
-                </button>
-              ))}
-              <div className={styles.dropdownDivider} />
+      {/* Overlay centrado en pantalla */}
+      {isOpen && (
+        <div className={styles.overlay} onClick={() => setIsOpen(false)}>
+          <div
+            className={styles.dropdown}
+            ref={dropdownRef}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p className={styles.dropdownLabel}>Elige una opción</p>
+            {options.map((opt) => (
               <button
+                key={opt.value}
                 type="button"
-                className={`${styles.dropdownOption} ${styles.dropdownOptionOther} ${isCustom ? styles.dropdownOptionSelected : ''}`}
-                onClick={() => handleSelect('__custom__')}
+                className={`${styles.dropdownOption} ${value === opt.value ? styles.dropdownOptionSelected : ''}`}
+                onClick={() => handleSelect(opt.value)}
               >
-                ✏️ Otro...
-                {isCustom && (
+                {opt.label}
+                {value === opt.value && (
                   <svg className={styles.dropdownCheck} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="20 6 9 17 4 12"/>
                   </svg>
                 )}
               </button>
-            </div>
-          )}
-        </span>
-        <span>{after}</span>
-      </p>
+            ))}
+            <div className={styles.dropdownDivider} />
+            <button
+              type="button"
+              className={`${styles.dropdownOption} ${styles.dropdownOptionOther} ${isCustom ? styles.dropdownOptionSelected : ''}`}
+              onClick={() => handleSelect('__custom__')}
+            >
+              ✏️ Otro...
+              {isCustom && (
+                <svg className={styles.dropdownCheck} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              )}
+            </button>
+          </div>
+        </div>
+      )}
 
       {isCustom && (
         <div className={styles.customInputWrap}>
