@@ -86,7 +86,7 @@ const HABIT_OPTIONS: { value: SavingsHabit; label: string; sub: string }[] = [
 // Q1 = 1 punto (síntoma), Q2 = 2 puntos (mecanismo), Q3 = 2 puntos (disparador)
 const ONBOARDING_WEIGHTS = [1, 2, 2];
 
-function classifyAvatar(answers: AvatarKey[]): AvatarKey {
+function classifyAvatar(answers: AvatarKey[]): { avatar: AvatarKey; scores: Record<AvatarKey, number> } {
   const scores: Record<AvatarKey, number> = { comodo: 0, social: 0, impulsivo: 0, desordenado: 0 };
   for (let i = 0; i < answers.length; i++) {
     scores[answers[i]] += ONBOARDING_WEIGHTS[i] ?? 1;
@@ -94,7 +94,8 @@ function classifyAvatar(answers: AvatarKey[]): AvatarKey {
   const max     = Math.max(...Object.values(scores));
   const winners = (Object.keys(scores) as AvatarKey[]).filter(k => scores[k] === max);
   const tieBreak: AvatarKey[] = ['impulsivo', 'social', 'comodo', 'desordenado'];
-  return winners.length === 1 ? winners[0] : tieBreak.find(k => winners.includes(k)) ?? 'desordenado';
+  const avatar = winners.length === 1 ? winners[0] : tieBreak.find(k => winners.includes(k)) ?? 'desordenado';
+  return { avatar, scores };
 }
 
 // ─── Fases del objetivo ───────────────────────────────────────────────────────
@@ -368,7 +369,7 @@ export default function OnboardingPage() {
 
   function saveOnboardingData(resolvedAmount: number) {
     const finalAnswers   = answers as AvatarKey[];
-    const avatar         = classifyAvatar(finalAnswers);
+    const { avatar, scores: onbScores } = classifyAvatar(finalAnswers);
     const resolvedPhases = computeGoalPhases(resolvedAmount, goalMonths);
     const resolvedName   = goalName.trim() || 'Mi primer objetivo de ahorro';
 
@@ -390,6 +391,7 @@ export default function OnboardingPage() {
       });
       localStorage.setItem('onboardingData', JSON.stringify({
         userAvatar: avatar, answers: finalAnswers,
+        avatarScores: onbScores,
         savingsHabit,
         incomeMin: incomeOpt.min, incomeMax: incomeOpt.max, incomeMid: incomeOpt.mid,
         goalName: resolvedName, goalAmount: resolvedAmount, goalMonths,

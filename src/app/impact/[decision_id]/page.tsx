@@ -157,28 +157,14 @@ export default function ImpactPage({ params }: { params: { decision_id: string }
           </div>
         )}
 
-        {/* Impacto económico */}
-        {(decision.deltaAmount > 0 || decision.monthlyProjection > 0) && (
+        {/* Ahorro registrado */}
+        {decision.deltaAmount > 0 && (
           <div style={{ background: DARK.green.bg, border: `1px solid ${DARK.green.border}`, borderRadius: 16, padding: '20px 24px', marginBottom: 16 }}>
-            <p style={{ fontSize: 12, fontWeight: 700, color: DARK.green.label, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 14 }}>Impacto económico</p>
-            {decision.deltaAmount > 0 && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                <span style={{ fontSize: 14, color: DARK.textSecondary }}>Ahorro inmediato</span>
-                <span style={{ fontSize: 18, fontWeight: 700, color: DARK.green.text }}>+{formatEUR(decision.deltaAmount)}</span>
-              </div>
-            )}
-            {decision.monthlyProjection > 0 && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                <span style={{ fontSize: 14, color: DARK.textSecondary }}>Proyección mensual</span>
-                <span style={{ fontSize: 15, fontWeight: 600, color: DARK.green.text }}>+{formatEUR(decision.monthlyProjection)}</span>
-              </div>
-            )}
-            {decision.yearlyProjection > 0 && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: 14, color: DARK.textSecondary }}>Proyección anual</span>
-                <span style={{ fontSize: 15, fontWeight: 600, color: DARK.green.text }}>+{formatEUR(decision.yearlyProjection)}</span>
-              </div>
-            )}
+            <p style={{ fontSize: 12, fontWeight: 700, color: DARK.green.label, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 14 }}>Ahorro registrado</p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: 14, color: DARK.textSecondary }}>Hoy has ahorrado</span>
+              <span style={{ fontSize: 18, fontWeight: 700, color: DARK.green.text }}>+{formatEUR(decision.deltaAmount)}</span>
+            </div>
           </div>
         )}
 
@@ -200,20 +186,13 @@ export default function ImpactPage({ params }: { params: { decision_id: string }
           </div>
         )}
 
-        {/* Proyección anual acumulada */}
-        {decision.yearlyProjection > 0 && (
+        {/* Total acumulado */}
+        {totalSavedAllTime > 0 && (
           <div style={{ background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.25)', borderRadius: 16, padding: '20px 24px', marginBottom: 16 }}>
-            <p style={{ fontSize: 12, fontWeight: 700, color: 'rgba(196,181,253,0.8)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 14 }}>🚀 Si repites este hábito</p>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-              <span style={{ fontSize: 14, color: DARK.textSecondary }}>365 días seguidos</span>
-              <span style={{ fontSize: 18, fontWeight: 800, color: '#c4b5fd' }}>+{formatEUR(decision.yearlyProjection)}</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: 14, color: DARK.textSecondary }}>Total ahorrado hasta hoy</span>
+              <span style={{ fontSize: 18, fontWeight: 800, color: '#c4b5fd' }}>{formatEUR(totalSavedAllTime)}</span>
             </div>
-            {totalSavedAllTime > 0 && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: 14, color: DARK.textSecondary }}>Total ahorrado hasta hoy</span>
-                <span style={{ fontSize: 15, fontWeight: 700, color: '#a78bfa' }}>{formatEUR(totalSavedAllTime)}</span>
-              </div>
-            )}
           </div>
         )}
 
@@ -232,9 +211,7 @@ export default function ImpactPage({ params }: { params: { decision_id: string }
           </div>
         )}
 
-        <p style={{ fontSize: 11, color: 'rgba(51,65,85,0.8)', textAlign: 'center', marginBottom: 20 }}>
-          Estimación educativa. No es asesoramiento financiero.
-        </p>
+
 
         {/* CTAs */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -242,9 +219,7 @@ export default function ImpactPage({ params }: { params: { decision_id: string }
           <button
             onClick={async () => {
               const q = DAILY_QUESTIONS.find((q) => q.questionId === decision.questionId);
-              const shareText = decision.yearlyProjection > 0
-                ? `Con Ahorro Invisible acabo de registrar una decisión que puede ahorrarme ${formatEUR(decision.yearlyProjection)} al año. ¡Pequeñas decisiones, grandes resultados! 💪`
-                : `Con Ahorro Invisible acabo de registrar una decisión consciente. ¡Construyendo hábitos de ahorro! 💡`;
+              const shareText = `Con Ahorro Invisible acabo de registrar una decisión consciente. ¡Construyendo hábitos de ahorro! 💡`;
               if (navigator.share) {
                 await navigator.share({ title: 'Mi decisión en Ahorro Invisible', text: shareText, url: 'https://ahorro-invisible.vercel.app' }).catch(() => null);
               } else {

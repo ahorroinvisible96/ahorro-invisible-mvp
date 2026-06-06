@@ -278,21 +278,14 @@ export default function DailyPage() {
             </div>
           </div>
 
-          {/* Sugerencia */}
+          {/* Nota */}
           <p style={{
             fontSize: 12, color: DARK.textMuted, marginTop: 10, marginBottom: 0,
-            display: 'flex', alignItems: 'center', gap: 6,
           }}>
-            <span style={{
-              display: 'inline-block', padding: '2px 8px',
-              background: 'rgba(37,99,235,0.12)', borderRadius: 8,
-              fontSize: 11, fontWeight: 700, color: 'rgba(147,197,253,0.8)',
-            }}>💡 Típico: {question.suggestedAmount} €</span>
-            <span>· Si no ahorraste nada, deja 0</span>
+            Si no ahorraste nada, deja 0
           </p>
         </div>
 
-        {/* Impacto estimado (se muestra cuando hay importe) */}
         {hasAmount && (
           <div style={{
             background: DARK.green.bg,
@@ -305,34 +298,16 @@ export default function DailyPage() {
             alignItems: 'center',
             animation: 'fadeIn 0.3s ease',
           }}>
-            <div>
-              <p style={{ fontSize: 12, fontWeight: 700, color: DARK.green.label, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>
-                ¡Genial! Has ahorrado hoy
-              </p>
-              <p style={{ fontSize: 13, color: DARK.textSecondary, margin: 0 }}>
-                {question.labelImpact}
-              </p>
-            </div>
+            <p style={{ fontSize: 14, fontWeight: 700, color: DARK.green.label, margin: 0 }}>
+              ¡Genial! Has ahorrado hoy
+            </p>
             <span style={{ fontSize: 24, fontWeight: 800, color: DARK.green.text }}>
               +{formatEUR(parsedAmount)}
             </span>
           </div>
         )}
 
-        {/* Info cuando es 0 */}
-        {!hasAmount && (
-          <div style={{
-            background: 'rgba(37,99,235,0.06)',
-            border: '1px solid rgba(37,99,235,0.15)',
-            borderRadius: 14,
-            padding: '14px 18px',
-            marginBottom: 16,
-          }}>
-            <p style={{ fontSize: 13, color: 'rgba(147,197,253,0.7)', margin: 0, lineHeight: 1.5 }}>
-              📊 Si repites este hábito, podrías ahorrar <strong style={{ color: '#93c5fd' }}>{formatEUR(question.monthlyDelta)}/mes</strong> · <strong style={{ color: '#93c5fd' }}>{formatEUR(question.yearlyDelta)}/año</strong>
-            </p>
-          </div>
-        )}
+
 
         {/* Selector de objetivo */}
         {goals.length > 1 && (

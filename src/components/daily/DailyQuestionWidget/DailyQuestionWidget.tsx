@@ -178,7 +178,7 @@ export function DailyQuestionWidget({
           {form.isSubmitting ? 'Guardando...' : 'Guardar decisión'}
         </Button>
 
-        <p className="text-xs text-gray-400 text-center mt-4">Estimación educativa.</p>
+        <p className="text-xs text-gray-400 text-center mt-4">Cualquier respuesta es válida. Lo importante es ser consciente.</p>
       </Card.Content>
     </Card>
   );

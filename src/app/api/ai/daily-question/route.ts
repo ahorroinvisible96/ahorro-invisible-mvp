@@ -98,16 +98,10 @@ export async function POST(req: NextRequest) {
           return NextResponse.json({
             question_id: answeredQ.id,
             text: answeredQ.text,
-            suggested_amount: answeredQ.suggestedAmount,
-            monthly_delta: answeredQ.monthlyDelta,
-            yearly_delta: answeredQ.yearlyDelta,
-            label_impact: answeredQ.labelImpact,
             time_slot: timeSlot,
             is_retry: false,
             attempt_number: respondedInteraction.attempt_number,
             already_answered: true,
-            ai_decision: null,
-            avatar_context: null,
           });
         }
       }
@@ -123,16 +117,10 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({
           question_id: existingQ.id,
           text: existingQ.text,
-          suggested_amount: existingQ.suggestedAmount,
-          monthly_delta: existingQ.monthlyDelta,
-          yearly_delta: existingQ.yearlyDelta,
-          label_impact: existingQ.labelImpact,
           time_slot: timeSlot,
           is_retry: sameSlotInteraction.attempt_number > 1,
           attempt_number: sameSlotInteraction.attempt_number,
           already_answered: false,
-          ai_decision: null,
-          avatar_context: null,
         });
       }
     }
@@ -209,19 +197,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         question_id: fallback.id,
         text: fallback.text,
-        suggested_amount: fallback.suggestedAmount,
-        monthly_delta: fallback.monthlyDelta,
-        yearly_delta: fallback.yearlyDelta,
-        label_impact: fallback.labelImpact,
         time_slot: timeSlot,
         is_retry: currentAttempt > 1,
         attempt_number: currentAttempt,
         already_answered: false,
-        ai_decision: { ...decision, reason: 'fallback: no candidates matched' },
-        avatar_context: {
-          dominant: aiContext.avatar_dominant,
-          confidence: aiContext.avatar_confidence,
-        },
       });
     }
 
@@ -245,35 +224,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       question_id: selected.id,
       text: selected.text,
-      suggested_amount: selected.suggestedAmount,
-      monthly_delta: selected.monthlyDelta,
-      yearly_delta: selected.yearlyDelta,
-      label_impact: selected.labelImpact,
       time_slot: timeSlot,
       time_slot_4: getCurrentTimeSlot4(),
       is_retry: currentAttempt > 1,
       attempt_number: currentAttempt,
       already_answered: false,
-      used_base_question: selected.id === baseQuestion.questionId,
-      base_question_id: baseQuestion.questionId,
-      ai_decision: {
-        decision_type: decision.decision_type,
-        question_intent: decision.question_intent,
-        target_category: decision.target_category,
-        target_avatar: decision.target_avatar,
-        habit_principle: decision.habit_principle,
-        tone: decision.tone,
-        difficulty: decision.difficulty,
-        suggested_amount_eur: decision.suggested_amount_eur,
-        should_change_question: decision.should_change_question,
-        reason: decision.reason,
-        risk_flags: decision.risk_flags,
-        confidence: decision.confidence,
-      },
-      avatar_context: {
-        dominant: aiContext.avatar_dominant,
-        confidence: aiContext.avatar_confidence,
-      },
     });
   } catch (err) {
     console.error('[daily-question] unhandled error:', err);

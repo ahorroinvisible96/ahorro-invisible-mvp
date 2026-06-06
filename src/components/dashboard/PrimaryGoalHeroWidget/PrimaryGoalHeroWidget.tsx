@@ -166,11 +166,6 @@ export function PrimaryGoalHeroWidget({
                 <div>
                   <p className={styles.infoText}>
                     Te faltan <strong>{formatEUR(d.remainingAmount)}</strong>.
-                    {avgMonthlySavings != null && avgMonthlySavings > 0 ? (
-                      <> A este ritmo (<strong>{formatEURCompact(avgMonthlySavings)}/mes</strong>) llegas en <strong>{estimatedMonthsRemaining ?? '?'} mes{estimatedMonthsRemaining !== 1 ? 'es' : ''}</strong>.</>
-                    ) : estimatedMonthsRemaining != null ? (
-                      <> ETA estimado: <strong>{estimatedMonthsRemaining} mes{estimatedMonthsRemaining !== 1 ? 'es' : ''}</strong>.</>
-                    ) : null}
                   </p>
                 </div>
               </div>

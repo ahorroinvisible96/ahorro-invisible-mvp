@@ -13,8 +13,8 @@ import {
   getContextualDailyQuestion,
   toDashboardQuestion,
   getCurrentTimeWindow,
-  type UserProfile,
 } from './questionSelectionEngine';
+import type { UserProfile } from './questionSelectionEngine';
 import { getQuestionById } from './dailyQuestionsBank';
 import type { AvatarKey } from './profilingService';
 import { STORAGE_KEY } from '@/lib/constants';
@@ -80,10 +80,10 @@ export const DAILY_DECISION_RULES: DailyDecisionRule[] = [
 export type DailyQuestion = {
   questionId: string;
   text: string;
-  suggestedAmount: number;
-  monthlyDelta: number;
-  yearlyDelta: number;
-  labelImpact: string;
+  suggestedAmount?: number;
+  monthlyDelta?: number;
+  yearlyDelta?: number;
+  labelImpact?: string;
   tags?: string[];
 };
 
@@ -226,9 +226,38 @@ export function getTodayQuestion(): DailyQuestion {
     } catch { /* fallthrough */ }
   }
 
+  // ── Cargar avatar scores para selección probabilística ────────────────────
+  let avatarScores: Record<AvatarKey, number> | null = null;
+  try {
+    // Scores del onboarding
+    const onbRaw = localStorage.getItem('onboardingData');
+    if (onbRaw) {
+      const onb = JSON.parse(onbRaw) as { avatarScores?: Record<string, number> };
+      if (onb.avatarScores) {
+        avatarScores = onb.avatarScores as Record<AvatarKey, number>;
+      }
+    }
+    // Sumar scores del profiling (si existe)
+    const profRaw = localStorage.getItem('profiling_result');
+    if (profRaw) {
+      const prof = JSON.parse(profRaw) as { avatarScores?: Record<string, number> };
+      if (prof.avatarScores) {
+        if (avatarScores) {
+          // Merge: sumar ambos
+          for (const k of Object.keys(prof.avatarScores) as AvatarKey[]) {
+            avatarScores[k] = (avatarScores[k] ?? 0) + (prof.avatarScores[k] ?? 0);
+          }
+        } else {
+          avatarScores = prof.avatarScores as Record<AvatarKey, number>;
+        }
+      }
+    }
+  } catch { /* fallthrough */ }
+
   // ── Usar motor contextual del banco de 135 preguntas ─────────────────────
   const profile: UserProfile = {
     avatar: userAvatar as AvatarKey | 'constructor' | null,
+    avatarScores,
     streak,
   };
 

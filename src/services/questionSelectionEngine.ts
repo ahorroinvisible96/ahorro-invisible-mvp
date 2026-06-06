@@ -71,6 +71,7 @@ export function getTemporalContext(): TemporalContext {
 // ── Perfil del usuario ───────────────────────────────────────────────────────
 export interface UserProfile {
   avatar: AvatarKey | 'constructor' | null;
+  avatarScores: Record<AvatarKey, number> | null;  // Distribución de scores entre avatares
   streak: number;
 }
 
@@ -232,26 +233,81 @@ function hashSeed(seed: string): number {
  * @param excludeIds   IDs de preguntas ya respondidas recientemente
  * @returns La pregunta seleccionada
  */
+// ── Selección probabilística de avatar target ────────────────────────────────
+/**
+ * Selecciona un avatar target basándose en la distribución de scores.
+ *
+ * Reglas:
+ *   - Si la diferencia entre top-1 y top-2 es < 10% → 50/50
+ *   - Si la ratio top1/(top1+top2) está entre 0.55 y 0.65 → 70/30
+ *   - Si la ratio top1/(top1+top2) es > 0.65 → 100% top-1
+ *
+ * Este mecanismo es completamente interno y nunca se muestra al usuario.
+ */
+function selectTargetAvatar(
+  scores: Record<AvatarKey, number>,
+  seed: string,
+): AvatarKey {
+  const entries = (Object.entries(scores) as [AvatarKey, number][])
+    .sort((a, b) => b[1] - a[1]);
+
+  const top1 = entries[0];
+  const top2 = entries[1];
+
+  // Si solo hay un avatar con score > 0, usar ese
+  if (!top2 || top2[1] === 0) return top1[0];
+
+  const sum = top1[1] + top2[1];
+  if (sum === 0) return top1[0];
+
+  const ratio = top1[1] / sum; // 0.5 = empate perfecto, 1.0 = dominancia total
+
+  // Calcular probabilidad de elegir top-1
+  let probTop1: number;
+  if (ratio < 0.55) {
+    // Empate → 50/50
+    probTop1 = 0.50;
+  } else if (ratio <= 0.65) {
+    // Dominancia moderada → 70/30
+    probTop1 = 0.70;
+  } else {
+    // Dominancia clara → 100% top-1
+    return top1[0];
+  }
+
+  // Usar hash determinístico para decidir (mismo seed = mismo resultado)
+  const roll = (hashSeed(seed + ':avatar') % 100) / 100;
+  return roll < probTop1 ? top1[0] : top2[0];
+}
+
 export function selectQuestion(
   profile: UserProfile,
   ctx: TemporalContext,
   excludeIds: string[] = [],
 ): DailyQuestion {
-  // ── Pre-filtrar el pool según lo que sabemos del perfil ──────────────────
-  // Si sabemos avatar → restringir a los bloques del avatar (30 preguntas).
-  // Esto evita que preguntas de otros avatares se cuelen solo por buen match temporal.
+  // ── Determinar el avatar target para esta sesión ──────────────────────────
+  const today = new Date().toISOString().split('T')[0];
+  const seed = `${today}:${ctx.timeWindow}:${profile.avatar ?? 'none'}`;
+
+  let targetAvatar: AvatarKey | 'constructor' | null = profile.avatar;
+
+  // Si tenemos scores detallados, usar selección probabilística
+  if (profile.avatarScores) {
+    targetAvatar = selectTargetAvatar(profile.avatarScores, seed);
+  }
+
+  // ── Pre-filtrar el pool según el avatar target ────────────────────────────
   let pool = DAILY_QUESTIONS_BANK;
 
-  if (profile.avatar) {
+  if (targetAvatar) {
     const avatarPool = DAILY_QUESTIONS_BANK.filter(
-      q => q.targetAvatarPrimary === profile.avatar
+      q => q.targetAvatarPrimary === targetAvatar
     );
     // Solo usar el pool filtrado si tiene suficientes preguntas
     if (avatarPool.length >= 5) {
       pool = avatarPool;
     }
   }
-  // Si avatar es null (no sabemos nada): pool completo de 135
 
   const scored = pool.map(q => {
     let score = 0;
@@ -301,8 +357,6 @@ export function selectQuestion(
 
   // Usar hash determinístico basado en fecha + franja para estabilidad
   // pero variación entre franjas horarias
-  const today = new Date().toISOString().split('T')[0];
-  const seed = `${today}:${ctx.timeWindow}:${profile.avatar ?? 'none'}`;
   const idx = hashSeed(seed) % topN.length;
 
   return topN[idx].question;
@@ -353,19 +407,11 @@ export function getContextualDailyQuestion(
 export function toDashboardQuestion(q: DailyQuestion): {
   questionId: string;
   text: string;
-  suggestedAmount: number;
-  monthlyDelta: number;
-  yearlyDelta: number;
-  labelImpact: string;
   tags: string[];
 } {
   return {
     questionId: q.id,
     text: q.text,
-    suggestedAmount: q.suggestedAmount,
-    monthlyDelta: q.monthlyDelta,
-    yearlyDelta: q.yearlyDelta,
-    labelImpact: q.labelImpact,
     tags: [q.habitCategory, q.targetAvatarPrimary].filter(Boolean),
   };
 }
