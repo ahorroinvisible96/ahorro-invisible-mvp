@@ -365,6 +365,63 @@ export function selectQuestion(
   return topN[idx].question;
 }
 
+/**
+ * Selecciona una pregunta alternativa distinta a la actual.
+ * Usa el mismo pool filtrado por avatar/franja pero excluye la pregunta actual
+ * y elige aleatoriamente entre las top 8 candidatas.
+ */
+export function selectAlternativeQuestion(
+  profile: UserProfile,
+  ctx: TemporalContext,
+  currentQuestionId: string,
+  excludeIds: string[] = [],
+): DailyQuestion | null {
+  const today = new Date().toISOString().split('T')[0];
+  const seed = `${today}:${ctx.timeWindow}:${profile.avatar ?? 'none'}`;
+
+  let targetAvatar: AvatarKey | 'constructor' | null = profile.avatar;
+  if (profile.avatarScores) {
+    targetAvatar = selectTargetAvatar(profile.avatarScores, seed);
+  }
+
+  let pool = DAILY_QUESTIONS_BANK;
+  if (targetAvatar) {
+    const avatarPool = DAILY_QUESTIONS_BANK.filter(
+      q => q.targetAvatarPrimary === targetAvatar
+    );
+    if (avatarPool.length >= 5) pool = avatarPool;
+  }
+
+  // Excluir la pregunta actual y las recientes
+  const allExcluded = [...excludeIds, currentQuestionId];
+
+  const scored = pool.map(q => {
+    let score = 0;
+    if (profile.avatar) {
+      if (q.targetAvatarPrimary === profile.avatar) score += 40;
+      if (q.targetAvatarSecondary === profile.avatar) score += 25;
+    }
+    if (profile.streak >= 7 && q.targetAvatarPrimary === 'constructor') score += 5;
+    if (matchesBestDays(q.bestDays, ctx)) score += 20;
+    if (matchesTimeWindow(q.bestTimeWindow, ctx.timeWindow)) score += 15;
+    if (matchesMonthPhase(q.monthPhase, ctx.monthPhase)) score += 10;
+    score += q.priorityBase;
+    score += q.scenarioWeight * 2;
+    return { question: q, score };
+  }).filter(sq => !allExcluded.includes(sq.question.id));
+
+  if (scored.length === 0) return null;
+
+  scored.sort((a, b) => b.score - a.score);
+
+  // Tomar top 8 para más variedad al cambiar
+  const topN = scored.slice(0, Math.min(8, scored.length));
+
+  // Aleatorio real (no determinístico) para que cada cambio sea distinto
+  const idx = Math.floor(Math.random() * topN.length);
+  return topN[idx].question;
+}
+
 // ── API pública: pregunta contextual del día ─────────────────────────────────
 
 /**

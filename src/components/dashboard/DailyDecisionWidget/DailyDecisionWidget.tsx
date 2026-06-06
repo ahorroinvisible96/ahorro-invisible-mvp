@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { analytics } from '@/services/analytics';
-import { getTodayQuestion } from '@/services/dashboardStore';
+import { getTodayQuestion, getAlternativeQuestion } from '@/services/dashboardStore';
 import type { DailyDecisionWidgetProps, ExtraSaving } from './DailyDecisionWidget.types';
 import styles from './DailyDecisionWidget.module.css';
 import { useWidgetCollapse } from '@/hooks/useWidgetCollapse';
@@ -142,7 +142,8 @@ export function DailyDecisionWidget({
 }: DailyDecisionWidgetProps): React.ReactElement {
   const isHeader = variant === 'header';
   const activeGoals = allGoals.filter((g) => !g.archived);
-  const todayQuestion = getTodayQuestion();
+  const [currentQuestion, setCurrentQuestion] = useState(() => getTodayQuestion());
+  const todayQuestion = currentQuestion;
   const { collapsed, toggle } = useWidgetCollapse('daily_decision', false);
   const { addToast } = useToast();
 
@@ -309,9 +310,34 @@ export function DailyDecisionWidget({
         <WidgetHeader completed={confirmed} collapsed={collapsed} onToggle={toggle} isHeader={isHeader} />
 
         {!collapsed && (
-          <h2 className={styles.title} style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-            {todayQuestion.text}
-          </h2>
+          <div className={styles.questionRow}>
+            <h2 className={styles.title} style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', flex: 1 }}>
+              {todayQuestion.text}
+            </h2>
+            {!confirmed && !submitting && (
+              <button
+                type="button"
+                className={styles.shuffleBtn}
+                title="Cambiar pregunta"
+                onClick={() => {
+                  const alt = getAlternativeQuestion(todayQuestion.questionId);
+                  if (alt) {
+                    setCurrentQuestion(alt);
+                    setCustomAmount('');
+                    setSelectedAnswer(null);
+                  }
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="16 3 21 3 21 8"/>
+                  <line x1="4" y1="20" x2="21" y2="3"/>
+                  <polyline points="21 16 21 21 16 21"/>
+                  <line x1="15" y1="15" x2="21" y2="21"/>
+                  <line x1="4" y1="4" x2="9" y2="9"/>
+                </svg>
+              </button>
+            )}
+          </div>
         )}
         {collapsed && (
           <p className={styles.collapsedPreview} onClick={toggle}>{todayQuestion.text}</p>

@@ -11,6 +11,8 @@ import type {
 } from '@/types/Dashboard';
 import {
   getContextualDailyQuestion,
+  selectAlternativeQuestion,
+  getTemporalContext,
   toDashboardQuestion,
   getCurrentTimeWindow,
 } from './questionSelectionEngine';
@@ -296,6 +298,95 @@ export function getTodayQuestion(): DailyQuestion {
   }
   const dayIndex = Math.floor(Date.now() / 86_400_000) % pool.length;
   return pool[dayIndex];
+}
+
+/**
+ * Obtiene una pregunta alternativa distinta a la actual.
+ * Mantiene el mismo avatar dominante y franja horaria,
+ * pero devuelve una pregunta diferente para dar variedad.
+ * Devuelve null si no hay alternativas disponibles.
+ */
+export function getAlternativeQuestion(currentQuestionId: string): DailyQuestion | null {
+  // ── Cargar perfil (mismo código que getTodayQuestion) ─────────────────
+  let userAvatar: UserAvatar | null = null;
+  let streak = 0;
+  const recentQuestionIds: string[] = [];
+
+  if (typeof window !== 'undefined') {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as StoreState;
+        userAvatar = (parsed.userAvatar ?? null) as UserAvatar | null;
+        streak = computeStreak(parsed.decisions ?? []);
+
+        const cutoff7 = new Date(Date.now() - 7 * 86_400_000).toISOString().split('T')[0];
+        const dailyDecisions = (parsed.decisions ?? []).filter(
+          (d: DailyDecision) => d.questionId !== 'extra_saving' && d.questionId !== 'grace_day'
+        );
+        for (const d of dailyDecisions) {
+          if (d.date >= cutoff7 && !recentQuestionIds.includes(d.questionId)) {
+            recentQuestionIds.push(d.questionId);
+          }
+        }
+      }
+      if (!userAvatar) {
+        const onbRaw = localStorage.getItem('onboardingData');
+        if (onbRaw) {
+          const onb = JSON.parse(onbRaw) as { userAvatar?: string };
+          userAvatar = (onb.userAvatar ?? null) as UserAvatar | null;
+        }
+      }
+    } catch { /* fallthrough */ }
+  }
+
+  // ── Cargar avatar scores ──────────────────────────────────────────────
+  let avatarScores: Record<AvatarKey, number> | null = null;
+  try {
+    const onbRaw = localStorage.getItem('onboardingData');
+    if (onbRaw) {
+      const onb = JSON.parse(onbRaw) as { avatarScores?: Record<string, number> };
+      if (onb.avatarScores) avatarScores = onb.avatarScores as Record<AvatarKey, number>;
+    }
+    const profRaw = localStorage.getItem('profiling_result');
+    if (profRaw) {
+      const prof = JSON.parse(profRaw) as { avatarScores?: Record<string, number> };
+      if (prof.avatarScores) {
+        if (avatarScores) {
+          for (const k of Object.keys(prof.avatarScores) as AvatarKey[]) {
+            avatarScores[k] = (avatarScores[k] ?? 0) + (prof.avatarScores[k] ?? 0);
+          }
+        } else {
+          avatarScores = prof.avatarScores as Record<AvatarKey, number>;
+        }
+      }
+    }
+    const dailySignals = localStorage.getItem('daily_avatar_signals');
+    if (dailySignals) {
+      const signals = JSON.parse(dailySignals) as Record<string, number>;
+      if (avatarScores) {
+        for (const k of Object.keys(signals) as AvatarKey[]) {
+          avatarScores[k] = (avatarScores[k] ?? 0) + (signals[k] ?? 0);
+        }
+      } else {
+        avatarScores = signals as Record<AvatarKey, number>;
+      }
+    }
+  } catch { /* fallthrough */ }
+
+  const profile: UserProfile = {
+    avatar: userAvatar as AvatarKey | 'constructor' | null,
+    avatarScores,
+    streak,
+  };
+
+  try {
+    const ctx = getTemporalContext();
+    const alt = selectAlternativeQuestion(profile, ctx, currentQuestionId, recentQuestionIds);
+    return alt ? toDashboardQuestion(alt) : null;
+  } catch {
+    return null;
+  }
 }
 
 /**
