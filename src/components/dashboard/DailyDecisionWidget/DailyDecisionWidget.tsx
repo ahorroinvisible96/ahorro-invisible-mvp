@@ -12,6 +12,8 @@ import { Modal } from '@/components/ui/Modal/Modal';
 import { Button } from '@/components/ui/Button/Button';
 import { Badge } from '@/components/ui/Badge/Badge';
 import { useToast } from '@/components/ui/Toast/Toast';
+import { FillBlankInput } from '@/components/daily/FillBlankInput/FillBlankInput';
+import { ChoiceQuestion } from '@/components/daily/ChoiceQuestion/ChoiceQuestion';
 
 // ── Modal de ahorro extra ────────────────────────────────────────────────────
 function ExtraSavingModal({
@@ -163,6 +165,9 @@ export function DailyDecisionWidget({
   const [showExtraModal, setShowExtraModal] = useState(false);
   const [useCustomAmount, setUseCustomAmount] = useState(false);
   const [customAmount, setCustomAmount] = useState('');
+  // ── Estado para señal de avatar (fill_blank / choice) ─────────────────
+  const [signalValue, setSignalValue] = useState<string | null>(null);
+  const [customText, setCustomText] = useState<string>('');
 
   useEffect(() => {
     analytics.dailyCtaCardViewed(daily.status);
@@ -278,7 +283,12 @@ export function DailyDecisionWidget({
   function handleConfirm() {
     if (!canConfirm) return;
     const goalId = selectedGoalId || (activeGoals[0]?.id ?? '');
-    const answerKey = hasAmount ? 'saved' : 'zero';
+    const signalKey = signalValue === '__custom__'
+      ? `custom:${customText}`
+      : signalValue ?? '';
+    const answerKey = signalKey
+      ? (hasAmount ? `saved|${signalKey}` : `zero|${signalKey}`)
+      : (hasAmount ? 'saved' : 'zero');
     const finalAmount = hasAmount ? parsedAmount : undefined;
     setSubmitting(true);
     setSelectedAnswer(answerKey);
@@ -310,34 +320,67 @@ export function DailyDecisionWidget({
         <WidgetHeader completed={confirmed} collapsed={collapsed} onToggle={toggle} isHeader={isHeader} />
 
         {!collapsed && (
-          <div className={styles.questionRow}>
-            <h2 className={styles.title} style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', flex: 1 }}>
-              {todayQuestion.text}
-            </h2>
-            {!confirmed && !submitting && (
-              <button
-                type="button"
-                className={styles.shuffleBtn}
-                title="Cambiar pregunta"
-                onClick={() => {
-                  const alt = getAlternativeQuestion(todayQuestion.questionId);
-                  if (alt) {
-                    setCurrentQuestion(alt);
-                    setCustomAmount('');
-                    setSelectedAnswer(null);
-                  }
-                }}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="16 3 21 3 21 8"/>
-                  <line x1="4" y1="20" x2="21" y2="3"/>
-                  <polyline points="21 16 21 21 16 21"/>
-                  <line x1="15" y1="15" x2="21" y2="21"/>
-                  <line x1="4" y1="4" x2="9" y2="9"/>
-                </svg>
-              </button>
-            )}
-          </div>
+          <>
+            <div className={styles.questionRow}>
+              {/* Formato: amount o fallback — solo texto */}
+              {(todayQuestion.format === 'amount' || !todayQuestion.format) && (
+                <h2 className={styles.title} style={{ flex: 1 }}>
+                  {todayQuestion.text}
+                </h2>
+              )}
+              {/* Formato: fill_blank — frase con hueco */}
+              {todayQuestion.format === 'fill_blank' && todayQuestion.blankOptions && (
+                <div style={{ flex: 1 }}>
+                  <FillBlankInput
+                    sentence={todayQuestion.text}
+                    options={todayQuestion.blankOptions.map(o => ({ label: o.label, value: o.value }))}
+                    value={signalValue}
+                    customText={customText}
+                    onSelect={setSignalValue}
+                    onCustomTextChange={setCustomText}
+                    disabled={submitting || confirmed}
+                  />
+                </div>
+              )}
+              {/* Formato: choice — opciones completas */}
+              {todayQuestion.format === 'choice' && todayQuestion.choiceOptions && (
+                <div style={{ flex: 1 }}>
+                  <ChoiceQuestion
+                    question={todayQuestion.text}
+                    options={todayQuestion.choiceOptions.map(o => ({ label: o.label, value: o.value }))}
+                    value={signalValue}
+                    onSelect={setSignalValue}
+                    disabled={submitting || confirmed}
+                  />
+                </div>
+              )}
+              {!confirmed && !submitting && (
+                <button
+                  type="button"
+                  className={styles.shuffleBtn}
+                  title="Cambiar pregunta"
+                  onClick={() => {
+                    const alt = getAlternativeQuestion(todayQuestion.questionId);
+                    if (alt) {
+                      setCurrentQuestion(alt);
+                      setCustomAmount('');
+                      setSelectedAnswer(null);
+                      setSignalValue(null);
+                      setCustomText('');
+                    }
+                  }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="16 3 21 3 21 8"/>
+                    <line x1="4" y1="20" x2="21" y2="3"/>
+                    <polyline points="21 16 21 21 16 21"/>
+                    <line x1="15" y1="15" x2="21" y2="21"/>
+                    <line x1="4" y1="4" x2="9" y2="9"/>
+                  </svg>
+                </button>
+              )}
+            </div>
+          </>
         )}
         {collapsed && (
           <p className={styles.collapsedPreview} onClick={toggle}>{todayQuestion.text}</p>
