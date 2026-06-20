@@ -14,13 +14,24 @@
  */
 
 import {
-  DAILY_QUESTIONS_BANK,
+  ACTIVE_QUESTIONS_BANK,
   type DailyQuestion,
   type QuestionFormat,
   type BlankOption,
   type ChoiceOption,
 } from './dailyQuestionsBank';
+import { PILOT_QUESTIONS_BANK } from './questionsBankPilot';
+import { USE_PILOT_BANK } from '@/lib/constants';
 import type { AvatarKey } from './profilingService';
+
+/**
+ * Devuelve el banco activo según la configuración:
+ * - USE_PILOT_BANK=true → banco piloto de 18 preguntas
+ * - DEFAULT → banco activo completo (135+ preguntas, sin Constructor)
+ */
+function getActiveBank(): DailyQuestion[] {
+  return USE_PILOT_BANK ? PILOT_QUESTIONS_BANK : ACTIVE_QUESTIONS_BANK;
+}
 
 // ── Franjas horarias ─────────────────────────────────────────────────────────
 export type TimeWindow = 'Madrugada' | 'Mañana' | 'Tarde' | 'Noche';
@@ -73,8 +84,10 @@ export function getTemporalContext(): TemporalContext {
 
 // ── Perfil del usuario ───────────────────────────────────────────────────────
 export interface UserProfile {
-  avatar: AvatarKey | 'constructor' | null;
-  avatarScores: Record<AvatarKey, number> | null;  // Distribución de scores entre avatares
+  /** Avatar principal del usuario (sin 'constructor') */
+  avatar: AvatarKey | null;
+  /** Distribución de scores entre avatares. NUNCA visible al usuario. */
+  avatarScores: Record<AvatarKey, number> | null;
   streak: number;
 }
 
@@ -169,27 +182,16 @@ export function scoreQuestions(
   profile: UserProfile,
   ctx: TemporalContext,
 ): ScoredQuestion[] {
-  return DAILY_QUESTIONS_BANK.map(q => {
+  return getActiveBank().map(q => {
     let score = 0;
 
-    // ── 1. Perfil del usuario ────────────────────────────────────────────
+    // ── 1. Perfil del usuario ──────────────────────────────────────────────────
     if (profile.avatar) {
-      // Match avatar primario
-      if (q.targetAvatarPrimary === profile.avatar) {
-        score += 40;
-      }
-      // Match avatar secundario
-      if (q.targetAvatarSecondary === profile.avatar) {
-        score += 25;
-      }
+      if (q.targetAvatarPrimary === profile.avatar) score += 40;
+      if (q.targetAvatarSecondary === profile.avatar) score += 25;
     }
 
-    // Constructor bonus: si la racha es alta, dar bonus a preguntas Constructor
-    if (profile.streak >= 7 && q.targetAvatarPrimary === 'constructor') {
-      score += 5;
-    }
-
-    // ── 2. Día de la semana ──────────────────────────────────────────────
+    // ── 2. Día de la semana ───────────────────────────────────────────────────
     if (matchesBestDays(q.bestDays, ctx)) {
       score += 20;
     }
@@ -228,15 +230,6 @@ function hashSeed(seed: string): number {
   return Math.abs(hash);
 }
 
-/**
- * Selecciona la pregunta más relevante para el momento actual.
- *
- * @param profile   Perfil del usuario (avatar, racha)
- * @param ctx       Contexto temporal (día, franja, fase del mes)
- * @param excludeIds   IDs de preguntas ya respondidas recientemente
- * @returns La pregunta seleccionada
- */
-// ── Selección probabilística de avatar target ────────────────────────────────
 /**
  * Selecciona un avatar target basándose en la distribución de scores.
  *
@@ -292,7 +285,7 @@ export function selectQuestion(
   const today = new Date().toISOString().split('T')[0];
   const seed = `${today}:${ctx.timeWindow}:${profile.avatar ?? 'none'}`;
 
-  let targetAvatar: AvatarKey | 'constructor' | null = profile.avatar;
+  let targetAvatar: AvatarKey | null = profile.avatar;
 
   // Si tenemos scores detallados, usar selección probabilística
   if (profile.avatarScores) {
@@ -300,22 +293,19 @@ export function selectQuestion(
   }
 
   // ── Pre-filtrar el pool según el avatar target ────────────────────────────
-  let pool = DAILY_QUESTIONS_BANK;
+  let pool = getActiveBank();
 
   if (targetAvatar) {
-    const avatarPool = DAILY_QUESTIONS_BANK.filter(
+    const avatarPool = getActiveBank().filter(
       q => q.targetAvatarPrimary === targetAvatar
     );
-    // Solo usar el pool filtrado si tiene suficientes preguntas
-    if (avatarPool.length >= 5) {
-      pool = avatarPool;
-    }
+    if (avatarPool.length >= 3) pool = avatarPool;
   }
 
   const scored = pool.map(q => {
     let score = 0;
 
-    // ── 1. Perfil del usuario ────────────────────────────────────────────
+    // ── 1. Perfil del usuario ──────────────────────────────────────────────────
     if (profile.avatar) {
       if (q.targetAvatarPrimary === profile.avatar) {
         score += 40;
@@ -323,11 +313,6 @@ export function selectQuestion(
       if (q.targetAvatarSecondary === profile.avatar) {
         score += 25;
       }
-    }
-
-    // Constructor bonus: si la racha es alta, dar bonus a preguntas Constructor
-    if (profile.streak >= 7 && q.targetAvatarPrimary === 'constructor') {
-      score += 5;
     }
 
     // ── 2. Día de la semana ──────────────────────────────────────────────
@@ -379,17 +364,17 @@ export function selectAlternativeQuestion(
   const today = new Date().toISOString().split('T')[0];
   const seed = `${today}:${ctx.timeWindow}:${profile.avatar ?? 'none'}`;
 
-  let targetAvatar: AvatarKey | 'constructor' | null = profile.avatar;
+  let targetAvatar: AvatarKey | null = profile.avatar;
   if (profile.avatarScores) {
     targetAvatar = selectTargetAvatar(profile.avatarScores, seed);
   }
 
-  let pool = DAILY_QUESTIONS_BANK;
+  let pool = getActiveBank();
   if (targetAvatar) {
-    const avatarPool = DAILY_QUESTIONS_BANK.filter(
+    const avatarPool = getActiveBank().filter(
       q => q.targetAvatarPrimary === targetAvatar
     );
-    if (avatarPool.length >= 5) pool = avatarPool;
+    if (avatarPool.length >= 3) pool = avatarPool;
   }
 
   // Excluir la pregunta actual y las recientes
@@ -401,7 +386,7 @@ export function selectAlternativeQuestion(
       if (q.targetAvatarPrimary === profile.avatar) score += 40;
       if (q.targetAvatarSecondary === profile.avatar) score += 25;
     }
-    if (profile.streak >= 7 && q.targetAvatarPrimary === 'constructor') score += 5;
+    // Constructor eliminado: sin bonus por racha
     if (matchesBestDays(q.bestDays, ctx)) score += 20;
     if (matchesTimeWindow(q.bestTimeWindow, ctx.timeWindow)) score += 15;
     if (matchesMonthPhase(q.monthPhase, ctx.monthPhase)) score += 10;
@@ -450,7 +435,7 @@ export function getContextualDailyQuestion(
 ): DailyQuestion {
   // Si ya respondió hoy, devolver la misma pregunta que respondió
   if (answeredToday && lastQuestionId) {
-    const answeredQ = DAILY_QUESTIONS_BANK.find(q => q.id === lastQuestionId);
+    const answeredQ = getActiveBank().find(q => q.id === lastQuestionId);
     if (answeredQ) return answeredQ;
   }
 
@@ -471,6 +456,9 @@ export function toDashboardQuestion(q: DailyQuestion): {
   blankOptions?: BlankOption[];
   choiceOptions?: ChoiceOption[];
   tags: string[];
+  allowOther?: boolean;
+  otherRequiresAI?: boolean;
+  aiConfidenceThreshold?: number;
 } {
   return {
     questionId: q.id,
@@ -479,5 +467,8 @@ export function toDashboardQuestion(q: DailyQuestion): {
     blankOptions: q.blankOptions,
     choiceOptions: q.choiceOptions,
     tags: [q.habitCategory, q.targetAvatarPrimary].filter(Boolean),
+    allowOther: q.allowOther,
+    otherRequiresAI: q.otherRequiresAI,
+    aiConfidenceThreshold: q.aiConfidenceThreshold,
   };
 }

@@ -33,9 +33,13 @@ export default function DailyPage() {
   const [currentTimeWindow, setCurrentTimeWindow] = useState<string>(() =>
     typeof window !== 'undefined' ? getCurrentTimeWindow() : 'Mañana'
   );
-  // ── Estado para señal de avatar (fill_blank / choice) ─────────────────
+  // ── Estado para señal de avatar (fill_blank / choice) ─────────────────────
   const [signalValue, setSignalValue] = useState<string | null>(null);
   const [customText, setCustomText] = useState<string>('');
+  // ── Estado del importe manual ──────────────────────────────────────
+  // amountTouched: el usuario ha escrito explícitamente un valor (aunque sea 0)
+  // Sin esto, el campo vacío no es un 0 válido
+  const [amountTouched, setAmountTouched] = useState<boolean>(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const today = new Date().toISOString().split('T')[0];
 
@@ -93,8 +97,17 @@ export default function DailyPage() {
     }
   }, [phase, question]);
 
-  const parsedAmount = savedAmount ? parseFloat(savedAmount) : 0;
-  const hasAmount = parsedAmount > 0;
+  const parsedAmount = (() => {
+    if (!amountTouched || savedAmount === '') return null;
+    const n = parseFloat(savedAmount);
+    return isNaN(n) || n < 0 ? null : n;
+  })();
+
+  // El importe es válido si el usuario ha escrito explícitamente un número >= 0
+  // (incluyendo 0 cuando no ha ahorrado nada)
+  const hasValidAmount = parsedAmount !== null;
+  const savingAmount  = parsedAmount ?? 0;  // Para mostrar en el banner
+  const hasSaving     = hasValidAmount && parsedAmount! > 0;
 
   const handleConfirm = async () => {
     if (!question || !selectedGoalId) return;
@@ -104,8 +117,8 @@ export default function DailyPage() {
       ? `custom:${customText}`
       : signalValue ?? '';
     const answerKey = signalKey
-      ? (hasAmount ? `saved|${signalKey}` : `zero|${signalKey}`)
-      : (hasAmount ? 'saved' : 'zero');
+      ? (hasSaving ? `saved|${signalKey}` : `zero|${signalKey}`)
+      : (hasSaving ? 'saved' : 'zero');
     analytics.dailyAnswerSubmitted(today, question.questionId, answerKey, selectedGoalId, goals.find(g => g.id === selectedGoalId)?.isPrimary ?? false);
 
     const isFirstDecision = (() => {
@@ -122,7 +135,7 @@ export default function DailyPage() {
       answerKey,
       selectedGoalId,
       '30d',
-      hasAmount ? parsedAmount : undefined,
+      hasSaving ? parsedAmount! : undefined,
     );
     const dec = summary.daily.decisionId;
     setCompletedDecisionId(dec);
@@ -229,7 +242,10 @@ export default function DailyPage() {
               question={question.text}
               options={question.choiceOptions.map(o => ({ label: o.label, value: o.value }))}
               value={signalValue}
+              customText={customText}
               onSelect={setSignalValue}
+              onCustomTextChange={setCustomText}
+              allowOther={question.allowOther}
             />
           )}
 
@@ -240,8 +256,8 @@ export default function DailyPage() {
         </div>
 
         {/* Input de importe */}
-        <div className={`${styles.amountCard} ${hasAmount ? styles.amountCardActive : ''}`}>
-          <p className={`${styles.amountLabel} ${hasAmount ? styles.amountLabelActive : ''}`}>
+        <div className={`${styles.amountCard} ${hasValidAmount ? styles.amountCardActive : ''}`}>
+          <p className={`${styles.amountLabel} ${hasValidAmount ? styles.amountLabelActive : ''}`}>
             ¿Cuánto te has ahorrado?
           </p>
           <div className={styles.amountRow}>
@@ -253,21 +269,31 @@ export default function DailyPage() {
                 min="0"
                 step="0.5"
                 value={savedAmount}
-                onChange={(e) => setSavedAmount(e.target.value)}
+                onChange={(e) => {
+                  setSavedAmount(e.target.value);
+                  setAmountTouched(true);
+                }}
                 placeholder="0"
-                className={`${styles.amountInput} ${hasAmount ? styles.amountInputActive : ''}`}
+                className={`${styles.amountInput} ${hasValidAmount ? styles.amountInputActive : ''}`}
               />
-              <span className={`${styles.amountUnit} ${hasAmount ? styles.amountUnitActive : ''}`}>€</span>
+              <span className={`${styles.amountUnit} ${hasValidAmount ? styles.amountUnitActive : ''}`}>€</span>
             </div>
           </div>
-          <p className={styles.amountHint}>Si no ahorraste nada, deja 0</p>
+          <p className={styles.amountHint}>
+            {!amountTouched
+              ? 'Introduce un importe (0 si no has ahorrado nada)'
+              : parsedAmount === null
+              ? 'Introduce un número válido (mínimo 0)'
+              : 'Si no ahorraste nada, deja 0'
+            }
+          </p>
         </div>
 
         {/* Banner de ahorro */}
-        {hasAmount && (
+        {hasSaving && (
           <div className={styles.savingsBanner}>
             <p className={styles.savingsLabel}>¡Genial! Has ahorrado hoy</p>
-            <span className={styles.savingsAmount}>+{formatEUR(parsedAmount)}</span>
+            <span className={styles.savingsAmount}>+{formatEUR(savingAmount)}</span>
           </div>
         )}
 
@@ -290,10 +316,15 @@ export default function DailyPage() {
         {/* Botón confirmar */}
         <button
           onClick={handleConfirm}
-          disabled={!selectedGoalId}
-          className={`${styles.btnConfirm} ${hasAmount ? styles.btnConfirmSave : styles.btnConfirmZero}`}
+          disabled={!selectedGoalId || !hasValidAmount}
+          className={`${styles.btnConfirm} ${hasSaving ? styles.btnConfirmSave : styles.btnConfirmZero}`}
         >
-          {hasAmount ? `Registrar ahorro de ${formatEUR(parsedAmount)}` : 'Hoy no he ahorrado (0 €)'}
+          {!hasValidAmount
+            ? 'Introduce un importe para continuar'
+            : hasSaving
+            ? `Registrar ahorro de ${formatEUR(savingAmount)}`
+            : 'Hoy no he ahorrado (0 €)'
+          }
         </button>
 
         <p className={styles.hint}>

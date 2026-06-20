@@ -26,17 +26,28 @@ export type QuestionTone = 'motivador' | 'reflexivo' | 'preventivo' | 'celebrato
 export type QuestionFormat = 'amount' | 'fill_blank' | 'choice';
 
 export interface BlankOption {
-  label: string;       // Texto visible: "tranquilo", "social", etc.
-  value: string;       // ID interno
-  avatar: AvatarKey;   // Avatar al que suma puntos
-  weight: number;      // Peso de la señal (1-3)
+  label: string;    // Texto visible: "me apetece", "no quiero perderme el plan"…
+  value: string;    // ID interno
+  /**
+   * Scoring interno por opción. Cada clave es un avatar y el valor los puntos
+   * que suma. Permite scoring multi-avatar: { social: 2, impulsivo: 1 }.
+   * NUNCA se muestra al usuario.
+   */
+  scores: Partial<Record<AvatarKey, number>>;
+  /** Si true, esta opción abre un input de texto libre (solo para 'Otro') */
+  freeText?: boolean;
 }
 
 export interface ChoiceOption {
-  label: string;       // Texto de la opción completa
-  value: string;       // ID interno
-  avatar: AvatarKey;   // Avatar al que suma puntos
-  weight: number;      // Peso de la señal (1-3)
+  label: string;    // Texto completo de la opción
+  value: string;    // ID interno
+  /**
+   * Scoring interno por opción. Permite scoring multi-avatar.
+   * NUNCA se muestra al usuario.
+   */
+  scores: Partial<Record<AvatarKey, number>>;
+  /** Si true, esta opción abre un input de texto libre (solo para 'Otro') */
+  freeText?: boolean;
 }
 
 // ── Interface ────────────────────────────────────────────────────────────────
@@ -63,10 +74,10 @@ export interface DailyQuestion {
   bestTimeWindow:            string;
   /** Fase del mes: Inicio | Mitad | Final | Cualquiera */
   monthPhase:                string;
-  /** Avatar principal al que va dirigida */
-  targetAvatarPrimary:       AvatarKey | 'constructor';
-  /** Avatar secundario que también encaja */
-  targetAvatarSecondary:     AvatarKey | 'constructor' | '';
+  /** Avatar principal al que va dirigida (sin 'constructor') */
+  targetAvatarPrimary:       AvatarKey;
+  /** Avatar secundario que también encaja (vacío si no aplica) */
+  targetAvatarSecondary:     AvatarKey | '';
   /** Peso de scoring (1-3) */
   scenarioWeight:            number;
   /** Prioridad base para el scoring (1-10) */
@@ -79,6 +90,18 @@ export interface DailyQuestion {
   yearlyDelta:               number;
   /** Descripción corta del impacto */
   labelImpact:               string;
+
+  // ── Control de opción "Otro" y análisis IA ──────────────────────────────
+  /** Si la pregunta permite la opción "Otro" con texto libre */
+  allowOther?:               boolean;
+  /** Si la respuesta libre de "Otro" debe analizarse con IA */
+  otherRequiresAI?:          boolean;
+  /**
+   * Confianza mínima (0-1) requerida para que la IA sume puntos.
+   * Si la IA no supera este umbral, la respuesta libre no suma a ningún avatar.
+   * Default: 0.70
+   */
+  aiConfidenceThreshold?:    number;
 
   // ── Metadatos IA (auto-derivados) ──────────────────────────────────────
   /** Si la pregunta está activa (false = retirada sin eliminar) */
@@ -100,7 +123,7 @@ export interface DailyQuestion {
 function q(
   id: string, text: string, suggestedAmount: number,
   habitCategory: string, bestDays: string, bestTimeWindow: string, monthPhase: string,
-  ap: AvatarKey | 'constructor', as2: AvatarKey | 'constructor' | '',
+  ap: AvatarKey, as2: AvatarKey | '',
   scenarioWeight: number, priorityBase: number, cooldownDays: number,
   monthlyDelta: number, yearlyDelta: number, labelImpact: string,
 ): DailyQuestion {
@@ -326,26 +349,28 @@ const Q_SIN_SISTEMA: DailyQuestion[] = [
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 9. CONSTRUCTOR (transversal) — 15 preguntas
-//    Refuerzo positivo para usuarios con racha alta. Microahorros extra.
-//    Días: cualquiera. Momentos: mañana (motivación), domingo (celebración)
+// 9. CONSTRUCTOR — DESACTIVADO
+//    El avatar Constructor ha sido eliminado de la lógica funcional.
+//    Estas preguntas se mantienen en el código pero active: false para no
+//    perder los IDs históricos. NO aparecen en el motor de selección.
 // ═══════════════════════════════════════════════════════════════════════════════
 const Q_CONSTRUCTOR: DailyQuestion[] = [
-  q('Q_CT_01', 'Estás en racha. Si hoy has encontrado una forma de ahorrar algo extra, ¿cuánto?', 5, 'Microahorro', 'Cualquier día', 'Mañana', 'Cualquiera', 'constructor', '', 2, 7, 3, 10, 120, 'Los microahorros en racha aceleran el progreso'),
-  q('Q_CT_02', 'Llevas días seguidos ahorrando. ¿Hoy has hecho algo consciente que te haya ahorrado dinero?', 5, 'Conciencia', 'Cualquier día', 'Mañana', 'Cualquiera', 'constructor', '', 2, 7, 3, 10, 120, 'La conciencia diaria mantiene la racha viva'),
-  q('Q_CT_03', 'Es domingo. Si revisas la semana, ¿cuánto has ahorrado que antes se te hubiese escapado?', 10, 'Reflexión semanal', 'Domingo', 'Mañana', 'Cualquiera', 'constructor', '', 3, 8, 7, 20, 240, 'La revisión semanal celebra el progreso'),
-  q('Q_CT_04', 'Para mantener tu racha: ¿has hecho al menos una decisión de ahorro hoy? ¿Cuánto?', 3, 'Racha', 'Cualquier día', 'Noche', 'Cualquiera', 'constructor', '', 2, 7, 2, 6, 72, 'Cualquier cantidad mantiene tu racha viva'),
-  q('Q_CT_05', 'Es viernes. Si esta semana has ahorrado más de lo habitual, ¿cuánto extra has conseguido?', 10, 'Celebración', 'Viernes', 'Tarde', 'Cualquiera', 'constructor', '', 2, 7, 7, 15, 180, 'Celebrar los viernes el ahorro semanal motiva'),
-  q('Q_CT_06', 'Lunes de nuevo comienzo. Si miras atrás, ¿cuánto ahorraste la semana pasada?', 10, 'Revisión', 'Lunes', 'Mañana', 'Cualquiera', 'constructor', '', 2, 7, 7, 15, 180, 'Empezar lunes revisando refuerza el hábito'),
-  q('Q_CT_07', 'Tu objetivo se acerca. ¿Hoy quieres hacer un microahorro extra para acelerarlo? ¿Cuánto?', 5, 'Acelerar objetivo', 'Cualquier día', 'Mañana', 'Cualquiera', 'constructor', '', 3, 8, 5, 15, 180, 'Microahorros extra aceleran el objetivo'),
-  q('Q_CT_08', 'Si llevas una semana perfecta, ¿quieres premiarla con un ahorro especial? ¿Cuánto extra?', 10, 'Recompensa', 'Domingo', 'Mañana', 'Cualquiera', 'constructor', '', 2, 7, 7, 10, 120, 'La semana perfecta merece un extra'),
-  q('Q_CT_09', 'Hoy es un buen día para ser consciente. ¿Has evitado algún gasto que antes ni notarías? ¿Cuánto?', 5, 'Conciencia', 'Cualquier día', 'Tarde', 'Cualquiera', 'constructor', '', 2, 7, 3, 10, 120, 'La conciencia financiera es un superpoder'),
-  q('Q_CT_10', 'Mitad de semana. Si vas bien con tu ahorro semanal, ¿puedes añadir algo extra? ¿Cuánto?', 5, 'Microahorro', 'Miércoles', 'Mañana', 'Cualquiera', 'constructor', '', 2, 6, 7, 10, 120, 'El miércoles es el punto de control ideal'),
-  q('Q_CT_11', 'Ya no eres el mismo con el dinero. Si hoy has tomado una decisión financiera mejor, ¿cuánto te has ahorrado?', 8, 'Identidad', 'Cualquier día', 'Noche', 'Cualquiera', 'constructor', '', 2, 7, 4, 15, 180, 'Tu identidad de ahorrador crece con cada decisión'),
-  q('Q_CT_12', 'Fin de mes. Si comparas cómo gastabas antes vs ahora, ¿cuánto extra has ahorrado este mes?', 20, 'Revisión mensual', 'Cualquier día', 'Mañana', 'Final', 'constructor', '', 3, 9, 30, 30, 360, 'La comparación mensual muestra el progreso real'),
-  q('Q_CT_13', 'Si hoy le has contado a alguien tu progreso de ahorro y eso te ha motivado, ¿quieres añadir extra? ¿Cuánto?', 5, 'Social positivo', 'Sábado', 'Tarde', 'Cualquiera', 'constructor', '', 1, 5, 7, 5, 60, 'Compartir progreso genera accountability'),
-  q('Q_CT_14', 'Lunes. Si te pones un mini-objetivo de ahorro para esta semana, ¿cuánto quieres guardar?', 10, 'Mini-objetivo', 'Lunes', 'Mañana', 'Cualquiera', 'constructor', '', 3, 8, 7, 15, 180, 'Mini-objetivos semanales mantienen el enfoque'),
-  q('Q_CT_15', 'Si miras tu progreso total en la app, ¿quieres celebrarlo con un aporte extra? ¿Cuánto?', 10, 'Celebración', 'Cualquier día', 'Mañana', 'Cualquiera', 'constructor', '', 2, 7, 7, 10, 120, 'Celebrar el progreso refuerza el hábito'),
+  // Las preguntas Q_CT están marcadas con active:false — no entran en el motor
+  { ...q('Q_CT_01', 'Estás en racha. Si hoy has encontrado una forma de ahorrar algo extra, ¿cuánto?', 5, 'Microahorro', 'Cualquier día', 'Mañana', 'Cualquiera', 'comodo', '', 2, 7, 3, 10, 120, 'Los microahorros en racha aceleran el progreso'), active: false },
+  { ...q('Q_CT_02', 'Llevas días seguidos ahorrando. ¿Hoy has hecho algo consciente que te haya ahorrado dinero?', 5, 'Conciencia', 'Cualquier día', 'Mañana', 'Cualquiera', 'comodo', '', 2, 7, 3, 10, 120, 'La conciencia diaria mantiene la racha viva'), active: false },
+  { ...q('Q_CT_03', 'Es domingo. Si revisas la semana, ¿cuánto has ahorrado que antes se te hubiese escapado?', 10, 'Reflexión semanal', 'Domingo', 'Mañana', 'Cualquiera', 'comodo', '', 3, 8, 7, 20, 240, 'La revisión semanal celebra el progreso'), active: false },
+  { ...q('Q_CT_04', 'Para mantener tu racha: ¿has hecho al menos una decisión de ahorro hoy? ¿Cuánto?', 3, 'Racha', 'Cualquier día', 'Noche', 'Cualquiera', 'comodo', '', 2, 7, 2, 6, 72, 'Cualquier cantidad mantiene tu racha viva'), active: false },
+  { ...q('Q_CT_05', 'Es viernes. Si esta semana has ahorrado más de lo habitual, ¿cuánto extra has conseguido?', 10, 'Celebración', 'Viernes', 'Tarde', 'Cualquiera', 'comodo', '', 2, 7, 7, 15, 180, 'Celebrar los viernes el ahorro semanal motiva'), active: false },
+  { ...q('Q_CT_06', 'Lunes de nuevo comienzo. Si miras atrás, ¿cuánto ahorraste la semana pasada?', 10, 'Revisión', 'Lunes', 'Mañana', 'Cualquiera', 'comodo', '', 2, 7, 7, 15, 180, 'Empezar lunes revisando refuerza el hábito'), active: false },
+  { ...q('Q_CT_07', 'Tu objetivo se acerca. ¿Hoy quieres hacer un microahorro extra para acelerarlo? ¿Cuánto?', 5, 'Acelerar objetivo', 'Cualquier día', 'Mañana', 'Cualquiera', 'comodo', '', 3, 8, 5, 15, 180, 'Microahorros extra aceleran el objetivo'), active: false },
+  { ...q('Q_CT_08', 'Si llevas una semana perfecta, ¿quieres premiarla con un ahorro especial? ¿Cuánto extra?', 10, 'Recompensa', 'Domingo', 'Mañana', 'Cualquiera', 'comodo', '', 2, 7, 7, 10, 120, 'La semana perfecta merece un extra'), active: false },
+  { ...q('Q_CT_09', 'Hoy es un buen día para ser consciente. ¿Has evitado algún gasto que antes ni notarías? ¿Cuánto?', 5, 'Conciencia', 'Cualquier día', 'Tarde', 'Cualquiera', 'comodo', '', 2, 7, 3, 10, 120, 'La conciencia financiera es un superpoder'), active: false },
+  { ...q('Q_CT_10', 'Mitad de semana. Si vas bien con tu ahorro semanal, ¿puedes añadir algo extra? ¿Cuánto?', 5, 'Microahorro', 'Miércoles', 'Mañana', 'Cualquiera', 'comodo', '', 2, 6, 7, 10, 120, 'El miércoles es el punto de control ideal'), active: false },
+  { ...q('Q_CT_11', 'Ya no eres el mismo con el dinero. Si hoy has tomado una decisión financiera mejor, ¿cuánto te has ahorrado?', 8, 'Identidad', 'Cualquier día', 'Noche', 'Cualquiera', 'comodo', '', 2, 7, 4, 15, 180, 'Tu identidad de ahorrador crece con cada decisión'), active: false },
+  { ...q('Q_CT_12', 'Fin de mes. Si comparas cómo gastabas antes vs ahora, ¿cuánto extra has ahorrado este mes?', 20, 'Revisión mensual', 'Cualquier día', 'Mañana', 'Final', 'comodo', '', 3, 9, 30, 30, 360, 'La comparación mensual muestra el progreso real'), active: false },
+  { ...q('Q_CT_13', 'Si hoy le has contado a alguien tu progreso de ahorro y eso te ha motivado, ¿quieres añadir extra? ¿Cuánto?', 5, 'Social positivo', 'Sábado', 'Tarde', 'Cualquiera', 'comodo', '', 1, 5, 7, 5, 60, 'Compartir progreso genera accountability'), active: false },
+  { ...q('Q_CT_14', 'Lunes. Si te pones un mini-objetivo de ahorro para esta semana, ¿cuánto quieres guardar?', 10, 'Mini-objetivo', 'Lunes', 'Mañana', 'Cualquiera', 'comodo', '', 3, 8, 7, 15, 180, 'Mini-objetivos semanales mantienen el enfoque'), active: false },
+  { ...q('Q_CT_15', 'Si miras tu progreso total en la app, ¿quieres celebrarlo con un aporte extra? ¿Cuánto?', 10, 'Celebración', 'Cualquier día', 'Mañana', 'Cualquiera', 'comodo', '', 2, 7, 7, 10, 120, 'Celebrar el progreso refuerza el hábito'), active: false },
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -359,9 +384,9 @@ const Q_MIXED: DailyQuestion[] = [
     format: 'fill_blank',
     text: 'Cuando elijo un plan, suelo priorizar algo más ____.',
     blankOptions: [
-      { label: 'cómodo', value: 'comodo', avatar: 'comodo', weight: 2 },
-      { label: 'diferente', value: 'diferente', avatar: 'desordenado', weight: 2 },
-      { label: 'emocionante', value: 'emocionante', avatar: 'impulsivo', weight: 2 },
+      { label: 'cómodo', value: 'comodo', scores: { comodo: 2 } },
+      { label: 'diferente', value: 'diferente', scores: { desordenado: 2 } },
+      { label: 'emocionante', value: 'emocionante', scores: { impulsivo: 2 } },
     ],
     suggestedAmount: 0,
     habitCategory: 'Preferencia personal',
@@ -388,9 +413,9 @@ const Q_MIXED: DailyQuestion[] = [
     format: 'fill_blank',
     text: 'En un grupo, normalmente me sale ser más ____.',
     blankOptions: [
-      { label: 'observador', value: 'observador', avatar: 'comodo', weight: 2 },
-      { label: 'protagonista', value: 'protagonista', avatar: 'social', weight: 2 },
-      { label: 'organizador', value: 'organizador', avatar: 'desordenado', weight: 2 },
+      { label: 'observador', value: 'observador', scores: { comodo: 2 } },
+      { label: 'protagonista', value: 'protagonista', scores: { social: 2 } },
+      { label: 'organizador', value: 'organizador', scores: { desordenado: 2 } },
     ],
     suggestedAmount: 0,
     habitCategory: 'Rol social',
@@ -417,9 +442,9 @@ const Q_MIXED: DailyQuestion[] = [
     format: 'fill_blank',
     text: 'Si tengo que decidir rápido, me guío más por ____.',
     blankOptions: [
-      { label: 'lo que siento', value: 'sentimiento', avatar: 'impulsivo', weight: 2 },
-      { label: 'lo que tiene sentido', value: 'logica', avatar: 'desordenado', weight: 2 },
-      { label: 'lo que me recomiendan', value: 'recomendacion', avatar: 'social', weight: 2 },
+      { label: 'lo que siento', value: 'sentimiento', scores: { impulsivo: 2 } },
+      { label: 'lo que tiene sentido', value: 'logica', scores: { desordenado: 2 } },
+      { label: 'lo que me recomiendan', value: 'recomendacion', scores: { social: 2 } },
     ],
     suggestedAmount: 0,
     habitCategory: 'Toma de decisiones',
@@ -446,9 +471,9 @@ const Q_MIXED: DailyQuestion[] = [
     format: 'fill_blank',
     text: 'Una experiencia ideal para mí tendría que ser ____.',
     blankOptions: [
-      { label: 'relajante', value: 'relajante', avatar: 'comodo', weight: 2 },
-      { label: 'intensa', value: 'intensa', avatar: 'impulsivo', weight: 2 },
-      { label: 'memorable', value: 'memorable', avatar: 'social', weight: 2 },
+      { label: 'relajante', value: 'relajante', scores: { comodo: 2 } },
+      { label: 'intensa', value: 'intensa', scores: { impulsivo: 2 } },
+      { label: 'memorable', value: 'memorable', scores: { social: 2 } },
     ],
     suggestedAmount: 0,
     habitCategory: 'Preferencia experiencial',
@@ -475,9 +500,9 @@ const Q_MIXED: DailyQuestion[] = [
     format: 'fill_blank',
     text: 'Cuando veo algo que me gusta en una tienda online, lo primero que hago es ____.',
     blankOptions: [
-      { label: 'comprarlo', value: 'comprar', avatar: 'impulsivo', weight: 3 },
-      { label: 'añadirlo al carrito y pensarlo', value: 'pensar', avatar: 'comodo', weight: 2 },
-      { label: 'preguntarle a alguien', value: 'preguntar', avatar: 'social', weight: 2 },
+      { label: 'comprarlo', value: 'comprar', scores: { impulsivo: 3 } },
+      { label: 'añadirlo al carrito y pensarlo', value: 'pensar', scores: { comodo: 2 } },
+      { label: 'preguntarle a alguien', value: 'preguntar', scores: { social: 2 } },
     ],
     suggestedAmount: 15,
     habitCategory: 'Compra online',
@@ -504,9 +529,9 @@ const Q_MIXED: DailyQuestion[] = [
     format: 'fill_blank',
     text: 'Mi relación con el dinero la definiría como más bien ____.',
     blankOptions: [
-      { label: 'despreocupada', value: 'despreocupada', avatar: 'desordenado', weight: 3 },
-      { label: 'emocional', value: 'emocional', avatar: 'impulsivo', weight: 2 },
-      { label: 'práctica', value: 'practica', avatar: 'comodo', weight: 2 },
+      { label: 'despreocupada', value: 'despreocupada', scores: { desordenado: 3 } },
+      { label: 'emocional', value: 'emocional', scores: { impulsivo: 2 } },
+      { label: 'práctica', value: 'practica', scores: { comodo: 2 } },
     ],
     suggestedAmount: 0,
     habitCategory: 'Autoconocimiento financiero',
@@ -535,10 +560,10 @@ const Q_MIXED: DailyQuestion[] = [
     format: 'choice',
     text: '¿Qué pesa más para ti cuando eliges una experiencia?',
     choiceOptions: [
-      { label: 'Sentirme cómodo y seguro', value: 'comodidad', avatar: 'comodo', weight: 2 },
-      { label: 'Descubrir algo nuevo', value: 'novedad', avatar: 'impulsivo', weight: 2 },
-      { label: 'Compartirlo con alguien', value: 'compartir', avatar: 'social', weight: 2 },
-      { label: 'Que sea sencillo y sin líos', value: 'sencillo', avatar: 'desordenado', weight: 2 },
+      { label: 'Sentirme cómodo y seguro', value: 'comodidad', scores: { comodo: 2 } },
+      { label: 'Descubrir algo nuevo', value: 'novedad', scores: { impulsivo: 2 } },
+      { label: 'Compartirlo con alguien', value: 'compartir', scores: { social: 2 } },
+      { label: 'Que sea sencillo y sin líos', value: 'sencillo', scores: { desordenado: 2 } },
     ],
     suggestedAmount: 0,
     habitCategory: 'Preferencia personal',
@@ -565,10 +590,10 @@ const Q_MIXED: DailyQuestion[] = [
     format: 'choice',
     text: '¿Prefieres planes que sabes que van a salir bien o planes con más sorpresa?',
     choiceOptions: [
-      { label: 'Planes seguros, sin riesgo', value: 'seguro', avatar: 'comodo', weight: 2 },
-      { label: 'Un poco de sorpresa está bien', value: 'algo_sorpresa', avatar: 'social', weight: 2 },
-      { label: 'Cuanto más improviso, mejor', value: 'improvisar', avatar: 'impulsivo', weight: 2 },
-      { label: 'Me da igual, lo que surja', value: 'lo_que_surja', avatar: 'desordenado', weight: 2 },
+      { label: 'Planes seguros, sin riesgo', value: 'seguro', scores: { comodo: 2 } },
+      { label: 'Un poco de sorpresa está bien', value: 'algo_sorpresa', scores: { social: 2 } },
+      { label: 'Cuanto más improviso, mejor', value: 'improvisar', scores: { impulsivo: 2 } },
+      { label: 'Me da igual, lo que surja', value: 'lo_que_surja', scores: { desordenado: 2 } },
     ],
     suggestedAmount: 0,
     habitCategory: 'Estilo de planificación',
@@ -595,10 +620,10 @@ const Q_MIXED: DailyQuestion[] = [
     format: 'choice',
     text: 'Cuando algo no encaja contigo, ¿qué haces?',
     choiceOptions: [
-      { label: 'Lo descarto rápido y busco otra cosa', value: 'descartar', avatar: 'impulsivo', weight: 2 },
-      { label: 'Intento adaptarme', value: 'adaptar', avatar: 'comodo', weight: 2 },
-      { label: 'Pregunto a otros qué harían', value: 'consultar', avatar: 'social', weight: 2 },
-      { label: 'Ni lo pienso mucho, sigo adelante', value: 'pasar', avatar: 'desordenado', weight: 2 },
+      { label: 'Lo descarto rápido y busco otra cosa', value: 'descartar', scores: { impulsivo: 2 } },
+      { label: 'Intento adaptarme', value: 'adaptar', scores: { comodo: 2 } },
+      { label: 'Pregunto a otros qué harían', value: 'consultar', scores: { social: 2 } },
+      { label: 'Ni lo pienso mucho, sigo adelante', value: 'pasar', scores: { desordenado: 2 } },
     ],
     suggestedAmount: 0,
     habitCategory: 'Reacción ante desajuste',
@@ -625,10 +650,10 @@ const Q_MIXED: DailyQuestion[] = [
     format: 'choice',
     text: '¿Qué te cuesta más a la hora de controlar tus gastos?',
     choiceOptions: [
-      { label: 'Renunciar a la comodidad', value: 'comodidad', avatar: 'comodo', weight: 3 },
-      { label: 'Decir que no a planes con gente', value: 'planes', avatar: 'social', weight: 3 },
-      { label: 'Resistir cuando algo me apetece mucho', value: 'impulso', avatar: 'impulsivo', weight: 3 },
-      { label: 'Saber en qué me lo gasto realmente', value: 'visibilidad', avatar: 'desordenado', weight: 3 },
+      { label: 'Renunciar a la comodidad', value: 'comodidad', scores: { comodo: 3 } },
+      { label: 'Decir que no a planes con gente', value: 'planes', scores: { social: 3 } },
+      { label: 'Resistir cuando algo me apetece mucho', value: 'impulso', scores: { impulsivo: 3 } },
+      { label: 'Saber en qué me lo gasto realmente', value: 'visibilidad', scores: { desordenado: 3 } },
     ],
     suggestedAmount: 10,
     habitCategory: 'Dificultad principal',
@@ -655,10 +680,10 @@ const Q_MIXED: DailyQuestion[] = [
     format: 'choice',
     text: '¿Cómo sueles sentirte después de un gasto que no tenías planeado?',
     choiceOptions: [
-      { label: 'Satisfecho, me lo merecía', value: 'satisfecho', avatar: 'comodo', weight: 2 },
-      { label: 'Culpable, no debería haberlo hecho', value: 'culpable', avatar: 'impulsivo', weight: 3 },
-      { label: 'Normal, es parte de vivir', value: 'normal', avatar: 'desordenado', weight: 2 },
-      { label: 'Depende de si estaba con gente', value: 'depende_gente', avatar: 'social', weight: 2 },
+      { label: 'Satisfecho, me lo merecía', value: 'satisfecho', scores: { comodo: 2 } },
+      { label: 'Culpable, no debería haberlo hecho', value: 'culpable', scores: { impulsivo: 3 } },
+      { label: 'Normal, es parte de vivir', value: 'normal', scores: { desordenado: 2 } },
+      { label: 'Depende de si estaba con gente', value: 'depende_gente', scores: { social: 2 } },
     ],
     suggestedAmount: 0,
     habitCategory: 'Emoción post-gasto',
@@ -685,10 +710,10 @@ const Q_MIXED: DailyQuestion[] = [
     format: 'choice',
     text: 'Si te llega una notificación de oferta flash (-40%), ¿qué haces?',
     choiceOptions: [
-      { label: 'La miro y compro si me gusta', value: 'compro', avatar: 'impulsivo', weight: 3 },
-      { label: 'La ignoro, no necesito nada', value: 'ignoro', avatar: 'comodo', weight: 2 },
-      { label: 'Se la mando a alguien por si le interesa', value: 'comparto', avatar: 'social', weight: 2 },
-      { label: 'Ni la abro', value: 'ni_abro', avatar: 'desordenado', weight: 1 },
+      { label: 'La miro y compro si me gusta', value: 'compro', scores: { impulsivo: 3 } },
+      { label: 'La ignoro, no necesito nada', value: 'ignoro', scores: { comodo: 2 } },
+      { label: 'Se la mando a alguien por si le interesa', value: 'comparto', scores: { social: 2 } },
+      { label: 'Ni la abro', value: 'ni_abro', scores: { desordenado: 1 } },
     ],
     suggestedAmount: 20,
     habitCategory: 'Reacción a ofertas',
@@ -715,6 +740,11 @@ const Q_MIXED: DailyQuestion[] = [
 // ═══════════════════════════════════════════════════════════════════════════════
 // Banco completo y helpers
 // ═══════════════════════════════════════════════════════════════════════════════
+/**
+ * Banco completo de preguntas.
+ * Las preguntas con active:false (Q_CONSTRUCTOR) se incluyen por integridad
+ * de IDs históricos pero el motor las filtra automáticamente.
+ */
 export const DAILY_QUESTIONS_BANK: DailyQuestion[] = [
   ...Q_CONVENIENCIA,
   ...Q_IMPROVISADOR,
@@ -724,9 +754,13 @@ export const DAILY_QUESTIONS_BANK: DailyQuestion[] = [
   ...Q_CAZADOR,
   ...Q_MICROFUGAS,
   ...Q_SIN_SISTEMA,
-  ...Q_CONSTRUCTOR,
+  ...Q_CONSTRUCTOR,  // active:false — no entra en el motor
   ...Q_MIXED,
 ];
+
+/** Banco activo: solo preguntas con active:true */
+export const ACTIVE_QUESTIONS_BANK: DailyQuestion[] =
+  DAILY_QUESTIONS_BANK.filter(q => q.active);
 
 /** Buscar una pregunta por ID */
 export function getQuestionById(id: string): DailyQuestion | undefined {

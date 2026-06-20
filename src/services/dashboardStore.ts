@@ -91,6 +91,12 @@ export type DailyQuestion = {
   yearlyDelta?: number;
   labelImpact?: string;
   tags?: string[];
+  /** Si la pregunta permite la opción "Otro" con texto libre */
+  allowOther?: boolean;
+  /** Si la respuesta libre de "Otro" debe analizarse con IA */
+  otherRequiresAI?: boolean;
+  /** Confianza mínima (0-1) requerida para que la IA sume puntos. Default: 0.70 */
+  aiConfidenceThreshold?: number;
 };
 
 // ─── Avatar de usuario (perfil de comportamiento) ────────────────────────────
@@ -273,7 +279,7 @@ export function getTodayQuestion(): DailyQuestion {
 
   // ── Usar motor contextual del banco de 135 preguntas ─────────────────────
   const profile: UserProfile = {
-    avatar: userAvatar as AvatarKey | 'constructor' | null,
+    avatar: userAvatar as AvatarKey | null,
     avatarScores,
     streak,
   };
@@ -375,7 +381,7 @@ export function getAlternativeQuestion(currentQuestionId: string): DailyQuestion
   } catch { /* fallthrough */ }
 
   const profile: UserProfile = {
-    avatar: userAvatar as AvatarKey | 'constructor' | null,
+    avatar: userAvatar as AvatarKey | null,
     avatarScores,
     streak,
   };
@@ -1361,8 +1367,13 @@ export function storeSubmitDecision(
       ];
       const matched = allOptions.find(o => o.value === signalKey);
 
-      if (matched) {
-        accumulateAvatarSignal(matched.avatar as AvatarKey, matched.weight);
+      if (matched && matched.scores) {
+        // Nueva estructura: scores es un mapa avatar → puntos (multi-avatar)
+        for (const [avatar, points] of Object.entries(matched.scores) as [AvatarKey, number][]) {
+          if (points > 0) {
+            accumulateAvatarSignal(avatar, points);
+          }
+        }
       }
     } else if (signalKey?.startsWith('custom:')) {
       // Respuesta libre: guardar para análisis asíncrono por IA
