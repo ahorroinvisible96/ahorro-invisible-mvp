@@ -7,9 +7,12 @@
 .mainContent {
   margin-left: 0;
   min-height: 100vh;
+  min-height: 100dvh; /* Altura dinámica: cubre el chrome de iOS correctamente */
   /* Espacio inferior para el BottomNav fijo en móvil */
   padding-bottom: calc(100px + env(safe-area-inset-bottom));
   background-color: var(--color-background-main);
+  /* Rellena el área de overscroll (bounce) con el mismo color del fondo */
+  overscroll-behavior-y: none;
   position: relative;
   flex: 1;
   /* Evitar scroll horizontal */

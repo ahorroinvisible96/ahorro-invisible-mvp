@@ -195,10 +195,22 @@
   --auth-link-color: #a78bfa;
 }
 
+/* ── Fijar fondo en html para evitar el "overscroll bleed" en iOS ──
+   En iPhone, cuando se arrastra más allá del límite de scroll, el sistema
+   muestra el fondo del elemento raíz (<html>). Sin esta regla aparece un
+   fondo claro o distinto al del diseño. ── */
+html {
+  background-color: var(--background);
+  /* Fuerza el color de relleno del overscroll en Safari/iOS */
+  overscroll-behavior-y: none;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-app);
+  /* Igual que html: previene el bounce que revela el trasfondo */
+  overscroll-behavior-y: none;
 }
 
 /* ── Modo claro: fondos sólidos en toda la jerarquía ── */
