@@ -42,7 +42,6 @@ function scoreQuestionForDecision(
   // Coincidencia con avatar target
   for (const av of decision.target_avatar) {
     if (q.targetAvatarPrimary === av) score += 40;
-    if (q.targetAvatarSecondary === av) score += 25;
   }
 
   // Coincidencia con categoría

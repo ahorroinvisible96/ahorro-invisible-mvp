@@ -46,7 +46,6 @@ function generateCSV() {
     q.bestTimeWindow,
     q.monthPhase,
     q.targetAvatarPrimary,
-    q.targetAvatarSecondary,
     q.scenarioWeight,
     q.priorityBase,
     q.cooldownDays,

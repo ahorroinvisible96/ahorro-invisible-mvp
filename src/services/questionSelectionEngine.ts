@@ -166,14 +166,16 @@ function matchesMonthPhase(questionPhase: string, contextPhase: TemporalContext[
  * basándose en el perfil del usuario y el contexto temporal.
  *
  * Pesos de scoring:
- *   +40  — Avatar primario coincide con el del usuario
- *   +25  — Avatar secundario coincide
+ *   +40  — Avatar primario coincide con el avatar target seleccionado
  *   +20  — Día de la semana encaja con bestDays
  *   +15  — Franja horaria encaja con bestTimeWindow
  *   +10  — Fase del mes encaja con monthPhase
  *   +N   — priorityBase de la pregunta (0-10)
- *   +N   — scenarioWeight de la pregunta (0-3)
- *   +5   — Constructor bonus (racha >= 7)
+ *   +N   — scenarioWeight × 2
+ *
+ * No existe bonus por avatar secundario. La selección de avatar
+ * se gestiona exclusivamente mediante selectTargetAvatar() y los
+ * avatarScores acumulados del usuario.
  */
 export function scoreQuestions(
   profile: UserProfile,
@@ -182,10 +184,9 @@ export function scoreQuestions(
   return getActiveBank().map(q => {
     let score = 0;
 
-    // ── 1. Perfil del usuario ──────────────────────────────────────────────────
+    // ── 1. Perfil del usuario (solo avatar primario) ───────────────────────────
     if (profile.avatar) {
       if (q.targetAvatarPrimary === profile.avatar) score += 40;
-      if (q.targetAvatarSecondary === profile.avatar) score += 25;
     }
 
     // ── 2. Día de la semana ───────────────────────────────────────────────────
@@ -302,14 +303,9 @@ export function selectQuestion(
   const scored = pool.map(q => {
     let score = 0;
 
-    // ── 1. Perfil del usuario ──────────────────────────────────────────────────
+    // ── 1. Perfil del usuario (solo avatar primario) ───────────────────────────
     if (profile.avatar) {
-      if (q.targetAvatarPrimary === profile.avatar) {
-        score += 40;
-      }
-      if (q.targetAvatarSecondary === profile.avatar) {
-        score += 25;
-      }
+      if (q.targetAvatarPrimary === profile.avatar) score += 40;
     }
 
     // ── 2. Día de la semana ──────────────────────────────────────────────
@@ -379,11 +375,10 @@ export function selectAlternativeQuestion(
 
   const scored = pool.map(q => {
     let score = 0;
+    // Solo avatar primario — sin bonus por avatar secundario
     if (profile.avatar) {
       if (q.targetAvatarPrimary === profile.avatar) score += 40;
-      if (q.targetAvatarSecondary === profile.avatar) score += 25;
     }
-    // Constructor eliminado: sin bonus por racha
     if (matchesBestDays(q.bestDays, ctx)) score += 20;
     if (matchesTimeWindow(q.bestTimeWindow, ctx.timeWindow)) score += 15;
     if (matchesMonthPhase(q.monthPhase, ctx.monthPhase)) score += 10;

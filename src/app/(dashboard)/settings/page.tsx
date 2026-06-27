@@ -92,7 +92,7 @@ export default function SettingsPage() {
 
     const rows = DAILY_QUESTIONS_BANK.map(q => [
       q.id, q.text, q.suggestedAmount, q.habitCategory, q.bestDays,
-      q.bestTimeWindow, q.monthPhase, q.targetAvatarPrimary, q.targetAvatarSecondary,
+      q.bestTimeWindow, q.monthPhase, q.targetAvatarPrimary,
       q.scenarioWeight,
       q.priorityBase, q.cooldownDays, q.monthlyDelta, q.yearlyDelta,
       q.labelImpact, q.intent, q.habit_principle, q.tone, q.difficulty
