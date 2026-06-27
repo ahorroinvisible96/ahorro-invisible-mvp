@@ -18,7 +18,6 @@ import {
   type DailyQuestion,
   type QuestionFormat,
   type BlankOption,
-  type ChoiceOption,
 } from './dailyQuestionsBank';
 import { PILOT_QUESTIONS_BANK } from './questionsBankPilot';
 import { USE_PILOT_BANK } from '@/lib/constants';
@@ -26,8 +25,8 @@ import type { AvatarKey } from './profilingService';
 
 /**
  * Devuelve el banco activo según la configuración:
- * - USE_PILOT_BANK=true → banco piloto de 18 preguntas
- * - DEFAULT → banco activo completo (135+ preguntas, sin Constructor)
+ * - USE_PILOT_BANK=true → banco piloto
+ * - DEFAULT → banco activo completo (132 preguntas: 120 amount + 12 fill_blank)
  */
 function getActiveBank(): DailyQuestion[] {
   return USE_PILOT_BANK ? PILOT_QUESTIONS_BANK : ACTIVE_QUESTIONS_BANK;
@@ -454,7 +453,6 @@ export function toDashboardQuestion(q: DailyQuestion): {
   text: string;
   format: QuestionFormat;
   blankOptions?: BlankOption[];
-  choiceOptions?: ChoiceOption[];
   tags: string[];
   allowOther?: boolean;
   otherRequiresAI?: boolean;
@@ -465,7 +463,6 @@ export function toDashboardQuestion(q: DailyQuestion): {
     text: q.text,
     format: q.format,
     blankOptions: q.blankOptions,
-    choiceOptions: q.choiceOptions,
     tags: [q.habitCategory, q.targetAvatarPrimary].filter(Boolean),
     allowOther: q.allowOther,
     otherRequiresAI: q.otherRequiresAI,

@@ -13,7 +13,6 @@ import { Button } from '@/components/ui/Button/Button';
 import { Badge } from '@/components/ui/Badge/Badge';
 import { useToast } from '@/components/ui/Toast/Toast';
 import { FillBlankInput } from '@/components/daily/FillBlankInput/FillBlankInput';
-import { ChoiceQuestion } from '@/components/daily/ChoiceQuestion/ChoiceQuestion';
 
 // ── Modal de ahorro extra ────────────────────────────────────────────────────
 function ExtraSavingModal({
@@ -338,18 +337,6 @@ export function DailyDecisionWidget({
                     customText={customText}
                     onSelect={setSignalValue}
                     onCustomTextChange={setCustomText}
-                    disabled={submitting || confirmed}
-                  />
-                </div>
-              )}
-              {/* Formato: choice — opciones completas */}
-              {todayQuestion.format === 'choice' && todayQuestion.choiceOptions && (
-                <div style={{ flex: 1 }}>
-                  <ChoiceQuestion
-                    question={todayQuestion.text}
-                    options={todayQuestion.choiceOptions.map(o => ({ label: o.label, value: o.value }))}
-                    value={signalValue}
-                    onSelect={setSignalValue}
                     disabled={submitting || confirmed}
                   />
                 </div>

@@ -13,7 +13,6 @@ import {
 import { pushLocalDataToSupabase, syncDecisionToSupabase, syncGoalToSupabase } from "@/services/syncService";
 import type { Goal } from "@/types/Dashboard";
 import { FillBlankInput } from "@/components/daily/FillBlankInput/FillBlankInput";
-import { ChoiceQuestion } from "@/components/daily/ChoiceQuestion/ChoiceQuestion";
 import styles from "./Daily.module.css";
 
 type Phase = 'loading' | 'no-goals' | 'completed' | 'pending' | 'confirming' | 'error';
@@ -33,7 +32,7 @@ export default function DailyPage() {
   const [currentTimeWindow, setCurrentTimeWindow] = useState<string>(() =>
     typeof window !== 'undefined' ? getCurrentTimeWindow() : 'Mañana'
   );
-  // ── Estado para señal de avatar (fill_blank / choice) ─────────────────────
+  // ── Estado para señal de avatar (fill_blank) ─────────────────────────────────
   const [signalValue, setSignalValue] = useState<string | null>(null);
   const [customText, setCustomText] = useState<string>('');
   // ── Estado del importe manual ──────────────────────────────────────
@@ -233,19 +232,6 @@ export default function DailyPage() {
               customText={customText}
               onSelect={setSignalValue}
               onCustomTextChange={setCustomText}
-            />
-          )}
-
-          {/* Formato: choice */}
-          {question.format === 'choice' && question.choiceOptions && (
-            <ChoiceQuestion
-              question={question.text}
-              options={question.choiceOptions.map(o => ({ label: o.label, value: o.value }))}
-              value={signalValue}
-              customText={customText}
-              onSelect={setSignalValue}
-              onCustomTextChange={setCustomText}
-              allowOther={question.allowOther}
             />
           )}
 

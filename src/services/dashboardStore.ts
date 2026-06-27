@@ -18,7 +18,7 @@ import {
 } from './questionSelectionEngine';
 import type { UserProfile } from './questionSelectionEngine';
 import { getQuestionById } from './dailyQuestionsBank';
-import type { QuestionFormat, BlankOption, ChoiceOption } from './dailyQuestionsBank';
+import type { QuestionFormat, BlankOption } from './dailyQuestionsBank';
 import type { AvatarKey } from './profilingService';
 import { STORAGE_KEY } from '@/lib/constants';
 
@@ -85,7 +85,6 @@ export type DailyQuestion = {
   text: string;
   format?: QuestionFormat;
   blankOptions?: BlankOption[];
-  choiceOptions?: ChoiceOption[];
   suggestedAmount?: number;
   monthlyDelta?: number;
   yearlyDelta?: number;
@@ -1360,10 +1359,9 @@ export function storeSubmitDecision(
     const bankQ = getQuestionById(questionId);
 
     if (bankQ && signalKey && !signalKey.startsWith('custom:')) {
-      // Respuesta cerrada: buscar en blankOptions o choiceOptions
+      // Respuesta cerrada: buscar en blankOptions
       const allOptions = [
         ...(bankQ.blankOptions ?? []),
-        ...(bankQ.choiceOptions ?? []),
       ];
       const matched = allOptions.find(o => o.value === signalKey);
 

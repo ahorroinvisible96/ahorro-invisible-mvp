@@ -33,7 +33,7 @@ export interface MatrixSlot {
 // ── Constantes ─────────────────────────────────────────────────────────────
 
 export const DAYS: DayName[] = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-export const AVATARS: (AvatarKey | 'constructor')[] = ['comodo', 'social', 'impulsivo', 'desordenado'];
+export const AVATARS: AvatarKey[] = ['comodo', 'social', 'impulsivo', 'desordenado'];
 export const TIME_SLOTS: TimeSlot4[] = ['Madrugada', 'Mañana', 'Tarde', 'Noche'];
 
 // ── Matriz base 7×4×4 ─────────────────────────────────────────────────────
@@ -91,7 +91,7 @@ const MATRIX: Record<DayName, Record<string, Record<TimeSlot4, MatrixSlot>>> = {
     },
     social: {
       Madrugada: { questionId: 'Q_FS_13', rationale: 'Plan tranquilo por la noche' },
-      Mañana:    { questionId: 'Q_CT_02', rationale: 'Conciencia diaria' },
+      Mañana:    { questionId: 'Q_PA_11', rationale: 'Martes: proponer plan más barato que el grupo' },
       Tarde:     { questionId: 'Q_FS_03', rationale: 'Proponer plan barato' },
       Noche:     { questionId: 'Q_FS_11', rationale: 'Sitio más barato' },
     },
@@ -120,8 +120,8 @@ const MATRIX: Record<DayName, Record<string, Record<TimeSlot4, MatrixSlot>>> = {
       Noche:     { questionId: 'Q_CI_06', rationale: 'Revisar nevera antes de delivery' },
     },
     social: {
-      Madrugada: { questionId: 'Q_CT_04', rationale: 'Mantener racha nocturna' },
-      Mañana:    { questionId: 'Q_CT_10', rationale: 'Miércoles: punto de control semanal' },
+      Madrugada: { questionId: 'Q_PA_09', rationale: 'Noche: pedir la cuenta antes para evitar rondas extra' },
+      Mañana:    { questionId: 'Q_FS_08', rationale: 'Miércoles: salir solo con efectivo limitado' },
       Tarde:     { questionId: 'Q_FS_13', rationale: 'Plan tranquilo de mitad de semana' },
       Noche:     { questionId: 'Q_PA_13', rationale: 'Compartir platos si sales' },
     },
@@ -150,8 +150,8 @@ const MATRIX: Record<DayName, Record<string, Record<TimeSlot4, MatrixSlot>>> = {
       Noche:     { questionId: 'Q_IM_08', rationale: 'Parar y cocinar vs pedir' },
     },
     social: {
-      Madrugada: { questionId: 'Q_CT_11', rationale: 'Identidad de ahorrador' },
-      Mañana:    { questionId: 'Q_CT_06', rationale: 'Revisión semanal' },
+      Madrugada: { questionId: 'Q_PA_10', rationale: 'Noche: tomar algo en casa antes de salir' },
+      Mañana:    { questionId: 'Q_FS_10', rationale: 'Jueves: post-cobro, evitar gasto social inmediato' },
       Tarde:     { questionId: 'Q_FS_01', rationale: 'Pre-finde: plan caro → proponer más barato' },
       Noche:     { questionId: 'Q_FS_06', rationale: 'Decir no a plan que no apetece' },
     },
@@ -181,7 +181,7 @@ const MATRIX: Record<DayName, Record<string, Record<TimeSlot4, MatrixSlot>>> = {
     },
     social: {
       Madrugada: { questionId: 'Q_PA_05', rationale: 'Tope de gasto antes de salir' },
-      Mañana:    { questionId: 'Q_CT_05', rationale: 'Celebrar ahorro semanal' },
+      Mañana:    { questionId: 'Q_FS_02', rationale: 'Viernes: cenar en casa antes de salir' },
       Tarde:     { questionId: 'Q_FS_02', rationale: 'Cenar en casa antes de salir' },
       Noche:     { questionId: 'Q_FS_12', rationale: 'Irse a la hora prevista' },
     },
@@ -304,17 +304,17 @@ export function getMatrixBaseQuestion(
 
   const dayMatrix = MATRIX[day];
   if (!dayMatrix) {
-    return { questionId: 'Q_CT_01', rationale: 'fallback: día no encontrado' };
+    return { questionId: 'Q_MF_15', rationale: 'fallback: día no encontrado' };
   }
 
   const avatarMatrix = dayMatrix[effectiveAvatar];
   if (!avatarMatrix) {
     // Si el avatar no está en la matriz, usar desordenado
     const fallbackMatrix = dayMatrix['desordenado'];
-    return fallbackMatrix?.[timeSlot] ?? { questionId: 'Q_CT_01', rationale: 'fallback: avatar no encontrado' };
+    return fallbackMatrix?.[timeSlot] ?? { questionId: 'Q_MF_15', rationale: 'fallback: avatar no encontrado' };
   }
 
-  return avatarMatrix[timeSlot] ?? { questionId: 'Q_CT_01', rationale: 'fallback: franja no encontrada' };
+  return avatarMatrix[timeSlot] ?? { questionId: 'Q_MF_15', rationale: 'fallback: franja no encontrada' };
 }
 
 /**
