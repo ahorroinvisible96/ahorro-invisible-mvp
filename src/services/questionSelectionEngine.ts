@@ -19,17 +19,15 @@ import {
   type QuestionFormat,
   type BlankOption,
 } from './dailyQuestionsBank';
-import { PILOT_QUESTIONS_BANK } from './questionsBankPilot';
-import { USE_PILOT_BANK } from '@/lib/constants';
 import type { AvatarKey } from './profilingService';
 
 /**
- * Devuelve el banco activo según la configuración:
- * - USE_PILOT_BANK=true → banco piloto
- * - DEFAULT → banco activo completo (132 preguntas: 120 amount + 12 fill_blank)
+ * Devuelve el banco activo de preguntas.
+ * Las preguntas Q_P_ (perfil/piloto) han sido eliminadas del banco.
+ * Siempre se usa ACTIVE_QUESTIONS_BANK.
  */
 function getActiveBank(): DailyQuestion[] {
-  return USE_PILOT_BANK ? PILOT_QUESTIONS_BANK : ACTIVE_QUESTIONS_BANK;
+  return ACTIVE_QUESTIONS_BANK;
 }
 
 // ── Franjas horarias ─────────────────────────────────────────────────────────
