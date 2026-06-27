@@ -18,7 +18,7 @@
  *   7. Desordenado / microfugas           (Q_MF)
  *   8. Desordenado / sin_sistema          (Q_SS)
  *
- * 80 preguntas fill_blank orientadas a ahorro (Q_FB_01 – Q_FB_92)
+ * 60 preguntas fill_blank orientadas a ahorro (Q_FB_01 – Q_FB_92, sin las 20 podadas)
  */
 
 import type { AvatarKey } from './profilingService';
@@ -737,21 +737,6 @@ const Q_FILL_BLANK: DailyQuestion[] = [
     active: true, intent: 'gasto_evitado_compra_lista', habit_principle: 'obvious', tone: 'motivador', difficulty: 'low', experimental: false,
   },
   {
-    id: 'Q_FB_16', format: 'fill_blank',
-    text: 'He reducido el gasto de conveniencia en el trabajo: ____.',
-    blankOptions: [
-      { label: 'he llevado agua y no comprado en la máquina', value: 'agua_casa',   scores: { comodo: 2 } },
-      { label: 'he traido snack de casa en vez de comprar', value: 'snack_casa',  scores: { comodo: 2 } },
-      { label: 'he preparado la mochila la noche anterior',  value: 'mochila_prev', scores: { desordenado: 2 } },
-    ],
-    allowOther: true, otherRequiresAI: true, aiConfidenceThreshold: 0.70,
-    suggestedAmount: 3, habitCategory: 'Gastos trabajo', bestDays: 'Lunes a Viernes', bestTimeWindow: 'Mañana',
-    monthPhase: 'Cualquiera', targetAvatarPrimary: 'comodo', targetAvatarSecondary: 'desordenado',
-    scenarioWeight: 2, priorityBase: 7, cooldownDays: 3, monthlyDelta: 30, yearlyDelta: 360,
-    labelImpact: 'Llevar snack de casa ahorra ~30 €/mes',
-    active: true, intent: 'gasto_evitado_trabajo', habit_principle: 'easy', tone: 'motivador', difficulty: 'low', experimental: false,
-  },
-  {
     id: 'Q_FB_17', format: 'fill_blank',
     text: 'He preparado el almuerzo yo mismo en vez de comprarlo fuera: ____.',
     blankOptions: [
@@ -765,36 +750,6 @@ const Q_FILL_BLANK: DailyQuestion[] = [
     scenarioWeight: 3, priorityBase: 9, cooldownDays: 3, monthlyDelta: 56, yearlyDelta: 672,
     labelImpact: 'Llevar almuerzo de casa ahorra ~56 €/mes',
     active: true, intent: 'gasto_evitado_almuerzo', habit_principle: 'easy', tone: 'motivador', difficulty: 'low', experimental: false,
-  },
-  {
-    id: 'Q_FB_18', format: 'fill_blank',
-    text: 'He elegido la alternativa más barata en el gimnasio o deporte: ____.',
-    blankOptions: [
-      { label: 'he salido a correr o al parque en vez del gym', value: 'parque',      scores: { comodo: 2 } },
-      { label: 'he hecho ejercicio en casa con lo que tenía',   value: 'casa_gym',   scores: { comodo: 2 } },
-      { label: 'me he apuntado a una actividad grupal gratuita', value: 'actividad_gratis', scores: { social: 2 } },
-    ],
-    allowOther: true, otherRequiresAI: true, aiConfidenceThreshold: 0.70,
-    suggestedAmount: 10, habitCategory: 'Deporte y ocio activo', bestDays: 'Cualquier día', bestTimeWindow: 'Mañana',
-    monthPhase: 'Cualquiera', targetAvatarPrimary: 'comodo', targetAvatarSecondary: 'social',
-    scenarioWeight: 2, priorityBase: 7, cooldownDays: 5, monthlyDelta: 30, yearlyDelta: 360,
-    labelImpact: 'Entrenar al aire libre ahorra ~30 €/mes',
-    active: true, intent: 'gasto_evitado_deporte', habit_principle: 'easy', tone: 'motivador', difficulty: 'medium', experimental: false,
-  },
-  {
-    id: 'Q_FB_19', format: 'fill_blank',
-    text: 'He ahorrado en el supermercado cambiando mi hábito de compra: ____.',
-    blankOptions: [
-      { label: 'he comprado marca blanca en vez de la de siempre', value: 'marca_blanca', scores: { comodo: 2 } },
-      { label: 'he comparado precios antes de meter al carrito',   value: 'comp_precios',scores: { comodo: 2 } },
-      { label: 'he aprovechado ofertas planificando con antelación', value: 'planif_oferta', scores: { desordenado: 2 } },
-    ],
-    allowOther: true, otherRequiresAI: true, aiConfidenceThreshold: 0.70,
-    suggestedAmount: 12, habitCategory: 'Compra supermercado', bestDays: 'Sábado, Domingo', bestTimeWindow: 'Mañana',
-    monthPhase: 'Cualquiera', targetAvatarPrimary: 'comodo', targetAvatarSecondary: 'desordenado',
-    scenarioWeight: 2, priorityBase: 7, cooldownDays: 7, monthlyDelta: 36, yearlyDelta: 432,
-    labelImpact: 'Marca blanca y comparar precios ahorra ~36 €/mes',
-    active: true, intent: 'gasto_evitado_super_habito', habit_principle: 'obvious', tone: 'motivador', difficulty: 'low', experimental: false,
   },
   {
     id: 'Q_FB_20', format: 'fill_blank',
@@ -825,21 +780,6 @@ const Q_FILL_BLANK: DailyQuestion[] = [
     scenarioWeight: 3, priorityBase: 8, cooldownDays: 4, monthlyDelta: 48, yearlyDelta: 576,
     labelImpact: 'Elegir opciones económicas ahorra ~48 €/mes',
     active: true, intent: 'gasto_evitado_eleccion_econ', habit_principle: 'obvious', tone: 'motivador', difficulty: 'medium', experimental: false,
-  },
-  {
-    id: 'Q_FB_22', format: 'fill_blank',
-    text: 'He evitado la compra de conveniencia en farmacia o tienda: ____.',
-    blankOptions: [
-      { label: 'he buscado alternativa genérica más barata',     value: 'gen_barato',  scores: { comodo: 2 } },
-      { label: 'he esperado y buscado mejor precio online',        value: 'mejor_precio',scores: { comodo: 2 } },
-      { label: 'he comprobado si ya lo tenía antes de comprar',   value: 'ya_tenia',   scores: { desordenado: 2 } },
-    ],
-    allowOther: true, otherRequiresAI: true, aiConfidenceThreshold: 0.70,
-    suggestedAmount: 8, habitCategory: 'Farmacia y tienda', bestDays: 'Cualquier día', bestTimeWindow: 'Tarde',
-    monthPhase: 'Cualquiera', targetAvatarPrimary: 'comodo', targetAvatarSecondary: 'desordenado',
-    scenarioWeight: 2, priorityBase: 6, cooldownDays: 7, monthlyDelta: 16, yearlyDelta: 192,
-    labelImpact: 'Alternativa genérica ahorra ~16 €/mes',
-    active: true, intent: 'gasto_evitado_farmacia', habit_principle: 'obvious', tone: 'motivador', difficulty: 'low', experimental: false,
   },
   {
     id: 'Q_FB_23', format: 'fill_blank',
@@ -949,21 +889,6 @@ const Q_FILL_BLANK: DailyQuestion[] = [
     active: true, intent: 'gasto_evitado_control_finde', habit_principle: 'satisfying', tone: 'motivador', difficulty: 'medium', experimental: false,
   },
   {
-    id: 'Q_FB_30', format: 'fill_blank',
-    text: 'He reducido el gasto en la última celebración o evento de grupo: ____.',
-    blankOptions: [
-      { label: 'he hecho regalo conjunto en vez de individual',        value: 'regalo_conjunto', scores: { social: 2 } },
-      { label: 'he acordado con el grupo un límite de precio',          value: 'precio_acordado', scores: { social: 2 } },
-      { label: 'he buscado alternativa de regalo más original y barata', value: 'regalo_alternativo', scores: { impulsivo: 2 } },
-    ],
-    allowOther: true, otherRequiresAI: true, aiConfidenceThreshold: 0.70,
-    suggestedAmount: 20, habitCategory: 'Regalos y celebraciones', bestDays: 'Cualquier día', bestTimeWindow: 'Mañana',
-    monthPhase: 'Cualquiera', targetAvatarPrimary: 'social', targetAvatarSecondary: 'impulsivo',
-    scenarioWeight: 2, priorityBase: 6, cooldownDays: 14, monthlyDelta: 20, yearlyDelta: 240,
-    labelImpact: 'Acordar límite de regalo ahorra ~20 €/mes',
-    active: true, intent: 'gasto_evitado_celebracion', habit_principle: 'obvious', tone: 'motivador', difficulty: 'medium', experimental: false,
-  },
-  {
     id: 'Q_FB_31', format: 'fill_blank',
     text: 'He controlado el gasto en el último bar o restaurante: ____.',
     blankOptions: [
@@ -979,21 +904,6 @@ const Q_FILL_BLANK: DailyQuestion[] = [
     active: true, intent: 'gasto_evitado_bar', habit_principle: 'obvious', tone: 'motivador', difficulty: 'medium', experimental: false,
   },
   {
-    id: 'Q_FB_32', format: 'fill_blank',
-    text: 'He ahorrado en comidas de trabajo o compromisos sociales: ____.',
-    blankOptions: [
-      { label: 'he optado por el menú más económico',             value: 'menu_eco',   scores: { social: 2 } },
-      { label: 'he propuesto comer en la oficina o traer comida', value: 'traer_comida', scores: { social: 2 } },
-      { label: 'he reducido las salidas semanales de trabajo',    value: 'menos_salidas', scores: { comodo: 2 } },
-    ],
-    allowOther: true, otherRequiresAI: true, aiConfidenceThreshold: 0.70,
-    suggestedAmount: 10, habitCategory: 'Comidas de trabajo', bestDays: 'Lunes a Viernes', bestTimeWindow: 'Tarde',
-    monthPhase: 'Cualquiera', targetAvatarPrimary: 'social', targetAvatarSecondary: 'comodo',
-    scenarioWeight: 2, priorityBase: 7, cooldownDays: 7, monthlyDelta: 40, yearlyDelta: 480,
-    labelImpact: 'Menú económico en trabajo ahorra ~40 €/mes',
-    active: true, intent: 'gasto_evitado_comidas_trabajo', habit_principle: 'obvious', tone: 'motivador', difficulty: 'medium', experimental: false,
-  },
-  {
     id: 'Q_FB_33', format: 'fill_blank',
     text: 'He resistido la presión del grupo y he ahorrado en: ____.',
     blankOptions: [
@@ -1007,21 +917,6 @@ const Q_FILL_BLANK: DailyQuestion[] = [
     scenarioWeight: 3, priorityBase: 9, cooldownDays: 4, monthlyDelta: 30, yearlyDelta: 360,
     labelImpact: 'Resistir presión de grupo ahorra ~30 €/mes',
     active: true, intent: 'gasto_evitado_presion_grupo', habit_principle: 'obvious', tone: 'motivador', difficulty: 'high', experimental: false,
-  },
-  {
-    id: 'Q_FB_34', format: 'fill_blank',
-    text: 'He reducido el gasto en el último viaje o escapada de grupo: ____.',
-    blankOptions: [
-      { label: 'he buscado alojamiento más económico o compartido', value: 'aloj_eco',    scores: { social: 2 } },
-      { label: 'he propuesto destino más cercano o asequible',       value: 'destino_eco', scores: { social: 2 } },
-      { label: 'he planificado con antelación para evitar precios última hora', value: 'planif_viaje', scores: { desordenado: 2 } },
-    ],
-    allowOther: true, otherRequiresAI: true, aiConfidenceThreshold: 0.70,
-    suggestedAmount: 50, habitCategory: 'Viajes y escapadas', bestDays: 'Lunes, Domingo', bestTimeWindow: 'Mañana',
-    monthPhase: 'Cualquiera', targetAvatarPrimary: 'social', targetAvatarSecondary: 'desordenado',
-    scenarioWeight: 2, priorityBase: 6, cooldownDays: 30, monthlyDelta: 25, yearlyDelta: 300,
-    labelImpact: 'Planificar viajes con antelación ahorra ~25 €/mes',
-    active: true, intent: 'gasto_evitado_viaje_grupo', habit_principle: 'obvious', tone: 'motivador', difficulty: 'medium', experimental: false,
   },
   {
     id: 'Q_FB_35', format: 'fill_blank',
@@ -1086,21 +981,6 @@ const Q_FILL_BLANK: DailyQuestion[] = [
     active: true, intent: 'gasto_evitado_24h', habit_principle: 'obvious', tone: 'motivador', difficulty: 'high', experimental: false,
   },
   {
-    id: 'Q_FB_39', format: 'fill_blank',
-    text: 'He ignorado una notificación de oferta o descuento de: ____.',
-    blankOptions: [
-      { label: 'una tienda de ropa o moda',                       value: 'notif_ropa',  scores: { impulsivo: 2 } },
-      { label: 'una plataforma de entretenimiento o app',          value: 'notif_app',   scores: { impulsivo: 2 } },
-      { label: 'un supermercado o servicio de delivery',           value: 'notif_super', scores: { comodo: 2 } },
-    ],
-    allowOther: true, otherRequiresAI: true, aiConfidenceThreshold: 0.70,
-    suggestedAmount: 20, habitCategory: 'Notificaciones ignoradas', bestDays: 'Cualquier día', bestTimeWindow: 'Tarde',
-    monthPhase: 'Cualquiera', targetAvatarPrimary: 'impulsivo', targetAvatarSecondary: 'comodo',
-    scenarioWeight: 3, priorityBase: 8, cooldownDays: 3, monthlyDelta: 40, yearlyDelta: 480,
-    labelImpact: 'Ignorar notificaciones ahorra ~40 €/mes',
-    active: true, intent: 'gasto_evitado_notificacion', habit_principle: 'obvious', tone: 'motivador', difficulty: 'medium', experimental: false,
-  },
-  {
     id: 'Q_FB_40', format: 'fill_blank',
     text: 'He evitado la compra impulsiva después de ver algo en redes: ____.',
     blankOptions: [
@@ -1114,21 +994,6 @@ const Q_FILL_BLANK: DailyQuestion[] = [
     scenarioWeight: 3, priorityBase: 9, cooldownDays: 4, monthlyDelta: 75, yearlyDelta: 900,
     labelImpact: 'Evitar compras de redes ahorra ~75 €/mes',
     active: true, intent: 'gasto_evitado_redes', habit_principle: 'obvious', tone: 'motivador', difficulty: 'high', experimental: false,
-  },
-  {
-    id: 'Q_FB_41', format: 'fill_blank',
-    text: 'He resistido la urgencia de comprar algo de edición limitada o con contador: ____.',
-    blankOptions: [
-      { label: 'en una tienda online con cuenta atrás de tiempo',  value: 'cuenta_atras',  scores: { impulsivo: 2 } },
-      { label: 'en una preventa o lanzamiento exclusivo',            value: 'preventa',       scores: { impulsivo: 2 } },
-      { label: 'algo que me dijeron que se agotaba',                 value: 'agota_presion', scores: { social: 2 } },
-    ],
-    allowOther: true, otherRequiresAI: true, aiConfidenceThreshold: 0.70,
-    suggestedAmount: 40, habitCategory: 'Urgencia artificial', bestDays: 'Cualquier día', bestTimeWindow: 'Tarde',
-    monthPhase: 'Cualquiera', targetAvatarPrimary: 'impulsivo', targetAvatarSecondary: 'social',
-    scenarioWeight: 3, priorityBase: 8, cooldownDays: 5, monthlyDelta: 40, yearlyDelta: 480,
-    labelImpact: 'Ignorar urgencias artificiales ahorra ~40 €/mes',
-    active: true, intent: 'gasto_evitado_urgencia_artificial', habit_principle: 'obvious', tone: 'motivador', difficulty: 'high', experimental: false,
   },
   {
     id: 'Q_FB_42', format: 'fill_blank',
@@ -1161,36 +1026,6 @@ const Q_FILL_BLANK: DailyQuestion[] = [
     active: true, intent: 'gasto_evitado_friccion_digital', habit_principle: 'obvious', tone: 'motivador', difficulty: 'medium', experimental: false,
   },
   {
-    id: 'Q_FB_44', format: 'fill_blank',
-    text: 'He devuelto o cancelado una compra que había hecho por impulso: ____.',
-    blankOptions: [
-      { label: 'ropa que compré sin pensarlo bien',                   value: 'devolver_ropa', scores: { impulsivo: 2 } },
-      { label: 'un producto que no era lo que esperaba',               value: 'devolver_prod', scores: { impulsivo: 2 } },
-      { label: 'algo que compré porque estaba con otras personas',     value: 'devolver_social', scores: { social: 2 } },
-    ],
-    allowOther: true, otherRequiresAI: true, aiConfidenceThreshold: 0.70,
-    suggestedAmount: 30, habitCategory: 'Devolución y rectificación', bestDays: 'Cualquier día', bestTimeWindow: 'Mañana',
-    monthPhase: 'Cualquiera', targetAvatarPrimary: 'impulsivo', targetAvatarSecondary: 'social',
-    scenarioWeight: 2, priorityBase: 7, cooldownDays: 7, monthlyDelta: 30, yearlyDelta: 360,
-    labelImpact: 'Devolver compras impulsivas recupera ~30 €/mes',
-    active: true, intent: 'gasto_evitado_devolucion', habit_principle: 'satisfying', tone: 'motivador', difficulty: 'medium', experimental: false,
-  },
-  {
-    id: 'Q_FB_45', format: 'fill_blank',
-    text: 'He evitado el gasto extra al completar una compra que ya había hecho: ____.',
-    blankOptions: [
-      { label: 'no he añadido accesorios o complementos innecesarios', value: 'no_accesorios', scores: { impulsivo: 2 } },
-      { label: 'he rechazado el seguro o garantía extendida',          value: 'no_seguro',     scores: { impulsivo: 2 } },
-      { label: 'no he pagado el envío urgente pudiendo esperar',        value: 'no_urgente',    scores: { comodo: 2 } },
-    ],
-    allowOther: true, otherRequiresAI: true, aiConfidenceThreshold: 0.70,
-    suggestedAmount: 15, habitCategory: 'Upsell evitado', bestDays: 'Cualquier día', bestTimeWindow: 'Tarde',
-    monthPhase: 'Cualquiera', targetAvatarPrimary: 'impulsivo', targetAvatarSecondary: 'comodo',
-    scenarioWeight: 2, priorityBase: 7, cooldownDays: 7, monthlyDelta: 15, yearlyDelta: 180,
-    labelImpact: 'Rechazar upsells ahorra ~15 €/mes',
-    active: true, intent: 'gasto_evitado_upsell', habit_principle: 'obvious', tone: 'motivador', difficulty: 'medium', experimental: false,
-  },
-  {
     id: 'Q_FB_46', format: 'fill_blank',
     text: 'He esperado antes de confirmar una compra grande y no la he hecho: ____.',
     blankOptions: [
@@ -1204,21 +1039,6 @@ const Q_FILL_BLANK: DailyQuestion[] = [
     scenarioWeight: 3, priorityBase: 8, cooldownDays: 10, monthlyDelta: 30, yearlyDelta: 360,
     labelImpact: 'Esperar antes de compra grande ahorra ~30 €/mes',
     active: true, intent: 'gasto_evitado_espera_grande', habit_principle: 'obvious', tone: 'motivador', difficulty: 'high', experimental: false,
-  },
-  {
-    id: 'Q_FB_47', format: 'fill_blank',
-    text: 'He parado la escalada de gasto en ocio digital o entretenimiento: ____.',
-    blankOptions: [
-      { label: 'no he comprado créditos o extras en un videojuego',   value: 'no_ingame',   scores: { impulsivo: 2 } },
-      { label: 'no he comprado contenido extra en una plataforma digital', value: 'no_dlc', scores: { impulsivo: 2 } },
-      { label: 'he cancelado el plan premium que no justificaba',     value: 'cancel_premium', scores: { desordenado: 2 } },
-    ],
-    allowOther: true, otherRequiresAI: true, aiConfidenceThreshold: 0.70,
-    suggestedAmount: 15, habitCategory: 'Ocio digital', bestDays: 'Cualquier día', bestTimeWindow: 'Noche',
-    monthPhase: 'Cualquiera', targetAvatarPrimary: 'impulsivo', targetAvatarSecondary: 'desordenado',
-    scenarioWeight: 2, priorityBase: 7, cooldownDays: 7, monthlyDelta: 20, yearlyDelta: 240,
-    labelImpact: 'Parar escalada de ocio digital ahorra ~20 €/mes',
-    active: true, intent: 'gasto_evitado_ocio_digital', habit_principle: 'obvious', tone: 'motivador', difficulty: 'medium', experimental: false,
   },
   {
     id: 'Q_FB_48', format: 'fill_blank',
@@ -1343,21 +1163,6 @@ const Q_FILL_BLANK: DailyQuestion[] = [
     active: true, intent: 'gasto_evitado_compra_con_lista', habit_principle: 'obvious', tone: 'motivador', difficulty: 'low', experimental: false,
   },
   {
-    id: 'Q_FB_56', format: 'fill_blank',
-    text: 'He cancelado algo que tenía contratado y ya no justificaba: ____.',
-    blankOptions: [
-      { label: 'una reserva o servicio prepagado que no iba a usar',    value: 'reserva_cancel', scores: { desordenado: 2 } },
-      { label: 'una suscripción que se renovaba automáticamente',        value: 'sub_auto',      scores: { desordenado: 2 } },
-      { label: 'una compra futura que ya no tenía sentido hacer',        value: 'compra_futura', scores: { impulsivo: 2 } },
-    ],
-    allowOther: true, otherRequiresAI: true, aiConfidenceThreshold: 0.70,
-    suggestedAmount: 20, habitCategory: 'Contratos cancelados', bestDays: 'Cualquier día', bestTimeWindow: 'Mañana',
-    monthPhase: 'Inicio', targetAvatarPrimary: 'desordenado', targetAvatarSecondary: 'impulsivo',
-    scenarioWeight: 2, priorityBase: 7, cooldownDays: 14, monthlyDelta: 20, yearlyDelta: 240,
-    labelImpact: 'Cancelar contratos innecesarios ahorra ~20 €/mes',
-    active: true, intent: 'gasto_evitado_contrato', habit_principle: 'satisfying', tone: 'motivador', difficulty: 'low', experimental: false,
-  },
-  {
     id: 'Q_FB_57', format: 'fill_blank',
     text: 'He organizado mis gastos del mes y he encontrado margen de ahorro en: ____.',
     blankOptions: [
@@ -1371,51 +1176,6 @@ const Q_FILL_BLANK: DailyQuestion[] = [
     scenarioWeight: 3, priorityBase: 9, cooldownDays: 30, monthlyDelta: 40, yearlyDelta: 480,
     labelImpact: 'Auditoría mensual ahorra ~40 €/mes',
     active: true, intent: 'gasto_evitado_auditoria_mensual', habit_principle: 'satisfying', tone: 'reflexivo', difficulty: 'low', experimental: false,
-  },
-  {
-    id: 'Q_FB_58', format: 'fill_blank',
-    text: 'He evitado un gasto por desorganización de mi tiempo: ____.',
-    blankOptions: [
-      { label: 'he salido con todo lo necesario y no he tenido que comprar nada', value: 'salida_prep', scores: { desordenado: 2 } },
-      { label: 'he llegado a tiempo para no pagar precio de urgencia',            value: 'llegada_tiempo', scores: { desordenado: 2 } },
-      { label: 'he recordado la cita o reserva a tiempo para no pagar cancelación', value: 'cita_tiempo', scores: { comodo: 2 } },
-    ],
-    allowOther: true, otherRequiresAI: true, aiConfidenceThreshold: 0.70,
-    suggestedAmount: 10, habitCategory: 'Gasto por desorganización', bestDays: 'Cualquier día', bestTimeWindow: 'Tarde',
-    monthPhase: 'Cualquiera', targetAvatarPrimary: 'desordenado', targetAvatarSecondary: 'comodo',
-    scenarioWeight: 2, priorityBase: 7, cooldownDays: 5, monthlyDelta: 20, yearlyDelta: 240,
-    labelImpact: 'Organizarse evita gastos de urgencia ~20 €/mes',
-    active: true, intent: 'gasto_evitado_desorg_tiempo', habit_principle: 'obvious', tone: 'motivador', difficulty: 'low', experimental: false,
-  },
-  {
-    id: 'Q_FB_59', format: 'fill_blank',
-    text: 'He ahorrado adelantándome en vez de dejarlo para el último momento: ____.',
-    blankOptions: [
-      { label: 'he comprado el billete o reserva con antelación',          value: 'reserva_ant', scores: { desordenado: 2 } },
-      { label: 'he renovado o gestionado un servicio antes de que caducara', value: 'renovar_ant', scores: { desordenado: 2 } },
-      { label: 'he preparado el regalo con tiempo en vez de comprarlo urgente', value: 'regalo_ant', scores: { comodo: 2 } },
-    ],
-    allowOther: true, otherRequiresAI: true, aiConfidenceThreshold: 0.70,
-    suggestedAmount: 20, habitCategory: 'Planificación con antelación', bestDays: 'Cualquier día', bestTimeWindow: 'Mañana',
-    monthPhase: 'Cualquiera', targetAvatarPrimary: 'desordenado', targetAvatarSecondary: 'comodo',
-    scenarioWeight: 2, priorityBase: 7, cooldownDays: 14, monthlyDelta: 20, yearlyDelta: 240,
-    labelImpact: 'Anticiparse reduce precios de urgencia ~20 €/mes',
-    active: true, intent: 'gasto_evitado_anticipacion', habit_principle: 'obvious', tone: 'motivador', difficulty: 'medium', experimental: false,
-  },
-  {
-    id: 'Q_FB_60', format: 'fill_blank',
-    text: 'He eliminado o reducido un gasto fijo que ya no justificaba: ____.',
-    blankOptions: [
-      { label: 'una tarifa de móvil, internet o servicios básicos', value: 'tarifa_fija',  scores: { desordenado: 2 } },
-      { label: 'un seguro o contrato que podía renegociar',          value: 'seguro_renegociar', scores: { desordenado: 2 } },
-      { label: 'una suscripción de ocio que apenas usaba',            value: 'sub_ocio',    scores: { impulsivo: 2 } },
-    ],
-    allowOther: true, otherRequiresAI: true, aiConfidenceThreshold: 0.70,
-    suggestedAmount: 15, habitCategory: 'Gastos fijos reducidos', bestDays: 'Cualquier día', bestTimeWindow: 'Mañana',
-    monthPhase: 'Inicio', targetAvatarPrimary: 'desordenado', targetAvatarSecondary: 'impulsivo',
-    scenarioWeight: 2, priorityBase: 7, cooldownDays: 30, monthlyDelta: 20, yearlyDelta: 240,
-    labelImpact: 'Renegociar tarifas fijas ahorra ~20 €/mes',
-    active: true, intent: 'gasto_evitado_gastos_fijos', habit_principle: 'satisfying', tone: 'reflexivo', difficulty: 'low', experimental: false,
   },
 
   // ── CÓMODO (nuevas Q_FB_61–Q_FB_68) ─────────────────────────────────────────
@@ -1444,7 +1204,7 @@ const Q_FILL_BLANK: DailyQuestion[] = [
     ],
     allowOther: true, otherRequiresAI: true, aiConfidenceThreshold: 0.70,
     suggestedAmount: 7, habitCategory: 'Transporte económico', bestDays: 'Lunes a Viernes', bestTimeWindow: 'Mañana',
-    monthPhase: 'Cualquiera', targetAvatarPrimary: 'comodo', targetAvatarSecondary: '',
+    monthPhase: 'Cualquiera', targetAvatarPrimary: 'comodo', targetAvatarSecondary: 'comodo',
     scenarioWeight: 2, priorityBase: 7, cooldownDays: 3, monthlyDelta: 28, yearlyDelta: 336,
     labelImpact: 'Sustituir 1 taxi diario ahorra ~28 €/mes',
     active: true, intent: 'gasto_evitado_transporte_eco', habit_principle: 'easy', tone: 'motivador', difficulty: 'low', experimental: false,
@@ -1463,21 +1223,6 @@ const Q_FILL_BLANK: DailyQuestion[] = [
     scenarioWeight: 3, priorityBase: 9, cooldownDays: 7, monthlyDelta: 50, yearlyDelta: 600,
     labelImpact: 'Preparar la semana evita gastos de urgencia ~50 €/mes',
     active: true, intent: 'gasto_evitado_planif_urgencia', habit_principle: 'easy', tone: 'motivador', difficulty: 'low', experimental: false,
-  },
-  {
-    id: 'Q_FB_64', format: 'fill_blank',
-    text: 'He preferido la opción gratis a la de pago en: ____.',
-    blankOptions: [
-      { label: 'software o herramienta (alternativa gratuita)', value: 'software_libre',   scores: { comodo: 2 } },
-      { label: 'ocio (parque, biblioteca, ruta)',                value: 'parque_gratis',    scores: { comodo: 2 } },
-      { label: 'entretenimiento (streaming o podcast gratuito)', value: 'streaming_gratis', scores: { impulsivo: 2 } },
-    ],
-    allowOther: true, otherRequiresAI: true, aiConfidenceThreshold: 0.70,
-    suggestedAmount: 5, habitCategory: 'Opciones gratuitas', bestDays: 'Cualquier día', bestTimeWindow: 'Tarde',
-    monthPhase: 'Cualquiera', targetAvatarPrimary: 'comodo', targetAvatarSecondary: 'impulsivo',
-    scenarioWeight: 2, priorityBase: 6, cooldownDays: 4, monthlyDelta: 20, yearlyDelta: 240,
-    labelImpact: 'Elegir gratis ahorra ~20 €/mes',
-    active: true, intent: 'gasto_evitado_opcion_gratis', habit_principle: 'obvious', tone: 'motivador', difficulty: 'low', experimental: false,
   },
   {
     id: 'Q_FB_65', format: 'fill_blank',
@@ -1519,7 +1264,7 @@ const Q_FILL_BLANK: DailyQuestion[] = [
     ],
     allowOther: true, otherRequiresAI: true, aiConfidenceThreshold: 0.70,
     suggestedAmount: 15, habitCategory: 'DIY ahorro', bestDays: 'Sábado, Domingo', bestTimeWindow: 'Mañana',
-    monthPhase: 'Cualquiera', targetAvatarPrimary: 'comodo', targetAvatarSecondary: '',
+    monthPhase: 'Cualquiera', targetAvatarPrimary: 'comodo', targetAvatarSecondary: 'comodo',
     scenarioWeight: 2, priorityBase: 7, cooldownDays: 7, monthlyDelta: 30, yearlyDelta: 360,
     labelImpact: 'DIY mensual ahorra ~30 €/mes',
     active: true, intent: 'gasto_evitado_diy', habit_principle: 'easy', tone: 'motivador', difficulty: 'medium', experimental: false,
@@ -1570,36 +1315,6 @@ const Q_FILL_BLANK: DailyQuestion[] = [
     scenarioWeight: 3, priorityBase: 8, cooldownDays: 5, monthlyDelta: 40, yearlyDelta: 480,
     labelImpact: 'Comunicar límite evita sobregastos grupales',
     active: true, intent: 'gasto_evitado_limite_comunicado', habit_principle: 'obvious', tone: 'motivador', difficulty: 'high', experimental: false,
-  },
-  {
-    id: 'Q_FB_71', format: 'fill_blank',
-    text: 'He elegido un plan cultural o de ocio económico en vez de uno caro: ____.',
-    blankOptions: [
-      { label: 'museo gratuito o con descuento', value: 'museo_gratis',   scores: { social: 2 } },
-      { label: 'mercadillo o feria local',       value: 'mercadillo',    scores: { social: 2 } },
-      { label: 'concierto o evento gratuito',    value: 'concierto_gratis', scores: { social: 2 } },
-    ],
-    allowOther: true, otherRequiresAI: true, aiConfidenceThreshold: 0.70,
-    suggestedAmount: 20, habitCategory: 'Ocio cultural barato', bestDays: 'Sábado, Domingo', bestTimeWindow: 'Mañana',
-    monthPhase: 'Cualquiera', targetAvatarPrimary: 'social', targetAvatarSecondary: '',
-    scenarioWeight: 2, priorityBase: 7, cooldownDays: 7, monthlyDelta: 40, yearlyDelta: 480,
-    labelImpact: 'Ocio cultural gratis ahorra ~40 €/mes',
-    active: true, intent: 'gasto_evitado_ocio_cultural', habit_principle: 'attractive', tone: 'motivador', difficulty: 'low', experimental: false,
-  },
-  {
-    id: 'Q_FB_72', format: 'fill_blank',
-    text: 'He acordado con el grupo un límite de regalo o aportación para: ____.',
-    blankOptions: [
-      { label: 'cumpleaños de un amigo',         value: 'cumple_amigo',    scores: { social: 2 } },
-      { label: 'regalo conjunto entre varios',   value: 'regalo_conjunto', scores: { social: 2 } },
-      { label: 'aportación a un viaje o escapada', value: 'aportacion_viaje', scores: { impulsivo: 2 } },
-    ],
-    allowOther: true, otherRequiresAI: true, aiConfidenceThreshold: 0.70,
-    suggestedAmount: 20, habitCategory: 'Límite regalo acordado', bestDays: 'Cualquier día', bestTimeWindow: 'Mañana',
-    monthPhase: 'Cualquiera', targetAvatarPrimary: 'social', targetAvatarSecondary: 'impulsivo',
-    scenarioWeight: 2, priorityBase: 7, cooldownDays: 14, monthlyDelta: 20, yearlyDelta: 240,
-    labelImpact: 'Acordar límites de regalo evita sobregastos',
-    active: true, intent: 'gasto_evitado_limite_regalo', habit_principle: 'obvious', tone: 'reflexivo', difficulty: 'medium', experimental: false,
   },
   {
     id: 'Q_FB_73', format: 'fill_blank',
@@ -1718,7 +1433,7 @@ const Q_FILL_BLANK: DailyQuestion[] = [
     ],
     allowOther: true, otherRequiresAI: true, aiConfidenceThreshold: 0.70,
     suggestedAmount: 30, habitCategory: 'Reflexión antes de comprar', bestDays: 'Cualquier día', bestTimeWindow: 'Tarde',
-    monthPhase: 'Cualquiera', targetAvatarPrimary: 'impulsivo', targetAvatarSecondary: '',
+    monthPhase: 'Cualquiera', targetAvatarPrimary: 'impulsivo', targetAvatarSecondary: 'impulsivo',
     scenarioWeight: 3, priorityBase: 9, cooldownDays: 4, monthlyDelta: 60, yearlyDelta: 720,
     labelImpact: 'Reflexionar antes de comprar ahorra ~60 €/mes',
     active: true, intent: 'gasto_evitado_reflexion_compra', habit_principle: 'obvious', tone: 'reflexivo', difficulty: 'high', experimental: false,
@@ -1840,25 +1555,10 @@ const Q_FILL_BLANK: DailyQuestion[] = [
     ],
     allowOther: true, otherRequiresAI: true, aiConfidenceThreshold: 0.70,
     suggestedAmount: 0, habitCategory: 'Presupuesto por categoría', bestDays: 'Domingo, Lunes', bestTimeWindow: 'Mañana',
-    monthPhase: 'Inicio', targetAvatarPrimary: 'desordenado', targetAvatarSecondary: '',
+    monthPhase: 'Inicio', targetAvatarPrimary: 'desordenado', targetAvatarSecondary: 'desordenado',
     scenarioWeight: 3, priorityBase: 8, cooldownDays: 30, monthlyDelta: 40, yearlyDelta: 480,
     labelImpact: 'Tener presupuesto por categoría limita el gasto',
     active: true, intent: 'gasto_evitado_presupuesto_categoria', habit_principle: 'obvious', tone: 'reflexivo', difficulty: 'low', experimental: false,
-  },
-  {
-    id: 'Q_FB_89', format: 'fill_blank',
-    text: 'He anotado todos los gastos del día para no perder el control de: ____.',
-    blankOptions: [
-      { label: 'gastos en efectivo que suelo olvidar', value: 'gastos_efectivo', scores: { desordenado: 2 } },
-      { label: 'pagos pequeños con tarjeta',           value: 'gastos_tarjeta',  scores: { desordenado: 2 } },
-      { label: 'micro-gastos de conveniencia diarios', value: 'micro_gastos',    scores: { comodo: 2 } },
-    ],
-    allowOther: true, otherRequiresAI: true, aiConfidenceThreshold: 0.70,
-    suggestedAmount: 0, habitCategory: 'Registro de gastos diario', bestDays: 'Cualquier día', bestTimeWindow: 'Noche',
-    monthPhase: 'Cualquiera', targetAvatarPrimary: 'desordenado', targetAvatarSecondary: 'comodo',
-    scenarioWeight: 2, priorityBase: 7, cooldownDays: 3, monthlyDelta: 25, yearlyDelta: 300,
-    labelImpact: 'Registrar gastos diariamente da conciencia y control',
-    active: true, intent: 'gasto_evitado_registro_diario', habit_principle: 'satisfying', tone: 'reflexivo', difficulty: 'low', experimental: false,
   },
   {
     id: 'Q_FB_90', format: 'fill_blank',
@@ -1870,7 +1570,7 @@ const Q_FILL_BLANK: DailyQuestion[] = [
     ],
     allowOther: true, otherRequiresAI: true, aiConfidenceThreshold: 0.70,
     suggestedAmount: 10, habitCategory: 'Negociación de contratos', bestDays: 'Cualquier día', bestTimeWindow: 'Mañana',
-    monthPhase: 'Inicio', targetAvatarPrimary: 'desordenado', targetAvatarSecondary: '',
+    monthPhase: 'Inicio', targetAvatarPrimary: 'desordenado', targetAvatarSecondary: 'desordenado',
     scenarioWeight: 2, priorityBase: 8, cooldownDays: 30, monthlyDelta: 20, yearlyDelta: 240,
     labelImpact: 'Renegociar tarifas ahorra ~20 €/mes',
     active: true, intent: 'gasto_evitado_negociacion', habit_principle: 'satisfying', tone: 'motivador', difficulty: 'medium', experimental: false,
@@ -1912,8 +1612,8 @@ const Q_FILL_BLANK: DailyQuestion[] = [
 // ═══════════════════════════════════════════════════════════════════════════════
 /**
  * Banco completo de preguntas.
- * Tipos disponibles: 'amount' (60 preguntas) y 'fill_blank' (80 preguntas).
- * Total: 140 preguntas activas.
+ * Tipos disponibles: 'amount' (60 preguntas) y 'fill_blank' (60 preguntas).
+ * Total: 120 preguntas activas.
  */
 export const DAILY_QUESTIONS_BANK: DailyQuestion[] = [
   ...Q_CONVENIENCIA,
