@@ -466,26 +466,28 @@ export function DailyDecisionWidget({
         )}
 
         {/* ── Botón confirmar ── */}
+        {/* Fix Bug 2: el botón es siempre fullWidth para mantener la estructura
+            del card estable independientemente del estado de la decisión diaria.
+            El estilo visual (tenue vs destacado) se controla solo con clases CSS,
+            nunca con cambios de layout. */}
         {!collapsed && (
-          <div className={!hasAmount && !confirmed ? styles.btnConfirmZeroWrap : undefined}>
-            <Button
-              variant="primary"
-              fullWidth={!(!hasAmount && !confirmed)}
-              disabled={!canConfirm}
-              loading={submitting && !confirmed}
-              onClick={handleConfirm}
-              className={`${styles.btnConfirm} ${!hasAmount && !confirmed ? styles.btnConfirmZero : ''}`}
-            >
-              {confirmed ? (
-                <span className={styles.confirmedContent}>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12"/>
-                  </svg>
-                  Decisión Confirmada
-                </span>
-              ) : Number(customAmount) > 0 ? `Registrar ${Number(customAmount).toLocaleString('es-ES')} €` : 'No he ahorrado hoy'}
-            </Button>
-          </div>
+          <Button
+            variant="primary"
+            fullWidth
+            disabled={!canConfirm}
+            loading={submitting && !confirmed}
+            onClick={handleConfirm}
+            className={`${styles.btnConfirm} ${!hasAmount && !confirmed ? styles.btnConfirmZero : ''}`}
+          >
+            {confirmed ? (
+              <span className={styles.confirmedContent}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Decisión Confirmada
+              </span>
+            ) : Number(customAmount) > 0 ? `Registrar ${Number(customAmount).toLocaleString('es-ES')} €` : 'No he ahorrado hoy'}
+          </Button>
         )}
 
       </div>

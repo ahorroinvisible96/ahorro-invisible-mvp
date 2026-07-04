@@ -423,7 +423,9 @@
   /* override: cuando el importe es 0, bajar el peso visual */
 }
 
-/* Estado sin importe: link claro — más visible que antes pero sin competir con el CTA */
+/* Estado sin importe: apariencia más tenue — el botón mantiene ancho completo
+   solo cambian colores/sombra para diferenciar visualmente.
+   No se cambia width, display ni margin para no romper el layout. */
 .btnConfirmZero {
   background: transparent !important;
   border: 1px solid rgba(100, 116, 139, 0.25) !important;
@@ -431,11 +433,6 @@
   color: rgba(148, 163, 184, 0.70) !important;
   font-weight: 500 !important;
   font-size: 13px !important;
-  text-decoration: none;
-  padding: 9px 20px !important;
-  width: auto !important;
-  display: inline-flex !important;
-  margin: 0 auto !important;
   border-radius: var(--radius-md) !important;
 }
 
@@ -445,11 +442,9 @@
   border-color: rgba(100, 116, 139, 0.45) !important;
 }
 
-/* Wrapper centrador para el link "no he ahorrado" */
+/* Wrapper centrador — ya no se usa, se mantiene vacío por si hay referencias externas */
 .btnConfirmZeroWrap {
-  display: flex;
-  justify-content: center;
-  padding: 4px 0 2px;
+  display: contents;
 }
 
 /* ── % badge en goal cards ── */
