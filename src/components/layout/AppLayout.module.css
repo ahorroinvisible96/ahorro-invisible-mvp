@@ -1,9 +1,13 @@
 /* ── Layout principal — mobile first ── */
 .layout {
   display: flex;
-  min-height: 100vh;
+  flex-direction: column;
+  /* El layout ocupa EXACTAMENTE la pantalla — sin overflow en body */
+  height: 100vh;
+  height: 100dvh;
   width: 100%;
-  /* En móvil el sidebar está oculto, BottomNav ocupa el footer */
+  background-color: var(--color-background-main);
+  overflow: hidden; /* El scroll ocurre dentro de .main, no en body */
 }
 
 /* En desktop el sidebar lateral está visible */

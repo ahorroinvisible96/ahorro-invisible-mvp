@@ -86,6 +86,9 @@
   /* Transparent: hereda el gradiente de .page — sin corte de color */
   background: transparent;
   padding: 24px 0;
+  /* padding-bottom extra garantiza espacio estable al final independiente
+     del estado de los widgets (daily-decision pending vs completed) */
+  padding-bottom: 32px;
   min-height: 0;
   position: relative;
 }
@@ -137,11 +140,10 @@
   gap: var(--dashboard-section-gap);
 }
 
-/* Banners de motivación/inactividad: gap más pequeño entre sí y con el widget de decisión */
-.mainCol > *:has(+ #daily-decision-widget),
-.mainCol > *:has(+ * + #daily-decision-widget) {
-  margin-bottom: calc(-1 * (var(--dashboard-section-gap) - 8px));
-}
+
+/* Nota: El margen negativo condicional (:has + #daily-decision-widget) fue eliminado
+   porque causaba desalineación en los widgets del Inicio cuando la Decisión Diaria
+   estaba pendiente. El gap uniforme de --dashboard-section-gap es suficiente. */
 
 .sideCol {
   display: flex;

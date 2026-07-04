@@ -1,15 +1,13 @@
 /* MainContent.module.css - Estilos para el contenido principal */
 
+/* LEGACY — Este archivo no está importado en ningún componente activo.
+   El patrón de cuadrícula ha sido eliminado para evitar bugs visuales
+   en caso de que se referencie en el futuro. */
 .mainContainer {
-  background-color: #F5F5F0;
-  background-image: 
-    linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px);
-  background-size: 20px 20px;
-  background-position: 0 0;
+  background-color: var(--color-background-main, #0A0517);
   flex: 1;
   overflow: auto;
-  color: #1F2937;
+  color: var(--color-text-primary, #ffffff);
 }
 
 .contentPadding {

@@ -6,15 +6,14 @@
 /* ── Mobile first ── */
 .mainContent {
   margin-left: 0;
-  min-height: 100vh;
-  min-height: 100dvh; /* Altura dinámica: cubre el chrome de iOS correctamente */
+  flex: 1;                      /* Ocupa todo el espacio entre Sidebar y BottomNav */
+  min-height: 0;                /* Necesario para que flex+overflow funcionen */
+  overflow-y: auto;             /* El scroll ocurre AQUÍ, no en el body */
+  -webkit-overflow-scrolling: touch; /* Scroll suave en iOS */
   /* Espacio inferior para el BottomNav fijo en móvil */
-  padding-bottom: calc(100px + env(safe-area-inset-bottom));
+  padding-bottom: calc(80px + env(safe-area-inset-bottom));
   background-color: var(--color-background-main);
-  /* Rellena el área de overscroll (bounce) con el mismo color del fondo */
-  overscroll-behavior-y: none;
   position: relative;
-  flex: 1;
   /* Evitar scroll horizontal */
   overflow-x: hidden;
   max-width: 100%;
@@ -28,12 +27,11 @@
   }
 }
 
+/* withPattern: el patrón de cuadrícula fue eliminado para evitar que se vea
+   en la zona inferior (padding-bottom del safe-area / BottomNav).
+   La clase se mantiene para compatibilidad pero ya no aplica ningún grid. */
 .withPattern {
-  background-image:
-    linear-gradient(var(--pattern-line-color, rgba(255,255,255,0.04)) 1px, transparent 1px),
-    linear-gradient(90deg, var(--pattern-line-color, rgba(255,255,255,0.04)) 1px, transparent 1px);
-  background-size: 20px 20px;
-  background-position: 0 0;
+  /* sin background-image: el fondo sólido oscuro es consistente en toda la pantalla */
 }
 
 .container {
@@ -42,6 +40,10 @@
   padding: 16px;
   box-sizing: border-box;
   background: var(--color-background-page);
+  /* min-height: 100% garantiza que el container cubra TODO el área scrollable
+     de <main>, incluido el padding-bottom del BottomNav/safe-area,
+     evitando que el fondo del <main> quede expuesto en la zona inferior. */
+  min-height: 100%;
 }
 
 @media (min-width: 768px) {
