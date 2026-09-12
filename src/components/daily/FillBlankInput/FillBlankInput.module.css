@@ -1,6 +1,10 @@
 /* ── Wrapper ── */
 .wrapper {
   margin-bottom: 16px;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
 /* ── Frase con hueco ── */
@@ -11,6 +15,10 @@
   line-height: 1.8;
   margin: 0 0 12px;
   text-align: left;
+  /* Evitar que el texto largo desborde horizontalmente en móvil */
+  overflow-wrap: break-word;
+  word-break: break-word;
+  max-width: 100%;
 }
 
 /* ── Contenedor del hueco (inline-block) ── */
@@ -19,6 +27,8 @@
   display: inline-block;
   vertical-align: baseline;
   margin: 0 4px;
+  /* Limitar el ancho máximo para que no desborde el contenedor padre en móvil */
+  max-width: calc(100% - 8px);
 }
 
 /* ── Botón del hueco: grande, borde continuo ── */
@@ -26,7 +36,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 20px;
+  padding: 8px 16px;
   background: rgba(99, 102, 241, 0.10);
   border: 2px solid rgba(99, 102, 241, 0.40);
   border-radius: 12px;
@@ -36,12 +46,19 @@
   font-family: inherit;
   cursor: pointer;
   transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
-  min-width: 130px;
+  /* min-width reducido para evitar overflow en móvil con frases largas */
+  min-width: 80px;
+  max-width: 100%;
   text-align: center;
   justify-content: center;
   animation: pulseBlank 2.5s ease-in-out infinite;
   letter-spacing: -0.01em;
   position: relative;
+  box-sizing: border-box;
+  /* Truncar texto si es muy largo */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .blankButton:hover {
