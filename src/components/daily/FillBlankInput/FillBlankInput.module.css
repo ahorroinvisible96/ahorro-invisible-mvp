@@ -1,296 +1,201 @@
-﻿/* =====================================
-   FILL BLANK INPUT — Fintech oscuro
-   ===================================== */
+﻿/* =============================================================
+   FILL BLANK INPUT — Diseno Figma inline
+   ============================================================= */
 
-/* -- Wrapper -- */
 .wrapper {
-  margin-bottom: 16px;
   width: 100%;
-  max-width: 100%;
-  overflow-x: hidden;
+  min-width: 0;
   box-sizing: border-box;
 }
 
-/* -- Frase con hueco -- */
+/* ---- Frase con hueco ---- */
 .sentence {
   font-size: 15px;
-  font-weight: 500;
-  color: #e2e8f0;
-  line-height: 1.75;
-  margin: 0 0 12px;
-  text-align: left;
+  font-weight: 400;
+  color: #8E94B3;
+  line-height: 1.65;
+  margin: 0;
   overflow-wrap: break-word;
   word-break: break-word;
-  max-width: 100%;
 }
 
-/* -- Contenedor del hueco (inline-block) -- */
-.blankContainer {
-  position: relative;
-  display: inline-block;
-  vertical-align: baseline;
-  margin: 0 4px;
-  max-width: calc(100% - 8px);
-}
-
-/* -- Boton del hueco -- */
+/* Boton hueco inline */
 .blankButton {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 12px;
-  background: rgba(99, 102, 241, 0.10);
-  border: 1.5px solid rgba(99, 102, 241, 0.30);
-  border-radius: 8px;
-  color: rgba(165, 180, 252, 0.75);
+  gap: 5px;
+  height: 25px;
+  padding: 0 10px;
+  background: rgba(78, 101, 255, 0.14);
+  border: 1px solid #4E65FF;
+  border-radius: 6px;
+  color: #FFFFFF;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   font-family: inherit;
   cursor: pointer;
-  transition: background 150ms ease, border-color 150ms ease, color 150ms ease, box-shadow 150ms ease;
-  min-width: 80px;
-  max-width: 100%;
-  text-align: center;
-  justify-content: center;
-  animation: pulseBlank 2.5s ease-in-out infinite;
-  position: relative;
-  box-sizing: border-box;
+  vertical-align: middle;
+  margin: 0 3px;
+  transition: background 150ms ease, border-color 150ms ease;
+  white-space: nowrap;
+  max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
-  vertical-align: baseline;
 }
 
 .blankButton:hover {
-  background: rgba(99, 102, 241, 0.15);
-  border-color: rgba(99, 102, 241, 0.50);
-  color: #c7d2fe;
+  background: rgba(78, 101, 255, 0.22);
+  border-color: #6b83ff;
 }
 
 .blankButton:focus-visible {
-  outline: 2px solid #818cf8;
+  outline: 2px solid #4E65FF;
   outline-offset: 2px;
 }
 
-/* -- Hueco relleno -- */
 .blankFilled {
-  background: rgba(99, 102, 241, 0.14);
-  border-color: rgba(99, 102, 241, 0.45);
-  color: #c7d2fe;
-  animation: none;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.07);
-}
-
-.blankFilled:hover {
-  border-color: rgba(99, 102, 241, 0.60);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.10);
+  background: rgba(78, 101, 255, 0.20);
+  border-color: #4E65FF;
 }
 
 .blankDisabled {
   opacity: 0.40;
   cursor: not-allowed;
-  animation: none;
   pointer-events: none;
 }
 
-/* -- Chevron -- */
 .blankChevron {
-  opacity: 0.50;
-  transition: transform 200ms ease, opacity 150ms ease;
+  opacity: 0.70;
   flex-shrink: 0;
+  vertical-align: middle;
 }
 
-.blankButton:hover .blankChevron { opacity: 0.75; }
-
-.blankChevronOpen {
-  transform: rotate(180deg);
-  opacity: 0.80;
-}
-
-/* -- Animacion del hueco vacio -- */
-@keyframes pulseBlank {
-  0%, 100% { border-color: rgba(99, 102, 241, 0.22); }
-  50%       { border-color: rgba(99, 102, 241, 0.45); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.05); }
-}
-
-/* =====================================
-   OVERLAY
-   ===================================== */
-.overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(2, 6, 23, 0.65);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 200;
-  padding: 24px;
-  animation: overlayFade 180ms ease;
-}
-
-@keyframes overlayFade {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-/* =====================================
-   DROPDOWN
-   ===================================== */
+/* ---- Dropdown inline ---- */
 .dropdown {
   width: 100%;
-  max-width: 340px;
-  background: #111827;
-  border: 1px solid rgba(99, 102, 241, 0.18);
-  border-radius: 16px;
   padding: 8px;
-  box-shadow:
-    0 24px 48px rgba(0, 0, 0, 0.55),
-    0 0 0 1px rgba(99, 102, 241, 0.06);
-  animation: dropdownAppear 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
 }
 
-@keyframes dropdownAppear {
-  from { opacity: 0; transform: translateY(10px) scale(0.97); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-.dropdownLabel {
-  font-size: 10px;
-  font-weight: 700;
-  color: rgba(100, 116, 139, 0.55);
-  text-transform: uppercase;
-  letter-spacing: 0.10em;
-  padding: 8px 14px 10px;
-  margin: 0;
-}
-
-/* -- Opcion individual -- */
 .dropdownOption {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
   width: 100%;
-  padding: 13px 14px;
+  padding: 12px;
   background: transparent;
-  border: 1.5px solid transparent;
+  border: none;
   border-radius: 10px;
-  color: rgba(203, 213, 225, 0.80);
+  color: #8E94B3;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 400;
   font-family: inherit;
   cursor: pointer;
-  transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
   text-align: left;
+  transition: background 150ms ease, color 150ms ease;
+  box-sizing: border-box;
 }
 
 .dropdownOption:hover {
-  background: rgba(99, 102, 241, 0.09);
-  border-color: rgba(99, 102, 241, 0.18);
-  color: #e2e8f0;
+  background: rgba(78, 101, 255, 0.08);
+  color: #FFFFFF;
 }
 
 .dropdownOption:focus-visible {
-  outline: 2px solid #818cf8;
-  outline-offset: 2px;
+  outline: 2px solid #4E65FF;
+  outline-offset: -2px;
+  border-radius: 10px;
 }
 
-/* -- Opcion seleccionada -- */
 .dropdownOptionSelected {
-  background: rgba(99, 102, 241, 0.12);
-  border-color: rgba(99, 102, 241, 0.32);
-  color: #c7d2fe;
+  background: #1E203F;
+  color: #FFFFFF;
   font-weight: 600;
 }
 
 .dropdownOptionSelected:hover {
-  background: rgba(99, 102, 241, 0.16);
-  border-color: rgba(99, 102, 241, 0.45);
+  background: rgba(30, 32, 63, 0.85);
 }
 
-/* -- Icono check -- */
+.dropdownOptionLabel {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .dropdownCheck {
+  color: #4E65FF;
   flex-shrink: 0;
-  color: #818cf8;
-  animation: checkPop 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: checkIn 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-@keyframes checkPop {
-  from { opacity: 0; transform: scale(0.4); }
-  to   { opacity: 1; transform: scale(1); }
+@keyframes checkIn {
+  from { opacity: 0; transform: scale(0.5); }
+  to { opacity: 1; transform: scale(1); }
 }
 
-/* -- Opcion "Otro" -- */
-.dropdownOptionOther {
-  color: rgba(148, 163, 184, 0.55);
-}
-
-.dropdownOptionOther:hover {
-  color: rgba(196, 181, 253, 0.75);
-}
-
-/* -- Separador -- */
+/* Separador */
 .dropdownDivider {
   height: 1px;
-  background: rgba(99, 102, 241, 0.12);
-  margin: 4px 14px;
+  background: #21223D;
+  margin: 4px 12px;
 }
 
-/* =====================================
-   INPUT PERSONALIZADO ("Otro")
-   ===================================== */
-.customInputWrap {
-  margin-top: 12px;
+/* Fila "Otro" */
+.dropdownOtherRow {
   display: flex;
-  justify-content: center;
-  animation: fadeSlideUp 280ms cubic-bezier(0.16, 1, 0.3, 1);
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  box-sizing: border-box;
 }
 
-@keyframes fadeSlideUp {
-  from { opacity: 0; transform: translateY(5px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-.customInput {
-  width: 100%;
-  max-width: 340px;
-  padding: 11px 16px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1.5px solid rgba(255, 255, 255, 0.09);
-  border-radius: 10px;
-  color: #f1f5f9;
+.dropdownOtherBtn {
+  flex-shrink: 0;
+  height: 28px;
+  padding: 0 8px;
+  background: transparent;
+  border: none;
+  color: #4E65FF;
   font-size: 14px;
-  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  border-radius: 6px;
+  transition: background 150ms ease;
+}
+.dropdownOtherBtn:hover {
+  background: rgba(78, 101, 255, 0.10);
+}
+
+.dropdownOtherInput {
+  flex: 1;
+  height: 28px;
+  padding: 0 10px;
+  background: #090915;
+  border: 1px solid #21223D;
+  border-radius: 6px;
+  color: #FFFFFF;
+  font-size: 13px;
   font-family: inherit;
   outline: none;
-  transition: border-color 180ms ease, box-shadow 180ms ease;
+  min-width: 0;
   box-sizing: border-box;
-  text-align: center;
+  transition: border-color 150ms ease;
+}
+.dropdownOtherInput:focus {
+  border-color: #4E65FF;
+}
+.dropdownOtherInput::placeholder {
+  color: #5F6585;
 }
 
-.customInput:focus {
-  border-color: rgba(99, 102, 241, 0.50);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.09);
-}
-
-.customInput::placeholder {
-  color: rgba(100, 116, 139, 0.40);
-  font-weight: 400;
-}
-
-.customInput:disabled {
-  opacity: 0.38;
-  pointer-events: none;
-}
-
-/* -- Reduced motion -- */
+/* ---- Reduced motion ---- */
 @media (prefers-reduced-motion: reduce) {
-  .blankButton { animation: none; }
-  .dropdown { animation: none; }
-  .overlay { animation: none; }
-  .customInputWrap { animation: none; }
+  .blankButton,
+  .dropdownOption { transition: none; }
   .dropdownCheck { animation: none; }
-  .blankChevron { transition: none; }
 }
