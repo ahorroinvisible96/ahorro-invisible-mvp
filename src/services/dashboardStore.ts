@@ -12,14 +12,12 @@ import type {
 import {
   getContextualDailyQuestion,
   selectAlternativeQuestion,
-  getTemporalContext,
   toDashboardQuestion,
   getCurrentTimeWindow,
+  getTemporalContext,
 } from './questionSelectionEngine';
-import type { UserProfile } from './questionSelectionEngine';
+import type { AvatarKey } from './dailyQuestionsBank';
 import { getQuestionById } from './dailyQuestionsBank';
-import type { QuestionFormat, BlankOption } from './dailyQuestionsBank';
-import type { AvatarKey } from './profilingService';
 import { STORAGE_KEY } from '@/lib/constants';
 
 // STORAGE_KEY importado desde @/lib/constants
@@ -79,27 +77,28 @@ export const DAILY_DECISION_RULES: DailyDecisionRule[] = [
   { category: 'consumo',      questionId: 'impulse_online',  answerKey: 'bought',    immediateDelta: 0,  monthlyProjection: 0,   yearlyProjection: 0,    impactType: 'real' },
 ];
 
-// ─── Preguntas diarias (nuevo formato basado en importe) ──────────────────────
+// ─── Pregunta del día (tipo simplificado para el dashboard) ──────────────────
 export type DailyQuestion = {
   questionId: string;
   text: string;
-  format?: QuestionFormat;
-  blankOptions?: BlankOption[];
+  options: string[];
+  avatar: AvatarKey;
+  timeSlot: import('./questionSelectionEngine').TimeWindow;
+  /** Importe estimado de ahorro (solo informativo) */
   suggestedAmount?: number;
-  monthlyDelta?: number;
-  yearlyDelta?: number;
-  labelImpact?: string;
-  tags?: string[];
-  /** Si la pregunta permite la opción "Otro" con texto libre */
-  allowOther?: boolean;
-  /** Si la respuesta libre de "Otro" debe analizarse con IA */
-  otherRequiresAI?: boolean;
-  /** Confianza mínima (0-1) requerida para que la IA sume puntos. Default: 0.70 */
-  aiConfidenceThreshold?: number;
 };
 
-// ─── Avatar de usuario (perfil de comportamiento) ────────────────────────────
-export type UserAvatar = 'comodo' | 'social' | 'impulsivo' | 'desordenado';
+// ─── Avatar de usuario (perfil de comportamiento) ─────────────────────────────
+// NOTA: Usuarios con avatar 'desordenado' (legado) son tratados como 'impulsivo'
+// en tiempo de ejecución. Ver migración 003_refactor_avatars.sql.
+export type UserAvatar = 'comodo' | 'social' | 'impulsivo';
+
+/** Mapea avatar legacy 'desordenado' al avatar actual más cercano */
+function resolveAvatar(avatar: string | null | undefined): AvatarKey {
+  if (avatar === 'desordenado') return 'impulsivo';
+  if (avatar === 'comodo' || avatar === 'social' || avatar === 'impulsivo') return avatar;
+  return 'comodo';
+}
 
 export const AVATAR_META: Record<UserAvatar, {
   label: string;
@@ -129,52 +128,6 @@ export const AVATAR_META: Record<UserAvatar, {
     tagline: 'Actúas rápido. Aprender a frenar te cambiará la vida.',
     description: 'Tomas decisiones de gasto en el momento, sin pensarlo demasiado. Tus preguntas diarias te darán ese segundo de pausa que lo cambia todo.',
   },
-  desordenado: {
-    label: 'Desordenado',
-    emoji: '🌀',
-    color: '#8b5cf6',
-    tagline: 'No es falta de voluntad, es falta de visibilidad.',
-    description: 'El dinero se te escapa en pequeños gastos sin que te des cuenta. Tus preguntas diarias te darán claridad y sensación de control.',
-  },
-};
-
-export const DAILY_QUESTIONS: DailyQuestion[] = [
-  // ─ Legacy pool (formato importe) ────────────────────────────────────────
-  { questionId: 'coffee',         tags: ['consumo', 'food'],       text: 'Si hoy te has preparado café en casa en vez de comprarlo, ¿cuánto te has ahorrado?',              suggestedAmount: 3,  monthlyDelta: 60,  yearlyDelta: 720,  labelImpact: 'Café en casa ahorra ~60 €/mes' },
-  { questionId: 'delivery',       tags: ['food', 'consumo'],       text: 'Si hoy has cocinado en vez de pedir delivery, ¿cuánto te has ahorrado?',                         suggestedAmount: 8,  monthlyDelta: 120, yearlyDelta: 1440, labelImpact: 'Cocinar en casa ahorra ~120 €/mes' },
-  { questionId: 'transport',      tags: ['transport'],             text: 'Si hoy has usado transporte público en vez de taxi, ¿cuánto te has ahorrado?',                    suggestedAmount: 5,  monthlyDelta: 80,  yearlyDelta: 960,  labelImpact: 'Transporte público ahorra ~80 €/mes' },
-  { questionId: 'impulse',        tags: ['impulse', 'consumo'],    text: 'Si hoy has evitado una compra impulsiva, ¿cuánto te has ahorrado?',                               suggestedAmount: 15, monthlyDelta: 150, yearlyDelta: 1800, labelImpact: 'Evitar impulsos ahorra ~150 €/mes' },
-  { questionId: 'subscription',   tags: ['subscription', 'tech'],  text: 'Si hoy has cancelado una suscripción sin uso, ¿cuánto te ahorras al mes?',                        suggestedAmount: 10, monthlyDelta: 10,  yearlyDelta: 120,  labelImpact: 'Cancelar suscripciones innecesarias ahorra al año' },
-  { questionId: 'hogar_energy',   tags: ['hogar'],                 text: 'Si hoy has apagado electrodomésticos que no usabas, ¿cuánto te has ahorrado?',                    suggestedAmount: 2,  monthlyDelta: 40,  yearlyDelta: 480,  labelImpact: 'Apagar electrodomésticos ahorra ~40 €/mes' },
-  { questionId: 'hogar_water',    tags: ['hogar'],                 text: 'Si hoy has dado una ducha corta, ¿cuánto crees que has ahorrado en agua caliente?',               suggestedAmount: 3,  monthlyDelta: 50,  yearlyDelta: 600,  labelImpact: 'Duchas cortas ahorran ~50 €/mes' },
-  { questionId: 'hogar_meal_plan',tags: ['hogar', 'food'],         text: 'Si hoy has planificado las comidas para reducir desperdicios, ¿cuánto te has ahorrado?',          suggestedAmount: 15, monthlyDelta: 60,  yearlyDelta: 720,  labelImpact: 'Planificar comidas ahorra ~60 €/mes' },
-  { questionId: 'hogar_heating',  tags: ['hogar'],                 text: 'Si hoy has ajustado la temperatura del hogar para ahorrar, ¿cuánto?',                             suggestedAmount: 5,  monthlyDelta: 30,  yearlyDelta: 360,  labelImpact: 'Ajustar temperatura ahorra ~30 €/mes' },
-  { questionId: 'salud_lunch',    tags: ['salud', 'food'],         text: 'Si hoy has llevado el almuerzo de casa al trabajo, ¿cuánto te has ahorrado?',                     suggestedAmount: 8,  monthlyDelta: 160, yearlyDelta: 1920, labelImpact: 'Llevar almuerzo ahorra ~160 €/mes' },
-  { questionId: 'salud_exercise', tags: ['salud'],                 text: 'Si hoy has hecho ejercicio gratis (calle/casa) en vez de pagar gimnasio, ¿cuánto?',              suggestedAmount: 7,  monthlyDelta: 30,  yearlyDelta: 360,  labelImpact: 'Ejercicio al aire libre ahorra ~30 €/mes' },
-  { questionId: 'salud_generic',  tags: ['salud', 'consumo'],      text: 'Si hoy has comprado productos genéricos en vez de marcas, ¿cuánto te has ahorrado?',             suggestedAmount: 8,  monthlyDelta: 24,  yearlyDelta: 288,  labelImpact: 'Productos genéricos ahorran ~24 €/mes' },
-  { questionId: 'ocio_streaming', tags: ['ocio'],                  text: 'Si hoy has visto contenido en casa en vez de ir al cine, ¿cuánto te has ahorrado?',              suggestedAmount: 10, monthlyDelta: 40,  yearlyDelta: 480,  labelImpact: 'Cine en casa vs fuera ahorra ~40 €/mes' },
-  { questionId: 'ocio_bar',       tags: ['ocio', 'consumo'],       text: 'Si hoy has tomado algo en casa en vez de ir al bar, ¿cuánto te has ahorrado?',                   suggestedAmount: 7,  monthlyDelta: 112, yearlyDelta: 1344, labelImpact: 'Tomar algo en casa ahorra ~112 €/mes' },
-  { questionId: 'ocio_library',   tags: ['ocio'],                  text: 'Si hoy has usado contenido gratuito (biblioteca, online) en vez de comprar, ¿cuánto?',           suggestedAmount: 12, monthlyDelta: 24,  yearlyDelta: 288,  labelImpact: 'Usar contenido gratuito ahorra ~24 €/mes' },
-  { questionId: 'tech_apps',      tags: ['tech', 'subscription'],  text: 'Si hoy has evitado instalar una app de pago o nueva suscripción, ¿cuánto?',                      suggestedAmount: 5,  monthlyDelta: 15,  yearlyDelta: 180,  labelImpact: 'Evitar suscripciones innecesarias ahorra ~15 €/mes' },
-  { questionId: 'tech_gadget',    tags: ['tech', 'impulse'],       text: 'Si hoy has resistido la tentación de comprar un gadget, ¿cuánto te has ahorrado?',               suggestedAmount: 20, monthlyDelta: 40,  yearlyDelta: 480,  labelImpact: 'Resistir gadgets ahorra ~40 €/mes' },
-  { questionId: 'transport_alt',  tags: ['transport'],             text: 'Si hoy has ido en bici, patinete o andando en vez de en coche/taxi, ¿cuánto te has ahorrado?',   suggestedAmount: 6,  monthlyDelta: 96,  yearlyDelta: 1152, labelImpact: 'Movilidad eco ahorra ~96 €/mes' },
-  { questionId: 'transport_share',tags: ['transport'],             text: 'Si hoy has compartido coche con alguien, ¿cuánto te has ahorrado?',                              suggestedAmount: 8,  monthlyDelta: 64,  yearlyDelta: 768,  labelImpact: 'Compartir coche ahorra ~64 €/mes' },
-  { questionId: 'impulse_online', tags: ['impulse', 'consumo'],    text: 'Si hoy has cerrado un carrito online sin comprar, ¿cuánto te has ahorrado?',                     suggestedAmount: 20, monthlyDelta: 80,  yearlyDelta: 960,  labelImpact: 'Cerrar carritos sin comprar ahorra ~80 €/mes' },
-];
-
-// Preguntas personalizadas por avatar (sustituye al sistema moneyFeeling)
-const AVATAR_TAGS: Record<UserAvatar, string[]> = {
-  comodo:      ['food', 'consumo', 'hogar', 'transport'],
-  social:      ['ocio', 'food', 'consumo', 'transport'],
-  impulsivo:   ['impulse', 'consumo', 'tech', 'ocio'],
-  desordenado: ['hogar', 'subscription', 'salud', 'food'],
-};
-
-// Pregunta del día personalizada (avatar tiene prioridad sobre moneyFeeling)
-const FEELING_TAGS: Record<string, string[]> = {
-  reactive:  ['food', 'consumo', 'impulse', 'transport'],
-  avoidant:  ['food', 'consumo', 'hogar', 'subscription'],
-  anxious:   ['hogar', 'salud', 'subscription', 'food'],
 };
 
 /**
@@ -191,9 +144,8 @@ const FEELING_TAGS: Record<string, string[]> = {
  * Si YA respondió, devuelve la misma pregunta del legacy pool como fallback.
  */
 export function getTodayQuestion(): DailyQuestion {
-  // ── Leer perfil del usuario ──────────────────────────────────────────────
-  let userAvatar: UserAvatar | null = null;
-  let streak = 0;
+  // ── Leer perfil del usuario ───────────────────────────────────────────────
+  let userAvatar: string | null = null;
   let answeredToday = false;
   let lastQuestionId: string | null = null;
   const recentQuestionIds: string[] = [];
@@ -203,9 +155,8 @@ export function getTodayQuestion(): DailyQuestion {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw) as StoreState;
-        userAvatar = (parsed.userAvatar ?? null) as UserAvatar | null;
+        userAvatar = parsed.userAvatar ?? null;
 
-        // Calcular racha y si ya respondió hoy
         const today = new Date().toISOString().split('T')[0];
         const dailyDecisions = (parsed.decisions ?? []).filter(
           (d: DailyDecision) => d.questionId !== 'extra_saving' && d.questionId !== 'grace_day'
@@ -214,10 +165,6 @@ export function getTodayQuestion(): DailyQuestion {
         answeredToday = !!todayDecision;
         lastQuestionId = todayDecision?.questionId ?? null;
 
-        // Racha
-        streak = computeStreak(parsed.decisions ?? []);
-
-        // Ids respondidos en los últimos 7 días (para evitar repeticiones)
         const cutoff7 = new Date(Date.now() - 7 * 86_400_000).toISOString().split('T')[0];
         for (const d of dailyDecisions) {
           if (d.date >= cutoff7 && !recentQuestionIds.includes(d.questionId)) {
@@ -225,84 +172,25 @@ export function getTodayQuestion(): DailyQuestion {
           }
         }
       }
-
-      // Fallback: leer del onboardingData
       if (!userAvatar) {
         const onbRaw = localStorage.getItem('onboardingData');
         if (onbRaw) {
           const onb = JSON.parse(onbRaw) as { userAvatar?: string };
-          userAvatar = (onb.userAvatar ?? null) as UserAvatar | null;
+          userAvatar = onb.userAvatar ?? null;
         }
       }
     } catch { /* fallthrough */ }
   }
 
-  // ── Cargar avatar scores para selección probabilística ────────────────────
-  let avatarScores: Record<AvatarKey, number> | null = null;
-  try {
-    // Scores del onboarding
-    const onbRaw = localStorage.getItem('onboardingData');
-    if (onbRaw) {
-      const onb = JSON.parse(onbRaw) as { avatarScores?: Record<string, number> };
-      if (onb.avatarScores) {
-        avatarScores = onb.avatarScores as Record<AvatarKey, number>;
-      }
-    }
-    // Sumar scores del profiling (si existe)
-    const profRaw = localStorage.getItem('profiling_result');
-    if (profRaw) {
-      const prof = JSON.parse(profRaw) as { avatarScores?: Record<string, number> };
-      if (prof.avatarScores) {
-        if (avatarScores) {
-          for (const k of Object.keys(prof.avatarScores) as AvatarKey[]) {
-            avatarScores[k] = (avatarScores[k] ?? 0) + (prof.avatarScores[k] ?? 0);
-          }
-        } else {
-          avatarScores = prof.avatarScores as Record<AvatarKey, number>;
-        }
-      }
-    }
-    // Sumar señales acumuladas de respuestas diarias (fill_blank, choice)
-    const dailySignals = localStorage.getItem('daily_avatar_signals');
-    if (dailySignals) {
-      const signals = JSON.parse(dailySignals) as Record<string, number>;
-      if (avatarScores) {
-        for (const k of Object.keys(signals) as AvatarKey[]) {
-          avatarScores[k] = (avatarScores[k] ?? 0) + (signals[k] ?? 0);
-        }
-      } else {
-        avatarScores = signals as Record<AvatarKey, number>;
-      }
-    }
-  } catch { /* fallthrough */ }
-
-  // ── Usar motor contextual del banco de 135 preguntas ─────────────────────
-  const profile: UserProfile = {
-    avatar: userAvatar as AvatarKey | null,
-    avatarScores,
-    streak,
-  };
-
-  try {
-    const bankQuestion = getContextualDailyQuestion(
-      profile,
-      answeredToday,
-      lastQuestionId,
-      recentQuestionIds,
-    );
-    return toDashboardQuestion(bankQuestion);
-  } catch {
-    // Fallback al pool legacy si algo falla con el banco
-  }
-
-  // ── Fallback: pool legacy ───────────────────────────────────────────────
-  let pool = DAILY_QUESTIONS;
-  if (userAvatar && AVATAR_TAGS[userAvatar]) {
-    const preferred = DAILY_QUESTIONS.filter(q => q.tags?.some(t => AVATAR_TAGS[userAvatar!].includes(t)));
-    if (preferred.length >= 5) pool = preferred;
-  }
-  const dayIndex = Math.floor(Date.now() / 86_400_000) % pool.length;
-  return pool[dayIndex];
+  // ── Selección directa: avatar + franja horaria (sin scoring ni IA) ────────
+  const resolvedAvatar = resolveAvatar(userAvatar);
+  const bankQuestion = getContextualDailyQuestion(
+    resolvedAvatar,
+    answeredToday,
+    lastQuestionId,
+    recentQuestionIds,
+  );
+  return toDashboardQuestion(bankQuestion);
 }
 
 /**
@@ -312,9 +200,7 @@ export function getTodayQuestion(): DailyQuestion {
  * Devuelve null si no hay alternativas disponibles.
  */
 export function getAlternativeQuestion(currentQuestionId: string): DailyQuestion | null {
-  // ── Cargar perfil (mismo código que getTodayQuestion) ─────────────────
-  let userAvatar: UserAvatar | null = null;
-  let streak = 0;
+  let userAvatar: string | null = null;
   const recentQuestionIds: string[] = [];
 
   if (typeof window !== 'undefined') {
@@ -322,9 +208,7 @@ export function getAlternativeQuestion(currentQuestionId: string): DailyQuestion
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw) as StoreState;
-        userAvatar = (parsed.userAvatar ?? null) as UserAvatar | null;
-        streak = computeStreak(parsed.decisions ?? []);
-
+        userAvatar = parsed.userAvatar ?? null;
         const cutoff7 = new Date(Date.now() - 7 * 86_400_000).toISOString().split('T')[0];
         const dailyDecisions = (parsed.decisions ?? []).filter(
           (d: DailyDecision) => d.questionId !== 'extra_saving' && d.questionId !== 'grace_day'
@@ -339,59 +223,16 @@ export function getAlternativeQuestion(currentQuestionId: string): DailyQuestion
         const onbRaw = localStorage.getItem('onboardingData');
         if (onbRaw) {
           const onb = JSON.parse(onbRaw) as { userAvatar?: string };
-          userAvatar = (onb.userAvatar ?? null) as UserAvatar | null;
+          userAvatar = onb.userAvatar ?? null;
         }
       }
     } catch { /* fallthrough */ }
   }
 
-  // ── Cargar avatar scores ──────────────────────────────────────────────
-  let avatarScores: Record<AvatarKey, number> | null = null;
-  try {
-    const onbRaw = localStorage.getItem('onboardingData');
-    if (onbRaw) {
-      const onb = JSON.parse(onbRaw) as { avatarScores?: Record<string, number> };
-      if (onb.avatarScores) avatarScores = onb.avatarScores as Record<AvatarKey, number>;
-    }
-    const profRaw = localStorage.getItem('profiling_result');
-    if (profRaw) {
-      const prof = JSON.parse(profRaw) as { avatarScores?: Record<string, number> };
-      if (prof.avatarScores) {
-        if (avatarScores) {
-          for (const k of Object.keys(prof.avatarScores) as AvatarKey[]) {
-            avatarScores[k] = (avatarScores[k] ?? 0) + (prof.avatarScores[k] ?? 0);
-          }
-        } else {
-          avatarScores = prof.avatarScores as Record<AvatarKey, number>;
-        }
-      }
-    }
-    const dailySignals = localStorage.getItem('daily_avatar_signals');
-    if (dailySignals) {
-      const signals = JSON.parse(dailySignals) as Record<string, number>;
-      if (avatarScores) {
-        for (const k of Object.keys(signals) as AvatarKey[]) {
-          avatarScores[k] = (avatarScores[k] ?? 0) + (signals[k] ?? 0);
-        }
-      } else {
-        avatarScores = signals as Record<AvatarKey, number>;
-      }
-    }
-  } catch { /* fallthrough */ }
-
-  const profile: UserProfile = {
-    avatar: userAvatar as AvatarKey | null,
-    avatarScores,
-    streak,
-  };
-
-  try {
-    const ctx = getTemporalContext();
-    const alt = selectAlternativeQuestion(profile, ctx, currentQuestionId, recentQuestionIds);
-    return alt ? toDashboardQuestion(alt) : null;
-  } catch {
-    return null;
-  }
+  const resolvedAvatar = resolveAvatar(userAvatar);
+  const ctx = getTemporalContext();
+  const alt = selectAlternativeQuestion(resolvedAvatar, ctx.timeWindow, currentQuestionId, recentQuestionIds);
+  return alt ? toDashboardQuestion(alt) : null;
 }
 
 /**
@@ -1288,8 +1129,6 @@ export function storeAcknowledgeAdaptiveEvaluation(newPercent?: number): void {
  * Nuevo flujo (formato importe):
  *   - savedAmount: cuánto ha ahorrado el usuario (0 = no ahorró nada)
  *   - El importe lo pone el usuario directamente (default 0 €)
- *
- * Se mantiene retrocompatibilidad con las legacy questions (answerKey).
  */
 export function storeSubmitDecision(
   questionId: string,
@@ -1306,29 +1145,10 @@ export function storeSubmitDecision(
   }
 
   const multiplier = incomeMultiplier(state.incomeRange);
-  let effectiveDelta: number;
-  let effectiveMonthly: number;
-  let effectiveYearly: number;
-
-  // Primero intentar legacy rules
-  const rule = DAILY_DECISION_RULES.find(
-    (r) => r.questionId === questionId && r.answerKey === answerKey,
-  );
-
-  if (rule) {
-    // Legacy question pool
-    const baseDelta = customAmount != null && customAmount > 0 ? customAmount : rule.immediateDelta;
-    effectiveDelta = Math.round(baseDelta * multiplier * 100) / 100;
-    effectiveMonthly = Math.round(rule.monthlyProjection * multiplier * 100) / 100;
-    effectiveYearly = Math.round(rule.yearlyProjection * multiplier * 100) / 100;
-  } else {
-    // Bank question (formato importe): el usuario introduce cuánto ha ahorrado
-    const bankQ = getQuestionById(questionId);
-    const savedAmount = customAmount != null && customAmount > 0 ? customAmount : 0;
-    effectiveDelta = Math.round(savedAmount * multiplier * 100) / 100;
-    effectiveMonthly = bankQ ? Math.round(bankQ.monthlyDelta * multiplier * 100) / 100 : 0;
-    effectiveYearly = bankQ ? Math.round(bankQ.yearlyDelta * multiplier * 100) / 100 : 0;
-  }
+  const savedAmount = customAmount != null && customAmount > 0 ? customAmount : 0;
+  const effectiveDelta = Math.round(savedAmount * multiplier * 100) / 100;
+  const effectiveMonthly = 0;
+  const effectiveYearly = 0;
 
   const now = new Date().toISOString();
   state.decisions.push({
@@ -1351,85 +1171,10 @@ export function storeSubmitDecision(
 
   persistStore(state);
 
-  // ── Procesar señal de avatar desde la respuesta ─────────────────────────
-  // El answerKey puede contener una señal: "saved|comodo", "zero|custom:algo"
-  const signalParts = answerKey.split('|');
-  if (signalParts.length > 1) {
-    const signalKey = signalParts[1];
-    const bankQ = getQuestionById(questionId);
-
-    if (bankQ && signalKey && !signalKey.startsWith('custom:')) {
-      // Respuesta cerrada: buscar en blankOptions
-      const allOptions = [
-        ...(bankQ.blankOptions ?? []),
-      ];
-      const matched = allOptions.find(o => o.value === signalKey);
-
-      if (matched && matched.scores) {
-        // Nueva estructura: scores es un mapa avatar → puntos (multi-avatar)
-        for (const [avatar, points] of Object.entries(matched.scores) as [AvatarKey, number][]) {
-          if (points > 0) {
-            accumulateAvatarSignal(avatar, points);
-          }
-        }
-      }
-    } else if (signalKey?.startsWith('custom:')) {
-      // Respuesta libre: guardar para análisis asíncrono por IA
-      const customText = signalKey.slice(7); // quitar "custom:"
-      if (customText.length >= 3) {
-        queueFreeTextForAnalysis(customText, bankQ?.text ?? '');
-      }
-    }
-  }
-
   return buildSummary(currentRange);
 }
 
-/**
- * Acumula una señal de avatar en localStorage.
- * Esto actualiza los scores que luego usa el motor de selección probabilística.
- */
-function accumulateAvatarSignal(avatar: AvatarKey, weight: number): void {
-  try {
-    const key = 'daily_avatar_signals';
-    const raw = localStorage.getItem(key);
-    const scores: Record<AvatarKey, number> = raw
-      ? JSON.parse(raw)
-      : { comodo: 0, social: 0, impulsivo: 0, desordenado: 0 };
 
-    scores[avatar] = (scores[avatar] ?? 0) + weight;
-    localStorage.setItem(key, JSON.stringify(scores));
-
-    // También actualizar el onboardingData para que el motor los lea
-    const onbRaw = localStorage.getItem('onboardingData');
-    if (onbRaw) {
-      const onb = JSON.parse(onbRaw);
-      const merged = { ...onb.avatarScores ?? {} };
-      merged[avatar] = (merged[avatar] ?? 0) + weight;
-      onb.avatarScores = merged;
-      localStorage.setItem('onboardingData', JSON.stringify(onb));
-    }
-  } catch { /* silently ignore */ }
-}
-
-/**
- * Encola una respuesta libre para análisis asíncrono por IA.
- * El análisis se dispara en background sin bloquear la UI.
- */
-function queueFreeTextForAnalysis(text: string, questionContext: string): void {
-  // Disparar análisis en background (fire-and-forget)
-  fetch('/api/ai/analyze-signal', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text, questionContext }),
-  }).then(async (res) => {
-    if (!res.ok) return;
-    const data = await res.json() as { avatar: AvatarKey | null; weight: number };
-    if (data.avatar) {
-      accumulateAvatarSignal(data.avatar, data.weight);
-    }
-  }).catch(() => { /* silently ignore */ });
-}
 
 // ─── Progreso de objetivo: puntos para gráfica ───────────────────────────────
 export type GoalProgressPoint = {

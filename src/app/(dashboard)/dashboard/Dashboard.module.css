@@ -7,22 +7,15 @@
   --header-zone-padding-v: 24px;
 }
 
-/* ── Contenedor principal — rompe el padding del container para zonas full-width ─ */
+/* ── Contenedor principal — ocupa el 100% del .container padre ─ */
+/* NOTA: el .container padre (MainContent) tiene padding: 0 (sin relleno lateral)
+   cuando aloja el dashboard. El padding lateral lo aplica exclusivamente .zoneInner
+   para garantizar consistencia en todos los widgets. */
 .page {
-  margin: -16px;
-  width: calc(100% + 32px);
-  min-height: calc(100vh - 32px);
+  width: 100%;
+  min-height: 100vh;
   box-sizing: border-box;
-  overflow-x: hidden;
   background: #0A0517;
-}
-
-@media (min-width: 768px) {
-  .page {
-    margin: -24px;
-    width: calc(100% + 48px);
-    min-height: calc(100vh - 48px);
-  }
 }
 
 /* ══════════════════════════════════════════════════════════════════════

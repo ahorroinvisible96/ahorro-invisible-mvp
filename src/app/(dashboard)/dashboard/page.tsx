@@ -1024,11 +1024,12 @@ export default function DashboardPage() {
                 WebkitBackdropFilter: 'blur(16px)',
                 border: '1px solid rgba(255,255,255,0.06)',
                 borderRadius: 20,
-                padding: '18px 20px',
+                padding: '14px 16px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: 14,
+                gap: 10,
                 boxShadow: '0 8px 32px rgba(0,0,0,0.20)',
+                minWidth: 0,
               }}>
                 {/* Icono SVG — coherente con el Design System, sin emoji */}
                 <div style={{
@@ -1041,18 +1042,18 @@ export default function DashboardPage() {
                     <circle cx="12" cy="12" r="4"/>
                   </svg>
                 </div>
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 14, fontWeight: 700, color: '#a5b4fc', margin: '0 0 3px' }}>Llevas unos días sin registrar</p>
-                  <p style={{ fontSize: 12, color: 'rgba(148,163,184,0.75)', margin: 0, lineHeight: 1.5 }}>Solo necesitas una decisión hoy para retomar el hábito.</p>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: '#a5b4fc', margin: '0 0 3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Llevas unos días sin registrar</p>
+                  <p style={{ fontSize: 11, color: 'rgba(148,163,184,0.75)', margin: 0, lineHeight: 1.5 }}>Solo necesitas una decisión hoy para retomar el hábito.</p>
                 </div>
-                <div style={{ display: 'flex', gap: 8, flexShrink: 0, alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: 6, flexShrink: 0, alignItems: 'center' }}>
                   <button
                     onClick={() => router.push('/daily')}
-                    style={{ padding: '10px 16px', border: 'none', borderRadius: 12, background: 'linear-gradient(90deg,#6366f1,#8b5cf6)', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 14px rgba(99,102,241,0.35)' }}
+                    style={{ padding: '8px 12px', border: 'none', borderRadius: 12, background: 'linear-gradient(90deg,#6366f1,#8b5cf6)', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 14px rgba(99,102,241,0.35)', whiteSpace: 'nowrap' }}
                   >Decidir →</button>
                   <button
                     onClick={() => setLowActivityDismissed(true)}
-                    style={{ width: 32, height: 32, border: '1px solid rgba(51,65,85,0.5)', borderRadius: 8, background: 'transparent', color: 'rgba(148,163,184,0.6)', fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    style={{ width: 28, height: 28, flexShrink: 0, border: '1px solid rgba(51,65,85,0.5)', borderRadius: 8, background: 'transparent', color: 'rgba(148,163,184,0.6)', fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                   >✕</button>
                 </div>
               </div>
@@ -1064,33 +1065,34 @@ export default function DashboardPage() {
                 background: 'rgba(245,158,11,0.1)',
                 border: '1px solid rgba(245,158,11,0.35)',
                 borderRadius: 14,
-                padding: '14px 18px',
+                padding: '12px 14px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                gap: 12,
+                gap: 10,
+                minWidth: 0,
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <span style={{ fontSize: 22 }}>⚡</span>
-                  <div>
-                    <p style={{ fontSize: 14, fontWeight: 700, color: '#fcd34d', margin: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0 }}>
+                  <span style={{ fontSize: 20, flexShrink: 0 }}>⚡</span>
+                  <div style={{ minWidth: 0 }}>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: '#fcd34d', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       Tu racha de {summary.streak} días está en riesgo
                     </p>
-                    <p style={{ fontSize: 12, color: 'rgba(252,211,77,0.7)', margin: '2px 0 0' }}>
+                    <p style={{ fontSize: 11, color: 'rgba(252,211,77,0.7)', margin: '2px 0 0' }}>
                       Completa tu decisión antes de medianoche
                     </p>
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+                <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
                   <button
                     onClick={() => router.push('/daily')}
-                    style={{ padding: '7px 14px', background: 'rgba(245,158,11,0.3)', border: '1px solid rgba(245,158,11,0.5)', borderRadius: 8, color: '#fcd34d', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}
+                    style={{ padding: '6px 10px', background: 'rgba(245,158,11,0.3)', border: '1px solid rgba(245,158,11,0.5)', borderRadius: 8, color: '#fcd34d', fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}
                   >
-                    Decidir ahora
+                    Decidir
                   </button>
                   <button
                     onClick={() => { setStreakAtRisk(false); setStreakAlertDismissed(true); }}
-                    style={{ padding: '7px 10px', background: 'transparent', border: 'none', color: 'rgba(252,211,77,0.5)', fontSize: 16, cursor: 'pointer' }}
+                    style={{ padding: '6px 8px', background: 'transparent', border: 'none', color: 'rgba(252,211,77,0.5)', fontSize: 16, cursor: 'pointer', flexShrink: 0 }}
                     aria-label="Cerrar alerta"
                   >
                     ✕

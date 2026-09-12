@@ -9,8 +9,8 @@ import {
   storeArchiveGoalSafe,
   storeSetPrimaryGoal,
   storeListActiveGoals,
-  DAILY_QUESTIONS,
 } from '@/services/dashboardStore';
+import { QUESTIONS_BANK } from '@/services/dailyQuestionsBank';
 import { syncGoalToSupabase } from '@/services/syncService';
 import type { Goal, DailyDecision } from '@/types/Dashboard';
 
@@ -252,7 +252,7 @@ export default function GoalDetailPage({ params }: { params: { id: string } }) {
             <h2 style={{ fontSize: 15, fontWeight: 700, color: D.tp, marginBottom: 16 }}>Historial de decisiones</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {decisions.slice(0, 20).map(d => {
-                const q = DAILY_QUESTIONS.find(q => q.questionId === d.questionId);
+                const q = QUESTIONS_BANK.find(q => q.id === d.questionId);
                 return (
                   <div key={d.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: `1px solid ${D.border}` }}>
                     <div>

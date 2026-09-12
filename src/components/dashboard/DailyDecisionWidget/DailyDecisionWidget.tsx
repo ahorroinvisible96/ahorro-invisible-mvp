@@ -321,26 +321,18 @@ export function DailyDecisionWidget({
         {!collapsed && (
           <>
             <div className={styles.questionRow}>
-              {/* Formato: amount o fallback — solo texto */}
-              {(todayQuestion.format === 'amount' || !todayQuestion.format) && (
-                <h2 className={styles.title} style={{ flex: 1 }}>
-                  {todayQuestion.text}
-                </h2>
-              )}
-              {/* Formato: fill_blank — frase con hueco */}
-              {todayQuestion.format === 'fill_blank' && todayQuestion.blankOptions && (
-                <div style={{ flex: 1 }}>
-                  <FillBlankInput
-                    sentence={todayQuestion.text}
-                    options={todayQuestion.blankOptions.map(o => ({ label: o.label, value: o.value }))}
-                    value={signalValue}
-                    customText={customText}
-                    onSelect={setSignalValue}
-                    onCustomTextChange={setCustomText}
-                    disabled={submitting || confirmed}
-                  />
-                </div>
-              )}
+              {/* Pregunta con hueco [___] rellenado por el selector de opciones */}
+              <div style={{ flex: 1 }}>
+                <FillBlankInput
+                  sentence={todayQuestion.text}
+                  options={(todayQuestion.options ?? []).map((o: string) => ({ label: o, value: o }))}
+                  value={signalValue}
+                  customText={customText}
+                  onSelect={setSignalValue}
+                  onCustomTextChange={setCustomText}
+                  disabled={submitting || confirmed}
+                />
+              </div>
               {!confirmed && !submitting && (
                 <button
                   type="button"

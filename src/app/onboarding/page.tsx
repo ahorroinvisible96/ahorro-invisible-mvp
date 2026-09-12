@@ -10,7 +10,6 @@ import {
   storeUpdateIncome,
   storeCreateGoal,
 } from "@/services/dashboardStore";
-import type { UserAvatar } from "@/services/dashboardStore";
 import type { SavingsProfile, IncomeRange } from "@/types/Dashboard";
 import { pushLocalDataToSupabase } from "@/services/syncService";
 
@@ -25,7 +24,7 @@ const INCOME_OPTIONS = [
 ];
 
 // ─── Tipos ─────────────────────────────────────────────────────────────────────
-type AvatarKey     = UserAvatar;
+type AvatarKey     = 'comodo' | 'social' | 'impulsivo';
 type SavingsHabit  = 'nunca' | 'algo' | 'suelo' | 'bastante';
 
 // Porcentaje de ahorro por hábito (NUNCA se muestra al usuario)
@@ -46,30 +45,27 @@ const BEHAVIORAL_STEPS: OnboardingStep[] = [
     icon: '💸', label: 'GASTO',
     question: '¿En qué tipo de gasto sientes que más se te escapa el dinero?',
     options: [
-      { value: 'comodo',      label: 'En cosas que hago por rutina o comodidad: delivery, taxi, café fuera…',      sub: 'Sé que podría hacerlo más barato, pero elijo lo fácil' },
-      { value: 'social',      label: 'En planes, salidas, cenas y todo lo que es vida social',                      sub: 'Paso un buen rato, pero la cuenta siempre me sorprende' },
-      { value: 'impulsivo',   label: 'En cosas que compro sin haberlo planeado: ropa, tecnología, caprichos…',      sub: 'En el momento me apetece y luego me pregunto por qué lo compré' },
-      { value: 'desordenado', label: 'En muchas cosas pequeñas; al final de mes no sé en qué se ha ido',            sub: 'No es un gasto grande, es que se escapan por todos lados' },
+      { value: 'comodo',    label: 'En cosas que hago por rutina o comodidad: delivery, taxi, café fuera…',    sub: 'Sé que podría hacerlo más barato, pero elijo lo fácil' },
+      { value: 'social',    label: 'En planes, salidas, cenas y todo lo que es vida social',                    sub: 'Paso un buen rato, pero la cuenta siempre me sorprende' },
+      { value: 'impulsivo', label: 'En cosas que compro sin haberlo planeado: ropa, tecnología, caprichos…',    sub: 'En el momento me apetece y luego me pregunto por qué lo compré' },
     ],
   },
   {
     icon: '🧠', label: 'COMPORTAMIENTO',
     question: '¿Qué suele hacer que gastes más de lo que querías?',
     options: [
-      { value: 'comodo',      label: 'Que elijo lo más cómodo o rápido sin pararme a buscar algo mejor',            sub: 'La pereza me sale cara' },
-      { value: 'social',      label: 'Que me cuesta decir que no cuando hay un plan o alguien propone algo',        sub: 'No quiero ser el que se queda fuera' },
-      { value: 'impulsivo',   label: 'Que me entra un deseo o un capricho y actúo sin pensarlo',                     sub: 'Lo quiero en ese momento y después ya veré' },
-      { value: 'desordenado', label: 'Que no me doy cuenta de cuánto llevo gastado hasta que ya es tarde',           sub: 'No es que gaste mucho de golpe, es que no llevo la cuenta' },
+      { value: 'comodo',    label: 'Que elijo lo más cómodo o rápido sin pararme a buscar algo mejor',          sub: 'La pereza me sale cara' },
+      { value: 'social',    label: 'Que me cuesta decir que no cuando hay un plan o alguien propone algo',      sub: 'No quiero ser el que se queda fuera' },
+      { value: 'impulsivo', label: 'Que me entra un deseo o un capricho y actúo sin pensarlo',                   sub: 'Lo quiero en ese momento y después ya veré' },
     ],
   },
   {
     icon: '⚡', label: 'MOMENTO CLAVE',
     question: '¿Cuándo te resulta más difícil ahorrar?',
     options: [
-      { value: 'comodo',      label: 'Cuando estoy cansado, con prisa o sin ganas de complicarme',                  sub: 'Si estoy agotado, elijo lo fácil sin pensar' },
-      { value: 'social',      label: 'Cuando hay un plan, una quedada o gente con la que quiero estar',             sub: 'No quiero ser el que dice que no' },
-      { value: 'impulsivo',   label: 'Cuando veo algo que me gusta o me entra un antojo de repente',                 sub: 'En ese momento lo quiero y no puedo evitarlo' },
-      { value: 'desordenado', label: 'No hay un momento concreto; se me va el dinero poco a poco sin darme cuenta', sub: 'Es tan gradual que ni me entero' },
+      { value: 'comodo',    label: 'Cuando estoy cansado, con prisa o sin ganas de complicarme',                sub: 'Si estoy agotado, elijo lo fácil sin pensar' },
+      { value: 'social',    label: 'Cuando hay un plan, una quedada o gente con la que quiero estar',           sub: 'No quiero ser el que dice que no' },
+      { value: 'impulsivo', label: 'Cuando veo algo que me gusta o me entra un antojo de repente',               sub: 'En ese momento lo quiero y no puedo evitarlo' },
     ],
   },
 ];
@@ -84,17 +80,18 @@ const HABIT_OPTIONS: { value: SavingsHabit; label: string; sub: string }[] = [
 
 // ─── Clasificación de avatar (puntuación ponderada) ───────────────────────────
 // Q1 = 1 punto (síntoma), Q2 = 2 puntos (mecanismo), Q3 = 2 puntos (disparador)
+// Puntuaciones conservadas únicamente como dato informativo.
 const ONBOARDING_WEIGHTS = [1, 2, 2];
 
 function classifyAvatar(answers: AvatarKey[]): { avatar: AvatarKey; scores: Record<AvatarKey, number> } {
-  const scores: Record<AvatarKey, number> = { comodo: 0, social: 0, impulsivo: 0, desordenado: 0 };
+  const scores: Record<AvatarKey, number> = { comodo: 0, social: 0, impulsivo: 0 };
   for (let i = 0; i < answers.length; i++) {
     scores[answers[i]] += ONBOARDING_WEIGHTS[i] ?? 1;
   }
   const max     = Math.max(...Object.values(scores));
   const winners = (Object.keys(scores) as AvatarKey[]).filter(k => scores[k] === max);
-  const tieBreak: AvatarKey[] = ['impulsivo', 'social', 'comodo', 'desordenado'];
-  const avatar = winners.length === 1 ? winners[0] : tieBreak.find(k => winners.includes(k)) ?? 'desordenado';
+  const tieBreak: AvatarKey[] = ['impulsivo', 'social', 'comodo'];
+  const avatar = winners.length === 1 ? winners[0] : tieBreak.find(k => winners.includes(k)) ?? 'comodo';
   return { avatar, scores };
 }
 

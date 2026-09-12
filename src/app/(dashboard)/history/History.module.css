@@ -3,23 +3,13 @@
    Visualmente alineada con Goals page
    ═══════════════════════════════════════════════════════════ */
 
-/* ── Página principal — rompe el padding del container ── */
+/* ── Página principal ── */
 .page {
-  margin: -16px;
-  width: calc(100% + 32px);
-  min-height: calc(100vh - 32px);
+  width: 100%;
+  min-height: 100vh;
   box-sizing: border-box;
-  overflow-x: hidden;
   background: #0A0517;
   animation: pageFadeIn 300ms ease both;
-}
-
-@media (min-width: 768px) {
-  .page {
-    margin: -24px;
-    width: calc(100% + 48px);
-    min-height: calc(100vh - 48px);
-  }
 }
 
 @keyframes pageFadeIn {

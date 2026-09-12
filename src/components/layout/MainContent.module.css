@@ -36,8 +36,10 @@
 
 .container {
   width: 100%;
-  /* Padding lateral consistente en todos los dispositivos */
-  padding: 16px;
+  /* Sin padding lateral: el dashboard gestiona su propio padding vía .zoneInner.
+     Otros layouts (history, goals, profile) que necesiten padding deben añadir
+     la clase .containerPadded o aplicar padding directamente en su page.tsx */
+  padding: 0;
   box-sizing: border-box;
   background: var(--color-background-page);
   /* min-height: 100% garantiza que el container cubra TODO el área scrollable
@@ -46,8 +48,13 @@
   min-height: 100%;
 }
 
+/* Variante con padding para páginas que no usen .zoneInner */
+.containerPadded {
+  padding: 16px;
+}
+
 @media (min-width: 768px) {
-  .container {
+  .containerPadded {
     padding: var(--spacing-6, 24px);
   }
 }

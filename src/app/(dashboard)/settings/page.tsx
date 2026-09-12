@@ -7,7 +7,7 @@ import { storeResetAllData, storeExportData, buildSummary } from '@/services/das
 import { authSignOut } from '@/services/authService';
 import { resetUserDataInSupabase } from '@/services/syncService';
 import { getTheme } from '@/styles/themes';
-import { DAILY_QUESTIONS_BANK } from '@/services/dailyQuestionsBank';
+import { QUESTIONS_BANK } from '@/services/dailyQuestionsBank';
 import { SettingsMyDataWidget } from '@/components/settings/SettingsMyDataWidget/SettingsMyDataWidget';
 import { SettingsNotificationsWidget } from '@/components/settings/SettingsNotificationsWidget/SettingsNotificationsWidget';
 import { SettingsSessionWidget } from '@/components/settings/SettingsSessionWidget/SettingsSessionWidget';
@@ -81,26 +81,16 @@ export default function SettingsPage() {
       return str;
     };
 
-    const headers = [
-      'ID', 'Pregunta', 'Importe Sugerido (€)', 'Categoría de Gasto', 'Días Óptimos',
-      'Franja Horaria', 'Fase del Mes', 'Avatar Principal', 'Avatar Secundario',
-      'Peso Escenario (1-3)',
-      'Prioridad Base (1-10)', 'Días Enfriamiento', 'Ahorro Mensual Est. (€)',
-      'Ahorro Anual Est. (€)', 'Impacto Estimado', 'Intención Conductual',
-      'Principio de Hábito', 'Tono', 'Dificultad'
-    ];
+    const headers = ['ID', 'Texto', 'Avatar', 'Franja Horaria', 'Opción 1', 'Opción 2', 'Opción 3'];
 
-    const rows = DAILY_QUESTIONS_BANK.map(q => [
-      q.id, q.text, q.suggestedAmount, q.habitCategory, q.bestDays,
-      q.bestTimeWindow, q.monthPhase, q.targetAvatarPrimary,
-      q.scenarioWeight,
-      q.priorityBase, q.cooldownDays, q.monthlyDelta, q.yearlyDelta,
-      q.labelImpact, q.intent, q.habit_principle, q.tone, q.difficulty
+    const rows = QUESTIONS_BANK.map(q => [
+      q.id, q.text, q.avatar, q.timeSlot,
+      q.options[0] ?? '', q.options[1] ?? '', q.options[2] ?? '',
     ]);
 
     const csvContent = [
       headers.map(escapeCSV).join(','),
-      ...rows.map(row => row.map(escapeCSV).join(','))
+      ...rows.map((row: (string | number | undefined)[]) => row.map(escapeCSV).join(','))
     ].join('\n');
 
     const bom = '\uFEFF';

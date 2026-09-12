@@ -9,7 +9,22 @@
  */
 
 import { getSupabase } from '../geminiService';
-import type { AIQuestionDecision } from '../ai/questionOutputSchema';
+
+// Tipo inline — el schema de IA ya no existe como módulo separado
+interface AIQuestionDecisionLike {
+  decision_type: string;
+  reason: string;
+  should_change_question: boolean;
+  question_intent?: string;
+  target_category?: string;
+  target_avatar?: string[];
+  habit_principle?: string;
+  tone?: string;
+  difficulty?: string;
+  suggested_amount_eur?: number;
+  risk_flags?: string[];
+  confidence?: number;
+}
 
 // ── Tipos ──────────────────────────────────────────────────────────────────
 
@@ -45,7 +60,7 @@ export async function logQuestionImpression(params: {
   attemptNumber: number;
   avatarDominant: string | null;
   avatarConfidence: number;
-  aiDecision: AIQuestionDecision;
+  aiDecision: AIQuestionDecisionLike;
   fromAI: boolean;
 }): Promise<{ ok: boolean; error?: string }> {
   try {

@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { analytics } from "@/services/analytics";
-import { DAILY_QUESTIONS } from "@/services/dashboardStore";
+import { QUESTIONS_BANK } from "@/services/dailyQuestionsBank";
 import type { DailyDecision, Goal } from "@/types/Dashboard";
 
 type StoreShape = { decisions: DailyDecision[]; goals: Goal[] };
@@ -71,7 +71,7 @@ export default function ImpactPage({ params }: { params: { decision_id: string }
     load();
   }, [load]);
 
-  const q = decision ? DAILY_QUESTIONS.find((q) => q.questionId === decision.questionId) : null;
+  const q = decision ? QUESTIONS_BANK.find((q) => q.id === decision.questionId) : null;
   const answerLabel = decision && decision.deltaAmount > 0 ? `Ahorré ${formatEUR(decision.deltaAmount)}` : 'No ahorré hoy';
   const goalPct = goal ? Math.min(100, Math.round((goal.currentAmount / goal.targetAmount) * 100)) : 0;
 
@@ -218,7 +218,7 @@ export default function ImpactPage({ params }: { params: { decision_id: string }
           {/* Compartir */}
           <button
             onClick={async () => {
-              const q = DAILY_QUESTIONS.find((q) => q.questionId === decision.questionId);
+              const q = QUESTIONS_BANK.find((q) => q.id === decision.questionId);
               const shareText = `Con Ahorro Invisible acabo de registrar una decisión consciente. ¡Construyendo hábitos de ahorro! 💡`;
               if (navigator.share) {
                 await navigator.share({ title: 'Mi decisión en Ahorro Invisible', text: shareText, url: 'https://ahorro-invisible.vercel.app' }).catch(() => null);

@@ -1,76 +1,35 @@
 /**
  * POST /api/ai/daily-question
  *
- * Endpoint principal de decisión de pregunta diaria con IA.
+ * Endpoint de selección de pregunta diaria.
+ * Mantiene el contrato de respuesta JSON para compatibilidad de clientes.
  *
- * Flujo:
- *   1. Verificar si el usuario ya respondió hoy → devolver la misma pregunta
- *   2. Verificar si ya hay una impresión en la misma franja → devolver la misma
- *   3. Verificar si se superaron los 3 intentos diarios → skip
- *   4. Construir contexto IA → enviar a Gemini → recibir decisión JSON
- *   5. Buscar pregunta compatible en el banco de 135
- *   6. Filtrar por active, avatar, categoría, franja, dificultad
- *   7. Excluir preguntas recientes (cooldown)
- *   8. Elegir la mejor pregunta por scoring
- *   9. Registrar impresión
- *   10. Devolver pregunta final + metadata
+ * Flujo simplificado (sin IA):
+ *   1. Si el usuario ya respondió hoy → devolver la misma pregunta
+ *   2. Si ya hay impresión en esta franja → devolver la misma
+ *   3. Si se superaron los 3 intentos → skip
+ *   4. Selección directa: avatar del usuario + franja horaria actual
+ *   5. Registrar impresión (sin datos de IA)
+ *   6. Devolver pregunta
  *
- * Body: { userId: string, timeSlot?: string, localDate?: string }
+ * Body: { userId: string, avatar?: string, timeSlot?: string, localDate?: string, recentIds?: string[] }
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { buildAIContext, getCurrentTimeWindow, getMadridDateString } from '@/services/ai/buildAIContext';
-import { askGeminiForQuestionDecision } from '@/services/ai/geminiQuestionClient';
 import { logQuestionImpression, getTodayInteractions } from '@/services/tracking/questionInteractionLogger';
-import {
-  DAILY_QUESTIONS_BANK,
-  getQuestionById,
-  type DailyQuestion,
-} from '@/services/dailyQuestionsBank';
-import type { AIQuestionDecision } from '@/services/ai/questionOutputSchema';
-import { getCurrentTimeSlot4 } from '@/services/ai/baseQuestionMatrix';
+import { getQuestionById } from '@/services/dailyQuestionsBank';
+import { selectDailyQuestion, getCurrentTimeWindow, getTemporalContext } from '@/services/questionSelectionEngine';
+import type { AvatarKey, TimeWindow } from '@/services/questionSelectionEngine';
 
-// ── Scoring de compatibilidad pregunta ↔ decisión IA ─────────────────────
+// ── Helpers ─────────────────────────────────────────────────────────────────
 
-function scoreQuestionForDecision(
-  q: DailyQuestion,
-  decision: AIQuestionDecision,
-  recentIds: string[],
-): number {
-  let score = 0;
-
-  // Coincidencia con avatar target
-  for (const av of decision.target_avatar) {
-    if (q.targetAvatarPrimary === av) score += 40;
-  }
-
-  // Coincidencia con categoría
-  if (q.habitCategory.toLowerCase().includes(decision.target_category.toLowerCase())) {
-    score += 20;
-  }
-
-  // Coincidencia con intención
-  if (q.intent && q.intent.includes(decision.question_intent.toLowerCase())) {
-    score += 15;
-  }
-
-  // Coincidencia con dificultad
-  if (q.difficulty === decision.difficulty) score += 10;
-
-  // Coincidencia con habit_principle
-  if (q.habit_principle === decision.habit_principle) score += 10;
-
-  // Pesos intrínsecos
-  score += q.priorityBase;
-  score += q.scenarioWeight * 2;
-
-  // Penalización por repetición reciente
-  if (recentIds.includes(q.id)) score -= 50;
-
-  return score;
+function resolveAvatar(raw: string | null | undefined): AvatarKey {
+  if (raw === 'comodo' || raw === 'social' || raw === 'impulsivo') return raw;
+  if (raw === 'desordenado') return 'impulsivo'; // migración legacy
+  return 'comodo';
 }
 
-// ── Handler ──────────────────────────────────────────────────────────────
+// ── Handler ──────────────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
   try {
@@ -81,25 +40,34 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'userId requerido' }, { status: 400 });
     }
 
-    const timeSlot = (body.timeSlot as string) || getCurrentTimeWindow();
-    const localDate = (body.localDate as string) || getMadridDateString();
+    const ctx = getTemporalContext();
+    const timeSlot: TimeWindow = (body.timeSlot as TimeWindow) || ctx.timeWindow;
+    const localDate: string    = (body.localDate as string)   || ctx.date;
+    const avatar = resolveAvatar(body.avatar as string | undefined);
 
-    // ── 1. Verificar estado del día ─────────────────────────────────────
+    // IDs de preguntas recientes (últimos 7 días) para evitar repetición
+    const recentIds: string[] = Array.isArray(body.recentIds)
+      ? (body.recentIds as string[]).slice(0, 20)
+      : [];
+
+    // ── 1. Verificar estado del día (via tracking) ──────────────────────
     const { interactions, hasRespondedToday, currentAttempt } =
       await getTodayInteractions(userId, localDate);
 
-    // Si ya respondió hoy → devolver la pregunta que respondió
+    // Si ya respondió hoy → devolver la pregunta respondida
     if (hasRespondedToday) {
       const respondedInteraction = interactions.find(i => i.responded);
       if (respondedInteraction) {
         const answeredQ = getQuestionById(respondedInteraction.question_id);
         if (answeredQ) {
           return NextResponse.json({
-            question_id: answeredQ.id,
-            text: answeredQ.text,
-            time_slot: timeSlot,
-            is_retry: false,
-            attempt_number: respondedInteraction.attempt_number,
+            question_id:     answeredQ.id,
+            text:            answeredQ.text,
+            options:         answeredQ.options,
+            avatar:          answeredQ.avatar,
+            time_slot:       timeSlot,
+            is_retry:        false,
+            attempt_number:  respondedInteraction.attempt_number,
             already_answered: true,
           });
         }
@@ -114,11 +82,13 @@ export async function POST(req: NextRequest) {
       const existingQ = getQuestionById(sameSlotInteraction.question_id);
       if (existingQ) {
         return NextResponse.json({
-          question_id: existingQ.id,
-          text: existingQ.text,
-          time_slot: timeSlot,
-          is_retry: sameSlotInteraction.attempt_number > 1,
-          attempt_number: sameSlotInteraction.attempt_number,
+          question_id:     existingQ.id,
+          text:            existingQ.text,
+          options:         existingQ.options,
+          avatar:          existingQ.avatar,
+          time_slot:       timeSlot,
+          is_retry:        sameSlotInteraction.attempt_number > 1,
+          attempt_number:  sameSlotInteraction.attempt_number,
           already_answered: false,
         });
       }
@@ -127,106 +97,61 @@ export async function POST(req: NextRequest) {
     // Si se superaron los 3 intentos → skip
     if (currentAttempt > 3) {
       return NextResponse.json({
-        question_id: null,
-        text: null,
-        time_slot: timeSlot,
-        is_retry: false,
-        attempt_number: 3,
+        question_id:     null,
+        text:            null,
+        time_slot:       timeSlot,
+        is_retry:        false,
+        attempt_number:  3,
         already_answered: false,
-        skip_today: true,
-        reason: 'Se alcanzó el máximo de 3 intentos diarios',
+        skip_today:      true,
+        reason:          'Se alcanzó el máximo de 3 intentos diarios',
       });
     }
 
-    // ── 2. Construir contexto IA ────────────────────────────────────────
-    const aiContext = await buildAIContext(userId);
-
-    // ── 3. Pedir decisión a Gemini (incluye pregunta base de la matriz) ─
-    const { decision, fromAI, baseQuestion } = await askGeminiForQuestionDecision(aiContext);
-
-    // Si la IA dice skip_today → respetar
-    if (decision.decision_type === 'skip_today') {
-      return NextResponse.json({
-        question_id: null,
-        text: null,
-        time_slot: timeSlot,
-        is_retry: false,
-        attempt_number: currentAttempt,
-        already_answered: false,
-        skip_today: true,
-        reason: decision.reason,
-      });
-    }
-
-    // ── 4. Seleccionar pregunta ──────────────────────────────────────────
+    // ── 2. Selección directa: avatar + franja ───────────────────────────
     const todayQuestionIds = interactions.map(i => i.question_id);
-    const recentIds = [
-      ...todayQuestionIds,
-      ...aiContext.recent_question_ids.slice(0, 10),
-    ];
+    const excludeIds = [...new Set([...todayQuestionIds, ...recentIds])];
 
-    let selected: DailyQuestion | undefined;
+    const selected = selectDailyQuestion(avatar, localDate, timeSlot, excludeIds);
 
-    // Si la IA dice mantener la pregunta base y no se ha mostrado hoy
-    if (!decision.should_change_question && !todayQuestionIds.includes(baseQuestion.questionId)) {
-      selected = getQuestionById(baseQuestion.questionId);
-    }
-
-    // Si hay que cambiar, o la base no estaba disponible → scoring
-    if (!selected) {
-      const candidates = DAILY_QUESTIONS_BANK
-        .filter(q => q.active !== false)
-        .filter(q => !todayQuestionIds.includes(q.id));
-
-      const scored = candidates
-        .map(q => ({
-          question: q,
-          score: scoreQuestionForDecision(q, decision, recentIds),
-        }))
-        .sort((a, b) => b.score - a.score);
-
-      selected = scored[0]?.question;
-    }
-
-    if (!selected) {
-      // Fallback absoluto: elegir aleatoria del banco
-      const fallback = DAILY_QUESTIONS_BANK[
-        Math.floor(Math.random() * DAILY_QUESTIONS_BANK.length)
-      ];
-      return NextResponse.json({
-        question_id: fallback.id,
-        text: fallback.text,
-        time_slot: timeSlot,
-        is_retry: currentAttempt > 1,
-        attempt_number: currentAttempt,
-        already_answered: false,
-      });
-    }
-
-    // ── 5. Registrar impresión ──────────────────────────────────────────
+    // ── 3. Registrar impresión ──────────────────────────────────────────
     await logQuestionImpression({
       userId,
-      questionId: selected.id,
+      questionId:       selected.id,
       localDate,
       timeSlot,
-      attemptNumber: currentAttempt,
-      avatarDominant: aiContext.avatar_dominant,
-      avatarConfidence: aiContext.avatar_confidence,
-      aiDecision: decision,
-      fromAI,
+      attemptNumber:    currentAttempt,
+      avatarDominant:   avatar,
+      avatarConfidence: 1.0,
+      // Campos legacy de IA rellenados con valores neutros
+      aiDecision: {
+        decision_type:        'select_question',
+        question_intent:      'ahorro_general',
+        target_category:      selected.avatar,
+        target_avatar:        [avatar],
+        habit_principle:      'easy',
+        tone:                 'motivador',
+        difficulty:           'low',
+        suggested_amount_eur: 5,
+        should_change_question: false,
+        reason:               'seleccion_directa_sin_ia',
+        risk_flags:           [],
+        confidence:           1.0,
+      },
+      fromAI: false,
     }).catch(err => {
-      // No bloquear la respuesta si falla el logging
-      console.error('[daily-question] impression log failed:', err);
+      console.warn('[daily-question] impression log failed (non-blocking):', err);
     });
 
-    // ── 6. Devolver respuesta ───────────────────────────────────────────
+    // ── 4. Devolver respuesta ───────────────────────────────────────────
     return NextResponse.json({
-      question_id: selected.id,
-      text: selected.text,
-      time_slot: timeSlot,
-      time_slot_4: getCurrentTimeSlot4(),
-      is_retry: currentAttempt > 1,
-      attempt_number: currentAttempt,
+      question_id:     selected.id,
+      text:            selected.text,
+      options:         selected.options,
+      avatar:          selected.avatar,
+      time_slot:       timeSlot,
+      is_retry:        currentAttempt > 1,
+      attempt_number:  currentAttempt,
       already_answered: false,
     });
   } catch (err) {

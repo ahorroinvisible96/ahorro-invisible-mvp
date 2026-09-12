@@ -223,20 +223,17 @@ export default function DailyPage() {
         <div className={styles.questionCard}>
           <p className={styles.questionLabel}>Decisión del día</p>
 
-          {/* Formato: fill_blank */}
-          {question.format === 'fill_blank' && question.blankOptions && (
+          {/* Pregunta con hueco [___] — siempre usa opciones del banco */}
+          {question.options && question.options.length > 0 ? (
             <FillBlankInput
               sentence={question.text}
-              options={question.blankOptions.map(o => ({ label: o.label, value: o.value }))}
+              options={(question.options ?? []).map((o: string) => ({ label: o, value: o }))}
               value={signalValue}
               customText={customText}
               onSelect={setSignalValue}
               onCustomTextChange={setCustomText}
             />
-          )}
-
-          {/* Formato: amount (solo texto) */}
-          {(question.format === 'amount' || !question.format) && (
+          ) : (
             <h1 className={styles.questionTitle}>{question.text}</h1>
           )}
         </div>

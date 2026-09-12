@@ -1,464 +1,167 @@
 /**
- * Question Selection Engine — Motor contextual de selección de preguntas
+ * Question Selection Engine — Motor de selección de preguntas diarias
  *
- * Combina tres variables para elegir la pregunta diaria más relevante:
- *   1. Perfil del usuario (avatar)
- *   2. Día de la semana
- *   3. Franja horaria actual
+ * Selecciona la pregunta del día según:
+ *   1. Avatar del usuario (comodo | social | impulsivo)
+ *   2. Franja horaria actual (Mañana | Tarde | Noche)
  *
- * Comportamiento clave:
- *   - Si el usuario NO ha respondido la pregunta diaria, puede actualizarse
- *     automáticamente al cambiar de franja horaria.
- *   - Si el usuario YA respondió, la pregunta se bloquea para ese día.
- *   - Cada franja horaria prioriza diferentes tipos de pregunta.
+ * NO existe scoring, NO existe IA en la selección, NO existe cambio de avatar.
+ * Las preguntas se sirven para registrar ahorro y reforzar hábitos.
+ *
+ * Estabilidad: dentro de la misma franja horaria del mismo día, el mismo
+ * usuario recibe siempre la misma pregunta (hash determinístico por fecha+franja+avatar).
+ * Al cambiar de franja, puede cambiar la pregunta si aún no respondió.
  */
 
 import {
-  ACTIVE_QUESTIONS_BANK,
-  type DailyQuestion,
-  type QuestionFormat,
-  type BlankOption,
+  QUESTIONS_BANK,
+  getQuestionsForSlot,
+  type BankQuestion,
+  type AvatarKey,
+  type TimeWindow,
 } from './dailyQuestionsBank';
-import type { AvatarKey } from './profilingService';
 
-/**
- * Devuelve el banco activo de preguntas.
- * Las preguntas Q_P_ (perfil/piloto) han sido eliminadas del banco.
- * Siempre se usa ACTIVE_QUESTIONS_BANK.
- */
-function getActiveBank(): DailyQuestion[] {
-  return ACTIVE_QUESTIONS_BANK;
-}
+export type { AvatarKey, TimeWindow, BankQuestion };
 
-// ── Franjas horarias ─────────────────────────────────────────────────────────
-export type TimeWindow = 'Madrugada' | 'Mañana' | 'Tarde' | 'Noche';
-
+// ── Franja horaria ─────────────────────────────────────────────────────────────
 export function getCurrentTimeWindow(): TimeWindow {
   const hour = new Date().getHours();
-  if (hour >= 0 && hour < 6) return 'Madrugada';
   if (hour >= 6 && hour < 14) return 'Mañana';
   if (hour >= 14 && hour < 20) return 'Tarde';
-  return 'Noche'; // 20-24
+  return 'Noche'; // 20-06
 }
 
-// ── Día de la semana en español ──────────────────────────────────────────────
-const DAY_NAMES = [
-  'Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado',
-] as const;
-
-export function getCurrentDayName(): string {
-  return DAY_NAMES[new Date().getDay()];
-}
-
-// ── Contexto temporal completo ───────────────────────────────────────────────
+// ── Contexto temporal ─────────────────────────────────────────────────────────
 export interface TemporalContext {
-  dayName: string;
-  dayIndex: number;        // 0 = Domingo … 6 = Sábado
+  date: string;       // YYYY-MM-DD
   timeWindow: TimeWindow;
-  isWeekend: boolean;
-  monthPhase: 'Inicio' | 'Mitad' | 'Final' | 'Cualquiera';
 }
 
 export function getTemporalContext(): TemporalContext {
-  const now = new Date();
-  const dayIndex = now.getDay();
-  const dayOfMonth = now.getDate();
-  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-
-  let monthPhase: TemporalContext['monthPhase'] = 'Cualquiera';
-  if (dayOfMonth <= 5) monthPhase = 'Inicio';
-  else if (dayOfMonth >= 12 && dayOfMonth <= 18) monthPhase = 'Mitad';
-  else if (dayOfMonth >= daysInMonth - 5) monthPhase = 'Final';
-
   return {
-    dayName: DAY_NAMES[dayIndex],
-    dayIndex,
+    date: new Date().toISOString().split('T')[0],
     timeWindow: getCurrentTimeWindow(),
-    isWeekend: dayIndex === 0 || dayIndex === 5 || dayIndex === 6,
-    monthPhase,
   };
 }
 
-// ── Perfil del usuario ───────────────────────────────────────────────────────
-export interface UserProfile {
-  /** Avatar principal del usuario (sin 'constructor') */
-  avatar: AvatarKey | null;
-  /** Distribución de scores entre avatares. NUNCA visible al usuario. */
-  avatarScores: Record<AvatarKey, number> | null;
-  streak: number;
-}
-
-// ── Scoring de relevancia ────────────────────────────────────────────────────
-interface ScoredQuestion {
-  question: DailyQuestion;
-  score: number;
-}
-
-/**
- * Comprueba si el `bestDays` de una pregunta encaja con el día actual.
- * Formatos soportados:
- *   - "Cualquier día"
- *   - "Lunes, Martes, Miércoles"
- *   - "Lunes a Viernes"
- *   - "Viernes, Sábado"
- *   - "Sábado, Domingo"
- *   - "Últimos 5 días" / "Últimos 3 días" / "Primeros 5 días" / etc.
- */
-function matchesBestDays(bestDays: string, ctx: TemporalContext): boolean {
-  const bd = bestDays.toLowerCase().trim();
-
-  // "Cualquier día" siempre encaja
-  if (bd.includes('cualquier')) return true;
-
-  // Rangos del tipo "Lunes a Viernes", "Domingo a Jueves"
-  const rangeMatch = bd.match(/^(\w+)\s+a\s+(\w+)$/);
-  if (rangeMatch) {
-    const startIdx = DAY_NAMES.findIndex(d => d.toLowerCase() === rangeMatch[1]);
-    const endIdx = DAY_NAMES.findIndex(d => d.toLowerCase() === rangeMatch[2]);
-    if (startIdx !== -1 && endIdx !== -1) {
-      if (startIdx <= endIdx) {
-        return ctx.dayIndex >= startIdx && ctx.dayIndex <= endIdx;
-      }
-      // Wrap-around (p.ej. "Viernes a Lunes")
-      return ctx.dayIndex >= startIdx || ctx.dayIndex <= endIdx;
-    }
-  }
-
-  // "Últimos N días" / "Primeros N días"
-  if (bd.includes('ltimos') || bd.includes('últimos')) {
-    const n = parseInt(bd.match(/\d+/)?.[0] ?? '5');
-    const now = new Date();
-    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-    return now.getDate() > daysInMonth - n;
-  }
-  if (bd.includes('primeros')) {
-    const n = parseInt(bd.match(/\d+/)?.[0] ?? '5');
-    return new Date().getDate() <= n;
-  }
-
-  // Lista de días: "Viernes, Sábado"
-  const currentDayLower = ctx.dayName.toLowerCase();
-  return bd.split(',').some(d => d.trim() === currentDayLower);
-}
-
-/**
- * Comprueba si el `bestTimeWindow` encaja con la franja horaria actual.
- */
-function matchesTimeWindow(bestTimeWindow: string, currentWindow: TimeWindow): boolean {
-  const tw = bestTimeWindow.toLowerCase().trim();
-  if (tw === 'cualquiera' || tw === '') return true;
-  return tw === currentWindow.toLowerCase();
-}
-
-/**
- * Comprueba si la fase del mes encaja.
- */
-function matchesMonthPhase(questionPhase: string, contextPhase: TemporalContext['monthPhase']): boolean {
-  const qp = questionPhase.toLowerCase().trim();
-  if (qp === 'cualquiera' || qp === '') return true;
-  if (qp === 'post-cobro' && contextPhase === 'Inicio') return true;
-  return qp.toLowerCase() === contextPhase.toLowerCase();
-}
-
-// ── Motor principal de scoring ────────────────────────────────────────────────
-/**
- * Calcula una puntuación de relevancia para cada pregunta del banco
- * basándose en el perfil del usuario y el contexto temporal.
- *
- * Pesos de scoring:
- *   +40  — Avatar primario coincide con el avatar target seleccionado
- *   +20  — Día de la semana encaja con bestDays
- *   +15  — Franja horaria encaja con bestTimeWindow
- *   +10  — Fase del mes encaja con monthPhase
- *   +N   — priorityBase de la pregunta (0-10)
- *   +N   — scenarioWeight × 2
- *
- * No existe bonus por avatar secundario. La selección de avatar
- * se gestiona exclusivamente mediante selectTargetAvatar() y los
- * avatarScores acumulados del usuario.
- */
-export function scoreQuestions(
-  profile: UserProfile,
-  ctx: TemporalContext,
-): ScoredQuestion[] {
-  return getActiveBank().map(q => {
-    let score = 0;
-
-    // ── 1. Perfil del usuario (solo avatar primario) ───────────────────────────
-    if (profile.avatar) {
-      if (q.targetAvatarPrimary === profile.avatar) score += 40;
-    }
-
-    // ── 2. Día de la semana ───────────────────────────────────────────────────
-    if (matchesBestDays(q.bestDays, ctx)) {
-      score += 20;
-    }
-
-    // ── 3. Franja horaria ────────────────────────────────────────────────
-    if (matchesTimeWindow(q.bestTimeWindow, ctx.timeWindow)) {
-      score += 15;
-    }
-
-    // ── 4. Fase del mes ──────────────────────────────────────────────────
-    if (matchesMonthPhase(q.monthPhase, ctx.monthPhase)) {
-      score += 10;
-    }
-
-    // ── 5. Pesos intrínsecos de la pregunta ──────────────────────────────
-    score += q.priorityBase;
-    score += q.scenarioWeight * 2;
-
-    return { question: q, score };
-  });
-}
-
-// ── Selección ponderada con variación ────────────────────────────────────────
-/**
- * Genera un hash determinístico a partir de una seed string.
- * Usado para que la misma franja horaria del mismo día devuelva
- * la misma pregunta (estabilidad), pero cambie entre franjas.
- */
+// ── Hash determinístico ───────────────────────────────────────────────────────
 function hashSeed(seed: string): number {
   let hash = 0;
   for (let i = 0; i < seed.length; i++) {
     const ch = seed.charCodeAt(i);
     hash = ((hash << 5) - hash) + ch;
-    hash |= 0; // Convert to 32bit integer
+    hash |= 0;
   }
   return Math.abs(hash);
 }
 
+// ── Selección principal ───────────────────────────────────────────────────────
+
 /**
- * Selecciona un avatar target basándose en la distribución de scores.
+ * Selecciona la pregunta diaria para un usuario.
  *
- * Reglas:
- *   - Si la diferencia entre top-1 y top-2 es < 10% → 50/50
- *   - Si la ratio top1/(top1+top2) está entre 0.55 y 0.65 → 70/30
- *   - Si la ratio top1/(top1+top2) es > 0.65 → 100% top-1
- *
- * Este mecanismo es completamente interno y nunca se muestra al usuario.
+ * @param avatar           Avatar del usuario
+ * @param date             Fecha (YYYY-MM-DD). Por defecto: hoy.
+ * @param timeWindow       Franja horaria. Por defecto: la actual.
+ * @param excludeIds       IDs de preguntas recientes a evitar (últimos 7 días)
  */
-function selectTargetAvatar(
-  scores: Record<AvatarKey, number>,
-  seed: string,
-): AvatarKey {
-  const entries = (Object.entries(scores) as [AvatarKey, number][])
-    .sort((a, b) => b[1] - a[1]);
-
-  const top1 = entries[0];
-  const top2 = entries[1];
-
-  // Si solo hay un avatar con score > 0, usar ese
-  if (!top2 || top2[1] === 0) return top1[0];
-
-  const sum = top1[1] + top2[1];
-  if (sum === 0) return top1[0];
-
-  const ratio = top1[1] / sum; // 0.5 = empate perfecto, 1.0 = dominancia total
-
-  // Calcular probabilidad de elegir top-1
-  let probTop1: number;
-  if (ratio < 0.55) {
-    // Empate → 50/50
-    probTop1 = 0.50;
-  } else if (ratio <= 0.65) {
-    // Dominancia moderada → 70/30
-    probTop1 = 0.70;
-  } else {
-    // Dominancia clara → 100% top-1
-    return top1[0];
-  }
-
-  // Usar hash determinístico para decidir (mismo seed = mismo resultado)
-  const roll = (hashSeed(seed + ':avatar') % 100) / 100;
-  return roll < probTop1 ? top1[0] : top2[0];
-}
-
-export function selectQuestion(
-  profile: UserProfile,
-  ctx: TemporalContext,
+export function selectDailyQuestion(
+  avatar: AvatarKey,
+  date?: string,
+  timeWindow?: TimeWindow,
   excludeIds: string[] = [],
-): DailyQuestion {
-  // ── Determinar el avatar target para esta sesión ──────────────────────────
-  const today = new Date().toISOString().split('T')[0];
-  const seed = `${today}:${ctx.timeWindow}:${profile.avatar ?? 'none'}`;
+): BankQuestion {
+  const ctx = getTemporalContext();
+  const resolvedDate = date ?? ctx.date;
+  const resolvedSlot = timeWindow ?? ctx.timeWindow;
 
-  let targetAvatar: AvatarKey | null = profile.avatar;
+  // Obtener pool filtrado por avatar + franja
+  let pool = getQuestionsForSlot(avatar, resolvedSlot);
 
-  // Si tenemos scores detallados, usar selección probabilística
-  if (profile.avatarScores) {
-    targetAvatar = selectTargetAvatar(profile.avatarScores, seed);
+  // Excluir preguntas recientes si quedan suficientes candidatos
+  const filtered = pool.filter(q => !excludeIds.includes(q.id));
+  if (filtered.length >= 3) pool = filtered;
+
+  if (pool.length === 0) {
+    // Fallback: cualquier pregunta del avatar sin filtro de franja
+    const avatarPool = QUESTIONS_BANK.filter(q => q.avatar === avatar);
+    if (avatarPool.length > 0) pool = avatarPool;
+    else pool = QUESTIONS_BANK; // último recurso
   }
 
-  // ── Pre-filtrar el pool según el avatar target ────────────────────────────
-  let pool = getActiveBank();
-
-  if (targetAvatar) {
-    const avatarPool = getActiveBank().filter(
-      q => q.targetAvatarPrimary === targetAvatar
-    );
-    if (avatarPool.length >= 3) pool = avatarPool;
-  }
-
-  const scored = pool.map(q => {
-    let score = 0;
-
-    // ── 1. Perfil del usuario (solo avatar primario) ───────────────────────────
-    if (profile.avatar) {
-      if (q.targetAvatarPrimary === profile.avatar) score += 40;
-    }
-
-    // ── 2. Día de la semana ──────────────────────────────────────────────
-    if (matchesBestDays(q.bestDays, ctx)) {
-      score += 20;
-    }
-
-    // ── 3. Franja horaria ────────────────────────────────────────────────
-    if (matchesTimeWindow(q.bestTimeWindow, ctx.timeWindow)) {
-      score += 15;
-    }
-
-    // ── 4. Fase del mes ──────────────────────────────────────────────────
-    if (matchesMonthPhase(q.monthPhase, ctx.monthPhase)) {
-      score += 10;
-    }
-
-    // ── 5. Pesos intrínsecos de la pregunta ──────────────────────────────
-    score += q.priorityBase;
-    score += q.scenarioWeight * 2;
-
-    return { question: q, score };
-  }).filter(sq => !excludeIds.includes(sq.question.id));
-
-  // Ordenar por score descendente
-  scored.sort((a, b) => b.score - a.score);
-
-  // Tomar las top 5 preguntas para variedad
-  const topN = scored.slice(0, Math.min(5, scored.length));
-
-  // Usar hash determinístico basado en fecha + franja para estabilidad
-  // pero variación entre franjas horarias
-  const idx = hashSeed(seed) % topN.length;
-
-  return topN[idx].question;
+  // Hash determinístico: misma fecha + franja + avatar → misma pregunta
+  const seed = `${resolvedDate}:${resolvedSlot}:${avatar}`;
+  const idx = hashSeed(seed) % pool.length;
+  return pool[idx];
 }
 
 /**
  * Selecciona una pregunta alternativa distinta a la actual.
- * Usa el mismo pool filtrado por avatar/franja pero excluye la pregunta actual
- * y elige aleatoriamente entre las top 8 candidatas.
+ * Útil cuando el usuario quiere ver otra pregunta antes de responder.
+ * Usa aleatoriedad real (no determinística) para variedad.
  */
 export function selectAlternativeQuestion(
-  profile: UserProfile,
-  ctx: TemporalContext,
+  avatar: AvatarKey,
+  timeWindow: TimeWindow,
   currentQuestionId: string,
   excludeIds: string[] = [],
-): DailyQuestion | null {
-  const today = new Date().toISOString().split('T')[0];
-  const seed = `${today}:${ctx.timeWindow}:${profile.avatar ?? 'none'}`;
-
-  let targetAvatar: AvatarKey | null = profile.avatar;
-  if (profile.avatarScores) {
-    targetAvatar = selectTargetAvatar(profile.avatarScores, seed);
-  }
-
-  let pool = getActiveBank();
-  if (targetAvatar) {
-    const avatarPool = getActiveBank().filter(
-      q => q.targetAvatarPrimary === targetAvatar
-    );
-    if (avatarPool.length >= 3) pool = avatarPool;
-  }
-
-  // Excluir la pregunta actual y las recientes
+): BankQuestion | null {
+  let pool = getQuestionsForSlot(avatar, timeWindow);
   const allExcluded = [...excludeIds, currentQuestionId];
+  pool = pool.filter(q => !allExcluded.includes(q.id));
 
-  const scored = pool.map(q => {
-    let score = 0;
-    // Solo avatar primario — sin bonus por avatar secundario
-    if (profile.avatar) {
-      if (q.targetAvatarPrimary === profile.avatar) score += 40;
-    }
-    if (matchesBestDays(q.bestDays, ctx)) score += 20;
-    if (matchesTimeWindow(q.bestTimeWindow, ctx.timeWindow)) score += 15;
-    if (matchesMonthPhase(q.monthPhase, ctx.monthPhase)) score += 10;
-    score += q.priorityBase;
-    score += q.scenarioWeight * 2;
-    return { question: q, score };
-  }).filter(sq => !allExcluded.includes(sq.question.id));
+  if (pool.length === 0) {
+    // Fallback: avatar sin filtro de franja, excluyendo la actual
+    pool = QUESTIONS_BANK
+      .filter(q => q.avatar === avatar && !allExcluded.includes(q.id));
+  }
+  if (pool.length === 0) return null;
 
-  if (scored.length === 0) return null;
-
-  scored.sort((a, b) => b.score - a.score);
-
-  // Tomar top 8 para más variedad al cambiar
-  const topN = scored.slice(0, Math.min(8, scored.length));
-
-  // Aleatorio real (no determinístico) para que cada cambio sea distinto
-  const idx = Math.floor(Math.random() * topN.length);
-  return topN[idx].question;
+  const idx = Math.floor(Math.random() * pool.length);
+  return pool[idx];
 }
-
-// ── API pública: pregunta contextual del día ─────────────────────────────────
 
 /**
  * Obtiene la pregunta diaria contextual para el usuario.
+ * Si ya respondió hoy, devuelve la misma pregunta respondida.
  *
- * Lógica:
- *   1. Si ya respondió hoy → no se cambia, se devuelve la que respondió
- *   2. Si NO respondió → se selecciona la más relevante para:
- *      - Su perfil (avatar)
- *      - El día actual
- *      - La franja horaria actual
- *   3. La pregunta puede cambiar entre franjas (mañana → tarde → noche)
- *      siempre que NO haya sido respondida
- *
- * @param profile            Perfil del usuario
+ * @param avatar             Avatar del usuario
  * @param answeredToday      Si ya respondió la pregunta hoy
- * @param lastQuestionId     ID de la última pregunta mostrada (si respondió)
- * @param recentQuestionIds  IDs de preguntas respondidas los últimos 7 días
- * @returns                  La pregunta seleccionada para este momento
+ * @param lastQuestionId     ID de la pregunta que respondió (si respondió)
+ * @param recentQuestionIds  IDs de preguntas de los últimos 7 días
  */
 export function getContextualDailyQuestion(
-  profile: UserProfile,
+  avatar: AvatarKey | null,
   answeredToday: boolean,
   lastQuestionId: string | null = null,
   recentQuestionIds: string[] = [],
-): DailyQuestion {
-  // Si ya respondió hoy, devolver la misma pregunta que respondió
+): BankQuestion {
+  // Si ya respondió hoy, devolver la misma pregunta
   if (answeredToday && lastQuestionId) {
-    const answeredQ = getActiveBank().find(q => q.id === lastQuestionId);
-    if (answeredQ) return answeredQ;
+    const answered = QUESTIONS_BANK.find(q => q.id === lastQuestionId);
+    if (answered) return answered;
   }
 
+  const resolvedAvatar: AvatarKey = avatar ?? 'comodo';
   const ctx = getTemporalContext();
-
-  // Excluir preguntas respondidas recientemente para evitar repetición
-  return selectQuestion(profile, ctx, recentQuestionIds);
+  return selectDailyQuestion(resolvedAvatar, ctx.date, ctx.timeWindow, recentQuestionIds);
 }
 
 /**
- * Convierte una DailyQuestion del banco a formato del dashboardStore.
- * Nuevo formato: basado en importe, no en sí/no.
+ * Convierte una BankQuestion al formato simplificado para el dashboard.
  */
-export function toDashboardQuestion(q: DailyQuestion): {
+export function toDashboardQuestion(q: BankQuestion): {
   questionId: string;
   text: string;
-  format: QuestionFormat;
-  blankOptions?: BlankOption[];
-  tags: string[];
-  allowOther?: boolean;
-  otherRequiresAI?: boolean;
-  aiConfidenceThreshold?: number;
+  options: string[];
+  avatar: AvatarKey;
+  timeSlot: TimeWindow;
 } {
   return {
     questionId: q.id,
     text: q.text,
-    format: q.format,
-    blankOptions: q.blankOptions,
-    tags: [q.habitCategory, q.targetAvatarPrimary].filter(Boolean),
-    allowOther: q.allowOther,
-    otherRequiresAI: q.otherRequiresAI,
-    aiConfidenceThreshold: q.aiConfidenceThreshold,
+    options: q.options,
+    avatar: q.avatar,
+    timeSlot: q.timeSlot,
   };
 }

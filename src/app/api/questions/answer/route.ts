@@ -16,7 +16,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { logQuestionAnswer, getTodayInteractions } from '@/services/tracking/questionInteractionLogger';
-import { getCurrentTimeWindow, getMadridDateString } from '@/services/ai/buildAIContext';
+import { getCurrentTimeWindow, getTemporalContext } from '@/services/questionSelectionEngine';
 import { getSupabase } from '@/services/geminiService';
 
 export async function POST(req: NextRequest) {
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     const answerKey = (body.answer_key as string) || 'saved';
     const savedAmount = typeof body.saved_amount === 'number' ? body.saved_amount : 0;
     const timeSlot = (body.timeSlot as string) || getCurrentTimeWindow();
-    const localDate = (body.localDate as string) || getMadridDateString();
+    const localDate = (body.localDate as string) || getTemporalContext().date;
 
     if (!userId || !questionId) {
       return NextResponse.json(

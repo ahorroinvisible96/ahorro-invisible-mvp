@@ -3,12 +3,10 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import type { DailyDecision, Goal } from '@/types/Dashboard';
 import {
-  DAILY_QUESTIONS,
-  DAILY_DECISION_RULES,
   storeDeleteDecision,
   storeEditDecision,
 } from '@/services/dashboardStore';
-import { DAILY_QUESTIONS_BANK } from '@/services/dailyQuestionsBank';
+import { QUESTIONS_BANK } from '@/services/dailyQuestionsBank';
 
 const STORAGE_KEY = 'ahorro_invisible_dashboard_v1';
 
@@ -31,59 +29,39 @@ export type HistoryDecisionItem = DailyDecision & {
 const CUTOFF_DAYS: Record<string, number> = { '7d': 7, '30d': 30, '90d': 90 };
 
 /**
- * Resuelve el texto humano de una pregunta.
- * Busca primero en el legacy pool (20 preguntas) y después
- * en el banco completo de 135 preguntas.
+ * Resuelve el texto humano de una pregunta desde el banco v2.
  * NUNCA devuelve un ID técnico al usuario.
  */
 function getQuestionText(questionId: string): string {
   if (questionId === 'extra_saving') return 'Ahorro añadido manualmente';
   if (questionId === 'grace_day') return 'Día de gracia';
 
-  // 1. Buscar en legacy pool
-  const legacy = DAILY_QUESTIONS.find((q) => q.questionId === questionId);
-  if (legacy) return legacy.text;
+  const bankQ = QUESTIONS_BANK.find((q) => q.id === questionId);
+  if (bankQ) return bankQ.text.replace('[___]', '...');
 
-  // 2. Buscar en banco de 135 preguntas (IDs tipo Q_CI_01, Q_FS_02, etc.)
-  const bankQ = DAILY_QUESTIONS_BANK.find((q) => q.id === questionId);
-  if (bankQ) return bankQ.text;
-
-  // 3. Fallback humano: nunca mostrar IDs técnicos
+  // Fallback humano: nunca mostrar IDs técnicos
   if (questionId.startsWith('Q_')) return 'Decisión de ahorro';
   return questionId;
 }
 
 /**
  * Resuelve la etiqueta de respuesta a un texto legible.
- * Evita mostrar claves internas como answer keys crudas.
  */
-function getAnswerLabel(questionId: string, answerKey: string): string {
-  if (questionId === 'extra_saving') return 'Ahorro manual';
-  if (questionId === 'grace_day') return 'Sin pregunta';
+function getAnswerLabel(_questionId: string, answerKey: string): string {
   if (answerKey === 'zero') return 'Sin ahorro';
   if (answerKey === 'saved') return 'Ahorrado';
   if (answerKey === 'skip') return 'Omitido';
   if (answerKey === 'grace_day') return 'Día de gracia';
-  // Si es un número, mostrar como "X €"
   const num = Number(answerKey);
   if (!isNaN(num) && answerKey !== '') return `${num} €`;
   return answerKey;
 }
 
-function getCategory(questionId: string, answerKey: string): string {
+function getCategory(questionId: string): string {
   if (questionId === 'extra_saving') return 'extra';
   if (questionId === 'grace_day') return 'otro';
-
-  // Buscar en reglas legacy
-  const rule = DAILY_DECISION_RULES.find(
-    (r) => r.questionId === questionId && r.answerKey === answerKey,
-  );
-  if (rule) return rule.category;
-
-  // Buscar categoría del banco de 135
-  const bankQ = DAILY_QUESTIONS_BANK.find((q) => q.id === questionId);
-  if (bankQ) return bankQ.habitCategory;
-
+  const bankQ = QUESTIONS_BANK.find((q) => q.id === questionId);
+  if (bankQ) return bankQ.avatar; // avatar como proxy de categoría
   return 'otro';
 }
 
@@ -126,7 +104,7 @@ export function useHistorySummary(): UseHistorySummaryReturn {
             questionText: getQuestionText(d.questionId),
             answerLabel: getAnswerLabel(d.questionId, d.answerKey),
             goalTitle: goalMap[d.goalId] ?? '',
-            category: getCategory(d.questionId, d.answerKey),
+            category: getCategory(d.questionId),
             isExtra: d.questionId === 'extra_saving',
           }));
 
