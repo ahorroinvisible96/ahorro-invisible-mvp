@@ -27,7 +27,10 @@
   background: linear-gradient(180deg, #391377 0%, #1A093E 100%);
   padding: var(--header-zone-padding-v) 0 32px;
   position: relative;
+  /* overflow-x: hidden contiene los orbes decorativos Y evita desbordamiento
+     lateral del PrimaryGoalHeroWidget en móvil (variant="header" usa overflow: visible) */
   overflow: hidden;
+  overflow-x: hidden;
 }
 
 /* Orbe decorativo superior-derecho — sutil, no dominante */
@@ -84,6 +87,8 @@
   padding-bottom: 32px;
   min-height: 0;
   position: relative;
+  /* Evitar desbordamiento horizontal de widgets en móvil */
+  overflow-x: hidden;
 }
 
 /* Fade ya no necesario — el gradiente fluye naturalmente */
@@ -102,8 +107,11 @@
 /* ── Wrapper interior: padding consistente igual al container ── */
 .zoneInner {
   width: 100%;
+  max-width: 100%;
   padding: 0 16px;
   box-sizing: border-box;
+  /* Evitar que hijos con overflow: visible sobrepasen el ancho del contenedor */
+  overflow-x: hidden;
 }
 
 @media (min-width: 768px) {

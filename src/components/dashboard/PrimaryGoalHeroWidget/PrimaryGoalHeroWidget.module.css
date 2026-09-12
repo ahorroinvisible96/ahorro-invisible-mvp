@@ -58,7 +58,14 @@
   border: none !important;
   outline: none !important;
   border-radius: 0 !important;
-  overflow: visible !important;
+  /* overflow: visible permite que los orbes se vean, pero overflow-x: hidden
+     evita el desbordamiento lateral en móvil (el contenedor padre ya gestiona
+     el scroll vertical). width + box-sizing garantiza que el widget nunca
+     supere el ancho del zoneInner que lo contiene. */
+  overflow-x: hidden !important;
+  overflow-y: visible !important;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .wrapperHeader::after {
