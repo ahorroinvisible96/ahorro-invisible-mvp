@@ -322,7 +322,7 @@ export function DailyDecisionWidget({
           <>
             <div className={styles.questionRow}>
               {/* Pregunta con hueco [___] rellenado por el selector de opciones */}
-              <div style={{ flex: 1 }}>
+              <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
                 <FillBlankInput
                   sentence={todayQuestion.text}
                   options={(todayQuestion.options ?? []).map((o: string) => ({ label: o, value: o }))}

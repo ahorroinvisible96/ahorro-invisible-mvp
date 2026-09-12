@@ -126,6 +126,8 @@
   grid-template-columns: 1fr;
   gap: var(--dashboard-section-gap);
   width: 100%;
+  /* min-width: 0 evita que el grid se expanda más allá de su contenedor */
+  min-width: 0;
   box-sizing: border-box;
 }
 
@@ -139,6 +141,13 @@
   display: flex;
   flex-direction: column;
   gap: var(--dashboard-section-gap);
+  /* min-width: 0 es el fix canónico para que un grid/flex item no desborde
+     más allá de su celda cuando su contenido es más ancho que el viewport.
+     Sin esto, el grid item toma min-width: auto (tamaño natural del contenido)
+     y empuja el layout hacia la derecha en móvil. */
+  min-width: 0;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 

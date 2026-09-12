@@ -4,6 +4,10 @@
   border-radius: var(--radius-widget);
   overflow: hidden;
   background: var(--widget-bg);
+  /* Garantizar que el wrapper nunca supere el ancho de su contenedor (mainCol) */
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 /* ── Header variant: transparent, sin fondo propio ── */
@@ -63,6 +67,9 @@
   padding: 24px 22px 26px;
   border: 1px solid rgba(255, 255, 255, 0.06);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.20);
+  /* box-sizing: border-box garantiza que el padding no añada ancho extra */
+  box-sizing: border-box;
+  max-width: 100%;
 }
 
 /* ── Categoría: action — borde activo sutil ── */
