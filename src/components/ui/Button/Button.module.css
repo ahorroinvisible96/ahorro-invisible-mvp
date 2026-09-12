@@ -36,17 +36,17 @@
    VARIANTES
    ═══════════════════════════════════════════════════════════ */
 
-/* ── Primary: gradiente de marca ── */
+/* ── Primary: índigo sólido profesional ── */
 .primary {
-  background: var(--grad-primary);
+  background: #6366f1;
   color: #fff;
-  box-shadow: var(--shadow-glow-brand);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
 }
 
 .primary:hover:not(.disabled) {
-  background: var(--grad-primary-hover);
-  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
-  transform: scale(1.02);
+  background: #4f46e5;
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.35);
+  transform: none;
 }
 
 /* ── Secondary: fondo translúcido + borde ── */
@@ -61,16 +61,17 @@
   color: #c4b5fd;
 }
 
-/* ── Outline: transparente con borde de acento ── */
+/* ── Outline: transparente con borde índigo ── */
 .outline {
   background: transparent;
-  color: var(--color-info);
-  border: var(--border-medium) solid rgba(96, 165, 250, 0.4);
+  color: #a5b4fc;
+  border: 1.5px solid rgba(99, 102, 241, 0.28);
 }
 
 .outline:hover:not(.disabled) {
-  background: rgba(59, 130, 246, 0.1);
-  border-color: var(--color-info);
+  background: rgba(99, 102, 241, 0.08);
+  border-color: rgba(99, 102, 241, 0.45);
+  color: #c7d2fe;
 }
 
 /* ── Ghost: sin fondo ni borde ── */
@@ -85,12 +86,15 @@
 
 /* ── Danger: acción destructiva ── */
 .danger {
-  background: linear-gradient(90deg, #dc2626, #b91c1c);
-  color: #fff;
+  background: rgba(220, 38, 38, 0.10);
+  color: #fca5a5;
+  border: 1px solid rgba(220, 38, 38, 0.22);
 }
 
 .danger:hover:not(.disabled) {
-  background: linear-gradient(90deg, #b91c1c, #991b1b);
+  background: rgba(220, 38, 38, 0.16);
+  border-color: rgba(220, 38, 38, 0.35);
+  color: #fecaca;
 }
 
 /* ── Danger outline ── */
