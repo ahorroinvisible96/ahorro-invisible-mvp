@@ -62,9 +62,10 @@ export function FillBlankInput({
     }
   }, [isCustom]);
 
-  const parts = sentence.split('____');
+  const BLANK = '[___]';
+  const parts = sentence.split(BLANK);
   const before = parts[0] || '';
-  const after = parts.slice(1).join('____') || '';
+  const after = parts.slice(1).join(BLANK) || '';
 
   function handleSelect(val: string) {
     onSelect(val);
