@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useEffect } from 'react';
 import { analytics } from '@/services/analytics';
@@ -133,7 +133,6 @@ function WidgetHeader({
         </div>
         <div className={styles.headerTextGroup}>
           <span className={styles.headerLabel}>DECISION DIARIA</span>
-          <span className={styles.headerSubtitle}>Ahorro Consciente</span>
         </div>
       </div>
       <div className={styles.headerRight}>
@@ -352,9 +351,6 @@ export function DailyDecisionWidget({
 
             {/* Bloque de pregunta */}
             <div className={styles.questionBlock}>
-              <label className={`${styles.questionLabel} ${isDropdownOpen ? styles.questionLabelActive : ''}`}>
-                {isDropdownOpen ? 'SELECCIONA UNA ALTERNATIVA DE GASTO' : '¿EN QUE HAS GASTADO MENOS HOY?'}
-              </label>
               <div className={`${styles.questionBox} ${isDropdownOpen ? styles.questionBoxOpen : ''}`}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <FillBlankInput

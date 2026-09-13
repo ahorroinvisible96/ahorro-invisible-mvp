@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useRef, useEffect } from 'react';
 import styles from './FillBlankInput.module.css';
@@ -73,10 +73,29 @@ export function FillBlankInput({
     }
   }
 
-  // Dropdown abierto: mostrar inline en lugar de la frase
-  if (isOpen) {
-    return (
-      <div className={styles.wrapper} ref={wrapperRef}>
+  // Siempre mostramos la frase con el hueco inline
+  return (
+    <div className={styles.wrapper} ref={wrapperRef}>
+      <p className={styles.sentence}>
+        <span>{before}</span>
+        <button
+          type="button"
+          className={`${styles.blankButton} ${displayValue ? styles.blankFilled : ''} ${disabled ? styles.blankDisabled : ''} ${isOpen ? styles.blankOpen : ''}`}
+          onClick={() => !disabled && setIsOpen(o => !o)}
+          disabled={disabled}
+        >
+          {displayValue || '...'}
+          <svg
+            className={`${styles.blankChevron} ${isOpen ? styles.blankChevronUp : ''}`}
+            width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+          >
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
+        <span>{after}</span>
+      </p>
+
+      {isOpen && (
         <div className={styles.dropdown}>
           {options.map(opt => (
             <button
@@ -114,28 +133,7 @@ export function FillBlankInput({
             />
           </div>
         </div>
-      </div>
-    );
-  }
-
-  // Frase con hueco (dropdown cerrado)
-  return (
-    <div className={styles.wrapper} ref={wrapperRef}>
-      <p className={styles.sentence}>
-        <span>{before}</span>
-        <button
-          type="button"
-          className={`${styles.blankButton} ${displayValue ? styles.blankFilled : ''} ${disabled ? styles.blankDisabled : ''}`}
-          onClick={() => !disabled && setIsOpen(true)}
-          disabled={disabled}
-        >
-          {displayValue || '...'}
-          <svg className={styles.blankChevron} width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="6 9 12 15 18 9"/>
-          </svg>
-        </button>
-        <span>{after}</span>
-      </p>
+      )}
     </div>
   );
 }
