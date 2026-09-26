@@ -4,6 +4,8 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { pushLocalDataToSupabase, pullDataFromSupabase, hasLocalDataToMigrate } from "@/services/syncService";
+import { identifyUser } from "@/lib/posthog";
+import { analytics } from "@/services/analytics";
 
 export default function AuthCallbackPage() {
   const router = useRouter();
@@ -27,6 +29,10 @@ export default function AuthCallbackPage() {
       const cookieDays = remember ? 90 : 30;
       const expires = new Date(Date.now() + cookieDays * 24 * 60 * 60 * 1000).toUTCString();
       document.cookie = `ai_auth=1; path=/; expires=${expires}; SameSite=Lax`;
+
+      // Identificar al usuario en PostHog con su UUID de Supabase
+      identifyUser(user.id);
+      analytics.setUserId(user.id);
 
       if (hasLocalDataToMigrate()) {
         await pushLocalDataToSupabase(user.id).catch(() => null);

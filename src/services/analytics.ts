@@ -2,10 +2,12 @@
  * Servicio de Analytics para Ahorro Invisible MVP
  * Implementa los eventos definidos en 08_ANALYTICS_EVENT_SCHEMA
  */
+import { posthogCapture } from '@/lib/posthog';
 
 // Propiedades globales que se añaden a todos los eventos
 interface GlobalProps {
-  user_id?: string;
+  user_id?: string;         // UUID de Supabase Auth (NUNCA email)
+  supabase_user_id?: string; // Alias explícito para JOIN con BigQuery
   session_id?: string;
   platform?: 'ios' | 'android' | 'web';
   app_version?: string;
@@ -78,14 +80,14 @@ class Analytics {
       this.globalProps.device_locale = navigator.language || 'es-ES';
       this.globalProps.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Madrid';
       
-      // Intentar obtener user_id si está autenticado
+      // Obtener UUID de Supabase (NUNCA usar email)
       try {
-        const userEmail = localStorage.getItem("userEmail");
-        if (userEmail) {
-          // Usar email como user_id simplificado para el MVP
-          this.globalProps.user_id = userEmail;
+        const supabaseUserId = localStorage.getItem('supabaseUserId');
+        if (supabaseUserId) {
+          this.globalProps.user_id = supabaseUserId;
+          this.globalProps.supabase_user_id = supabaseUserId;
         }
-      } catch (error) {
+      } catch {
         // Ignorar error de localStorage en SSR
       }
     } else {
@@ -95,7 +97,7 @@ class Analytics {
   }
 
   // Método principal para registrar eventos
-  private track(eventName: string, props: any = {}) {
+  private track(eventName: string, props: Record<string, unknown> = {}) {
     // Combinar propiedades globales con las específicas del evento
     const eventProps = {
       ...this.globalProps,
@@ -108,7 +110,6 @@ class Analytics {
     // PostHog (si está configurado)
     if (typeof window !== 'undefined') {
       try {
-        const { posthogCapture } = require('@/lib/posthog') as typeof import('@/lib/posthog');
         posthogCapture(eventName, eventProps);
       } catch { /* fallthrough */ }
     }
@@ -132,6 +133,24 @@ class Analytics {
   // Establecer screen_name actual
   setScreen(screenName: ScreenName) {
     this.globalProps.screen_name = screenName;
+  }
+
+  /**
+   * Actualizar el UUID de usuario en runtime.
+   * Llamar inmediatamente después de login/signup exitoso.
+   * NUNCA pasar email — solo el UUID de Supabase Auth.
+   */
+  setUserId(supabaseUserId: string) {
+    this.globalProps.user_id = supabaseUserId;
+    this.globalProps.supabase_user_id = supabaseUserId;
+  }
+
+  /**
+   * Limpiar el user_id al hacer logout.
+   */
+  clearUserId() {
+    this.globalProps.user_id = undefined;
+    this.globalProps.supabase_user_id = undefined;
   }
 
   // EVENTOS DE AUTENTICACIÓN

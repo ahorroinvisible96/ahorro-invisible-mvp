@@ -8,6 +8,7 @@ import { storeInitUser } from "@/services/dashboardStore";
 import { authSignUp, authSendMagicLink } from '@/services/authService';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import { saveUserProfileToSupabase } from "@/services/syncService";
+import { identifyUser } from "@/lib/posthog";
 import s from './signup.module.css';
 
 export default function SignupPage() {
@@ -57,6 +58,9 @@ export default function SignupPage() {
       if (user.id !== 'local') {
         await saveUserProfileToSupabase(user.id, name).catch(() => null);
         storeInitUser(name.trim(), email.trim());
+        // Identificar al usuario en PostHog con su UUID de Supabase
+        identifyUser(user.id);
+        analytics.setUserId(user.id);
         analytics.signupSuccess();
         setEmailVerificationSent(true);
         return;

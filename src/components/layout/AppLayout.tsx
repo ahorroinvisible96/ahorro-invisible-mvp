@@ -7,6 +7,7 @@ import BottomNav from './BottomNav';
 import MainContent from './MainContent';
 import styles from './AppLayout.module.css';
 import { analytics } from '@/services/analytics';
+import { resetUser } from '@/lib/posthog';
 
 export interface AppLayoutProps {
   children: React.ReactNode;
@@ -54,6 +55,9 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
       analytics.logoutClicked('sidebar');
       await authSignOut();
       analytics.logoutSuccess();
+      // Limpiar identidad PostHog y propiedades de analytics
+      resetUser();
+      analytics.clearUserId();
       router.replace("/login");
     } catch (err) {
       console.error("Error al cerrar sesión:", err);

@@ -50,6 +50,8 @@ export type DailyDecision = {
   monthlyProjection: number;
   yearlyProjection: number;
   createdAt: string;
+  /** Timestamp de última modificación. Opcional: ausente en datos locales pre-migración 004. */
+  updatedAt?: string;
 };
 
 export type SavingsEvolutionPoint = {
@@ -60,6 +62,8 @@ export type SavingsEvolutionPoint = {
 export type Hucha = {
   balance: number;
   entries: { amount: number; fromGoalId: string; fromGoalTitle: string; date: string }[];
+  /** Timestamp de última modificación. Opcional: ausente en datos locales pre-migración 004. */
+  updatedAt?: string;
 };
 
 export type DashboardSummary = {

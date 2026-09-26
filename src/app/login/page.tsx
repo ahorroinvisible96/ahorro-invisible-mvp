@@ -7,6 +7,7 @@ import { analytics } from "@/services/analytics";
 import { authSignIn, authSendMagicLink, authResetPassword } from "@/services/authService";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import { hasLocalDataToMigrate, pushLocalDataToSupabase, pullDataFromSupabase } from "@/services/syncService";
+import { identifyUser } from "@/lib/posthog";
 import s from './login.module.css';
 
 type Mode = "password" | "magic" | "reset";
@@ -42,6 +43,12 @@ export default function LoginPage() {
     setLoading(false);
 
     if (authErr || !user) { setError(authErr ?? "Error al iniciar sesión"); return; }
+
+    // Identificar al usuario en PostHog con UUID real (solo si tiene UUID, no en modo local)
+    if (user.id && user.id !== 'local') {
+      identifyUser(user.id);
+      analytics.setUserId(user.id);
+    }
 
     if (isSupabaseConfigured && user.id !== "local") {
       if (hasLocalDataToMigrate()) {

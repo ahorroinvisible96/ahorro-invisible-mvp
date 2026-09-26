@@ -735,6 +735,9 @@ export function storeEditDecision(
     const oldAmount = dec.deltaAmount;
     const diff = newAmount - oldAmount;
     dec.deltaAmount = newAmount;
+    dec.updatedAt = now; // Necesario para merge correcto en pullAndMergeFromSupabase.
+                         // Garantiza que localTs > 0 y esta edición no sea sobreescrita
+                         // por la versión remota si el push falla temporalmente.
     const goal = state.goals.find((g) => g.id === dec.goalId);
     if (goal) {
       goal.currentAmount = Math.max(0, goal.currentAmount + diff);
@@ -823,7 +826,7 @@ export function storeArchiveGoalSafe(
   // Reasignar saldo
   if (balance > 0) {
     if (destination === 'hucha') {
-      if (!state.hucha) state.hucha = { balance: 0, entries: [] };
+      if (!state.hucha) state.hucha = { balance: 0, entries: [], updatedAt: now };
       state.hucha.balance = Math.round((state.hucha.balance + balance) * 100) / 100;
       state.hucha.entries.push({
         amount: balance,
@@ -831,6 +834,7 @@ export function storeArchiveGoalSafe(
         fromGoalTitle: goal.title,
         date: today,
       });
+      state.hucha.updatedAt = now; // P1: necesario para merge correcto por updated_at
     } else {
       const target = state.goals.find((g) => g.id === destination && !g.archived);
       if (target) {
@@ -874,7 +878,10 @@ export function storeTransferFromHucha(
   if (!state.hucha || state.hucha.balance <= 0) return buildSummary(currentRange);
 
   const transfer = Math.min(amount, state.hucha.balance);
-  state.hucha.balance = Math.round((state.hucha.balance - transfer) * 100) / 100;
+  if (transfer > 0) {
+    state.hucha.balance = Math.round((state.hucha.balance - transfer) * 100) / 100;
+    state.hucha.updatedAt = now; // P2: solo cuando hay transferencia real > 0
+  }
 
   const goal = state.goals.find((g) => g.id === goalId && !g.archived);
   if (goal) {
@@ -927,7 +934,7 @@ export function storeDeleteGoalPermanent(
   // Resolver saldo si existe
   if (balance > 0 && destination) {
     if (destination === 'hucha') {
-      if (!state.hucha) state.hucha = { balance: 0, entries: [] };
+      if (!state.hucha) state.hucha = { balance: 0, entries: [], updatedAt: now };
       state.hucha.balance = Math.round((state.hucha.balance + balance) * 100) / 100;
       state.hucha.entries.push({
         amount: balance,
@@ -935,6 +942,7 @@ export function storeDeleteGoalPermanent(
         fromGoalTitle: goal.title,
         date: today,
       });
+      state.hucha.updatedAt = now; // P3: necesario para merge correcto por updated_at
     } else {
       const target = state.goals.find((g) => g.id === destination && !g.archived);
       if (target) {

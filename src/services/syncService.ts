@@ -66,6 +66,17 @@ export async function pushLocalDataToSupabase(
     }
   }
 
+  // ─ Leer onboarding_completed_at desde localStorage (si existe) ──────────
+  // Se sincroniza con Supabase solo si la columna está a NULL (nunca sobrescribe).
+  let onboardingCompletedAt: string | null = null;
+  try {
+    const onbRaw = localStorage.getItem('onboardingData');
+    if (onbRaw) {
+      const onb = JSON.parse(onbRaw) as { completedAt?: string };
+      onboardingCompletedAt = onb.completedAt ?? null;
+    }
+  } catch { /* ignore */ }
+
   // 1. Perfil + analytics
   try {
     const { error } = await supabase.from('user_profiles').upsert(
@@ -91,6 +102,20 @@ export async function pushLocalDataToSupabase(
     if (error) console.error('[sync] user_profiles:', error.code, error.message);
     else migrated += 1;
   } catch (e) { console.error('[sync] user_profiles exception:', e); }
+
+  // Escribir onboarding_completed_at solo si existe localmente y está NULL en Supabase.
+  // UPDATE condicional separado: no interfiere con el upsert de métricas y garantiza
+  // semántica "nunca sobrescribir si ya tiene valor".
+  if (onboardingCompletedAt) {
+    try {
+      const { error } = await supabase
+        .from('user_profiles')
+        .update({ onboarding_completed_at: onboardingCompletedAt })
+        .eq('id', userId)
+        .is('onboarding_completed_at', null); // cerrojo: solo escribe si es NULL
+      if (error) console.error('[sync] onboarding_completed_at:', error.code, error.message);
+    } catch (e) { console.error('[sync] onboarding_completed_at exception:', e); }
+  }
 
   // 2. Goals — upsert uno a uno para aislar errores
   if (store.goals?.length) {
@@ -233,8 +258,13 @@ export async function pullDataFromSupabase(
         monthlyProjection: d.monthly_projection,
         yearlyProjection: d.yearly_projection,
         createdAt: d.created_at,
+        updatedAt: (d.updated_at as string) ?? undefined,
       })),
-      hucha: { balance: hucha?.balance ?? 0, entries: hucha?.entries ?? [] },
+      hucha: {
+        balance:   hucha?.balance ?? 0,
+        entries:   hucha?.entries ?? [],
+        updatedAt: (hucha?.updated_at as string) ?? undefined,
+      },
       seenMilestones: [],
       graceUsedMonth: null,
     };
@@ -321,6 +351,9 @@ export async function pullAndMergeFromSupabase(
     }
 
     // ── Merge Decisions ──────────────────────────────────────────────────────
+    // Desde migration 004, decisions tiene updated_at.
+    // La versión con updated_at más reciente gana.
+    // Fallback: localTs = 0 para datos locales sin updatedAt (pre-migration 004).
     const decMap = new Map<string, Record<string, unknown>>();
     for (const d of localDecisions) decMap.set(d.id as string, d);
     for (const rd of remoteDecisions) {
@@ -334,10 +367,27 @@ export async function pullAndMergeFromSupabase(
         monthlyProjection: Number(rd.monthly_projection ?? 0),
         yearlyProjection: Number(rd.yearly_projection ?? 0),
         createdAt: (rd.created_at as string) ?? '',
+        updatedAt: (rd.updated_at as string) ?? undefined,
       };
-      if (!decMap.has(localD.id)) {
+      const existing = decMap.get(localD.id);
+      if (!existing) {
+        // Decisión solo en remoto → añadir localmente
         decMap.set(localD.id, localD);
         merged++;
+      } else {
+        // Ambos tienen la decisión → la más reciente gana
+        const localTs  = existing.updatedAt
+          ? new Date(existing.updatedAt as string).getTime()
+          : 0;
+        const remoteTs = localD.updatedAt
+          ? new Date(localD.updatedAt).getTime()
+          : 0;
+        if (remoteTs > localTs) {
+          // La remota es más reciente (ej: edición en otro dispositivo sincronizada)
+          decMap.set(localD.id, localD);
+          merged++;
+        }
+        // Si localTs >= remoteTs → la local gana; el push enviará la versión local.
       }
     }
 
@@ -355,14 +405,26 @@ export async function pullAndMergeFromSupabase(
     }
 
     // ── Merge Hucha ──────────────────────────────────────────────────────────
+    // Desde migration 004, hucha tiene updated_at.
+    // La versión con updated_at más reciente gana (un balance menor puede ser
+    // más reciente si hubo una retirada; comparar por balance era incorrecto).
+    // Fallback: localTs = 0 para datos locales sin updatedAt (pre-migration 004).
     if (remoteHucha) {
-      const localBalance = local.hucha?.balance ?? 0;
-      const remoteBalance = remoteHucha.balance ?? 0;
-      // Tomar el mayor balance (más conservador)
-      if (remoteBalance > localBalance) {
-        local.hucha = { balance: remoteBalance, entries: remoteHucha.entries ?? [] };
+      const localUpdatedAt  = (local.hucha?.updatedAt as string) ?? null;
+      const remoteUpdatedAt = (remoteHucha.updated_at as string) ?? null;
+      const localTs  = localUpdatedAt  ? new Date(localUpdatedAt).getTime()  : 0;
+      const remoteTs = remoteUpdatedAt ? new Date(remoteUpdatedAt).getTime() : 0;
+
+      if (remoteTs >= localTs) {
+        // La remota es más reciente o igual (o no hay dato local) → tomar remota
+        local.hucha = {
+          balance:   remoteHucha.balance ?? 0,
+          entries:   remoteHucha.entries ?? [],
+          updatedAt: remoteUpdatedAt ?? localUpdatedAt ?? undefined,
+        };
         merged++;
       }
+      // Si localTs > remoteTs → la local es más nueva; el push enviará la versión local.
     }
 
     // ── Guardar merge ────────────────────────────────────────────────────────

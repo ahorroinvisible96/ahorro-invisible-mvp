@@ -4,6 +4,8 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { pushLocalDataToSupabase, pullDataFromSupabase, pullAndMergeFromSupabase } from "@/services/syncService";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase";
+import { identifyUser } from "@/lib/posthog";
+import { analytics } from "@/services/analytics";
 
 export default function SyncProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -14,13 +16,21 @@ export default function SyncProvider({ children }: { children: React.ReactNode }
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!session?.user) return;
       const isAuth = localStorage.getItem('isAuthenticated');
-      if (isAuth === 'true') return; // Ya está restaurado
+      if (isAuth === 'true') {
+        // Sesión ya restaurada: solo garantizar identidad PostHog
+        identifyUser(session.user.id);
+        analytics.setUserId(session.user.id);
+        return;
+      }
       // iOS limpió localStorage → restaurar datos de sesión y de usuario
       localStorage.setItem('isAuthenticated', 'true');
       localStorage.setItem('userEmail', session.user.email ?? '');
       localStorage.setItem('userName', session.user.user_metadata?.name ?? '');
       localStorage.setItem('supabaseUserId', session.user.id);
       localStorage.setItem('hasCompletedOnboarding', 'true');
+      // Identificar al usuario en PostHog (sesión restaurada)
+      identifyUser(session.user.id);
+      analytics.setUserId(session.user.id);
       // Refrescar cookie de autenticación
       const remember = localStorage.getItem('rememberMe') === 'true';
       const days = remember ? 90 : 30;
