@@ -169,44 +169,54 @@ CREATE INDEX IF NOT EXISTS idx_qi_updated_at
 
 -- ─── 5. RLS ────────────────────────────────────────────────────────────────────
 -- Comportamiento real requerido por el código:
---   - logQuestionImpression:   INSERT con auth.uid() = user_id → policy INSERT
---   - logQuestionAnswer:       SELECT (buscar existente) + UPDATE → policies SELECT + UPDATE
---   - getTodayInteractions:    SELECT → policy SELECT
---   - POST /api/ai/setup-db:   usa SERVICE_ROLE_KEY → bypasa RLS → policy "Service role full access"
---   - Usuarios NO pueden leer/modificar interacciones de otros usuarios.
+--   - logQuestionImpression:   INSERT server-side vía getSupabase() con SERVICE_ROLE_KEY
+--   - logQuestionAnswer:       SELECT + UPDATE server-side vía getSupabase() con SERVICE_ROLE_KEY
+--   - getTodayInteractions:    SELECT server-side vía getSupabase() con SERVICE_ROLE_KEY
+--
+-- IMPORTANTE: getSupabase() usa SUPABASE_SERVICE_ROLE_KEY cuando está disponible.
+-- service_role bypassa RLS por defecto en Supabase → las operaciones server-side
+-- funcionan correctamente SIN necesitar ninguna policy adicional.
+--
+-- Las policies de usuario protegen el acceso client-side (anon key + sesión JWT):
+--   - SELECT: el usuario solo ve sus propias interacciones.
+--   - INSERT: el usuario solo puede insertar en su propio user_id.
+--   - UPDATE: el usuario solo puede actualizar sus propias filas.
+-- No existe DELETE en el código → no se crea policy DELETE.
+-- Anónimos sin sesión: sin acceso (ninguna policy los cubre).
+-- Cross-user: imposible (auth.uid() = user_id en cada policy).
 
 ALTER TABLE public.question_interactions ENABLE ROW LEVEL SECURITY;
 
--- Política: usuarios leen solo sus propias interacciones
+-- SELECT: usuario autenticado ve solo sus propias interacciones
 DROP POLICY IF EXISTS "Users can read own interactions" ON public.question_interactions;
 CREATE POLICY "Users can read own interactions"
   ON public.question_interactions
   FOR SELECT
+  TO authenticated
   USING (auth.uid() = user_id);
 
--- Política: usuarios insertan solo en su propio user_id
+-- INSERT: usuario autenticado solo inserta en su propio user_id
 DROP POLICY IF EXISTS "Users can insert own interactions" ON public.question_interactions;
 CREATE POLICY "Users can insert own interactions"
   ON public.question_interactions
   FOR INSERT
+  TO authenticated
   WITH CHECK (auth.uid() = user_id);
 
--- Política: usuarios actualizan solo sus propias filas (logQuestionAnswer → UPDATE)
+-- UPDATE: usuario autenticado solo actualiza sus propias filas
+-- WITH CHECK garantiza que no puede cambiar user_id a otro valor
 DROP POLICY IF EXISTS "Users can update own interactions" ON public.question_interactions;
 CREATE POLICY "Users can update own interactions"
   ON public.question_interactions
   FOR UPDATE
-  USING (auth.uid() = user_id);
+  TO authenticated
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
 
--- Política: service role tiene acceso total (setup-db, sincronización BigQuery futura)
--- NOTA: SERVICE_ROLE_KEY bypasa RLS por defecto en Supabase; esta policy es una
--- salvaguarda explícita para contextos en que se use un cliente con RLS habilitado.
+-- Policy "Service role full access" eliminada intencionalmente:
+-- service_role bypassa RLS por defecto → una policy ALL TRUE sería redundante
+-- e innecesaria. Principio de mínimo privilegio aplicado.
 DROP POLICY IF EXISTS "Service role full access" ON public.question_interactions;
-CREATE POLICY "Service role full access"
-  ON public.question_interactions
-  FOR ALL
-  USING (true)
-  WITH CHECK (true);
 
 
 -- ─── Verificación post-migración ───────────────────────────────────────────────
