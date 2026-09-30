@@ -1,6 +1,5 @@
 {
   "framework": "nextjs",
-  "nodeVersion": "22.x",
   "devCommand": "next dev",
   "installCommand": "npm install",
   "outputDirectory": ".next",
