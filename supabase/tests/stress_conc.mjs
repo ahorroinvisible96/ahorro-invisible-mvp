@@ -18,17 +18,23 @@ async function iter(i) {
   const dd = () => db.rpc(U, 'record_daily_decision', { p_decision_id: did, p_occurred_at: when, p_timezone: TZ, p_outcome: 'saved',
     p_question_bank_version: 'qb_v1', p_question_id: Q.id, p_selected_option_key: Q.o, p_declared_amount: 10, p_custom_text: null, p_goal_id: null, p_impression_id: null });
   const rs = await Promise.all([ex(), ex(), ex(), dd(), dd(), dd()]);
-  const exOk = rs.slice(0, 3), ddOk = rs.slice(3);
-  const errs = rs.filter(r => !r.ok).map(r => r.error);
+  const isConn = r => !r.ok && /EMAXCONN|max clients|too many|ECONNRESET|timeout/i.test(r.error);
+  const conn = rs.filter(isConn).length; connErrs += conn;
+  const logicErrs = rs.filter(r => !r.ok && !isConn(r)).map(r => r.error);
+  const exRan = rs.slice(0, 3).filter(r => r.ok), ddRan = rs.slice(3).filter(r => r.ok);
   const replays = rs.filter(r => r.ok && r.data?.idempotent_replay).length;
+  const expectedRows = (exRan.length ? 1 : 0) + (ddRan.length ? 1 : 0);
+  const expectedSum = (exRan.length ? 7 : 0) + (ddRan.length ? 10 : 0);
+  const expectedReplays = Math.max(0, exRan.length - 1) + Math.max(0, ddRan.length - 1);
   const tx = (await q(`select count(*)::int c, coalesce(sum(amount),0)::numeric s from public.savings_transactions where user_id=$1`, [U]))[0];
-  // 1 extra (+7) + 1 decisión (+10) = 2 filas, 17
-  const good = errs.length === 0 && replays === 4 && tx.c === 2 && Number(tx.s) === 17;
-  if (!good) bad.push({ i, errs, replays, tx, exOk: exOk.map(r => r.ok), ddOk: ddOk.map(r => r.ok) });
+  const good = logicErrs.length === 0 && replays === expectedReplays && tx.c === expectedRows && Number(tx.s) === expectedSum;
+  if (conn === 0) fullIters++;
+  if (!good) bad.push({ i, logicErrs, conn, replays, expectedReplays, tx, expectedRows, expectedSum });
 }
-const PAR = 5;
+let connErrs = 0, fullIters = 0;
+const PAR = Number(process.env.PAR ?? 5);
 for (let i = 0; i < N; i += PAR) await Promise.all(Array.from({ length: Math.min(PAR, N - i) }, (_, k) => iter(i + k)));
-console.log(`ITERACIONES=${N} FALLOS=${bad.length}`);
+console.log(`ITERACIONES=${N} COMPLETAS_SIN_LIMITE_POOLER=${fullIters} ERRORES_CONEXION_POOLER=${connErrs} FALLOS_LOGICOS=${bad.length}`);
 if (bad.length) console.log(JSON.stringify(bad.slice(0, 5), null, 1));
 await db.stop?.();
 process.exit(bad.length ? 1 : 0);

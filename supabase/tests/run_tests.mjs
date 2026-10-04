@@ -587,6 +587,13 @@ await t('V1-2 supresión de cuenta: DELETE en auth.users borra en cascada tambi�
   for (const tb of ['savings_transactions','daily_decisions','goal_events','goals','user_free_text'])
     eq((await q(`select count(*)::int c from public.${tb} where user_id=$1`, [U]))[0].c, 0, tb);
 });
+await t('V1-2b supresión de cuenta de usuarios con onboarding completo (sesión, avatar + respuestas, ingresos, ledger)', async () => {
+  const ids = (await q(`select distinct user_id from public.avatar_assessment_answers`)).map(r => r.user_id);
+  if (!ids.length) throw new Error('no hay usuarios con onboarding completo que borrar');
+  await db.admin.query(`delete from auth.users where id = any($1::uuid[])`, [ids]);
+  for (const tb of ['onboarding_sessions','avatar_assessments','avatar_assessment_answers','income_declarations','savings_transactions','daily_decisions','goal_events','goals','user_free_text','daily_prompt_impressions'])
+    eq((await q(`select count(*)::int c from public.${tb} where user_id = any($1::uuid[])`, [ids]))[0].c, 0, tb);
+});
 await t('V1-3 migraciones V2 son idempotentes (re-aplicación sin errores ni cambios de datos)', async () => {
   const before = (await q(`select (select count(*) from public.savings_transactions) a, (select count(*) from public.cat_daily_questions) b`))[0];
   const { V2_MIGRATIONS } = await import('./harness.mjs');

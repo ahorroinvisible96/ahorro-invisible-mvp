@@ -1,0 +1,61 @@
+{
+ "at": "2026-10-04T15:13:59.750Z",
+ "ref": "dhbstyyesbycjehlbkya",
+ "log": [
+  {
+   "f": "006_v2_foundations.sql",
+   "ok": true,
+   "ms": 345
+  },
+  {
+   "f": "007_v2_onboarding_income.sql",
+   "ok": true,
+   "ms": 228
+  },
+  {
+   "f": "008_v2_goals.sql",
+   "ok": true,
+   "ms": 209
+  },
+  {
+   "f": "009_v2_ledger.sql",
+   "ok": true,
+   "ms": 228
+  },
+  {
+   "f": "010_v2_goal_events.sql",
+   "ok": true,
+   "ms": 145
+  },
+  {
+   "f": "011_v2_security.sql",
+   "ok": true,
+   "ms": 225
+  },
+  {
+   "f": "012_seed_cat_daily_questions.sql",
+   "ok": true,
+   "ms": 392
+  },
+  {
+   "f": "013_v2_rpc_goals.sql",
+   "ok": true,
+   "ms": 303
+  },
+  {
+   "f": "014_v2_rpc_ledger.sql",
+   "ok": true,
+   "ms": 160
+  },
+  {
+   "f": "015_v2_rpc_onboarding.sql",
+   "ok": true,
+   "ms": 154
+  },
+  {
+   "f": "016_v2_rpc_grants.sql",
+   "ok": true,
+   "ms": 205
+  }
+ ]
+}

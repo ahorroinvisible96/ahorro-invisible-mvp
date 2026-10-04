@@ -35,10 +35,19 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON FUNCTIONS TO anon, authen
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO anon, authenticated, service_role;
 `;
 
+export const REMOTE = process.env.REMOTE_VAULT === '1';
+
 export class Db {
-  constructor() { this.pgServer = null; this.admin = null; this.port = 0; this.dir = ''; }
+  constructor() { this.pgServer = null; this.admin = null; this.port = 0; this.dir = ''; this.remote = null; }
 
   async start({ port = 54340 + Math.floor(Math.random() * 500) } = {}) {
+    if (REMOTE) {
+      // Supabase REAL (staging). Credenciales servidas en memoria por el vault local; nunca en disco.
+      this.remote = await (await fetch('http://127.0.0.1:54330/creds')).json();
+      if (!this.remote.dbPass) throw new Error('vault sin credenciales');
+      this.admin = await this.client();
+      return this;
+    }
     this.port = port;
     this.dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ai_pg_'));
     this.pgServer = new EmbeddedPostgres({
@@ -53,12 +62,16 @@ export class Db {
   }
 
   async client() {
-    const c = new pg.Client({ host: '127.0.0.1', port: this.port, user: 'postgres', password: 'pw', database: 'postgres' });
+    const r = this.remote;
+    const c = r
+      ? new pg.Client({ host: r.dbHost, port: r.dbPort, user: r.dbUser, password: r.dbPass, database: r.dbName, ssl: { rejectUnauthorized: false } })
+      : new pg.Client({ host: '127.0.0.1', port: this.port, user: 'postgres', password: 'pw', database: 'postgres' });
     await c.connect();
     return c;
   }
 
-  async installShim() { await this.admin.query(SHIM); }
+  // En remoto auth.* es el real de Supabase: no se instala shim.
+  async installShim() { if (!REMOTE) await this.admin.query(SHIM); }
 
   async applyMigration(file) {
     const sql = fs.readFileSync(path.join(MIGRATIONS_DIR, file), 'utf8');
@@ -67,7 +80,9 @@ export class Db {
   }
 
   async applyAll({ upTo } = {}) {
-    for (const f of [...V1_MIGRATIONS, ...V2_MIGRATIONS()]) {
+    if (REMOTE && process.env.SKIP_APPLY === '1') return; // esquema ya aplicado en staging
+    for (const f of [...V1_MIGRATIONS, 'DRIFT', ...V2_MIGRATIONS()]) {
+      if (f === 'DRIFT') { await this.admin.query(fs.readFileSync(path.join(here, 'fixtures', 'prod_v1_drift.sql'), 'utf8')); continue; }
       if (upTo && f > upTo) break;
       await this.applyMigration(f);
     }
@@ -107,6 +122,7 @@ export class Db {
 
   async stop() {
     try { await this.admin?.end(); } catch { /* */ }
+    if (REMOTE) return;
     try { await this.pgServer?.stop(); } catch { /* */ }
     try { fs.rmSync(this.dir, { recursive: true, force: true }); } catch { /* */ }
   }

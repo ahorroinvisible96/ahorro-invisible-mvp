@@ -1,0 +1,23 @@
+select json_build_object(
+ 'user_profiles', (select count(*) from public.user_profiles),
+ 'goals', (select count(*) from public.goals),
+ 'goals_archived', (select count(*) from public.goals where archived),
+ 'goals_primary_active', (select count(*) from public.goals where is_primary and not archived),
+ 'decisions', (select count(*) from public.decisions),
+ 'hucha', (select count(*) from public.hucha),
+ 'question_interactions', (select count(*) from public.question_interactions),
+ 'push_subscriptions', (select count(*) from public.push_subscriptions),
+ 'sum_goals_current', (select coalesce(sum(current_amount),0) from public.goals),
+ 'sum_goals_target', (select coalesce(sum(target_amount),0) from public.goals),
+ 'sum_decisions_delta', (select coalesce(sum(delta_amount),0) from public.decisions),
+ 'sum_hucha_balance', (select coalesce(sum(balance),0) from public.hucha),
+ 'sum_profiles_total_saved', (select coalesce(sum(total_saved),0) from public.user_profiles),
+ 'max_goals_updated_at', (select max(updated_at) from public.goals),
+ 'max_decisions_updated_at', (select max(updated_at) from public.decisions),
+ 'max_hucha_updated_at', (select max(updated_at) from public.hucha),
+ 'max_profiles_updated_at', (select max(updated_at) from public.user_profiles),
+ 'hash_goals', (select md5(string_agg(id||'|'||user_id||'|'||title||'|'||target_amount||'|'||current_amount||'|'||is_primary||'|'||archived||'|'||coalesce(completed_at::text,'')||'|'||updated_at, ',' order by id)) from public.goals),
+ 'hash_decisions', (select md5(string_agg(id||'|'||delta_amount||'|'||coalesce(goal_id,'')||'|'||updated_at, ',' order by id)) from public.decisions),
+ 'hash_hucha', (select md5(string_agg(user_id||'|'||balance||'|'||entries::text||'|'||updated_at, ',' order by user_id)) from public.hucha),
+ 'hash_profiles', (select md5(string_agg(id||'|'||coalesce(name,'')||'|'||total_saved||'|'||updated_at, ',' order by id)) from public.user_profiles)
+) as snap;

@@ -141,10 +141,21 @@ CREATE TABLE IF NOT EXISTS public.avatar_assessment_answers (
   answered_at   timestamptz NOT NULL,
   PRIMARY KEY (assessment_id, question_key),
   CONSTRAINT avatar_answers_assessment_fk FOREIGN KEY (assessment_id, user_id)
-    REFERENCES public.avatar_assessments (assessment_id, user_id),
+    REFERENCES public.avatar_assessments (assessment_id, user_id) ON DELETE CASCADE,
   CONSTRAINT avatar_answers_question_chk CHECK (question_key IN ('onb_q1','onb_q2','onb_q3','P1','P2','P3')),
   CONSTRAINT avatar_answers_option_chk CHECK (option_key IN ('a','b','c'))
 );
+-- Única ruta de borrado de las respuestas: cascada desde avatar_assessments, que a su vez cae en cascada
+-- desde auth.users (baja de cuenta). Sin ella la baja fallaba (detectado en staging Supabase real, 5B.2.5).
+-- Idempotente para entornos donde la tabla ya existía con la FK NO ACTION.
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'avatar_answers_assessment_fk' AND confdeltype <> 'c') THEN
+    ALTER TABLE public.avatar_assessment_answers DROP CONSTRAINT avatar_answers_assessment_fk;
+    ALTER TABLE public.avatar_assessment_answers ADD CONSTRAINT avatar_answers_assessment_fk
+      FOREIGN KEY (assessment_id, user_id) REFERENCES public.avatar_assessments (assessment_id, user_id) ON DELETE CASCADE;
+  END IF;
+END $$;
 
 -- ─── 4.4 income_declarations ─────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.income_declarations (

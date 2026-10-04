@@ -1,0 +1,27 @@
+[
+ {
+  "snap": {
+   "user_profiles": 25,
+   "goals": 52,
+   "goals_archived": 3,
+   "goals_primary_active": 26,
+   "decisions": 132,
+   "hucha": 24,
+   "question_interactions": 1,
+   "push_subscriptions": 1,
+   "sum_goals_current": 15393.25,
+   "sum_goals_target": 170067,
+   "sum_decisions_delta": 20788.55,
+   "sum_hucha_balance": 5907,
+   "sum_profiles_total_saved": 37911.05,
+   "max_goals_updated_at": "2026-10-04T11:36:22.339124+00:00",
+   "max_decisions_updated_at": "2026-10-04T11:36:26.396074+00:00",
+   "max_hucha_updated_at": "2026-10-04T11:36:26.47366+00:00",
+   "max_profiles_updated_at": "2026-10-04T11:36:20.958713+00:00",
+   "hash_goals": "0005ca65f965d758cf2602e1d475a167",
+   "hash_decisions": "4ca85a7e8a1aa4a816a90fea7d2a5be1",
+   "hash_hucha": "adb2729ffdea1400699bfe150d09dbe3",
+   "hash_profiles": "a0f99b791d74092194166dd47219cf46"
+  }
+ }
+]

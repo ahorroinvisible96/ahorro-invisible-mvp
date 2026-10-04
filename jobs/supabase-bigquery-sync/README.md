@@ -5,7 +5,7 @@ Cloud Run Job que exporta datos de Supabase a BigQuery mediante full refresh dia
 ## Arquitectura
 
 ```
-Cloud Scheduler (03:00 Europe/Madrid)
+Cloud Scheduler `supabase-bq-sync-schedule` (cron `0 0 * * *`, Etc/UTC = 02:00 Madrid en verano / 01:00 en invierno)
   → Cloud Run Job (this container)
       → Supabase REST API (service role key from Secret Manager)
       → BigQuery: staging → swap → final

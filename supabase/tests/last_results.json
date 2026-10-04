@@ -1,7 +1,7 @@
 {
-  "at": "2026-10-04T14:14:19.014Z",
-  "pass": 42,
-  "total": 42,
+  "at": "2026-10-04T15:12:18.547Z",
+  "pass": 43,
+  "total": 43,
   "results": [
     {
       "name": "S1 tablas V2 creadas y catálogos sembrados",
@@ -165,6 +165,10 @@
     },
     {
       "name": "V1-2 supresión de cuenta: DELETE en auth.users borra en cascada también el ledger inmutable",
+      "ok": true
+    },
+    {
+      "name": "V1-2b supresión de cuenta de usuarios con onboarding completo (sesión, avatar + respuestas, ingresos, ledger)",
       "ok": true
     },
     {

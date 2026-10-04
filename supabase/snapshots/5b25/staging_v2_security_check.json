@@ -1,0 +1,899 @@
+[
+ {
+  "v2check": {
+   "app_rpc_owner": {
+    "super": false,
+    "bypassrls": false,
+    "login": false,
+    "inherit": false,
+    "createrole": false
+   },
+   "owner_member_of": null,
+   "members_of_owner": [
+    "postgres",
+    "postgres"
+   ],
+   "owner_usage_auth": false,
+   "owner_exec_uid": true,
+   "owner_create_public": false,
+   "rpcs": [
+    {
+     "fn": "amend_decision_amount",
+     "owner": "app_rpc_owner",
+     "secdef": true,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner,authenticated=X/app_rpc_owner}"
+    },
+    {
+     "fn": "archive_goal",
+     "owner": "app_rpc_owner",
+     "secdef": true,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner,authenticated=X/app_rpc_owner}"
+    },
+    {
+     "fn": "complete_onboarding",
+     "owner": "app_rpc_owner",
+     "secdef": true,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner,authenticated=X/app_rpc_owner}"
+    },
+    {
+     "fn": "create_goal",
+     "owner": "app_rpc_owner",
+     "secdef": true,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner,authenticated=X/app_rpc_owner}"
+    },
+    {
+     "fn": "delete_goal",
+     "owner": "app_rpc_owner",
+     "secdef": true,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner,authenticated=X/app_rpc_owner}"
+    },
+    {
+     "fn": "reactivate_goal",
+     "owner": "app_rpc_owner",
+     "secdef": true,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner,authenticated=X/app_rpc_owner}"
+    },
+    {
+     "fn": "record_daily_decision",
+     "owner": "app_rpc_owner",
+     "secdef": true,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner,authenticated=X/app_rpc_owner}"
+    },
+    {
+     "fn": "record_extra_saving",
+     "owner": "app_rpc_owner",
+     "secdef": true,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner,authenticated=X/app_rpc_owner}"
+    },
+    {
+     "fn": "record_prompt_impression",
+     "owner": "app_rpc_owner",
+     "secdef": true,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner,authenticated=X/app_rpc_owner}"
+    },
+    {
+     "fn": "set_primary_goal",
+     "owner": "app_rpc_owner",
+     "secdef": true,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner,authenticated=X/app_rpc_owner}"
+    },
+    {
+     "fn": "start_onboarding",
+     "owner": "app_rpc_owner",
+     "secdef": true,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner,authenticated=X/app_rpc_owner}"
+    },
+    {
+     "fn": "transfer_between_buckets",
+     "owner": "app_rpc_owner",
+     "secdef": true,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner,authenticated=X/app_rpc_owner}"
+    },
+    {
+     "fn": "update_goal",
+     "owner": "app_rpc_owner",
+     "secdef": true,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner,authenticated=X/app_rpc_owner}"
+    },
+    {
+     "fn": "use_grace_day",
+     "owner": "app_rpc_owner",
+     "secdef": true,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner,authenticated=X/app_rpc_owner}"
+    },
+    {
+     "fn": "void_decision",
+     "owner": "app_rpc_owner",
+     "secdef": true,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner,authenticated=X/app_rpc_owner}"
+    }
+   ],
+   "private_funcs": [
+    {
+     "fn": "add_goal_event",
+     "owner": "app_rpc_owner",
+     "secdef": true,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner}"
+    },
+    {
+     "fn": "assert_balance",
+     "owner": "app_rpc_owner",
+     "secdef": true,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner}"
+    },
+    {
+     "fn": "cat_rec_rules_check_catalog",
+     "owner": "app_rpc_owner",
+     "secdef": true,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner}"
+    },
+    {
+     "fn": "compute_local_date",
+     "owner": "app_rpc_owner",
+     "secdef": false,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner}"
+    },
+    {
+     "fn": "current_uid",
+     "owner": "app_rpc_owner",
+     "secdef": true,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner}"
+    },
+    {
+     "fn": "dd_guard",
+     "owner": "app_rpc_owner",
+     "secdef": true,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner}"
+    },
+    {
+     "fn": "do_create_goal",
+     "owner": "app_rpc_owner",
+     "secdef": true,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner}"
+    },
+    {
+     "fn": "do_retire_goal",
+     "owner": "app_rpc_owner",
+     "secdef": true,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner}"
+    },
+    {
+     "fn": "do_transfer",
+     "owner": "app_rpc_owner",
+     "secdef": true,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner}"
+    },
+    {
+     "fn": "eval_completion",
+     "owner": "app_rpc_owner",
+     "secdef": true,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner}"
+    },
+    {
+     "fn": "forbid_mutation",
+     "owner": "app_rpc_owner",
+     "secdef": true,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner}"
+    },
+    {
+     "fn": "forbid_truncate",
+     "owner": "app_rpc_owner",
+     "secdef": true,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner}"
+    },
+    {
+     "fn": "goals_guard",
+     "owner": "app_rpc_owner",
+     "secdef": true,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner}"
+    },
+    {
+     "fn": "goals_require_event",
+     "owner": "app_rpc_owner",
+     "secdef": true,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner}"
+    },
+    {
+     "fn": "idem_check",
+     "owner": "app_rpc_owner",
+     "secdef": true,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner}"
+    },
+    {
+     "fn": "idem_store",
+     "owner": "app_rpc_owner",
+     "secdef": true,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner}"
+    },
+    {
+     "fn": "ledger_balance",
+     "owner": "app_rpc_owner",
+     "secdef": true,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner}"
+    },
+    {
+     "fn": "ledger_insert",
+     "owner": "app_rpc_owner",
+     "secdef": true,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner}"
+    },
+    {
+     "fn": "load_goal",
+     "owner": "app_rpc_owner",
+     "secdef": true,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner}"
+    },
+    {
+     "fn": "lock_user_ledger",
+     "owner": "app_rpc_owner",
+     "secdef": true,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner}"
+    },
+    {
+     "fn": "onboarding_sessions_guard",
+     "owner": "app_rpc_owner",
+     "secdef": true,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner}"
+    },
+    {
+     "fn": "reassign_primary",
+     "owner": "app_rpc_owner",
+     "secdef": true,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner}"
+    },
+    {
+     "fn": "require_active",
+     "owner": "app_rpc_owner",
+     "secdef": false,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner}"
+    },
+    {
+     "fn": "resolve_local_date",
+     "owner": "app_rpc_owner",
+     "secdef": true,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner}"
+    },
+    {
+     "fn": "st_before_insert",
+     "owner": "app_rpc_owner",
+     "secdef": true,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner}"
+    },
+    {
+     "fn": "st_check_balance",
+     "owner": "app_rpc_owner",
+     "secdef": true,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner}"
+    },
+    {
+     "fn": "st_check_transfer",
+     "owner": "app_rpc_owner",
+     "secdef": true,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner}"
+    },
+    {
+     "fn": "validate_amount",
+     "owner": "app_rpc_owner",
+     "secdef": false,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner}"
+    },
+    {
+     "fn": "validate_surface",
+     "owner": "app_rpc_owner",
+     "secdef": false,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner}"
+    },
+    {
+     "fn": "validate_timezone",
+     "owner": "app_rpc_owner",
+     "secdef": true,
+     "cfg": [
+      "search_path=\"\""
+     ],
+     "acl": "{app_rpc_owner=X/app_rpc_owner}"
+    }
+   ],
+   "private_schema": {
+    "owner": "app_rpc_owner",
+    "acl": "{app_rpc_owner=UC/app_rpc_owner}"
+   },
+   "v2_tables": [
+    {
+     "t": "avatar_assessment_answers",
+     "kind": "r",
+     "owner": "app_rpc_owner",
+     "rls": true,
+     "force": false,
+     "acl": "{app_rpc_owner=arwdDxtm/app_rpc_owner,authenticated=r/app_rpc_owner,service_role=r/app_rpc_owner}"
+    },
+    {
+     "t": "avatar_assessments",
+     "kind": "r",
+     "owner": "app_rpc_owner",
+     "rls": true,
+     "force": false,
+     "acl": "{app_rpc_owner=arwdDxtm/app_rpc_owner,authenticated=r/app_rpc_owner,service_role=r/app_rpc_owner}"
+    },
+    {
+     "t": "cat_daily_questions",
+     "kind": "r",
+     "owner": "app_rpc_owner",
+     "rls": true,
+     "force": false,
+     "acl": "{app_rpc_owner=arwdDxtm/app_rpc_owner,authenticated=r/app_rpc_owner,service_role=r/app_rpc_owner}"
+    },
+    {
+     "t": "cat_income_bands",
+     "kind": "r",
+     "owner": "app_rpc_owner",
+     "rls": true,
+     "force": false,
+     "acl": "{app_rpc_owner=arwdDxtm/app_rpc_owner,authenticated=r/app_rpc_owner,service_role=r/app_rpc_owner}"
+    },
+    {
+     "t": "cat_recommendation_rules",
+     "kind": "r",
+     "owner": "app_rpc_owner",
+     "rls": true,
+     "force": false,
+     "acl": "{app_rpc_owner=arwdDxtm/app_rpc_owner,authenticated=r/app_rpc_owner,service_role=r/app_rpc_owner}"
+    },
+    {
+     "t": "daily_decisions",
+     "kind": "r",
+     "owner": "app_rpc_owner",
+     "rls": true,
+     "force": false,
+     "acl": "{app_rpc_owner=arwdDxtm/app_rpc_owner,authenticated=r/app_rpc_owner,service_role=r/app_rpc_owner}"
+    },
+    {
+     "t": "daily_prompt_impressions",
+     "kind": "r",
+     "owner": "app_rpc_owner",
+     "rls": true,
+     "force": false,
+     "acl": "{app_rpc_owner=arwdDxtm/app_rpc_owner,authenticated=r/app_rpc_owner,service_role=r/app_rpc_owner}"
+    },
+    {
+     "t": "goal_events",
+     "kind": "r",
+     "owner": "app_rpc_owner",
+     "rls": true,
+     "force": false,
+     "acl": "{app_rpc_owner=arwdDxtm/app_rpc_owner,authenticated=r/app_rpc_owner,service_role=r/app_rpc_owner}"
+    },
+    {
+     "t": "goals",
+     "kind": "r",
+     "owner": "postgres",
+     "rls": true,
+     "force": false,
+     "acl": "{postgres=arwdDxtm/postgres,anon=arwdDxtm/postgres,authenticated=arwdDxtm/postgres,service_role=arwdDxtm/postgres,app_rpc_owner=arw/postgres}"
+    },
+    {
+     "t": "income_declarations",
+     "kind": "r",
+     "owner": "app_rpc_owner",
+     "rls": true,
+     "force": false,
+     "acl": "{app_rpc_owner=arwdDxtm/app_rpc_owner,authenticated=r/app_rpc_owner,service_role=r/app_rpc_owner}"
+    },
+    {
+     "t": "onboarding_sessions",
+     "kind": "r",
+     "owner": "app_rpc_owner",
+     "rls": true,
+     "force": false,
+     "acl": "{app_rpc_owner=arwdDxtm/app_rpc_owner,authenticated=r/app_rpc_owner,service_role=r/app_rpc_owner}"
+    },
+    {
+     "t": "savings_transactions",
+     "kind": "r",
+     "owner": "app_rpc_owner",
+     "rls": true,
+     "force": false,
+     "acl": "{app_rpc_owner=arwdDxtm/app_rpc_owner,authenticated=r/app_rpc_owner,service_role=r/app_rpc_owner}"
+    },
+    {
+     "t": "user_free_text",
+     "kind": "r",
+     "owner": "app_rpc_owner",
+     "rls": true,
+     "force": false,
+     "acl": "{app_rpc_owner=arwdDxtm/app_rpc_owner,authenticated=r/app_rpc_owner,service_role=r/app_rpc_owner}"
+    },
+    {
+     "t": "user_profiles",
+     "kind": "r",
+     "owner": "postgres",
+     "rls": true,
+     "force": false,
+     "acl": "{postgres=arwdDxtm/postgres,anon=arwdDxtm/postgres,authenticated=arwdDxtm/postgres,service_role=arwdDxtm/postgres,app_rpc_owner=arw/postgres}"
+    },
+    {
+     "t": "v_goal_state",
+     "kind": "v",
+     "owner": "postgres",
+     "rls": false,
+     "force": false,
+     "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+    },
+    {
+     "t": "v_hucha_balance",
+     "kind": "v",
+     "owner": "postgres",
+     "rls": false,
+     "force": false,
+     "acl": "{postgres=arwdDxtm/postgres,authenticated=r/postgres}"
+    }
+   ],
+   "views_options": [
+    {
+     "v": "v_goal_state",
+     "opts": [
+      "security_invoker=true"
+     ]
+    },
+    {
+     "v": "v_hucha_balance",
+     "opts": [
+      "security_invoker=true"
+     ]
+    }
+   ],
+   "v2_triggers": [
+    {
+     "tbl": "user_profiles",
+     "name": "user_profiles_updated_at",
+     "enabled": "O"
+    },
+    {
+     "tbl": "goals",
+     "name": "goals_updated_at",
+     "enabled": "O"
+    },
+    {
+     "tbl": "decisions",
+     "name": "decisions_updated_at",
+     "enabled": "O"
+    },
+    {
+     "tbl": "hucha",
+     "name": "hucha_updated_at",
+     "enabled": "O"
+    },
+    {
+     "tbl": "question_interactions",
+     "name": "question_interactions_updated_at",
+     "enabled": "O"
+    },
+    {
+     "tbl": "cat_recommendation_rules",
+     "name": "cat_rec_rules_catalog_trg",
+     "enabled": "O"
+    },
+    {
+     "tbl": "cat_income_bands",
+     "name": "cat_income_bands_immutable",
+     "enabled": "O"
+    },
+    {
+     "tbl": "cat_recommendation_rules",
+     "name": "cat_rec_rules_immutable",
+     "enabled": "O"
+    },
+    {
+     "tbl": "cat_daily_questions",
+     "name": "cat_daily_questions_immutable",
+     "enabled": "O"
+    },
+    {
+     "tbl": "onboarding_sessions",
+     "name": "onboarding_sessions_guard_trg",
+     "enabled": "O"
+    },
+    {
+     "tbl": "avatar_assessments",
+     "name": "avatar_assessments_immutable",
+     "enabled": "O"
+    },
+    {
+     "tbl": "avatar_assessment_answers",
+     "name": "avatar_answers_immutable",
+     "enabled": "O"
+    },
+    {
+     "tbl": "income_declarations",
+     "name": "income_declarations_immutable",
+     "enabled": "O"
+    },
+    {
+     "tbl": "goals",
+     "name": "goals_guard_trg",
+     "enabled": "O"
+    },
+    {
+     "tbl": "savings_transactions",
+     "name": "st_before_insert_trg",
+     "enabled": "O"
+    },
+    {
+     "tbl": "savings_transactions",
+     "name": "st_immutable_trg",
+     "enabled": "O"
+    },
+    {
+     "tbl": "savings_transactions",
+     "name": "st_no_truncate_trg",
+     "enabled": "O"
+    },
+    {
+     "tbl": "savings_transactions",
+     "name": "st_balance_ctrg",
+     "enabled": "O"
+    },
+    {
+     "tbl": "savings_transactions",
+     "name": "st_transfer_ctrg",
+     "enabled": "O"
+    },
+    {
+     "tbl": "daily_decisions",
+     "name": "dd_guard_trg",
+     "enabled": "O"
+    },
+    {
+     "tbl": "daily_prompt_impressions",
+     "name": "dpi_immutable_trg",
+     "enabled": "O"
+    },
+    {
+     "tbl": "user_free_text",
+     "name": "uft_immutable_trg",
+     "enabled": "O"
+    },
+    {
+     "tbl": "goal_events",
+     "name": "ge_immutable_trg",
+     "enabled": "O"
+    },
+    {
+     "tbl": "goals",
+     "name": "goals_require_event_ctrg",
+     "enabled": "O"
+    }
+   ],
+   "v2_policies": [
+    {
+     "t": "user_profiles",
+     "p": "Users can manage own profile",
+     "perm": "PERMISSIVE",
+     "roles": "{public}",
+     "cmd": "ALL"
+    },
+    {
+     "t": "goals",
+     "p": "Users can manage own goals",
+     "perm": "PERMISSIVE",
+     "roles": "{public}",
+     "cmd": "ALL"
+    },
+    {
+     "t": "decisions",
+     "p": "Users can manage own decisions",
+     "perm": "PERMISSIVE",
+     "roles": "{public}",
+     "cmd": "ALL"
+    },
+    {
+     "t": "hucha",
+     "p": "Users can manage own hucha",
+     "perm": "PERMISSIVE",
+     "roles": "{public}",
+     "cmd": "ALL"
+    },
+    {
+     "t": "push_subscriptions",
+     "p": "Users can manage own push subscriptions",
+     "perm": "PERMISSIVE",
+     "roles": "{public}",
+     "cmd": "ALL"
+    },
+    {
+     "t": "question_interactions",
+     "p": "Users can read own interactions",
+     "perm": "PERMISSIVE",
+     "roles": "{authenticated}",
+     "cmd": "SELECT"
+    },
+    {
+     "t": "question_interactions",
+     "p": "Users can insert own interactions",
+     "perm": "PERMISSIVE",
+     "roles": "{authenticated}",
+     "cmd": "INSERT"
+    },
+    {
+     "t": "question_interactions",
+     "p": "Users can update own interactions",
+     "perm": "PERMISSIVE",
+     "roles": "{authenticated}",
+     "cmd": "UPDATE"
+    },
+    {
+     "t": "question_interactions",
+     "p": "Users insert own",
+     "perm": "PERMISSIVE",
+     "roles": "{public}",
+     "cmd": "INSERT"
+    },
+    {
+     "t": "question_interactions",
+     "p": "Users read own",
+     "perm": "PERMISSIVE",
+     "roles": "{public}",
+     "cmd": "SELECT"
+    },
+    {
+     "t": "question_interactions",
+     "p": "Users update own",
+     "perm": "PERMISSIVE",
+     "roles": "{public}",
+     "cmd": "UPDATE"
+    },
+    {
+     "t": "onboarding_sessions",
+     "p": "onboarding_sessions_select_own",
+     "perm": "PERMISSIVE",
+     "roles": "{authenticated}",
+     "cmd": "SELECT"
+    },
+    {
+     "t": "avatar_assessments",
+     "p": "avatar_assessments_select_own",
+     "perm": "PERMISSIVE",
+     "roles": "{authenticated}",
+     "cmd": "SELECT"
+    },
+    {
+     "t": "avatar_assessment_answers",
+     "p": "avatar_assessment_answers_select_own",
+     "perm": "PERMISSIVE",
+     "roles": "{authenticated}",
+     "cmd": "SELECT"
+    },
+    {
+     "t": "income_declarations",
+     "p": "income_declarations_select_own",
+     "perm": "PERMISSIVE",
+     "roles": "{authenticated}",
+     "cmd": "SELECT"
+    },
+    {
+     "t": "goal_events",
+     "p": "goal_events_select_own",
+     "perm": "PERMISSIVE",
+     "roles": "{authenticated}",
+     "cmd": "SELECT"
+    },
+    {
+     "t": "daily_prompt_impressions",
+     "p": "daily_prompt_impressions_select_own",
+     "perm": "PERMISSIVE",
+     "roles": "{authenticated}",
+     "cmd": "SELECT"
+    },
+    {
+     "t": "daily_decisions",
+     "p": "daily_decisions_select_own",
+     "perm": "PERMISSIVE",
+     "roles": "{authenticated}",
+     "cmd": "SELECT"
+    },
+    {
+     "t": "savings_transactions",
+     "p": "savings_transactions_select_own",
+     "perm": "PERMISSIVE",
+     "roles": "{authenticated}",
+     "cmd": "SELECT"
+    },
+    {
+     "t": "user_free_text",
+     "p": "user_free_text_select_own",
+     "perm": "PERMISSIVE",
+     "roles": "{authenticated}",
+     "cmd": "SELECT"
+    },
+    {
+     "t": "cat_income_bands",
+     "p": "cat_income_bands_read",
+     "perm": "PERMISSIVE",
+     "roles": "{authenticated}",
+     "cmd": "SELECT"
+    },
+    {
+     "t": "cat_recommendation_rules",
+     "p": "cat_recommendation_rules_read",
+     "perm": "PERMISSIVE",
+     "roles": "{authenticated}",
+     "cmd": "SELECT"
+    },
+    {
+     "t": "cat_daily_questions",
+     "p": "cat_daily_questions_read",
+     "perm": "PERMISSIVE",
+     "roles": "{authenticated}",
+     "cmd": "SELECT"
+    },
+    {
+     "t": "goals",
+     "p": "goals_v2_no_direct_insert",
+     "perm": "RESTRICTIVE",
+     "roles": "{anon,authenticated}",
+     "cmd": "INSERT"
+    },
+    {
+     "t": "goals",
+     "p": "goals_v2_no_direct_update",
+     "perm": "RESTRICTIVE",
+     "roles": "{anon,authenticated}",
+     "cmd": "UPDATE"
+    },
+    {
+     "t": "goals",
+     "p": "goals_v2_no_direct_delete",
+     "perm": "RESTRICTIVE",
+     "roles": "{anon,authenticated}",
+     "cmd": "DELETE"
+    }
+   ],
+   "catalog_counts": {
+    "bands": 6,
+    "rules": 4,
+    "questions": 1512
+   },
+   "secdef_without_search_path": null,
+   "anon_exec_any_v2": null,
+   "service_exec_any_v2": null,
+   "auth_exec_private": null,
+   "authenticated_write_ledger": {
+    "ins": false,
+    "upd": false,
+    "del": false,
+    "trunc": false
+   }
+  }
+ }
+]
