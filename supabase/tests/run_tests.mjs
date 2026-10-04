@@ -537,8 +537,8 @@ await t('CONC hucha=20 €, dos retiradas simultáneas de 15 € → 1 éxito + 
 });
 await t('CONC-2 mismo idempotency key concurrente → un solo efecto', async () => {
   const U = uuid(); await db.addUser(U);
-  const id = uuid();
-  const rs = await Promise.all([extra(U, 7, null, { id }), extra(U, 7, null, { id }), extra(U, 7, null, { id })]);
+  const id = uuid(), at = iso(0, -1); // un reintento reenvía EXACTAMENTE el mismo payload
+  const rs = await Promise.all([extra(U, 7, null, { id, at }), extra(U, 7, null, { id, at }), extra(U, 7, null, { id, at })]);
   eq(rs.filter(r => r.ok).length, 3, 'todas devuelven resultado');
   eq((await q(`select count(*)::int c from public.savings_transactions where user_id=$1`, [U]))[0].c, 1);
   eq(await bal(U, 'hucha'), 7);
