@@ -37,3 +37,6 @@ GRANT SELECT ON public.v_goal_state, public.v_hucha_balance TO authenticated;
 
 -- Defaults: cualquier función futura en public NO será ejecutable por anon/PUBLIC sin GRANT explícito.
 ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC, anon;
+
+-- El propietario ya no necesita CREATE en public (se vuelve a conceder al reaplicar 006).
+REVOKE CREATE ON SCHEMA public FROM app_rpc_owner;

@@ -85,8 +85,8 @@ RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = ''
 AS $$
 BEGIN
   IF TG_OP = 'DELETE' THEN
-    IF NOT EXISTS (SELECT 1 FROM auth.users WHERE id = OLD.user_id) THEN
-      RETURN OLD; -- cascada por eliminación de la cuenta
+    IF pg_catalog.pg_trigger_depth() > 1 THEN
+      RETURN OLD; -- cascada RI por eliminación de la cuenta
     END IF;
     RAISE EXCEPTION 'immutable_table: onboarding_sessions no admite DELETE' USING ERRCODE = 'P0001';
   END IF;

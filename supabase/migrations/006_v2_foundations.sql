@@ -24,11 +24,18 @@ EXCEPTION WHEN OTHERS THEN
 END $$;
 
 GRANT USAGE ON SCHEMA public TO app_rpc_owner;
-GRANT USAGE ON SCHEMA auth   TO app_rpc_owner;
-GRANT EXECUTE ON FUNCTION auth.uid() TO app_rpc_owner;
--- Las FKs a auth.users se crean con el rol que aplica la migración; el propietario
--- solo necesita poder leer para validar referencias en tiempo de ejecución.
-GRANT REFERENCES, SELECT ON auth.users TO app_rpc_owner;
+-- ALTER ... OWNER TO exige que el nuevo propietario tenga CREATE en el schema (Supabase: postgres no es superusuario).
+-- Se revoca al final de 016.
+GRANT CREATE ON SCHEMA public TO app_rpc_owner;
+-- Acceso a auth: en Supabase el rol que migra no es dueño de auth.* y puede no tener GRANT OPTION.
+-- Se intenta y se continua; el preflight/tests de staging verifican si hizo falta (ver docs).
+DO $$
+BEGIN
+  BEGIN GRANT USAGE ON SCHEMA auth TO app_rpc_owner;
+  EXCEPTION WHEN insufficient_privilege THEN RAISE NOTICE 'no se pudo GRANT USAGE ON SCHEMA auth'; END;
+  BEGIN GRANT EXECUTE ON FUNCTION auth.uid() TO app_rpc_owner;
+  EXCEPTION WHEN insufficient_privilege THEN RAISE NOTICE 'no se pudo GRANT EXECUTE auth.uid()'; END;
+END $$;
 
 -- ─── Schema private: helpers NO expuestos por PostgREST (R9) ──────────────────
 CREATE SCHEMA IF NOT EXISTS private;
@@ -42,8 +49,15 @@ GRANT USAGE ON SCHEMA private TO app_rpc_owner;
 CREATE OR REPLACE FUNCTION private.current_uid()
 RETURNS uuid LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = ''
 AS $$
-DECLARE v uuid := auth.uid();
+DECLARE v uuid;
 BEGIN
+  BEGIN
+    v := auth.uid();
+  EXCEPTION WHEN insufficient_privilege THEN
+    -- misma definición que auth.uid() de Supabase (claims del JWT que fija PostgREST)
+    v := COALESCE(NULLIF(pg_catalog.current_setting('request.jwt.claim.sub', true), ''),
+                  (NULLIF(pg_catalog.current_setting('request.jwt.claims', true), '')::jsonb ->> 'sub'))::uuid;
+  END;
   IF v IS NULL THEN
     RAISE EXCEPTION 'not_authenticated' USING ERRCODE = 'P0001';
   END IF;
@@ -105,14 +119,12 @@ AS $$ SELECT pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended('ledge
 CREATE OR REPLACE FUNCTION private.forbid_mutation()
 RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = ''
 AS $$
-DECLARE v_uid uuid;
 BEGIN
-  -- Excepción única: borrado en cascada por eliminación de la cuenta (supresión de datos).
-  IF TG_OP = 'DELETE' THEN
-    v_uid := (pg_catalog.to_jsonb(OLD) ->> 'user_id')::uuid;
-    IF v_uid IS NOT NULL AND NOT EXISTS (SELECT 1 FROM auth.users WHERE id = v_uid) THEN
-      RETURN OLD;
-    END IF;
+  -- Excepción única: borrado en cascada por eliminación de la cuenta (FK ON DELETE CASCADE desde
+  -- auth.users). El DELETE lo ejecuta el trigger RI, por lo que aquí la profundidad es > 1; una
+  -- sentencia DELETE directa (profundidad 1) siempre se rechaza. Sin depender de leer auth.users.
+  IF TG_OP = 'DELETE' AND pg_catalog.pg_trigger_depth() > 1 THEN
+    RETURN OLD;
   END IF;
   RAISE EXCEPTION 'immutable_table: % no admite % (append-only)', TG_TABLE_NAME, TG_OP
     USING ERRCODE = 'P0001';
