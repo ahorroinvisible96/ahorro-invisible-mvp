@@ -1,0 +1,45 @@
+{
+  "taken_at": "2026-10-04T12:23:36.052Z",
+  "note": "Agregados PRE-V2. Sin PII, sin ids de usuario, sin textos libres.",
+  "counts": {
+    "user_profiles": 25,
+    "user_profiles_income_range_not_null": 24,
+    "user_profiles_onboarding_completed_at_not_null": 4,
+    "goals": 52,
+    "goals_active": 49,
+    "goals_archived": 3,
+    "goals_source_onboarding": 21,
+    "goals_completed_at_not_null": 2,
+    "decisions": 132,
+    "decisions_daily": 87,
+    "decisions_extra_saving": 45,
+    "decisions_goal_id_null": 33,
+    "decisions_delta_zero": 6,
+    "decisions_delta_negative": 0,
+    "hucha_rows": 24,
+    "hucha_balance_positive": 4,
+    "question_interactions": 1,
+    "push_subscriptions": 1,
+    "distinct_users_with_decisions": 17,
+    "distinct_users_with_goals": 24
+  },
+  "sums_eur": {
+    "goals_current_amount": 15393.25,
+    "goals_current_amount_active": 15393.25,
+    "goals_target_amount": 170067,
+    "decisions_delta_total": 20788.55,
+    "decisions_delta_daily": 8829.55,
+    "decisions_delta_extra": 11959,
+    "hucha_balance_total": 5907,
+    "hucha_entries_total": 7390
+  },
+  "date_range_decisions": {
+    "min": "2026-02-24",
+    "max": "2026-09-28"
+  },
+  "v1_anomalies": {
+    "goals_current_amount_ne_sum_of_decisions": 13,
+    "users_with_more_than_one_active_primary_goal": 2,
+    "duplicated_daily_decisions_same_user_date": 0
+  }
+}

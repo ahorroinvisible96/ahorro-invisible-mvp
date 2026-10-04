@@ -1,0 +1,175 @@
+{
+  "at": "2026-10-04T13:02:28.315Z",
+  "pass": 42,
+  "total": 42,
+  "results": [
+    {
+      "name": "S1 tablas V2 creadas y catálogos sembrados",
+      "ok": true
+    },
+    {
+      "name": "S2 V1 intacto: tablas y columnas legacy siguen existiendo",
+      "ok": true
+    },
+    {
+      "name": "S3 sin FKs cross-user: toda FK hacia tablas V2 con user_id incluye user_id",
+      "ok": true
+    },
+    {
+      "name": "S4 sin dependencias circulares entre tablas V2",
+      "ok": true
+    },
+    {
+      "name": "S5 sin balances editables: ninguna columna de saldo en tablas V2; goals V2 exige current_amount=0",
+      "ok": true
+    },
+    {
+      "name": "S6 un único principal activo por usuario (índice parcial)",
+      "ok": true
+    },
+    {
+      "name": "P1 usuario sin JWT → not_authenticated",
+      "ok": true
+    },
+    {
+      "name": "P2 anon no puede ejecutar RPC",
+      "ok": true
+    },
+    {
+      "name": "P3 authenticated no tiene INSERT/UPDATE/DELETE directo en tablas V2 financieras/históricas",
+      "ok": true
+    },
+    {
+      "name": "P4 funciones SECURITY DEFINER: search_path vacío, dueño app_rpc_owner, EXECUTE solo authenticated",
+      "ok": true
+    },
+    {
+      "name": "P5 tablas V2 con RLS activada y política solo SELECT own",
+      "ok": true
+    },
+    {
+      "name": "1 usuario A no puede tocar datos de B",
+      "ok": true
+    },
+    {
+      "name": "8 goal de otro usuario rechazado (RPC y FK compuesta en BD)",
+      "ok": true
+    },
+    {
+      "name": "2 misma petición repetida no duplica datos",
+      "ok": true
+    },
+    {
+      "name": "3 misma clave + payload distinto → idempotency_conflict",
+      "ok": true
+    },
+    {
+      "name": "4 transferencias de dos asientos que suman 0",
+      "ok": true
+    },
+    {
+      "name": "5 ledger no acepta UPDATE (ni siquiera el propietario/superusuario)",
+      "ok": true
+    },
+    {
+      "name": "6 ledger no acepta DELETE ni TRUNCATE",
+      "ok": true
+    },
+    {
+      "name": "7 no puede quedar saldo negativo (RPC y red de seguridad en COMMIT)",
+      "ok": true
+    },
+    {
+      "name": "9 local_date correcto cerca de medianoche, DST y otras zonas",
+      "ok": true
+    },
+    {
+      "name": "10 acción offline <72 h aceptada (71 h)",
+      "ok": true
+    },
+    {
+      "name": "11 acción >72 h rechazada (73 h)",
+      "ok": true
+    },
+    {
+      "name": "12 timestamp futuro >5 min rechazado (+6 min); +4 min aceptado",
+      "ok": true
+    },
+    {
+      "name": "13 borrar goal conserva el dinero vía hucha",
+      "ok": true
+    },
+    {
+      "name": "14 ahorro declarado 10 € genera exactamente 10 € (sin multiplicador de ingresos)",
+      "ok": true
+    },
+    {
+      "name": "N1 amend/void: enmienda por diferencia, reversal por asiento vivo, sin saldo negativo",
+      "ok": true
+    },
+    {
+      "name": "N2 completado/reversión de objetivo registra goal_events y first_completed_at write-once",
+      "ok": true
+    },
+    {
+      "name": "N3 guardia anti-bypass: UPDATE de un goal V2 sin evento aborta en COMMIT; goal_events inmutable",
+      "ok": true
+    },
+    {
+      "name": "N4 archivar con destino objetivo, principal se reasigna, reactivar",
+      "ok": true
+    },
+    {
+      "name": "N5 impresiones: idempotentes y deduplicadas por (usuario, día, pregunta)",
+      "ok": true
+    },
+    {
+      "name": "15 texto libre solo en user_free_text (+ goals.title y goal_events.private_changes, no exportables)",
+      "ok": true
+    },
+    {
+      "name": "16a start_onboarding crea intento 1; idempotente",
+      "ok": true
+    },
+    {
+      "name": "16b complete_onboarding rechaza recomendación/avatar manipulados (sin escribir nada)",
+      "ok": true
+    },
+    {
+      "name": "16c onboarding completo es atómico: fallo a mitad ⇒ rollback total",
+      "ok": true
+    },
+    {
+      "name": "16d onboarding completo OK: todo creado en una transacción y recomendación verificada",
+      "ok": true
+    },
+    {
+      "name": "16e tramo gt_3000 usa referencia 3000 (no 3500) y suelo mínimo 50",
+      "ok": true
+    },
+    {
+      "name": "CONC hucha=20 €, dos retiradas simultáneas de 15 € → 1 éxito + 1 insufficient_balance, saldo final 5 €",
+      "ok": true
+    },
+    {
+      "name": "CONC-2 mismo idempotency key concurrente → un solo efecto",
+      "ok": true
+    },
+    {
+      "name": "CONC-3 red de seguridad sin RPC: dos INSERT directos concurrentes de −15 con saldo 20 → uno falla en COMMIT",
+      "ok": true
+    },
+    {
+      "name": "V1-1 la app V1 sigue escribiendo goals y decisions con su esquema actual",
+      "ok": true
+    },
+    {
+      "name": "V1-2 supresión de cuenta: DELETE en auth.users borra en cascada también el ledger inmutable",
+      "ok": true
+    },
+    {
+      "name": "V1-3 migraciones V2 son idempotentes (re-aplicación sin errores ni cambios de datos)",
+      "ok": true
+    }
+  ]
+}
