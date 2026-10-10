@@ -413,7 +413,7 @@ export default function OnboardingPage() {
         savingsProfile: 'medium',
         completedAt: new Date().toISOString(),
       }));
-      analytics.onboardingCompleted();
+      analytics.onboardingSubmitted();
       const userId = localStorage.getItem('supabaseUserId');
       if (userId) pushLocalDataToSupabase(userId).catch(() => null);
     } catch (err) {

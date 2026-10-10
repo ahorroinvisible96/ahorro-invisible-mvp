@@ -32,8 +32,8 @@ UNION ALL
 SELECT 'posthog_confirmed_vs_ledger', 'warning',
   IF(e.n = 0 OR ABS(e.n - l.n) <= GREATEST(2, 0.1 * l.n), 0, 1),
   FORMAT('posthog_confirmed=%d ledger_v2_live=%d%s', e.n, l.n, IF(e.n = 0, ' (tracking V2 *_confirmed aún sin eventos)', ''))
-FROM (SELECT COUNT(DISTINCT IFNULL(transaction_id, event_id)) AS n FROM `{{project}}.{{an}}.stg_events`
-      WHERE event IN ('daily_decision_confirmed', 'extra_saving_confirmed')
+FROM (SELECT COUNT(DISTINCT transaction_id) AS n FROM `{{project}}.{{an}}.stg_events`
+      WHERE event IN ('daily_decision_confirmed', 'extra_saving_confirmed') AND transaction_id IS NOT NULL
         AND event_date >= (SELECT v2_cutover_date FROM `{{project}}.{{an}}.params`)) e,
      (SELECT COUNT(*) AS n FROM `{{project}}.{{an}}.fct_ledger`
       WHERE is_v2_live AND transaction_type IN ('daily_saving', 'extra_saving')) l

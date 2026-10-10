@@ -112,7 +112,7 @@ export function IncomeRangeWidget({
   function handleSave() {
     const [min, max] = draftRange;
     onSaveIncomeRange({ min, max, currency: 'EUR' });
-    analytics.incomeUpdated(min, max);
+    analytics.incomeUpdateSubmitted();
     setIsDialogOpen(false);
   }
 

@@ -47,7 +47,7 @@ export default function LoginPage() {
 
     // Identificar al usuario en PostHog con UUID real (solo si tiene UUID, no en modo local)
     if (user.id && user.id !== 'local') {
-      identifyUser(user.id);
+      identifyUser(user.id, { email });
       analytics.setUserId(user.id);
     }
 

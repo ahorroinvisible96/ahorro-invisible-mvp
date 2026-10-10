@@ -66,7 +66,7 @@ export default function ExtraSavingPage() {
 
       storeAddExtraSaving(note.trim() || 'Ahorro extra', amount, selectedGoalId);
 
-      analytics.extraSavingSubmitted(today, selectedGoalId, amount, note.length);
+      analytics.extraSavingSubmitted(today, selectedGoalId, amount);
 
       // Sync directo e inmediato: solo el registro nuevo + goal actualizado
       try {
@@ -90,7 +90,7 @@ export default function ExtraSavingPage() {
     } catch (err) {
       const today = new Date().toISOString().split('T')[0];
       setError("No se pudo guardar. Intenta de nuevo.");
-      analytics.extraSavingError(today, selectedGoalId || '', "STORE_ERROR", String(err));
+      analytics.extraSavingError("store_error");
     }
   };
   

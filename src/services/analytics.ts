@@ -1,50 +1,36 @@
 /**
- * Servicio de Analytics para Ahorro Invisible MVP
- * Implementa los eventos definidos en 08_ANALYTICS_EVENT_SCHEMA
+ * Servicio de Analytics para Ahorro Invisible (tracking V2, schema_version 2).
+ * Catálogo de eventos: src/services/analyticsCatalog.ts · docs/analytics/tracking_plan.md
+ *
+ * Los eventos de NEGOCIO (`*_confirmed`) no se emiten aquí desde la UI: los emite el outbox V2
+ * (src/services/v2/outbox.ts) cuando la RPC confirma la escritura → cuadran con el ledger.
+ * Desde la UI solo se emiten intenciones (`*_submitted`, `*_started`, `*_clicked`) y vistas.
  */
-import { posthogCapture } from '@/lib/posthog';
+import { posthogCapture, getPosthogSessionId } from '@/lib/posthog';
+import {
+  type EventName, type ConfirmedEventName, SCHEMA_VERSION, DATA_VERSION,
+  scrubProps, normalizeErrorCode, safeAnswerKey,
+} from '@/services/analyticsCatalog';
+
+/** Versión de la app: SHA corto del commit desplegado en Vercel (o versión local). */
+export const ANALYTICS_APP_VERSION =
+  (process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA || '').slice(0, 7) || '1.2.0-v2-local';
 
 // Propiedades globales que se añaden a todos los eventos
 interface GlobalProps {
   user_id?: string;         // UUID de Supabase Auth (NUNCA email)
   supabase_user_id?: string; // Alias explícito para JOIN con BigQuery
-  session_id?: string;
-  platform?: 'ios' | 'android' | 'web';
-  app_version?: string;
+  platform: 'web';
+  app_version: string;
+  schema_version: number;
+  data_version: string;
   device_locale?: string;
   timezone?: string;
   screen_name?: string;
 }
 
-// Contexto de navegación
-interface NavigationContext {
-  source?: 'sidebar' | 'dashboard_card' | 'motivation_card' | 'system_redirect' | 'onboarding' | 'unknown';
-  destination?: string;
-}
-
-// Contexto de objetivo
-interface GoalContext {
-  goal_id?: string;
-  is_primary_goal?: boolean;
-}
-
-// Contexto de decisión diaria
-interface DailyContext {
-  date?: string;
-  question_id?: string;
-  answer_key?: string;
-  decision_id?: string;
-}
-
-// Contexto de impacto
-interface ImpactContext {
-  impact_available?: boolean;
-  monthly_delta?: number | null;
-  yearly_delta?: number | null;
-}
-
 // Tipos de pantallas permitidas
-type ScreenName = 
+type ScreenName =
   | 'signup'
   | 'onboarding_step_1'
   | 'onboarding_step_2'
@@ -61,25 +47,25 @@ type ScreenName =
   | 'settings'
   | 'login';
 
+const IS_DEV = process.env.NODE_ENV !== 'production';
+
 // Clase principal de Analytics
 class Analytics {
   private globalProps: GlobalProps = {
     platform: 'web',
-    app_version: '1.1.0',
+    app_version: ANALYTICS_APP_VERSION,
+    schema_version: SCHEMA_VERSION,
+    data_version: DATA_VERSION,
     device_locale: 'es-ES', // Valor por defecto para SSR
-    timezone: 'Europe/Madrid' // Valor por defecto para SSR
+    timezone: 'Europe/Madrid', // Valor por defecto para SSR
   };
 
   constructor() {
     // Solo ejecutar código del lado del cliente
     if (typeof window !== 'undefined') {
-      // Generar session_id al iniciar
-      this.globalProps.session_id = `session_${Date.now()}`;
-      
-      // Actualizar propiedades del navegador solo en cliente
       this.globalProps.device_locale = navigator.language || 'es-ES';
       this.globalProps.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Madrid';
-      
+
       // Obtener UUID de Supabase (NUNCA usar email)
       try {
         const supabaseUserId = localStorage.getItem('supabaseUserId');
@@ -90,44 +76,37 @@ class Analytics {
       } catch {
         // Ignorar error de localStorage en SSR
       }
-    } else {
-      // Valores por defecto para SSR
-      this.globalProps.session_id = 'session_server';
     }
   }
 
-  // Método principal para registrar eventos
-  private track(eventName: string, props: Record<string, unknown> = {}) {
-    // Combinar propiedades globales con las específicas del evento
-    const eventProps = {
+  // Método principal para registrar eventos (solo nombres del catálogo)
+  private track(eventName: EventName, props: Record<string, unknown> = {}) {
+    if (typeof window === 'undefined') return;
+    const sessionId = getPosthogSessionId();
+    const eventProps = scrubProps({
       ...this.globalProps,
+      ...(sessionId ? { session_id: sessionId } : {}),
       ...props,
-      timestamp: new Date().toISOString()
-    };
-    
-    console.log(`EVENT: ${eventName}`, eventProps);
+    });
 
-    // PostHog (si está configurado)
-    if (typeof window !== 'undefined') {
-      try {
-        posthogCapture(eventName, eventProps);
-      } catch { /* fallthrough */ }
-    }
+    if (IS_DEV) console.log(`EVENT: ${eventName}`, eventProps);
 
+    try { posthogCapture(eventName, eventProps); } catch { /* fallthrough */ }
+
+    // Registro local (documentado en /privacy): últimos 200 eventos, no sale del dispositivo.
     try {
       const storedEvents = localStorage.getItem("analyticsEvents") || "[]";
       const events = JSON.parse(storedEvents);
-      events.push({
-        name: eventName,
-        props: eventProps,
-        timestamp: new Date().toISOString()
-      });
+      events.push({ name: eventName, props: eventProps, timestamp: new Date().toISOString() });
       const MAX_EVENTS = 200;
       const trimmed = events.length > MAX_EVENTS ? events.slice(events.length - MAX_EVENTS) : events;
       localStorage.setItem("analyticsEvents", JSON.stringify(trimmed));
-    } catch (err) {
-      console.error("Error al guardar evento:", err);
-    }
+    } catch { /* cuota / modo privado */ }
+  }
+
+  /** Eventos `*_confirmed`: SOLO desde el outbox V2 tras la confirmación de la RPC. */
+  confirmed(eventName: ConfirmedEventName, props: Record<string, unknown>) {
+    this.track(eventName, props);
   }
 
   // Establecer screen_name actual
@@ -155,365 +134,204 @@ class Analytics {
 
   // EVENTOS DE AUTENTICACIÓN
 
-  // Inicio de signup
   signupStarted() {
     this.track('signup_started', { screen_name: 'signup' });
   }
 
-  // Signup exitoso
   signupSuccess() {
     this.track('signup_success', { screen_name: 'signup' });
   }
 
-  // Error en signup
-  signupError(errorCode: string, errorMessage: string, errorField?: string) {
-    this.track('signup_error', {
-      screen_name: 'signup',
-      error_code: errorCode,
-      error_message: errorMessage,
-      error_field: errorField
-    });
+  /** Solo código normalizado: el mensaje de error puede contener datos del usuario. */
+  signupError(errorCode: string, errorField?: 'email' | 'name' | 'password') {
+    this.track('signup_error', { screen_name: 'signup', error_code: normalizeErrorCode(errorCode), error_field: errorField });
   }
 
-  // Click en cerrar sesión
   logoutClicked(source: 'sidebar') {
     this.track('logout_clicked', { source });
   }
 
-  // Sesión cerrada exitosamente
   logoutSuccess() {
     this.track('logout_success');
   }
 
   // EVENTOS DE ONBOARDING
 
-  // Visualización de paso de onboarding
   onboardingStepViewed(stepNumber: number) {
-    this.track('onboarding_step_viewed', {
-      screen_name: `onboarding_step_${stepNumber}`,
-      step_number: stepNumber
-    });
+    this.track('onboarding_step_viewed', { screen_name: `onboarding_step_${stepNumber}`, step_number: stepNumber });
   }
 
-  // Respuesta a pregunta de onboarding
-  onboardingQuestionAnswered(stepNumber: number, questionId: string, answerValue: string, answerType?: string) {
+  /** `answerKey` debe ser una clave de catálogo (p. ej. 'comodo'), nunca texto libre. */
+  onboardingQuestionAnswered(stepNumber: number, questionId: string, answerKey: string) {
     this.track('onboarding_question_answered', {
       screen_name: `onboarding_step_${stepNumber}`,
       step_number: stepNumber,
       question_id: questionId,
-      answer_value: answerValue,
-      answer_type: answerType
+      answer_key: answerKey,
     });
   }
 
-  // Onboarding completado
-  onboardingCompleted() {
-    this.track('onboarding_completed', { screen_name: 'onboarding_step_3' });
+  /** Pulsa finalizar; la confirmación llega como `onboarding_completed_confirmed`. */
+  onboardingSubmitted() {
+    this.track('onboarding_submitted');
+  }
+
+  onboardingReset() {
+    this.track('onboarding_reset');
   }
 
   // EVENTOS DE OBJETIVOS
 
-  // Inicio de creación de objetivo
   goalCreateStarted(source: string) {
-    this.track('goal_create_started', {
-      screen_name: 'create_goal',
-      source
-    });
+    this.track('goal_create_started', { screen_name: 'create_goal', source });
   }
 
-  // Objetivo creado exitosamente
-  goalCreated(goalId: string, isPrimaryGoal: boolean, targetAmount?: number, timeHorizonMonths?: number | null) {
-    this.track('goal_created', {
-      goal_id: goalId,
+  /** Envío del formulario; la confirmación llega como `goal_created_confirmed`. */
+  goalCreateSubmitted(isPrimaryGoal: boolean, targetAmount?: number, timeHorizonMonths?: number | null) {
+    this.track('goal_create_submitted', {
       is_primary_goal: isPrimaryGoal,
       goal_target_amount: targetAmount,
-      goal_time_horizon_months: timeHorizonMonths
+      goal_time_horizon_months: timeHorizonMonths,
     });
   }
 
-  // Primer objetivo creado (momento de activación)
-  firstGoalCreated(goalId: string, targetAmount: number, horizonMonths: number) {
-    this.track('first_goal_created', {
-      goal_id: goalId,
-      goal_target_amount: targetAmount,
-      goal_time_horizon_months: horizonMonths,
-    });
+  goalCreateError(errorCode: string) {
+    this.track('goal_create_error', { screen_name: 'create_goal', error_code: normalizeErrorCode(errorCode) });
   }
 
-  // Error al crear objetivo
-  goalCreateError(errorCode: string, errorMessage: string) {
-    this.track('goal_create_error', {
-      screen_name: 'create_goal',
-      error_code: errorCode,
-      error_message: errorMessage
-    });
-  }
-
-  // Objetivo archivado
-  goalArchived(goalId: string, wasPrimaryGoal: boolean) {
-    this.track('goal_archived', {
-      goal_id: goalId,
-      was_primary_goal: wasPrimaryGoal,
-      screen_name: 'dashboard'
-    });
-  }
-
-  // Click en tarjeta de objetivo
-  goalCardClicked(goalId: string) {
-    this.track('goal_card_clicked', {
-      goal_id: goalId,
-      screen_name: 'dashboard',
-      destination: 'goal_detail'
-    });
+  /** Pulsa archivar/eliminar; la confirmación llega como `goal_archived_confirmed` / `goal_deleted_confirmed`. */
+  goalArchiveSubmitted(goalId: string, wasPrimaryGoal: boolean) {
+    this.track('goal_archive_submitted', { goal_id: goalId, was_primary_goal: wasPrimaryGoal });
   }
 
   // EVENTOS DE DASHBOARD
 
-  // Visualización del dashboard
   dashboardViewed(dailyStatus: 'pending' | 'completed', goalsCountActive: number, hasPrimaryGoal: boolean, hasIncomeRange: boolean) {
     this.track('dashboard_viewed', {
       daily_status: dailyStatus,
       goals_count_active: goalsCountActive,
       has_primary_goal: hasPrimaryGoal,
-      has_income_range: hasIncomeRange
+      has_income_range: hasIncomeRange,
     });
   }
 
-  // Visualización de tarjeta CTA diaria
   dailyCtaCardViewed(dailyStatus: 'pending' | 'completed') {
     this.track('daily_cta_card_viewed', { daily_status: dailyStatus });
   }
 
-  // Click en CTA de tarjeta diaria
   dailyCtaClicked(dailyStatus: 'pending' | 'completed', destination: string) {
     this.track('daily_cta_clicked', { daily_status: dailyStatus, destination });
   }
 
-  // Click en CTA de tarjeta motivacional
   motivationCtaClicked(dailyStatus: 'pending' | 'completed', destination: string) {
     this.track('motivation_cta_clicked', { daily_status: dailyStatus, destination });
   }
 
-  // Cambio de rango en evolución de ahorro
   savingsEvolutionRangeChanged(range: string, mode: 'demo' | 'live') {
     this.track('savings_evolution_range_changed', { range, mode });
   }
 
-  // EVENTOS DE DECISIÓN DIARIA (NSM)
+  // EVENTOS DE DECISIÓN DIARIA
 
-  // Visualización de pregunta diaria
   dailyQuestionViewed(date: string, questionId: string, dailyStatus: 'pending' | 'completed') {
     this.track('daily_question_viewed', { date, question_id: questionId, daily_status: dailyStatus });
   }
 
-  // Selección de respuesta diaria
-  dailyAnswerSelected(date: string, questionId: string, answerKey: string) {
-    this.track('daily_answer_selected', { date, question_id: questionId, answer_key: answerKey });
-  }
-
-  // Envío de respuesta diaria
+  /** Envío de la decisión; la confirmación llega como `daily_decision_confirmed`. Sin texto libre. */
   dailyAnswerSubmitted(date: string, questionId: string, answerKey: string, goalId: string, isPrimaryGoal: boolean) {
     this.track('daily_answer_submitted', {
       date,
       question_id: questionId,
-      answer_key: answerKey,
+      answer_key: safeAnswerKey(answerKey),
       goal_id: goalId,
-      is_primary_goal: isPrimaryGoal
+      is_primary_goal: isPrimaryGoal,
     });
   }
 
-  // Decisión diaria completada (NSM + crítico)
-  dailyCompleted(date: string, decisionId: string, questionId: string, answerKey: string, goalId: string, impactAvailable: boolean, monthlyDelta?: number, yearlyDelta?: number, isPrimaryGoal?: boolean) {
-    this.track('daily_completed', {
-      date,
-      decision_id: decisionId,
-      question_id: questionId,
-      answer_key: answerKey,
-      goal_id: goalId,
-      impact_available: impactAvailable,
-      monthly_delta: monthlyDelta,
-      yearly_delta: yearlyDelta,
-      is_primary_goal: isPrimaryGoal
-    });
-  }
-
-  // Primera decisión completada (activación clave)
-  firstDailyCompleted(date: string, decisionId: string, questionId: string, answerKey: string, goalId: string) {
-    this.track('first_daily_completed', {
-      date,
-      decision_id: decisionId,
-      question_id: questionId,
-      answer_key: answerKey,
-      goal_id: goalId,
-    });
-  }
-
-  // Usuario sale de la pantalla diaria sin responder
   dailySkipped(date: string, questionId: string) {
     this.track('daily_skipped', { date, question_id: questionId });
   }
 
-  // Error al enviar decisión diaria
-  dailySubmitError(date: string, questionId: string, answerKey: string | null, errorCode: string, errorMessage: string) {
-    this.track('daily_submit_error', {
-      date,
-      question_id: questionId,
-      answer_key: answerKey,
-      error_code: errorCode,
-      error_message: errorMessage
-    });
-  }
-
   // EVENTOS DE IMPACTO
 
-  // Visualización de impacto
   impactViewed(date: string, decisionId: string, questionId: string, answerKey: string, goalId: string, impactAvailable: boolean, monthlyDelta?: number | null, yearlyDelta?: number | null) {
     this.track('impact_viewed', {
       date,
       decision_id: decisionId,
       question_id: questionId,
-      answer_key: answerKey,
+      answer_key: safeAnswerKey(answerKey),
       goal_id: goalId,
       impact_available: impactAvailable,
       monthly_delta: monthlyDelta,
-      yearly_delta: yearlyDelta
+      yearly_delta: yearlyDelta,
     });
   }
 
-  // Click en CTA de acción extra
   impactCtaExtraSavingsClicked(decisionId: string, goalId: string) {
-    this.track('impact_cta_extra_savings_clicked', {
-      decision_id: decisionId,
-      goal_id: goalId,
-      destination: 'extra_saving'
-    });
+    this.track('impact_cta_extra_savings_clicked', { decision_id: decisionId, goal_id: goalId, destination: 'extra_saving' });
   }
 
-  // Click en CTA de historial
   impactCtaHistoryClicked() {
     this.track('impact_cta_history_clicked', { destination: 'history' });
   }
 
-  // EVENTOS DE ACCIÓN EXTRA
+  // EVENTOS DE AHORRO EXTRA
 
-  // Inicio de acción extra
   extraSavingStarted(source: string, goalId?: string) {
-    this.track('extra_saving_started', {
-      source,
-      goal_id: goalId
-    });
+    this.track('extra_saving_started', { source, goal_id: goalId });
   }
 
-  // Envío de acción extra
-  extraSavingSubmitted(date: string, goalId: string, amount: number, noteLength: number) {
-    this.track('extra_saving_submitted', {
-      date,
-      goal_id: goalId,
-      amount,
-      note_length: noteLength
-    });
+  /** Envío; la confirmación llega como `extra_saving_confirmed`. La nota nunca se envía. */
+  extraSavingSubmitted(date: string, goalId: string, amount: number) {
+    this.track('extra_saving_submitted', { date, goal_id: goalId, amount });
   }
 
-  // Error en acción extra
-  extraSavingError(date: string, goalId: string, errorCode: string, errorMessage: string) {
-    this.track('extra_saving_error', {
-      date,
-      goal_id: goalId,
-      error_code: errorCode,
-      error_message: errorMessage
-    });
+  extraSavingError(errorCode: string) {
+    this.track('extra_saving_error', { error_code: normalizeErrorCode(errorCode) });
   }
 
   // EVENTOS DE HISTORIAL / PERFIL / AJUSTES
 
-  // Visualización de historial
   historyViewed(source: 'sidebar') {
     this.track('history_viewed', { source });
   }
 
-  // Apertura de elemento de historial
-  historyItemOpened(itemType: 'daily_decision', itemId: string) {
-    this.track('history_item_opened', { item_type: itemType, item_id: itemId });
-  }
-
-  // Visualización de perfil
   profileViewed() {
     this.track('profile_viewed');
   }
 
-  // Actualización de perfil
+  /** Solo nombres de campos, nunca valores. */
   profileUpdated(changedFields: string[]) {
     this.track('profile_updated', { changed_fields: changedFields });
   }
 
-  // Actualización de foto de perfil
-  profilePhotoUpdated() {
-    this.track('profile_photo_updated');
-  }
-
-  // Visualización de ajustes
   settingsViewed() {
     this.track('settings_viewed', { source: 'sidebar' });
   }
 
-  // Actualización de ajustes
-  settingsUpdated(changedFields?: string[]) {
-    this.track('settings_updated', { changed_fields: changedFields || [] });
-  }
-
-  // Reinicio de onboarding
-  onboardingReset() {
-    this.track('onboarding_reset');
-  }
-
   // EVENTOS DE WIDGETS
 
-  // Visualización de widget de objetivo principal
   goalPrimaryWidgetViewed() {
     this.track('goal_primary_widget_viewed');
   }
 
-  // Visualización de rango de ingresos
   incomeRangeViewed() {
     this.track('income_range_viewed');
   }
 
-  // Modal de edición de ingresos abierto
   incomeEditOpened() {
     this.track('income_edit_opened', { screen_name: 'dashboard' });
   }
 
-  // Ingresos actualizados
-  incomeUpdated(min: number, max: number) {
-    this.track('income_updated', { min, max, screen_name: 'dashboard' });
+  /** Sin importes: la banda declarada llega como `income_declared_confirmed`. */
+  incomeUpdateSubmitted() {
+    this.track('income_update_submitted', { screen_name: 'dashboard' });
   }
 
-  // Error al actualizar ingresos
-  incomeUpdateError(reason: string) {
-    this.track('income_update_error', { reason, screen_name: 'dashboard' });
-  }
-
-  // Visualización de tarjeta de objetivo
   goalCardViewed(goalId: string, isPrimary: boolean, pct: number) {
-    this.track('goal_card_viewed', {
-      goal_id: goalId,
-      is_primary: isPrimary,
-      progress_pct: pct,
-      screen_name: 'dashboard',
-    });
+    this.track('goal_card_viewed', { goal_id: goalId, is_primary: isPrimary, progress_pct: pct, screen_name: 'dashboard' });
   }
 
-  // Visualización de widget de objetivos
-  goalsWidgetViewed() {
-    this.track('goals_widget_viewed');
-  }
-
-  // Visualización de evolución de ahorro
-  savingsEvolutionViewed() {
-    this.track('savings_evolution_viewed');
-  }
-
-  // Visualización de tarjeta de motivación
   dashboardMotivationCardViewed() {
     this.track('dashboard_motivation_card_viewed');
   }

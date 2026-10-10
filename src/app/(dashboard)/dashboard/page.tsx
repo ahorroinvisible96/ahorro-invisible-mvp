@@ -837,7 +837,7 @@ export default function DashboardPage() {
 
   const handleSaveGoal = (data: { title: string; targetAmount: number; horizonMonths: number }) => {
     createGoal({ title: data.title, targetAmount: data.targetAmount, horizonMonths: data.horizonMonths });
-    analytics.goalCreated(`goal_${Date.now()}`, activeGoals.length === 0, data.targetAmount, data.horizonMonths);
+    analytics.goalCreateSubmitted(activeGoals.length === 0, data.targetAmount, data.horizonMonths);
     // No cerramos el modal aquí — el CreateGoalModal mostrará el roadmap de fases
     // y se cerrará solo cuando el usuario pulse "¡Empezar!"
   };
@@ -863,7 +863,7 @@ export default function DashboardPage() {
   const handleArchiveConfirm = (destination: string | 'hucha') => {
     if (!archivingGoal) return;
     storeArchiveGoalSafe(archivingGoal.id, destination);
-    analytics.goalArchived(archivingGoal.id, archivingGoal.isPrimary);
+    analytics.goalArchiveSubmitted(archivingGoal.id, archivingGoal.isPrimary);
     syncGoalToSupabase({ ...archivingGoal, archived: true, currentAmount: 0 }).catch(() => null);
     setArchivingGoal(null);
     refresh();

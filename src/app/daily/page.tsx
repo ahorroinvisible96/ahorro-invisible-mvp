@@ -120,15 +120,6 @@ export default function DailyPage() {
       : (hasSaving ? 'saved' : 'zero');
     analytics.dailyAnswerSubmitted(today, question.questionId, answerKey, selectedGoalId, goals.find(g => g.id === selectedGoalId)?.isPrimary ?? false);
 
-    const isFirstDecision = (() => {
-      try {
-        const raw = localStorage.getItem('ahorro_invisible_dashboard_v1');
-        if (!raw) return true;
-        const s = JSON.parse(raw);
-        return (s.decisions?.length ?? 0) === 0;
-      } catch { return false; }
-    })();
-
     const summary = storeSubmitDecision(
       question.questionId,
       answerKey,
@@ -138,8 +129,7 @@ export default function DailyPage() {
     );
     const dec = summary.daily.decisionId;
     setCompletedDecisionId(dec);
-    analytics.dailyCompleted(today, dec ?? '', question.questionId, answerKey, selectedGoalId, true, undefined, undefined, goals.find(g => g.id === selectedGoalId)?.isPrimary ?? false);
-    if (isFirstDecision) analytics.firstDailyCompleted(today, dec ?? '', question.questionId, answerKey, selectedGoalId);
+    // daily_decision_confirmed lo emite el outbox V2 cuando el servidor confirma (primera decisión: derivada en BigQuery).
 
     // Sync directo
     try {

@@ -1,4 +1,5 @@
 import posthog from 'posthog-js';
+import { isInternalEmail } from '@/services/analyticsCatalog';
 
 const posthogKey  = process.env.NEXT_PUBLIC_POSTHOG_KEY;
 const posthogHost = process.env.NEXT_PUBLIC_POSTHOG_HOST ?? 'https://eu.i.posthog.com';
@@ -29,12 +30,30 @@ export function posthogCapture(event: string, properties?: Record<string, unknow
  * Debe llamarse inmediatamente después de cualquier autenticación exitosa
  * (signup, login, callback, restauración de sesión).
  * NUNCA usar email como distinct_id.
+ *
+ * `opts.email` solo se usa localmente para calcular `is_internal` (misma regla que el job de
+ * BigQuery); el email NO se envía a PostHog. `is_internal` se guarda como propiedad de persona
+ * (filtro "internal users" del proyecto) y como super-propiedad (viaja en cada evento → BigQuery).
  */
-export function identifyUser(supabaseUserId: string): void {
+export function identifyUser(supabaseUserId: string, opts?: { email?: string | null; e2e?: boolean }): void {
   if (!isPosthogConfigured || typeof window === 'undefined') return;
   // Inicializar si aún no se ha hecho (puede llamarse antes del provider)
   if (!initialized) initPosthog();
-  try { posthog.identify(supabaseUserId); } catch { /* fallthrough */ }
+  try {
+    if (opts && ('email' in opts || 'e2e' in opts)) {
+      const isInternal = isInternalEmail(opts.email) || !!opts.e2e;
+      posthog.identify(supabaseUserId, { is_internal: isInternal });
+      posthog.register({ is_internal: isInternal });
+    } else {
+      posthog.identify(supabaseUserId);
+    }
+  } catch { /* fallthrough */ }
+}
+
+/** session_id real de PostHog (o null si no está inicializado). */
+export function getPosthogSessionId(): string | null {
+  if (!isPosthogConfigured || !initialized || typeof window === 'undefined') return null;
+  try { return posthog.get_session_id() || null; } catch { return null; }
 }
 
 /**

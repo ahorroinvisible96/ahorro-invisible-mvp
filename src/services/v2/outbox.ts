@@ -14,6 +14,7 @@ import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { userTimezone } from '@/lib/dates';
 import { getFlags, v2WritesOn, v2WriteAuthority } from './flags';
 import { newUuid, v1Uuid, isUuid, type LegacyKind } from './ids';
+import { analytics } from '@/services/analytics';
 
 export const APP_VERSION = '1.2.0-v2';
 
@@ -290,6 +291,110 @@ async function execute(uid: string, c: Command): Promise<{ rpcName: string; res:
 
 type Verdict = 'done' | 'already' | 'resolved' | 'retry' | 'retry_limited' | 'auth' | 'dead';
 
+// ─── Eventos de negocio confirmados (PostHog) ───────────────────────────────────────────
+// Solo con veredicto 'done' (la RPC acaba de escribir): 'already' significa que ya se escribió y
+// se emitió entonces (o se perdió la respuesta; tolerancia documentada en tracking_plan.md).
+// Ids: los que devuelve el servidor; si no, los mismos que se enviaron a la RPC.
+async function emitConfirmed(uid: string, c: Command, data: unknown): Promise<void> {
+  const d = (data && typeof data === 'object' ? data : {}) as Record<string, unknown>;
+  const str = (v: unknown) => (typeof v === 'string' ? v : null);
+  const num = (v: unknown) => (v == null || v === '' || isNaN(Number(v)) ? null : Number(v));
+  const base = (surface?: Surface) => ({ command_id: c.id, command_type: c.type, surface: surface ?? null, occurred_at: c.occurredAt });
+  const completion = async (goalLocal: string | null, trigger: string, surface: Surface) => {
+    if (d.goal_completion === 'completed' && goalLocal) {
+      analytics.confirmed('goal_completed_confirmed', { ...base(surface), goal_id: await id2(uid, 'goal', goalLocal), trigger });
+    }
+  };
+  switch (c.type) {
+    case 'goal.create': {
+      const p = c.payload as CommandPayloads['goal.create'];
+      analytics.confirmed('goal_created_confirmed', { ...base(p.surface), goal_id: str(d.goal_id) ?? await id2(uid, 'goal', p.goal),
+        is_primary: d.is_primary ?? p.setPrimary, target_amount: money(p.target), horizon_months: p.horizon, source: p.source });
+      return;
+    }
+    case 'goal.update':
+    case 'goal.setPrimary': {
+      const p = c.payload as CommandPayloads['goal.update'];
+      analytics.confirmed('goal_updated_confirmed', { ...base(p.surface), goal_id: str(d.goal_id) ?? await id2(uid, 'goal', p.goal),
+        changed: d.changed ?? true, set_primary: c.type === 'goal.setPrimary' });
+      return;
+    }
+    case 'goal.archive':
+    case 'goal.delete': {
+      const p = c.payload as CommandPayloads['goal.archive'];
+      analytics.confirmed(c.type === 'goal.archive' ? 'goal_archived_confirmed' : 'goal_deleted_confirmed', {
+        ...base(p.surface), goal_id: str(d.goal_id) ?? await id2(uid, 'goal', p.goal),
+        destination_type: p.dest === 'hucha' || !p.dest ? 'hucha' : 'goal', balance_moved_amount: num(d.balance_moved_amount) });
+      return;
+    }
+    case 'goal.reactivate': {
+      const p = c.payload as CommandPayloads['goal.reactivate'];
+      analytics.confirmed('goal_reactivated_confirmed', { ...base(p.surface), goal_id: str(d.goal_id) ?? await id2(uid, 'goal', p.goal) });
+      return;
+    }
+    case 'hucha.transfer': {
+      const p = c.payload as CommandPayloads['hucha.transfer'];
+      analytics.confirmed('hucha_transfer_confirmed', { ...base(p.surface), transfer_group_id: str(d.transfer_group_id) ?? c.id,
+        goal_id: await id2(uid, 'goal', p.toGoal), amount: money(p.amount) });
+      return;
+    }
+    case 'daily.record': {
+      const p = c.payload as CommandPayloads['daily.record'];
+      analytics.confirmed('daily_decision_confirmed', { ...base(p.surface),
+        decision_id: str(d.decision_id) ?? await id2(uid, 'dec', p.decision), transaction_id: str(d.transaction_id),
+        outcome: str(d.outcome) ?? (p.amount > 0 ? 'saved' : 'zero'), amount: num(d.recorded_amount) ?? money(p.amount),
+        question_id: p.questionId, option_key: p.optionKey === '__custom__' ? '__custom__' : p.optionKey,
+        goal_id: p.goal ? await id2(uid, 'goal', p.goal) : null, local_date: str(d.local_date) });
+      await completion(p.goal, 'daily_saving', p.surface);
+      return;
+    }
+    case 'extra.record': {
+      const p = c.payload as CommandPayloads['extra.record'];
+      analytics.confirmed('extra_saving_confirmed', { ...base(p.surface),
+        transaction_id: str(d.transaction_id) ?? await id2(uid, 'extra', p.txn), amount: num(d.recorded_amount) ?? money(p.amount),
+        goal_id: p.goal ? await id2(uid, 'goal', p.goal) : null, local_date: str(d.local_date) });
+      await completion(p.goal, 'extra_saving', p.surface);
+      return;
+    }
+    case 'daily.void': {
+      const p = c.payload as CommandPayloads['daily.void'];
+      analytics.confirmed('saving_voided_confirmed', { ...base(p.surface), entity: p.entity,
+        entity_id: str(d.decision_id) ?? str(d.transaction_id), reason: p.reason, reversals: num(d.reversals) });
+      return;
+    }
+    case 'daily.amend': {
+      const p = c.payload as CommandPayloads['daily.amend'];
+      analytics.confirmed('saving_amended_confirmed', { ...base(p.surface), entity: p.entity,
+        entity_id: str(d.decision_id) ?? str(d.transaction_id), changed: d.changed ?? null,
+        previous_amount: num(d.previous_amount), new_amount: money(p.newAmount) });
+      return;
+    }
+    case 'grace.use': {
+      const p = c.payload as CommandPayloads['grace.use'];
+      analytics.confirmed('grace_day_confirmed', { ...base(p.surface), decision_id: str(d.decision_id) ?? await id2(uid, 'grace', p.decision),
+        local_date: str(d.local_date) });
+      return;
+    }
+    case 'income.declare': {
+      const p = c.payload as CommandPayloads['income.declare'];
+      analytics.confirmed('income_declared_confirmed', { ...base(), income_band: p.band, source: p.source });
+      return;
+    }
+    case 'onboarding.complete': {
+      const p = c.payload as CommandPayloads['onboarding.complete'];
+      analytics.confirmed('onboarding_completed_confirmed', { ...base('onboarding'), goal_id: await id2(uid, 'goal', p.goal),
+        income_band: p.band, savings_habit: p.habit, warning_shown: p.warning,
+        chosen_target_amount: money(p.chosenTarget), horizon_months: p.horizon });
+      return;
+    }
+    case 'account.reset':
+      analytics.confirmed('account_reset_confirmed', { ...base('settings') });
+      return;
+    default:
+      return; // local.import: migración técnica, sin evento de producto
+  }
+}
+
 function classify(c: Command, res: RpcResult): Verdict {
   if (!res.error) {
     const d = res.data as Record<string, unknown> | null;
@@ -365,7 +470,12 @@ async function drain(): Promise<number> {
     catch (e) { out = { rpcName: 'client', res: { data: null, error: { message: String(e), code: 'NETWORK' } } }; }
     const v = classify(c, out.res);
     const errMsg = out.res.error?.message;
-    if (v === 'done') { removeHead(uid, c.id); if (c.type === 'local.import') await logEvent('local_import_done', out.rpcName, c.id); continue; }
+    if (v === 'done') {
+      removeHead(uid, c.id);
+      if (c.type === 'local.import') await logEvent('local_import_done', out.rpcName, c.id);
+      else { try { await emitConfirmed(uid, c, out.res.data); } catch { /* la analítica nunca bloquea la cola */ } }
+      continue;
+    }
     if (v === 'already') { removeHead(uid, c.id); await logEvent(c.type === 'local.import' ? 'local_import_done' : 'outbox_already_present', out.rpcName, c.id, c.type === 'local.import' ? 'already_imported' : null); continue; }
     if (v === 'resolved') { removeHead(uid, c.id); await logEvent('outbox_resolved_absent', out.rpcName, c.id, errMsg?.split(':')[0]); continue; }
     if (v === 'dead') { toDead(uid, { ...c, lastError: errMsg }); await logEvent(c.type === 'local.import' ? 'local_import_failed' : 'outbox_dead_letter', out.rpcName, c.id, errMsg?.split(':')[0] ?? out.res.error?.code, c.attempts + 1); continue; }

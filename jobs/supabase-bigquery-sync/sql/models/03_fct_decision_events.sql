@@ -23,7 +23,9 @@ WITH e AS (
     SAFE_CAST(JSON_VALUE(properties, '$.schema_version') AS INT64) AS schema_version,
     JSON_VALUE(properties, '$.decision_id')     AS decision_id,
     JSON_VALUE(properties, '$.transaction_id')  AS transaction_id,
-    SAFE_CAST(JSON_VALUE(properties, '$.amount') AS NUMERIC) AS amount
+    SAFE_CAST(JSON_VALUE(properties, '$.amount') AS NUMERIC) AS amount,
+    JSON_VALUE(properties, '$.command_id')      AS command_id,
+    IFNULL(SAFE_CAST(JSON_VALUE(properties, '$.is_internal') AS BOOL), FALSE) AS client_is_internal
   FROM `{{project}}.{{ph}}.events`
 )
 SELECT e.*, DATE(e.event_ts, 'Europe/Madrid') AS event_date,
@@ -31,4 +33,4 @@ SELECT e.*, DATE(e.event_ts, 'Europe/Madrid') AS event_date,
   STARTS_WITH(e.event, '$') AS is_posthog_internal
 FROM e
 LEFT JOIN `{{project}}.{{an}}.dim_user` u USING (user_id)
-WHERE e.user_id IS NULL OR u.user_id IS NULL OR NOT u.is_excluded;
+WHERE NOT e.client_is_internal AND (e.user_id IS NULL OR u.user_id IS NULL OR NOT u.is_excluded);

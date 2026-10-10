@@ -43,23 +43,23 @@ export default function SignupPage() {
     e.preventDefault();
     setError("");
 
-    if (!email) { analytics.signupError("VALIDATION_ERROR", "Revisa el email.", "email"); setError("Revisa el email."); return; }
-    if (!name)  { analytics.signupError("VALIDATION_ERROR", "Escribe tu nombre.", "name"); setError("Escribe tu nombre."); return; }
-    if (!password || password.length < 8) { analytics.signupError("VALIDATION_ERROR", "Usa al menos 8 caracteres.", "password"); setError("Usa al menos 8 caracteres."); return; }
+    if (!email) { analytics.signupError("validation_error", "email"); setError("Revisa el email."); return; }
+    if (!name)  { analytics.signupError("validation_error", "name"); setError("Escribe tu nombre."); return; }
+    if (!password || password.length < 8) { analytics.signupError("validation_error", "password"); setError("Usa al menos 8 caracteres."); return; }
 
     setLoading(true);
     try {
       const { user, error: authErr } = await authSignUp(email, password, name);
       if (authErr || !user) {
         setError(authErr ?? "No se pudo crear la cuenta.");
-        analytics.signupError("AUTH_ERROR", authErr ?? "unknown");
+        analytics.signupError("auth_error");
         return;
       }
       if (user.id !== 'local') {
         await saveUserProfileToSupabase(user.id, name).catch(() => null);
         storeInitUser(name.trim(), email.trim());
         // Identificar al usuario en PostHog con su UUID de Supabase
-        identifyUser(user.id);
+        identifyUser(user.id, { email });
         analytics.setUserId(user.id);
         analytics.signupSuccess();
         setEmailVerificationSent(true);
@@ -70,7 +70,7 @@ export default function SignupPage() {
       router.push("/onboarding");
     } catch (err) {
       setError("No se pudo crear la cuenta. Intenta de nuevo.");
-      analytics.signupError("LOCAL_STORAGE_ERROR", String(err));
+      analytics.signupError("local_storage_error");
     } finally {
       setLoading(false);
     }

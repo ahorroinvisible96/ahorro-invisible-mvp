@@ -67,15 +67,14 @@ function CreateGoalInner() {
         subGoalIndex: opts.subGoalIndex ?? 0,
       });
       const newGoal = summary.goals.filter(g => !g.archived).slice(-1)[0];
-      analytics.goalCreated(newGoal?.id ?? `goal_${Date.now()}`, isFirst, opts.amount, opts.months);
-      if (isFirst) analytics.firstGoalCreated(newGoal?.id ?? `goal_${Date.now()}`, opts.amount, opts.months);
+      analytics.goalCreateSubmitted(isFirst, opts.amount, opts.months);
       if (newGoal) await syncGoalToSupabase(newGoal);
       router.push("/dashboard");
       const userId = localStorage.getItem('supabaseUserId');
       if (userId) pushLocalDataToSupabase(userId).catch(() => null);
     } catch (err) {
       setError("No se pudo guardar. Intenta de nuevo.");
-      analytics.goalCreateError("save_failed", String(err));
+      analytics.goalCreateError("save_failed");
     }
   };
 

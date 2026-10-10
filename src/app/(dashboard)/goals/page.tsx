@@ -616,7 +616,7 @@ export default function GoalsPage() {
     if (data.applyHucha && newGoal && hucha.balance > 0) {
       storeTransferFromHucha(newGoal.id, hucha.balance);
     }
-    analytics.goalCreated(newGoal?.id ?? '', s.goals.filter(g => !g.archived).length === 1, data.targetAmount, data.horizonMonths);
+    analytics.goalCreateSubmitted(s.goals.filter(g => !g.archived).length === 1, data.targetAmount, data.horizonMonths);
     if (newGoal) syncGoalToSupabase(newGoal).catch(() => null);
     const userId = localStorage.getItem('supabaseUserId');
     if (userId) pushLocalDataToSupabase(userId).catch(() => null);
@@ -646,7 +646,7 @@ export default function GoalsPage() {
       setArchivingGoal(goal);
     } else {
       storeArchiveGoalSafe(goalId, 'hucha');
-      analytics.goalArchived(goalId, goal.isPrimary);
+      analytics.goalArchiveSubmitted(goalId, goal.isPrimary);
       syncGoalToSupabase({ ...goal, archived: true, currentAmount: 0 }).catch(() => null);
       refresh();
     }
@@ -655,7 +655,7 @@ export default function GoalsPage() {
   const handleArchiveConfirm = (destination: string | 'hucha') => {
     if (!archivingGoal) return;
     storeArchiveGoalSafe(archivingGoal.id, destination);
-    analytics.goalArchived(archivingGoal.id, archivingGoal.isPrimary);
+    analytics.goalArchiveSubmitted(archivingGoal.id, archivingGoal.isPrimary);
     syncGoalToSupabase({ ...archivingGoal, archived: true, currentAmount: 0 }).catch(() => null);
     setArchivingGoal(null);
     refresh();

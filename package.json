@@ -16,7 +16,8 @@
     "deploy": "node scripts/deploy-vercel.js",
     "deploy:prod": "vercel --prod",
     "force-update": "node scripts/force-update-vercel.js",
-    "deploy:force": "node scripts/force-update-vercel.js && vercel --prod --force"
+    "deploy:force": "node scripts/force-update-vercel.js && vercel --prod --force",
+    "analytics:check": "node scripts/check-analytics-catalog.mjs"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

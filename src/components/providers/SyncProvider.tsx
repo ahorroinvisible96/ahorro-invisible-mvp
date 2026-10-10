@@ -19,7 +19,7 @@ export default function SyncProvider({ children }: { children: React.ReactNode }
       const isAuth = localStorage.getItem('isAuthenticated');
       if (isAuth === 'true') {
         // Sesión ya restaurada: solo garantizar identidad PostHog
-        identifyUser(session.user.id);
+        identifyUser(session.user.id, { email: session.user.email ?? null, e2e: !!session.user.user_metadata?.e2e });
         analytics.setUserId(session.user.id);
         return;
       }
@@ -30,7 +30,7 @@ export default function SyncProvider({ children }: { children: React.ReactNode }
       localStorage.setItem('supabaseUserId', session.user.id);
       localStorage.setItem('hasCompletedOnboarding', 'true');
       // Identificar al usuario en PostHog (sesión restaurada)
-      identifyUser(session.user.id);
+      identifyUser(session.user.id, { email: session.user.email ?? null, e2e: !!session.user.user_metadata?.e2e });
       analytics.setUserId(session.user.id);
       // Refrescar cookie de autenticación
       const remember = localStorage.getItem('rememberMe') === 'true';

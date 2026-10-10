@@ -32,7 +32,7 @@ export default function AuthCallbackPage() {
       document.cookie = `ai_auth=1; path=/; expires=${expires}; SameSite=Lax`;
 
       // Identificar al usuario en PostHog con su UUID de Supabase
-      identifyUser(user.id);
+      identifyUser(user.id, { email: user.email ?? null, e2e: !!user.user_metadata?.e2e });
       analytics.setUserId(user.id);
 
       if (hasLocalDataToMigrate()) {
