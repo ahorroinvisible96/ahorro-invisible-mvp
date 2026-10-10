@@ -42,3 +42,35 @@ fallaba. 007 ahora usa `ON DELETE CASCADE` hacia `avatar_assessments` (test `V1-
 ## Notas para 5B.3
 - `service_role` NO tiene EXECUTE sobre las RPC: el servidor debe invocarlas con el JWT del usuario.
 - 3 usuarios de `auth.users` sin `user_profiles` (no existe trigger auth→profiles; los crea la app).
+
+# 5B.3–5B.7 — Cutover V2 en producción (2026-10-10)
+
+## Orden ejecutado
+1. Backup lógico V1 de prod (fuera del repo) + `tools/v1_snapshot.sql` PRE.
+2. 017 + 018 en prod (flags sembradas OFF → comportamiento V1). Verificado: RLS en `app_flags`, sin escritura de
+   clientes, SECURITY DEFINER con `search_path`, sin EXECUTE `anon`, snapshot V1 idéntico.
+3. Smoke reversible (bloque `DO` que aborta): `create_goal` + `get_dashboard_state` → 0 filas persistidas.
+4. Push `main` (7bef6d5) → deploy Vercel READY.
+   - **Hallazgo**: el dominio de producción estaba fijado a un deployment de mayo (auto-asignación desactivada
+     tras un rollback). Se promovió el deployment de 7bef6d5 (`vercel promote`). Rollback de frontend:
+     `vercel rollback` al deployment anterior si fuese necesario.
+5. `V2_DUAL_WRITE` ON (T0) → `private.v2_backfill('infinity')` + `private.v2_backfill(T0)`.
+6. `private.v1_v2_compare()`: OK 249 · EXPECTED_LEGACY 52 · MIGRATION_ADJUSTMENT 10 · **REAL_MISMATCH 0**.
+7. `V2_READS` ON → login solo lee `app_flags` + `rpc/get_dashboard_state` (+ `shadow_check`).
+8. `V2_WRITE_AUTHORITY` + `V1_RUNTIME_RETIRED` ON → **019** aplicada: `decisions`, `hucha`,
+   `question_interactions`, `goals` sin INSERT/UPDATE/DELETE para anon/authenticated/service_role (SELECT se
+   conserva). Sin DROP físico. Rollback: `supabase/rollback/019_v1_retirement_rollback.sql` (probado en staging).
+
+## Validación E2E en producción (usuario dedicado, eliminado al terminar)
+Crear objetivo, editar, hacer principal, decisión diaria 10 € (= 10 € en ledger), reinicio, "no he ahorrado"
+(sin asiento), extra 5 €, archivar→hucha, hucha→objetivo, reactivar, eliminar con reasignación, refresh,
+logout, login en sesión nueva (solo `app_flags` + `get_dashboard_state`). Outbox vacío tras cada acción.
+
+## Invariantes post-cutover
+negative_buckets 0 · unbalanced_transfers 0 · dup_active_daily_per_day 0 · dup_goal_legacy 0 ·
+dup_reversals 0 · multi_primary 0 · cross_user_goal_refs 0 · dead_letters_24h 0.
+
+## Notas
+- Tras la autoridad V2, `private.v1_v2_compare()` deja de ser significativo para actividad nueva (V1 congelado).
+- Crons (19:00/20:00 UTC, domingo 09:00) leen V2.
+
