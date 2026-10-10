@@ -258,12 +258,15 @@ await t('7 no puede quedar saldo negativo (RPC y red de seguridad en COMMIT)', a
   fail(await db.rpc(E, 'transfer_between_buckets', { p_transfer_group_id: uuid(), p_from_bucket: 'goal', p_from_goal_id: g, p_to_bucket: 'hucha', p_to_goal_id: null, p_amount: 1, p_occurred_at: iso(0, -1), p_timezone: TZ }), 'insufficient_balance');
   const did = uuid(); ok(await decision(E, { id: did, goal: g, amount: 5 }));
   fail(await db.rpc(E, 'transfer_between_buckets', { p_transfer_group_id: uuid(), p_from_bucket: 'goal', p_from_goal_id: g, p_to_bucket: 'hucha', p_to_goal_id: null, p_amount: 5.01, p_occurred_at: iso(0, -1), p_timezone: TZ }), 'insufficient_balance');
-  // Saltándose la RPC (escritura directa como propietario): el COMMIT aborta
+  // Saltándose la RPC (escritura directa como propietario): el COMMIT aborta.
+  // 017: un amendment directo debe referenciar un extra_saving (st_amends_chk) → se crea 1 € en la hucha y se enmienda a −2.
+  ok(await extra(E, 1, null));
+  const ex = (await q(`select transaction_id t from public.savings_transactions where user_id=$1 and transaction_type='extra_saving' and bucket_type='hucha' limit 1`, [E]))[0].t;
   let err = '';
-  try { await db.admin.query('BEGIN'); await db.admin.query(`insert into public.savings_transactions(transaction_id,user_id,transaction_type,bucket_type,amount,reason,occurred_at,timezone,local_date) values (gen_random_uuid(),$1,'amendment','hucha',-1,'user_amend',now(),'UTC',current_date)`, [E]); await db.admin.query('COMMIT'); }
+  try { await db.admin.query('BEGIN'); await db.admin.query(`insert into public.savings_transactions(transaction_id,user_id,transaction_type,bucket_type,amount,amends_transaction_id,reason,occurred_at,timezone,local_date) values (gen_random_uuid(),$1,'amendment','hucha',-2,$2,'user_amend',now(),'UTC',current_date)`, [E, ex]); await db.admin.query('COMMIT'); }
   catch (e) { err = e.message; await db.admin.query('ROLLBACK'); }
   if (!err.includes('insufficient_balance')) throw new Error('saldo negativo aceptado: ' + err);
-  eq(await bal(E, 'hucha'), 0);
+  eq(await bal(E, 'hucha'), 1);
 });
 
 console.log('\n── Tiempo');
@@ -351,11 +354,14 @@ await t('N1 amend/void: enmienda por diferencia, reversal por asiento vivo, sin 
   eq(a1.delta, 15); eq(await bal(F, 'goal', g), 25);
   const a2 = ok(await db.rpc(F, 'amend_decision_amount', { p_mutation_id: uuid(), p_decision_id: did, p_new_amount: 4, p_occurred_at: iso(0, -1), p_timezone: TZ }));
   eq(a2.delta, -21); eq(await bal(F, 'goal', g), 4);
-  fail(await db.rpc(F, 'amend_decision_amount', { p_mutation_id: uuid(), p_decision_id: did, p_new_amount: 0, p_occurred_at: iso(0, -1), p_timezone: TZ }), 'invalid_amount');
+  // 017: editar a 0 está permitido (paridad V1: la decisión del día se conserva); negativo no.
+  const a3 = ok(await db.rpc(F, 'amend_decision_amount', { p_mutation_id: uuid(), p_decision_id: did, p_new_amount: 0, p_occurred_at: iso(0, -1), p_timezone: TZ }));
+  eq(a3.delta, -4); eq(await bal(F, 'goal', g), 0);
+  fail(await db.rpc(F, 'amend_decision_amount', { p_mutation_id: uuid(), p_decision_id: did, p_new_amount: -1, p_occurred_at: iso(0, -1), p_timezone: TZ }), 'invalid_amount');
   // declared_amount original inmutable
   eq((await q(`select declared_amount a from public.daily_decisions where decision_id=$1`, [did]))[0].a, '10.00');
   const v = ok(await db.rpc(F, 'void_decision', { p_mutation_id: uuid(), p_decision_id: did, p_reason: 'user_reset_today', p_occurred_at: iso(0, -1), p_timezone: TZ }));
-  eq(v.reversals, 3); eq(await bal(F, 'goal', g), 0);
+  eq(v.reversals, 4); eq(await bal(F, 'goal', g), 0);
   eq((await q(`select status from public.daily_decisions where decision_id=$1`, [did]))[0].status, 'voided');
   fail(await db.rpc(F, 'void_decision', { p_mutation_id: uuid(), p_decision_id: did, p_reason: 'user_reset_today', p_occurred_at: iso(0, -1), p_timezone: TZ }), 'decision_not_active');
   // tras anular, el día queda libre para una nueva decisión
@@ -449,9 +455,10 @@ console.log('\n── Onboarding');
 const RULE = { rule: 'rec_v1', cat: 'income_ref_v1' };
 const obArgs = (sid, over = {}) => ({
   p_session_id: sid, p_occurred_at: iso(0, -1), p_timezone: TZ,
-  p_answers: [{ question_key: 'onb_q1', option_key: 'a' }, { question_key: 'onb_q2', option_key: 'b' }, { question_key: 'onb_q3', option_key: 'c' }],
+  // Pesos reales de la app (017): P1=1, P2=2, P3=2 → a/b/b = comodo 1, social 4, impulsivo 0.
+  p_answers: [{ question_key: 'onb_q1', option_key: 'a' }, { question_key: 'onb_q2', option_key: 'b' }, { question_key: 'onb_q3', option_key: 'b' }],
   p_assessment_id: uuid(), p_questionnaire_version: 'onb_q_v1', p_scoring_version: 'score_v1',
-  p_result_avatar: 'social', p_scores: { comodo: 2, social: 2, impulsivo: 1 },
+  p_result_avatar: 'social', p_scores: { comodo: 1, social: 4, impulsivo: 0 },
   p_savings_habit: 'algo', p_income_declaration_id: uuid(), p_income_band_code: '2000_2500', p_income_band_catalog_version: RULE.cat,
   p_rule_version: RULE.rule, p_rec_reference_income_amount: 2250, p_rec_savings_rate_pct: 10, p_rec_monthly_floor_amount: 50,
   p_rec_horizon_months: 6, p_recommended_monthly_amount: 225, p_recommended_target_amount: 1350,
@@ -545,11 +552,12 @@ await t('CONC-2 mismo idempotency key concurrente → un solo efecto', async () 
 });
 await t('CONC-3 red de seguridad sin RPC: dos INSERT directos concurrentes de −15 con saldo 20 → uno falla en COMMIT', async () => {
   const U = uuid(); await db.addUser(U); ok(await extra(U, 20, null));
+  const ex = (await q(`select transaction_id t from public.savings_transactions where user_id=$1 and transaction_type='extra_saving' limit 1`, [U]))[0].t;
   const direct = async () => {
     const c = await db.client();
     try {
       await c.query('BEGIN');
-      await c.query(`insert into public.savings_transactions(transaction_id,user_id,transaction_type,bucket_type,amount,reason,occurred_at,timezone,local_date) values (gen_random_uuid(),$1,'amendment','hucha',-15,'user_amend',now(),'UTC',current_date)`, [U]);
+      await c.query(`insert into public.savings_transactions(transaction_id,user_id,transaction_type,bucket_type,amount,amends_transaction_id,reason,occurred_at,timezone,local_date) values (gen_random_uuid(),$1,'amendment','hucha',-15,$2,'user_amend',now(),'UTC',current_date)`, [U, ex]);
       await new Promise(r => setTimeout(r, 300));
       await c.query('COMMIT'); return 'ok';
     } catch (e) { try { await c.query('ROLLBACK'); } catch { /* */ } return e.message; } finally { await c.end(); }

@@ -16,8 +16,11 @@ export const MIGRATIONS_DIR = path.resolve(here, '..', 'migrations');
 export const V1_MIGRATIONS = [
   '001_initial_schema.sql', '002_analytics_columns.sql', '004_bigquery_temporal.sql', '005_question_interactions.sql',
 ];
+// Migraciones operativas protegidas por flags (abortan si el cutover no está activo): se aplican y
+// prueban aparte (ver GATED_MIGRATIONS / test V1R-*), nunca como parte del esquema base.
+export const GATED_MIGRATIONS = ['019_v1_retirement.sql'];
 export const V2_MIGRATIONS = () =>
-  fs.readdirSync(MIGRATIONS_DIR).filter((f) => /^(0(0[6-9]|[1-9]\d))_.*\.sql$/.test(f)).sort();
+  fs.readdirSync(MIGRATIONS_DIR).filter((f) => /^(0(0[6-9]|[1-9]\d))_.*\.sql$/.test(f) && !GATED_MIGRATIONS.includes(f)).sort();
 
 const SHIM = `
 CREATE ROLE anon NOLOGIN; CREATE ROLE authenticated NOLOGIN; CREATE ROLE service_role NOLOGIN BYPASSRLS;

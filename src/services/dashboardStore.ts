@@ -813,6 +813,11 @@ export function storeSetUserAvatar(
 const entityOf = (d: DailyDecision): 'daily' | 'extra' | 'grace' =>
   d.questionId === 'extra_saving' ? 'extra' : d.questionId === 'grace_day' ? 'grace' : 'daily';
 
+/** Un ahorro solo puede revertirse si su objetivo sigue activo y conserva saldo suficiente (V2 nunca deja saldos negativos). */
+function canReverseFrom(goal: Goal | undefined, amount: number): boolean {
+  return !!goal && !goal.archived && goal.currentAmount + 1e-9 >= amount;
+}
+
 /** Réplica V1 (solo mientras V1 siga en el runtime): borra la fila legacy para que no reaparezca. */
 function replicateV1Delete(decisionId: string) {
   if (v1RuntimeOn()) deleteDecisionFromSupabase(decisionId).catch(() => null);
@@ -827,8 +832,9 @@ export function storeDeleteDecision(
   const dec = state.decisions.find((d) => d.id === decisionId);
   if (dec) {
     const goal = state.goals.find((g) => g.id === dec.goalId);
-    // V2: no se modifica el saldo de un objetivo archivado (goal_not_active) → misma regla aquí.
-    if (goal?.archived && dec.deltaAmount > 0) return buildSummary(currentRange);
+    // V2: no se modifica el saldo de un objetivo archivado (goal_not_active) ni se deja en negativo
+    // (insufficient_balance: el dinero ya se movió a otro bucket) → misma regla aquí.
+    if (dec.deltaAmount > 0 && !canReverseFrom(goal, dec.deltaAmount)) return buildSummary(currentRange);
     if (goal) {
       goal.currentAmount = money(Math.max(0, goal.currentAmount - dec.deltaAmount));
       goal.updatedAt = now;
@@ -870,6 +876,7 @@ export function storeEditDecision(
                          // Garantiza que localTs > 0 y esta edición no sea sobreescrita
                          // por la versión remota si el push falla temporalmente.
     const goal = state.goals.find((g) => g.id === dec.goalId);
+    if (diff < 0 && !canReverseFrom(goal, -diff)) { dec.deltaAmount = oldAmount; return buildSummary(currentRange); }
     if (goal) {
       goal.currentAmount = money(Math.max(0, goal.currentAmount + diff));
       goal.updatedAt = now;
@@ -890,7 +897,7 @@ export function storeResetDecision(
   const todayDec = state.decisions.find((d) => d.date === today && isDaily(d));
   if (todayDec) {
     const goal = state.goals.find((g) => g.id === todayDec.goalId);
-    if (goal?.archived && todayDec.deltaAmount > 0) return buildSummary(currentRange);
+    if (todayDec.deltaAmount > 0 && !canReverseFrom(goal, todayDec.deltaAmount)) return buildSummary(currentRange);
     if (goal) {
       goal.currentAmount = money(Math.max(0, goal.currentAmount - todayDec.deltaAmount));
       goal.updatedAt = now;

@@ -9,9 +9,11 @@ import {
   storeSetUserAvatar,
   storeUpdateIncome,
   storeCreateGoal,
+  incomeBandFromRange,
 } from "@/services/dashboardStore";
 import type { SavingsProfile, IncomeRange } from "@/types/Dashboard";
 import { pushLocalDataToSupabase } from "@/services/syncService";
+import { enqueueOnboardingComplete } from "@/services/v2/onboarding";
 
 // ─── Constantes ────────────────────────────────────────────────────────────────
 const INCOME_OPTIONS = [
@@ -285,7 +287,7 @@ export default function OnboardingPage() {
 
   // ── Auth & analytics ────────────────────────────────────────────────────────
   useEffect(() => {
-    analytics.setScreen(`onboarding_step_${step}` as any);
+    analytics.setScreen(`onboarding_step_${step}` as Parameters<typeof analytics.setScreen>[0]);
     if (localStorage.getItem('isAuthenticated') !== 'true') { router.replace('/signup'); return; }
     const name = localStorage.getItem('userName');
     if (name) setUserName(name);
@@ -377,15 +379,30 @@ export default function OnboardingPage() {
       storeSetUserAvatar(avatar);
       storeSetSavingsProfile('medium' as SavingsProfile);
       const incomeOpt = selectedIncomeIdx !== null ? INCOME_OPTIONS[selectedIncomeIdx] : INCOME_OPTIONS[1];
-      storeUpdateIncome({ min: incomeOpt.min, max: incomeOpt.max, currency: 'EUR' } satisfies IncomeRange);
-      storeCreateGoal({
+      const incomeRange = { min: incomeOpt.min, max: incomeOpt.max, currency: 'EUR' } satisfies IncomeRange;
+      // V2: la declaración de ingresos del onboarding la registra complete_onboarding.
+      storeUpdateIncome(incomeRange, '30d', { skipV2: true });
+      const goalId = `goal_${Date.now()}`;
+      const summary = storeCreateGoal({
         title: resolvedName,
         targetAmount: resolvedAmount,
         currentAmount: 0,
         horizonMonths: goalMonths,
         isPrimary: true,
         source: 'onboarding',
-      });
+      }, '30d', { id: goalId });
+      const created = summary.goals.find((g) => g.id === goalId);
+      if (created) {
+        const monthly = resolvedAmount / goalMonths;
+        const recT    = savingsHabit ? Math.max(50, Math.round(incomeOpt.mid * SAVINGS_PCT[savingsHabit])) * goalMonths : Infinity;
+        const warning = monthly > incomeOpt.mid * 0.30 ? 'over_30pct_reference_income'
+                      : resolvedAmount > recT ? 'over_recommendation' : 'none';
+        enqueueOnboardingComplete({
+          goalId, title: created.title, band: incomeBandFromRange(incomeRange),
+          answers: finalAnswers, habit: savingsHabit,
+          chosenTarget: created.targetAmount, horizon: created.horizonMonths, warning,
+        });
+      }
       localStorage.setItem('onboardingData', JSON.stringify({
         userAvatar: avatar, answers: finalAnswers,
         avatarScores: onbScores,

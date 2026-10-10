@@ -34,14 +34,16 @@ export function SavingsModal({
   if (!isOpen) return null;
 
   const hasGoals = activeGoals.length > 0;
+  // El modal permanece montado: la selección inicial puede apuntar a un objetivo ya archivado/eliminado.
+  const selectedGoalId = activeGoals.some((g) => g.id === goalId) ? goalId : (activeGoals[0]?.id ?? '');
 
   function handleSubmit() {
     setErr('');
-    if (!goalId) { setErr('Selecciona un objetivo.'); return; }
+    if (!selectedGoalId) { setErr('Selecciona un objetivo.'); return; }
     const amount = mode === 'total' ? balance : Number(partial);
     if (!amount || amount <= 0) { setErr('El importe debe ser mayor que 0.'); return; }
     if (amount > balance) { setErr(`El importe no puede superar ${formatEUR(balance)}.`); return; }
-    onAssign(goalId, amount);
+    onAssign(selectedGoalId, amount);
   }
 
   return (
@@ -107,7 +109,7 @@ export function SavingsModal({
                 <label className={s.fieldLabel}>Asignar a objetivo</label>
                 <div className={s.selectWrap}>
                   <select
-                    value={goalId}
+                    value={selectedGoalId}
                     onChange={e => { setGoalId(e.target.value); setErr(''); }}
                     className={s.select}
                   >

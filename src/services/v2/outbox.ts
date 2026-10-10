@@ -12,7 +12,7 @@
 
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { userTimezone } from '@/lib/dates';
-import { getFlags, v2WritesOn } from './flags';
+import { getFlags, v2WritesOn, v2WriteAuthority } from './flags';
 import { newUuid, v1Uuid, isUuid, type LegacyKind } from './ids';
 
 export const APP_VERSION = '1.2.0-v2';
@@ -303,6 +303,9 @@ function classify(c: Command, res: RpcResult): Verdict {
     if (c.type === 'onboarding.complete' && k === 'onboarding_already_completed') return 'resolved';
     if (c.type === 'grace.use' && k === 'grace_already_used') return 'resolved';
     if (c.type === 'daily.amend' && k === 'decision_not_amendable') return 'resolved';
+    // Con V2 como autoridad de escritura el ledger está completo: insufficient_balance es determinista
+    // (reintentarlo solo bloquearía la cola FIFO). Antes del corte puede deberse a histórico aún no migrado.
+    if (k === 'insufficient_balance' && v2WriteAuthority()) return 'dead';
     if (k === 'not_found' || k === 'insufficient_balance') return 'retry_limited';
     if (k === 'not_authenticated') return 'auth';
     return 'dead';

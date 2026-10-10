@@ -24,6 +24,7 @@ import { WidgetSkeleton } from '@/components/ui/Skeleton/Skeleton';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { useToast } from '@/components/ui/Toast/Toast';
 import { computeGoalPhases, PHASE_CONFIGS, fmtEUR as goalFmt, SAVINGS_PCT, type SavingsHabit as SavingsHabitType } from '@/app/onboarding/page';
+import { STORE_UPDATED_EVENT } from '@/services/v2/runtime';
 import styles from './Goals.module.css';
 
 function formatEUR(n: number) {
@@ -423,6 +424,7 @@ function DeleteArchivedModal({
   onClose: () => void;
 }) {
   const hasBalance = goal.currentAmount > 0;
+  activeGoals = activeGoals.filter((g) => g.id !== goal.id);
   const hasOthers = activeGoals.length > 0;
   const [destination, setDestination] = useState<string>(hasOthers ? activeGoals[0].id : 'hucha');
 
@@ -588,8 +590,19 @@ export default function GoalsPage() {
     analytics.setScreen('goals');
     const isAuth = localStorage.getItem('isAuthenticated');
     if (isAuth !== 'true') { router.replace('/login'); return; }
-    refresh();
-    setLoading(false);
+    let active = true;
+    const onStoreUpdated = () => {
+      if (!active) return;
+      refresh();
+      setLoading(false);
+    };
+    queueMicrotask(onStoreUpdated);
+    window.addEventListener(STORE_UPDATED_EVENT, onStoreUpdated);
+    return () => {
+      active = false;
+      window.removeEventListener(STORE_UPDATED_EVENT, onStoreUpdated);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
   const handleCreate = async (data: { title: string; targetAmount: number; horizonMonths: number; applyHucha: boolean }) => {
