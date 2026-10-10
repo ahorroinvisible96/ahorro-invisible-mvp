@@ -2,6 +2,13 @@
 
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { STORAGE_KEY } from '@/lib/constants';
+import { v1RuntimeOn, v2ReadsOn } from './v2/flags';
+
+// ─── Coexistencia V1/V2 (Fase 5B) ───────────────────────────────────────────────
+// Este módulo es el sync LEGACY (tablas V1 goals/decisions/hucha). Reglas:
+//   · Con V2_WRITE_AUTHORITY o V1_RUNTIME_RETIRED → no hace NADA (V1 congelado).
+//   · Con V2_READS → no lee V1 (la verdad es V2); solo replica hacia V1 como red de rollback.
+//   · Nunca lee ni escribe filas de goals gestionadas por el ledger V2 (ledger_managed = true).
 
 // ─── Push local data → Supabase ───────────────────────────────────────────────
 export async function pushLocalDataToSupabase(
@@ -10,6 +17,8 @@ export async function pushLocalDataToSupabase(
   if (!isSupabaseConfigured || !supabase) {
     return { success: false, migrated: 0, error: 'Supabase no configurado.' };
   }
+  if (!v1RuntimeOn()) return { success: true, migrated: 0 };
+  const replicaOnly = v2ReadsOn();
 
   // Verificar sesión activa; si expiró, refrescar
   try {
@@ -57,7 +66,7 @@ export async function pushLocalDataToSupabase(
   const today = new Date().toISOString().split('T')[0];
   let streakCurrent = 0;
   {
-    let cursor = new Date(today);
+    const cursor = new Date(today);
     while (true) {
       const dateStr = cursor.toISOString().split('T')[0];
       if (!activeDates.has(dateStr)) break;
@@ -120,7 +129,7 @@ export async function pushLocalDataToSupabase(
   // 2. Goals — upsert uno a uno para aislar errores
   if (store.goals?.length) {
     const goals = (store.goals as Record<string, unknown>[])
-      .filter(g => g.id && g.title)
+      .filter(g => g.id && g.title && /^goal_\d+$/.test(String(g.id)))
       .map(g => ({
         id: g.id as string,
         user_id: userId,
@@ -148,7 +157,7 @@ export async function pushLocalDataToSupabase(
   // 3. Decisions — upsert una a una; si falla por FK de goal_id, reintentar sin goal_id
   if (store.decisions?.length) {
     const decisions = (store.decisions as Record<string, unknown>[])
-      .filter(d => d.id && d.questionId !== 'grace_day' && d.date)
+      .filter(d => d.id && d.questionId !== 'grace_day' && d.date && d.v2Credited !== false)
       .map(d => ({
         id: d.id as string,
         user_id: userId,
@@ -198,10 +207,13 @@ export async function pushLocalDataToSupabase(
   // 4. Hucha
   if (store.hucha != null) {
     try {
-      const { error } = await supabase.from('hucha').upsert(
-        { user_id: userId, balance: Number(store.hucha.balance ?? 0), entries: store.hucha.entries ?? [] },
-        { onConflict: 'user_id' },
-      );
+      // Con lecturas V2 la caché no contiene las entradas históricas V1: solo se replica el saldo.
+      const { error } = replicaOnly
+        ? await supabase.from('hucha').update({ balance: Number(store.hucha.balance ?? 0) }).eq('user_id', userId)
+        : await supabase.from('hucha').upsert(
+            { user_id: userId, balance: Number(store.hucha.balance ?? 0), entries: store.hucha.entries ?? [] },
+            { onConflict: 'user_id' },
+          );
       if (error) console.error('[sync] hucha:', error.code, error.message);
     } catch (e) { console.error('[sync] hucha exception:', e); }
   }
@@ -218,11 +230,12 @@ export async function pullDataFromSupabase(
   if (!isSupabaseConfigured || !supabase) {
     return { success: false, error: 'Supabase no está configurado.' };
   }
+  if (!v1RuntimeOn() || v2ReadsOn()) return { success: true };
 
   try {
     const [profileRes, goalsRes, decisionsRes, huchaRes] = await Promise.all([
       supabase.from('user_profiles').select('*').eq('id', userId).single(),
-      supabase.from('goals').select('*').eq('user_id', userId),
+      supabase.from('goals').select('*').eq('user_id', userId).eq('ledger_managed', false),
       supabase.from('decisions').select('*').eq('user_id', userId).order('date', { ascending: true }),
       supabase.from('hucha').select('*').eq('user_id', userId).single(),
     ]);
@@ -285,6 +298,7 @@ export async function pullAndMergeFromSupabase(
   if (!isSupabaseConfigured || !supabase) {
     return { success: false, merged: 0, error: 'Supabase no configurado.' };
   }
+  if (!v1RuntimeOn() || v2ReadsOn()) return { success: true, merged: 0 };
 
   try {
     // Verificar sesión
@@ -296,7 +310,7 @@ export async function pullAndMergeFromSupabase(
 
     const [profileRes, goalsRes, decisionsRes, huchaRes] = await Promise.all([
       supabase.from('user_profiles').select('*').eq('id', userId).single(),
-      supabase.from('goals').select('*').eq('user_id', userId),
+      supabase.from('goals').select('*').eq('user_id', userId).eq('ledger_managed', false),
       supabase.from('decisions').select('*').eq('user_id', userId).order('date', { ascending: true }),
       supabase.from('hucha').select('*').eq('user_id', userId).single(),
     ]);
@@ -480,6 +494,7 @@ export async function syncGoalToSupabase(
   },
 ): Promise<{ ok: boolean; error?: string }> {
   if (!isSupabaseConfigured || !supabase) return { ok: false, error: 'no_supabase' };
+  if (!v1RuntimeOn() || !/^goal_\d+$/.test(goal.id)) return { ok: true };
   const userId = await getSessionUserId();
   if (!userId) { console.error('[sync] syncGoalToSupabase: sin sesión'); return { ok: false, error: 'no_session' }; }
   try {
@@ -505,15 +520,33 @@ export async function syncGoalToSupabase(
   }
 }
 
+// ─── Borrar una decisión V1 (réplica de borrados durante el dual-write) ──────────
+export async function deleteDecisionFromSupabase(
+  decisionId: string,
+): Promise<{ ok: boolean; error?: string }> {
+  if (!isSupabaseConfigured || !supabase) return { ok: false, error: 'no_supabase' };
+  if (!v1RuntimeOn()) return { ok: true };
+  const userId = await getSessionUserId();
+  if (!userId) return { ok: false, error: 'no_session' };
+  try {
+    const { error } = await supabase.from('decisions').delete().eq('id', decisionId).eq('user_id', userId);
+    if (error) return { ok: false, error: error.message };
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: String(err) };
+  }
+}
+
 // ─── Eliminar objetivo definitivamente de Supabase ───────────────────────────
 export async function deleteGoalFromSupabase(
   goalId: string,
 ): Promise<{ ok: boolean; error?: string }> {
   if (!isSupabaseConfigured || !supabase) return { ok: false, error: 'no_supabase' };
+  if (!v1RuntimeOn()) return { ok: true };
   const userId = await getSessionUserId();
   if (!userId) { console.error('[sync] deleteGoalFromSupabase: sin sesión'); return { ok: false, error: 'no_session' }; }
   try {
-    const { error } = await supabase.from('goals').delete().eq('id', goalId).eq('user_id', userId);
+    const { error } = await supabase.from('goals').delete().eq('id', goalId).eq('user_id', userId).eq('ledger_managed', false);
     if (error) { console.error('[sync] deleteGoalFromSupabase error:', error.code, error.message); return { ok: false, error: error.message }; }
     return { ok: true };
   } catch (err) {
@@ -531,6 +564,7 @@ export async function syncDecisionToSupabase(
   },
 ): Promise<{ ok: boolean; error?: string }> {
   if (!isSupabaseConfigured || !supabase) return { ok: false, error: 'no_supabase' };
+  if (!v1RuntimeOn()) return { ok: true };
   const db = supabase;
   const userId = await getSessionUserId();
   if (!userId) { console.error('[sync] syncDecisionToSupabase: sin sesión'); return { ok: false, error: 'no_session' }; }
@@ -597,6 +631,7 @@ export async function syncHuchaToSupabase(
   entries: unknown[],
 ): Promise<void> {
   if (!isSupabaseConfigured || !supabase) return;
+  if (!v1RuntimeOn()) return;
   const userId = await getSessionUserId();
   if (!userId) return;
   try {
@@ -640,12 +675,13 @@ export async function resetUserDataInSupabase(
   userId: string,
 ): Promise<{ success: boolean; error?: string }> {
   if (!isSupabaseConfigured || !supabase) return { success: true }; // solo local, ok
+  if (!v1RuntimeOn()) return { success: true }; // V2: el reinicio lo hace reset_account_data (outbox)
 
   try {
     // Borrar en paralelo: goals y decisions del usuario
     // Nota: la tabla es 'decisions', no 'daily_decisions'. No existe 'analytics_events'.
     const [goalsRes, decisionsRes, huchaRes] = await Promise.all([
-      supabase.from('goals').delete().eq('user_id', userId),
+      supabase.from('goals').delete().eq('user_id', userId).eq('ledger_managed', false),
       supabase.from('decisions').delete().eq('user_id', userId),
       supabase.from('hucha').delete().eq('user_id', userId),
     ]);

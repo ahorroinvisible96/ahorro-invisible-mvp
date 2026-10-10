@@ -71,6 +71,9 @@ TABLE_CONFIG: dict = {
     },
     "goals": {
         "pk": "id",
+        # Data Model V2: solo metas V1. Las metas V2 (ledger_managed=true) se
+        # analizan desde el ledger en Analytics V2 (Fase 5C).
+        "filters": {"ledger_managed": "eq.false"},
         "columns": [
             "id", "user_id", "title",
             "target_amount", "current_amount", "horizon_months",
@@ -184,6 +187,7 @@ def extract_table(
     table_name: str,
     columns: list,
     pk: str,
+    filters: dict | None = None,
 ) -> list:
     """
     Extract all rows from a Supabase table using paginated REST calls.
@@ -207,6 +211,8 @@ def extract_table(
             "limit": PAGE_SIZE,
             "offset": offset,
         }
+        if filters:
+            params.update(filters)
         resp = requests.get(base_url, headers=headers, params=params, timeout=30)
         resp.raise_for_status()
         page = resp.json()
@@ -359,6 +365,7 @@ def main() -> None:
                 table_name=table_name,
                 columns=cfg["columns"],
                 pk=cfg["pk"],
+                filters=cfg.get("filters"),
             )
             supabase_count = len(rows)
             log.info("[%s] extracted %d rows from Supabase", table_name, supabase_count)

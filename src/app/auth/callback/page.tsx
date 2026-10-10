@@ -3,7 +3,8 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
-import { pushLocalDataToSupabase, pullDataFromSupabase, hasLocalDataToMigrate } from "@/services/syncService";
+import { pushLocalDataToSupabase, hasLocalDataToMigrate } from "@/services/syncService";
+import { restoreAfterLogin, runSyncCycle } from "@/services/v2/runtime";
 import { identifyUser } from "@/lib/posthog";
 import { analytics } from "@/services/analytics";
 
@@ -36,8 +37,9 @@ export default function AuthCallbackPage() {
 
       if (hasLocalDataToMigrate()) {
         await pushLocalDataToSupabase(user.id).catch(() => null);
+        runSyncCycle().catch(() => null);
       } else {
-        await pullDataFromSupabase(user.id).catch(() => null);
+        await restoreAfterLogin(user.id).catch(() => null);
         if (user.user_metadata?.name) localStorage.setItem("userName", user.user_metadata.name);
         localStorage.setItem("hasCompletedOnboarding", "true");
       }

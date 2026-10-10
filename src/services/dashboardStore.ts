@@ -19,12 +19,73 @@ import {
 import type { AvatarKey } from './dailyQuestionsBank';
 import { getQuestionById } from './dailyQuestionsBank';
 import { STORAGE_KEY } from '@/lib/constants';
+import { localDateStr, localDateDaysAgo, localMonthStr, addDaysStr } from '@/lib/dates';
+import { enqueue, pendingCount, type Surface } from './v2/outbox';
+import { v2ReadsOn, v1RuntimeOn } from './v2/flags';
+import { deleteDecisionFromSupabase } from './syncService';
 
 // STORAGE_KEY importado desde @/lib/constants
+// Data Model V2 (5B): mientras V2_READS esté apagado este store es la fuente de lectura (V1);
+// con V2_READS encendido es SOLO una caché de get_dashboard_state() + estado optimista de la
+// outbox. Toda mutación de negocio encola su comando V2 (outbox durable) además de su efecto local.
 
 // ─── Helper: distinguir decisión diaria de ahorro extra / grace day ─────────
 const isDaily = (d: DailyDecision) =>
   d.questionId !== 'extra_saving' && d.questionId !== 'grace_day';
+// Días que cuentan para la racha: decisiones diarias + días de gracia (misma regla que V2).
+const countsForStreak = (d: DailyDecision) => d.questionId !== 'extra_saving';
+
+// Ids V1 únicos aunque haya dos acciones en el mismo milisegundo (doble click).
+let lastIdMs = 0;
+function nextIdMs(): number {
+  let t = Date.now();
+  if (t <= lastIdMs) t = lastIdMs + 1;
+  lastIdMs = t;
+  return t;
+}
+
+// Antirrebote de acciones idénticas (doble click / doble envío) en < 1,5 s.
+const recentActions = new Map<string, number>();
+function isDuplicateAction(key: string): boolean {
+  const now = Date.now();
+  const prev = recentActions.get(key);
+  recentActions.set(key, now);
+  return prev !== undefined && now - prev < 1500;
+}
+
+const ALLOWED_HORIZONS = [1, 2, 3, 6, 12];
+/** Horizonte V2 permitido más cercano (empate → el menor). */
+export function normalizeHorizon(h: number): number {
+  const n = Number.isFinite(h) && h > 0 ? h : 3;
+  return ALLOWED_HORIZONS.reduce((best, x) => (Math.abs(x - n) < Math.abs(best - n) ? x : best), ALLOWED_HORIZONS[0]);
+}
+const money = (n: number) => Math.round(n * 100) / 100;
+const clampTarget = (n: number) => Math.min(100000, Math.max(0.01, money(n)));
+
+/** option_key del catálogo qb_v1 = slug del texto de la opción. */
+export function slugifyOption(label: string): string {
+  return label.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+}
+
+/** Tramo V2 (income_ref_v1) a partir del rango V1 {min,max}. */
+export function incomeBandFromRange(r: IncomeRange): string {
+  const m = Number(r.min) || 0;
+  if (m < 1000) return 'lt_1000';
+  if (m < 1500) return '1000_1500';
+  if (m < 2000) return '1500_2000';
+  if (m < 2500) return '2000_2500';
+  if (m < 3000) return '2500_3000';
+  return 'gt_3000';
+}
+const BAND_RANGES: Record<string, IncomeRange> = {
+  lt_1000: { min: 0, max: 1000, currency: 'EUR' },
+  '1000_1500': { min: 1000, max: 1500, currency: 'EUR' },
+  '1500_2000': { min: 1500, max: 2000, currency: 'EUR' },
+  '2000_2500': { min: 2000, max: 2500, currency: 'EUR' },
+  '2500_3000': { min: 2500, max: 3000, currency: 'EUR' },
+  gt_3000: { min: 3000, max: 10000, currency: 'EUR' },
+};
 
 // ─── Motor económico ─────────────────────────────────────────────────────────
 export const DAILY_DECISION_RULES: DailyDecisionRule[] = [
@@ -157,7 +218,7 @@ export function getTodayQuestion(): DailyQuestion {
         const parsed = JSON.parse(raw) as StoreState;
         userAvatar = parsed.userAvatar ?? null;
 
-        const today = new Date().toISOString().split('T')[0];
+        const today = localDateStr();
         const dailyDecisions = (parsed.decisions ?? []).filter(
           (d: DailyDecision) => d.questionId !== 'extra_saving' && d.questionId !== 'grace_day'
         );
@@ -165,7 +226,7 @@ export function getTodayQuestion(): DailyQuestion {
         answeredToday = !!todayDecision;
         lastQuestionId = todayDecision?.questionId ?? null;
 
-        const cutoff7 = new Date(Date.now() - 7 * 86_400_000).toISOString().split('T')[0];
+        const cutoff7 = localDateDaysAgo(7);
         for (const d of dailyDecisions) {
           if (d.date >= cutoff7 && !recentQuestionIds.includes(d.questionId)) {
             recentQuestionIds.push(d.questionId);
@@ -209,7 +270,7 @@ export function getAlternativeQuestion(currentQuestionId: string): DailyQuestion
       if (raw) {
         const parsed = JSON.parse(raw) as StoreState;
         userAvatar = parsed.userAvatar ?? null;
-        const cutoff7 = new Date(Date.now() - 7 * 86_400_000).toISOString().split('T')[0];
+        const cutoff7 = localDateDaysAgo(7);
         const dailyDecisions = (parsed.decisions ?? []).filter(
           (d: DailyDecision) => d.questionId !== 'extra_saving' && d.questionId !== 'grace_day'
         );
@@ -257,6 +318,10 @@ type StoreState = {
   savingsPercent: number;
   goalPercentMilestonesSeen: Record<string, number[]>;
   lastAdaptiveEvaluation: string | null;
+  /** Dueño de la caché (uid). Si cambia de usuario se descarta la caché de negocio. */
+  ownerUid?: string | null;
+  /** Métricas calculadas por el servidor (get_dashboard_state) cuando V2 es la fuente de lectura. */
+  v2?: { streak: number; streakBrokeYesterday: boolean; graceAvailable: boolean; totalSaved: number; fetchedAt: number } | null;
 };
 
 const SEED: StoreState = {
@@ -332,26 +397,20 @@ function persistStore(state: StoreState): void {
 
 // ─── Lógica interna ───────────────────────────────────────────────────────────
 function computeStreak(decisions: DailyDecision[]): number {
-  const daily = decisions.filter(isDaily);
-  if (daily.length === 0) return 0;
-  const today = new Date().toISOString().split('T')[0];
-  const hasToday = daily.some((d) => d.date === today);
+  const days = new Set(decisions.filter(countsForStreak).map((d) => d.date));
+  if (!decisions.some(isDaily)) return 0;
+  const today = localDateStr();
+  let cursor = days.has(today) ? today : addDaysStr(today, -1);
   let streak = 0;
-  let cursor = new Date(hasToday ? today : (() => {
-    const d = new Date(today); d.setDate(d.getDate() - 1); return d.toISOString().split('T')[0];
-  })());
-  while (true) {
-    const dateStr = cursor.toISOString().split('T')[0];
-    const found = daily.some((d) => d.date === dateStr);
-    if (!found) break;
+  while (days.has(cursor)) {
     streak++;
-    cursor.setDate(cursor.getDate() - 1);
+    cursor = addDaysStr(cursor, -1);
   }
   return streak;
 }
 
 function computeIntensity(decisions: DailyDecision[]): 'low' | 'medium' | 'high' | 'unknown' {
-  const cutoff = new Date(Date.now() - 7 * 86_400_000).toISOString().split('T')[0];
+  const cutoff = localDateDaysAgo(7);
   const recent = decisions.filter((d) => d.date >= cutoff);
   if (recent.length === 0) return 'unknown';
   const total = recent.reduce((s, d) => s + d.deltaAmount, 0);
@@ -365,7 +424,7 @@ function buildEvolutionPoints(
   range: '7d' | '30d' | '90d',
 ): SavingsEvolutionPoint[] {
   const days = range === '7d' ? 7 : range === '30d' ? 30 : 90;
-  const cutoff = new Date(Date.now() - days * 86_400_000).toISOString().split('T')[0];
+  const cutoff = localDateDaysAgo(days);
   const filtered = decisions.filter((d) => d.date >= cutoff);
   if (filtered.length === 0) return [];
 
@@ -455,9 +514,15 @@ function checkAdaptiveEvaluation(
 }
 
 // ─── API pública: lectura ─────────────────────────────────────────────────────
+/** Con V2 como fuente de lectura y sin acciones pendientes, las métricas vienen del servidor. */
+function serverMetrics(state: StoreState): StoreState['v2'] {
+  if (!state.v2 || !v2ReadsOn() || pendingCount() > 0) return null;
+  return state.v2;
+}
+
 export function buildSummary(range: '7d' | '30d' | '90d' = '30d'): DashboardSummary {
   const state = loadStore();
-  const today = new Date().toISOString().split('T')[0];
+  const today = localDateStr();
   const activeGoals = state.goals.filter((g) => !g.archived);
   const primaryGoal =
     activeGoals.find((g) => g.isPrimary) ?? activeGoals[0] ?? null;
@@ -466,7 +531,7 @@ export function buildSummary(range: '7d' | '30d' | '90d' = '30d'): DashboardSumm
   const evolutionPoints = buildEvolutionPoints(state.decisions, range);
 
   // Velocidad media de ahorro (últimos 30 días)
-  const cutoff30 = new Date(Date.now() - 30 * 86_400_000).toISOString().split('T')[0];
+  const cutoff30 = localDateDaysAgo(30);
   const recent30 = state.decisions.filter((d) => d.date >= cutoff30);
   const avgMonthlySavings = recent30.reduce((s, d) => s + d.deltaAmount, 0);
 
@@ -481,17 +546,15 @@ export function buildSummary(range: '7d' | '30d' | '90d' = '30d'): DashboardSumm
     }
   }
 
-  const totalSaved = state.decisions.reduce((s, d) => s + d.deltaAmount, 0);
-  const streak = computeStreak(state.decisions);
+  const srv = serverMetrics(state);
+  const totalSaved = srv ? srv.totalSaved : state.decisions.reduce((s, d) => s + d.deltaAmount, 0);
+  const streak = srv ? srv.streak : computeStreak(state.decisions);
   const intensity = computeIntensity(state.decisions);
 
   // Adaptive helpers
   const goalPercentMilestone = checkGoalPercentMilestone(state);
   const adaptiveEvaluation = checkAdaptiveEvaluation(state, streak, intensity);
-  const last3 = [0, 1, 2].map((i) => {
-    const d = new Date(Date.now() - i * 86_400_000);
-    return d.toISOString().split('T')[0];
-  });
+  const last3 = [0, 1, 2].map((i) => localDateDaysAgo(i));
   const dailyDecisions = state.decisions.filter(isDaily);
   const lowActivityAlert =
     dailyDecisions.length > 0 &&
@@ -503,11 +566,13 @@ export function buildSummary(range: '7d' | '30d' | '90d' = '30d'): DashboardSumm
   const newMilestone = MILESTONES.find(m => totalSaved >= m && !state.seenMilestones.includes(m)) ?? null;
 
   // ─ Streak recovery ─────────────────────────────────────────────────────────
-  const yesterday = new Date(Date.now() - 86_400_000).toISOString().split('T')[0];
-  const hadYesterdayDecision = state.decisions.some(d => d.date === yesterday && isDaily(d));
-  const streakBrokeYesterday = streak === 0 && !hadYesterdayDecision && state.decisions.filter(isDaily).length > 0;
-  const currentMonth = new Date().toISOString().slice(0, 7);
-  const graceAvailable = (state.graceUsedMonth ?? '') !== currentMonth;
+  const yesterday = localDateDaysAgo(1);
+  const hadYesterdayDecision = state.decisions.some(d => d.date === yesterday && countsForStreak(d));
+  const streakBrokeYesterday = srv
+    ? srv.streakBrokeYesterday
+    : streak === 0 && !hadYesterdayDecision && state.decisions.filter(isDaily).length > 0;
+  const currentMonth = localMonthStr();
+  const graceAvailable = srv ? srv.graceAvailable : (state.graceUsedMonth ?? '') !== currentMonth;
 
   return {
     userName: state.userName,
@@ -544,14 +609,28 @@ export function buildSummary(range: '7d' | '30d' | '90d' = '30d'): DashboardSumm
   };
 }
 
+// ─── Helpers internos de mutación ─────────────────────────────────────────────
+const activeGoal = (state: StoreState, id: string | null | undefined) =>
+  id ? state.goals.find((g) => g.id === id && !g.archived) ?? null : null;
+
+function addMonthsStr(dateStr: string, months: number): string {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const dt = new Date(y, m - 1 + months, d, 12, 0, 0);
+  return localDateStr(dt);
+}
+
 // ─── API pública: mutaciones ──────────────────────────────────────────────────
 export function storeUpdateIncome(
   incomeRange: IncomeRange,
   currentRange: '7d' | '30d' | '90d' = '30d',
+  opts?: { source?: 'profile' | 'dashboard_widget'; skipV2?: boolean },
 ): DashboardSummary {
   const state = loadStore();
   state.incomeRange = incomeRange;
   persistStore(state);
+  if (!opts?.skipV2) {
+    enqueue('income.declare', { band: incomeBandFromRange(incomeRange), source: opts?.source ?? 'profile' });
+  }
   return buildSummary(currentRange);
 }
 
@@ -566,71 +645,78 @@ export function storeCreateGoal(
     subGoalIndex?: number;
   },
   currentRange: '7d' | '30d' | '90d' = '30d',
+  opts?: { surface?: Surface; skipV2?: boolean; id?: string },
 ): DashboardSummary {
+  const title = (data.title ?? '').trim().slice(0, 80) || 'Mi objetivo';
+  const target = clampTarget(Number(data.targetAmount) || 0);
+  const horizon = normalizeHorizon(Number(data.horizonMonths));
+  if (!(target > 0) || isDuplicateAction(`goal:${title}:${target}:${horizon}`)) return buildSummary(currentRange);
+
   const state = loadStore();
   const now = new Date().toISOString();
-  const today = new Date().toISOString().split('T')[0];
+  const today = localDateStr();
   const activeGoals = state.goals.filter((g) => !g.archived);
   const shouldBePrimary = data.isPrimary === true || activeGoals.length === 0;
   if (shouldBePrimary) {
-    state.goals = state.goals.map((g) => ({ ...g, isPrimary: false, updatedAt: now }));
+    state.goals = state.goals.map((g) => (g.isPrimary ? { ...g, isPrimary: false, updatedAt: now } : g));
   }
-  const initAmount = data.currentAmount ?? 0;
-  // Compute targetDate from horizonMonths if not provided
-  const targetDate = data.targetDate ?? (() => {
-    const d = new Date();
-    d.setMonth(d.getMonth() + data.horizonMonths);
-    return d.toISOString().split('T')[0];
-  })();
+  const id = opts?.id ?? `goal_${nextIdMs()}`;
+  const startDate = data.startDate ?? today;
+  const finalGoal = data.finalGoalAmount != null && data.finalGoalAmount >= target ? clampTarget(data.finalGoalAmount) : undefined;
   state.goals.push({
-    id: `goal_${Date.now()}`,
-    title: data.title,
-    targetAmount: data.targetAmount,
-    finalGoalAmount: data.finalGoalAmount,
-    currentAmount: initAmount,
-    horizonMonths: data.horizonMonths,
+    id,
+    title,
+    targetAmount: target,
+    finalGoalAmount: finalGoal,
+    currentAmount: 0,
+    horizonMonths: horizon,
     isPrimary: shouldBePrimary,
     archived: false,
     createdAt: now,
     updatedAt: now,
     source: data.source ?? 'dashboard',
-    completedAt: initAmount >= data.targetAmount && data.targetAmount > 0 ? now : null,
-    startDate: data.startDate ?? today,
-    targetDate,
+    completedAt: null,
+    startDate,
+    targetDate: data.targetDate ?? addMonthsStr(startDate, horizon),
     isUnrealistic: data.isUnrealistic ?? false,
     subGoalIndex: data.subGoalIndex ?? 0,
   });
   persistStore(state);
+
+  // El onboarding registra su objetivo dentro de complete_onboarding (comando onboarding.complete).
+  if (!opts?.skipV2 && data.source !== 'onboarding') {
+    enqueue('goal.create', {
+      goal: id, title, target, horizon,
+      source: opts?.surface === 'dashboard_widget' ? 'dashboard' : 'goals_page',
+      setPrimary: data.isPrimary === true, final: finalGoal ?? null,
+      step: data.subGoalIndex ?? null, realismUnrealistic: data.isUnrealistic ?? null,
+      surface: opts?.surface ?? 'goals_page',
+    });
+  }
+  // Saldo inicial: en V2 no existen saldos editables → se registra como ahorro extra explícito.
+  const initAmount = money(Number(data.currentAmount) || 0);
+  if (initAmount > 0) {
+    storeAddExtraSaving('Saldo inicial', initAmount, id, currentRange, { surface: opts?.surface ?? 'goals_page', force: true });
+  }
   return buildSummary(currentRange);
 }
 
+/** Archivar sin elegir destino: el saldo va a la hucha (mismo comportamiento que V2). */
 export function storeArchiveGoal(
   goalId: string,
   currentRange: '7d' | '30d' | '90d' = '30d',
 ): DashboardSummary {
-  const state = loadStore();
-  const now = new Date().toISOString();
-  const goal = state.goals.find((g) => g.id === goalId);
-  if (!goal) return buildSummary(currentRange);
-
-  const wasPrimary = goal.isPrimary;
-  goal.isPrimary = false;
-  goal.archived = true;
-  goal.updatedAt = now;
-
-  if (wasPrimary) {
-    const next = state.goals.find((g) => !g.archived && g.id !== goalId);
-    if (next) { next.isPrimary = true; next.updatedAt = now; }
-  }
-  persistStore(state);
-  return buildSummary(currentRange);
+  return storeArchiveGoalSafe(goalId, 'hucha', currentRange);
 }
 
 export function storeSetPrimaryGoal(
   goalId: string,
   currentRange: '7d' | '30d' | '90d' = '30d',
+  opts?: { surface?: Surface },
 ): DashboardSummary {
   const state = loadStore();
+  const goal = activeGoal(state, goalId);
+  if (!goal || goal.isPrimary) return buildSummary(currentRange);
   const now = new Date().toISOString();
   state.goals = state.goals.map((g) => ({
     ...g,
@@ -638,6 +724,7 @@ export function storeSetPrimaryGoal(
     updatedAt: g.id === goalId || g.isPrimary ? now : g.updatedAt,
   }));
   persistStore(state);
+  enqueue('goal.setPrimary', { goal: goalId, surface: opts?.surface ?? 'goals_page' });
   return buildSummary(currentRange);
 }
 
@@ -645,17 +732,36 @@ export function storeUpdateGoal(
   goalId: string,
   patch: Partial<Pick<Goal, 'title' | 'targetAmount' | 'currentAmount' | 'horizonMonths' | 'isPrimary'>>,
   currentRange: '7d' | '30d' | '90d' = '30d',
+  opts?: { surface?: Surface },
 ): DashboardSummary {
   const state = loadStore();
   const now = new Date().toISOString();
-  const goal = state.goals.find((g) => g.id === goalId);
+  const goal = activeGoal(state, goalId);
   if (!goal) return buildSummary(currentRange);
 
-  if (patch.isPrimary === true) {
-    state.goals = state.goals.map((g) => ({ ...g, isPrimary: false, updatedAt: now }));
+  // Los saldos no son editables (V2: el saldo solo cambia por asientos del ledger).
+  const v2Patch: { title?: string; target?: number; horizon?: number } = {};
+  if (patch.title !== undefined) {
+    const t = patch.title.trim().slice(0, 80);
+    if (t && t !== goal.title) { goal.title = t; v2Patch.title = t; }
   }
-  Object.assign(goal, patch, { updatedAt: now });
+  if (patch.targetAmount !== undefined) {
+    const t = clampTarget(Number(patch.targetAmount) || 0);
+    if (t > 0 && t !== goal.targetAmount) { goal.targetAmount = t; v2Patch.target = t; }
+  }
+  if (patch.horizonMonths !== undefined && Number(patch.horizonMonths) !== goal.horizonMonths) {
+    const h = normalizeHorizon(Number(patch.horizonMonths));
+    if (h !== goal.horizonMonths) { goal.horizonMonths = h; v2Patch.horizon = h; }
+  }
+  if (goal.finalGoalAmount != null && goal.finalGoalAmount < goal.targetAmount) goal.finalGoalAmount = undefined;
+  goal.updatedAt = now;
   persistStore(state);
+  if (Object.keys(v2Patch).length > 0) {
+    enqueue('goal.update', { goal: goalId, ...v2Patch, surface: opts?.surface ?? 'goals_page' });
+  }
+  if (patch.isPrimary === true && !goal.isPrimary) {
+    return storeSetPrimaryGoal(goalId, currentRange, opts);
+  }
   return buildSummary(currentRange);
 }
 
@@ -704,6 +810,14 @@ export function storeSetUserAvatar(
   return buildSummary(currentRange);
 }
 
+const entityOf = (d: DailyDecision): 'daily' | 'extra' | 'grace' =>
+  d.questionId === 'extra_saving' ? 'extra' : d.questionId === 'grace_day' ? 'grace' : 'daily';
+
+/** Réplica V1 (solo mientras V1 siga en el runtime): borra la fila legacy para que no reaparezca. */
+function replicateV1Delete(decisionId: string) {
+  if (v1RuntimeOn()) deleteDecisionFromSupabase(decisionId).catch(() => null);
+}
+
 export function storeDeleteDecision(
   decisionId: string,
   currentRange: '7d' | '30d' | '90d' = '30d',
@@ -713,14 +827,29 @@ export function storeDeleteDecision(
   const dec = state.decisions.find((d) => d.id === decisionId);
   if (dec) {
     const goal = state.goals.find((g) => g.id === dec.goalId);
+    // V2: no se modifica el saldo de un objetivo archivado (goal_not_active) → misma regla aquí.
+    if (goal?.archived && dec.deltaAmount > 0) return buildSummary(currentRange);
     if (goal) {
-      goal.currentAmount = Math.max(0, goal.currentAmount - dec.deltaAmount);
+      goal.currentAmount = money(Math.max(0, goal.currentAmount - dec.deltaAmount));
       goal.updatedAt = now;
     }
     state.decisions = state.decisions.filter((d) => d.id !== decisionId);
     persistStore(state);
+    enqueue('daily.void', { entity: entityOf(dec), id: dec.id, reason: 'user_deleted_in_history', surface: 'history' });
+    replicateV1Delete(dec.id);
   }
   return buildSummary(currentRange);
+}
+
+/** Devuelve false si la edición no está permitida (V2: decisión sin ahorro, objetivo archivado o histórico no acreditado). */
+export function storeCanEditDecision(decisionId: string): boolean {
+  const state = loadStore();
+  const dec = state.decisions.find((d) => d.id === decisionId);
+  if (!dec || entityOf(dec) === 'grace') return false;
+  if (dec.v2Credited === false) return false;
+  if (entityOf(dec) === 'daily' && !(dec.deltaAmount > 0)) return false;
+  const goal = state.goals.find((g) => g.id === dec.goalId);
+  return !goal?.archived;
 }
 
 export function storeEditDecision(
@@ -728,41 +857,48 @@ export function storeEditDecision(
   newAmount: number,
   currentRange: '7d' | '30d' | '90d' = '30d',
 ): DashboardSummary {
+  const amount = money(Number(newAmount));
+  if (!(amount >= 0) || amount > 100000 || !storeCanEditDecision(decisionId)) return buildSummary(currentRange);
   const state = loadStore();
   const now = new Date().toISOString();
   const dec = state.decisions.find((d) => d.id === decisionId);
-  if (dec) {
+  if (dec && dec.deltaAmount !== amount) {
     const oldAmount = dec.deltaAmount;
-    const diff = newAmount - oldAmount;
-    dec.deltaAmount = newAmount;
+    const diff = amount - oldAmount;
+    dec.deltaAmount = amount;
     dec.updatedAt = now; // Necesario para merge correcto en pullAndMergeFromSupabase.
                          // Garantiza que localTs > 0 y esta edición no sea sobreescrita
                          // por la versión remota si el push falla temporalmente.
     const goal = state.goals.find((g) => g.id === dec.goalId);
     if (goal) {
-      goal.currentAmount = Math.max(0, goal.currentAmount + diff);
+      goal.currentAmount = money(Math.max(0, goal.currentAmount + diff));
       goal.updatedAt = now;
     }
     persistStore(state);
+    enqueue('daily.amend', { entity: entityOf(dec) === 'extra' ? 'extra' : 'daily', id: dec.id, newAmount: amount, surface: 'history' });
   }
   return buildSummary(currentRange);
 }
 
 export function storeResetDecision(
   currentRange: '7d' | '30d' | '90d' = '30d',
+  opts?: { surface?: Surface },
 ): DashboardSummary {
   const state = loadStore();
-  const today = new Date().toISOString().split('T')[0];
+  const today = localDateStr();
   const now = new Date().toISOString();
   const todayDec = state.decisions.find((d) => d.date === today && isDaily(d));
   if (todayDec) {
     const goal = state.goals.find((g) => g.id === todayDec.goalId);
+    if (goal?.archived && todayDec.deltaAmount > 0) return buildSummary(currentRange);
     if (goal) {
-      goal.currentAmount = Math.max(0, goal.currentAmount - todayDec.deltaAmount);
+      goal.currentAmount = money(Math.max(0, goal.currentAmount - todayDec.deltaAmount));
       goal.updatedAt = now;
     }
     state.decisions = state.decisions.filter((d) => !(d.date === today && isDaily(d)));
     persistStore(state);
+    enqueue('daily.void', { entity: 'daily', id: todayDec.id, reason: 'user_reset_today', surface: opts?.surface ?? 'dashboard_widget' });
+    replicateV1Delete(todayDec.id);
   }
   return buildSummary(currentRange);
 }
@@ -772,30 +908,36 @@ export function storeAddExtraSaving(
   amount: number,
   goalId: string,
   currentRange: '7d' | '30d' | '90d' = '30d',
+  opts?: { surface?: Surface; force?: boolean },
 ): DashboardSummary {
+  const value = money(Number(amount));
   const state = loadStore();
-  const today = new Date().toISOString().split('T')[0];
+  const goal = activeGoal(state, goalId);
+  // V2: un ahorro extra siempre cae en un bucket real (objetivo activo).
+  if (!goal || !(value > 0) || value > 100000) return buildSummary(currentRange);
+  if (!opts?.force && isDuplicateAction(`extra:${goalId}:${value}:${name}`)) return buildSummary(currentRange);
+  const today = localDateStr();
   const now = new Date().toISOString();
+  const id = `extra_${nextIdMs()}`;
+  const note = (name ?? '').trim().slice(0, 200) || 'Ahorro extra';
   state.decisions.push({
-    id: `extra_${Date.now()}`,
+    id,
     date: today,
     questionId: 'extra_saving',
-    answerKey: name,
+    answerKey: note,
     goalId,
-    deltaAmount: amount,
+    deltaAmount: value,
     monthlyProjection: 0,
     yearlyProjection: 0,
     createdAt: now,
   });
-  const goal = state.goals.find((g) => g.id === goalId);
-  if (goal) {
-    goal.currentAmount += amount;
-    goal.updatedAt = now;
-    if (!goal.completedAt && goal.currentAmount >= goal.targetAmount && goal.targetAmount > 0) {
-      goal.completedAt = now;
-    }
+  goal.currentAmount = money(goal.currentAmount + value);
+  goal.updatedAt = now;
+  if (!goal.completedAt && goal.currentAmount >= goal.targetAmount && goal.targetAmount > 0) {
+    goal.completedAt = now;
   }
   persistStore(state);
+  enqueue('extra.record', { txn: id, amount: value, goal: goalId, note, surface: opts?.surface ?? 'extra_saving_page' });
   return buildSummary(currentRange);
 }
 
@@ -814,20 +956,22 @@ export function storeArchiveGoalSafe(
   goalId: string,
   destination: string | 'hucha',
   currentRange: '7d' | '30d' | '90d' = '30d',
+  opts?: { surface?: Surface },
 ): DashboardSummary {
   const state = loadStore();
   const now = new Date().toISOString();
-  const today = new Date().toISOString().split('T')[0];
-  const goal = state.goals.find((g) => g.id === goalId);
+  const today = localDateStr();
+  const goal = activeGoal(state, goalId);
   if (!goal) return buildSummary(currentRange);
+  const dest = destination !== 'hucha' && activeGoal(state, destination) && destination !== goalId ? destination : 'hucha';
 
   const balance = goal.currentAmount;
 
   // Reasignar saldo
   if (balance > 0) {
-    if (destination === 'hucha') {
+    if (dest === 'hucha') {
       if (!state.hucha) state.hucha = { balance: 0, entries: [], updatedAt: now };
-      state.hucha.balance = Math.round((state.hucha.balance + balance) * 100) / 100;
+      state.hucha.balance = money(state.hucha.balance + balance);
       state.hucha.entries.push({
         amount: balance,
         fromGoalId: goalId,
@@ -836,18 +980,16 @@ export function storeArchiveGoalSafe(
       });
       state.hucha.updatedAt = now; // P1: necesario para merge correcto por updated_at
     } else {
-      const target = state.goals.find((g) => g.id === destination && !g.archived);
-      if (target) {
-        target.currentAmount = Math.round((target.currentAmount + balance) * 100) / 100;
-        target.updatedAt = now;
-      }
+      const target = activeGoal(state, dest)!;
+      target.currentAmount = money(target.currentAmount + balance);
+      target.updatedAt = now;
     }
   }
 
-  // Redirigir decisions del objetivo archivado al destino
-  if (destination !== 'hucha' && destination !== goalId) {
+  // Redirigir decisions del objetivo archivado al destino (solo histórico local V1)
+  if (dest !== 'hucha') {
     state.decisions = state.decisions.map((d) =>
-      d.goalId === goalId ? { ...d, goalId: destination } : d,
+      d.goalId === goalId ? { ...d, goalId: dest } : d,
     );
   }
 
@@ -859,11 +1001,14 @@ export function storeArchiveGoalSafe(
   goal.updatedAt = now;
 
   if (wasPrimary) {
-    const next = state.goals.find((g) => !g.archived && g.id !== goalId);
+    // Misma regla que V2 (reassign_primary): el activo más antiguo.
+    const next = state.goals.filter((g) => !g.archived && g.id !== goalId)
+      .sort((a, b) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id))[0];
     if (next) { next.isPrimary = true; next.updatedAt = now; }
   }
 
   persistStore(state);
+  enqueue('goal.archive', { goal: goalId, dest, surface: opts?.surface ?? 'goals_page' });
   return buildSummary(currentRange);
 }
 
@@ -872,24 +1017,22 @@ export function storeTransferFromHucha(
   goalId: string,
   amount: number,
   currentRange: '7d' | '30d' | '90d' = '30d',
+  opts?: { surface?: Surface },
 ): DashboardSummary {
   const state = loadStore();
   const now = new Date().toISOString();
-  if (!state.hucha || state.hucha.balance <= 0) return buildSummary(currentRange);
+  const goal = activeGoal(state, goalId);
+  if (!goal || !state.hucha || state.hucha.balance <= 0) return buildSummary(currentRange);
 
-  const transfer = Math.min(amount, state.hucha.balance);
-  if (transfer > 0) {
-    state.hucha.balance = Math.round((state.hucha.balance - transfer) * 100) / 100;
-    state.hucha.updatedAt = now; // P2: solo cuando hay transferencia real > 0
-  }
-
-  const goal = state.goals.find((g) => g.id === goalId && !g.archived);
-  if (goal) {
-    goal.currentAmount = Math.round((goal.currentAmount + transfer) * 100) / 100;
-    goal.updatedAt = now;
-  }
+  const transfer = money(Math.min(Number(amount) || 0, state.hucha.balance));
+  if (!(transfer > 0)) return buildSummary(currentRange);
+  state.hucha.balance = money(state.hucha.balance - transfer);
+  state.hucha.updatedAt = now; // P2: solo cuando hay transferencia real > 0
+  goal.currentAmount = money(goal.currentAmount + transfer);
+  goal.updatedAt = now;
 
   persistStore(state);
+  enqueue('hucha.transfer', { toGoal: goalId, amount: transfer, surface: opts?.surface ?? 'goals_page' });
   return buildSummary(currentRange);
 }
 
@@ -897,45 +1040,48 @@ export function storeTransferFromHucha(
 export function storeReactivateGoal(
   goalId: string,
   currentRange: '7d' | '30d' | '90d' = '30d',
+  opts?: { surface?: Surface },
 ): DashboardSummary {
   const state = loadStore();
   const now = new Date().toISOString();
   const goal = state.goals.find((g) => g.id === goalId);
-  if (!goal) return buildSummary(currentRange);
+  if (!goal || !goal.archived) return buildSummary(currentRange);
 
   goal.archived = false;
   goal.updatedAt = now;
 
   // Si no hay ningún objetivo principal activo, este pasa a ser principal
   const hasActivePrimary = state.goals.some((g) => !g.archived && g.isPrimary);
-  if (!hasActivePrimary) {
-    goal.isPrimary = true;
-  }
+  goal.isPrimary = !hasActivePrimary;
 
   persistStore(state);
+  enqueue('goal.reactivate', { goal: goalId, surface: opts?.surface ?? 'goals_page' });
   return buildSummary(currentRange);
 }
 
 // ─── Eliminar objetivo definitivamente ───────────────────────────────────────
-// Requiere que el saldo ya esté a 0 (resuelto previamente) o se pase destino
+// Si el objetivo tiene saldo y no se indica destino, el saldo va a la hucha (nunca se pierde dinero).
 export function storeDeleteGoalPermanent(
   goalId: string,
   destination: string | 'hucha' | null,
   currentRange: '7d' | '30d' | '90d' = '30d',
+  opts?: { surface?: Surface },
 ): DashboardSummary {
   const state = loadStore();
   const now = new Date().toISOString();
-  const today = new Date().toISOString().split('T')[0];
+  const today = localDateStr();
   const goal = state.goals.find((g) => g.id === goalId);
   if (!goal) return buildSummary(currentRange);
 
   const balance = goal.currentAmount;
+  const dest = destination && destination !== 'hucha' && destination !== goalId && activeGoal(state, destination)
+    ? destination : 'hucha';
 
   // Resolver saldo si existe
-  if (balance > 0 && destination) {
-    if (destination === 'hucha') {
+  if (balance > 0) {
+    if (dest === 'hucha') {
       if (!state.hucha) state.hucha = { balance: 0, entries: [], updatedAt: now };
-      state.hucha.balance = Math.round((state.hucha.balance + balance) * 100) / 100;
+      state.hucha.balance = money(state.hucha.balance + balance);
       state.hucha.entries.push({
         amount: balance,
         fromGoalId: goalId,
@@ -944,49 +1090,52 @@ export function storeDeleteGoalPermanent(
       });
       state.hucha.updatedAt = now; // P3: necesario para merge correcto por updated_at
     } else {
-      const target = state.goals.find((g) => g.id === destination && !g.archived);
-      if (target) {
-        target.currentAmount = Math.round((target.currentAmount + balance) * 100) / 100;
-        target.updatedAt = now;
-      }
+      const target = activeGoal(state, dest)!;
+      target.currentAmount = money(target.currentAmount + balance);
+      target.updatedAt = now;
     }
   }
 
-  // Redirigir decisions al destino si existe
-  if (destination && destination !== 'hucha' && destination !== goalId) {
-    state.decisions = state.decisions.map((d) =>
-      d.goalId === goalId ? { ...d, goalId: destination } : d,
-    );
-  } else {
-    // Eliminar decisions del objetivo borrado (no hay donde redirigir)
-    state.decisions = state.decisions.filter((d) => d.goalId !== goalId);
-  }
+  // Histórico local V1: redirigir decisiones al destino; con hucha se conservan (sin objetivo).
+  state.decisions = state.decisions.map((d) =>
+    d.goalId === goalId ? { ...d, goalId: dest !== 'hucha' ? dest : '' } : d,
+  );
 
+  const wasPrimary = goal.isPrimary;
   // Eliminar el objetivo del array
   state.goals = state.goals.filter((g) => g.id !== goalId);
+  if (wasPrimary) {
+    const next = state.goals.filter((g) => !g.archived)
+      .sort((a, b) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id))[0];
+    if (next) { next.isPrimary = true; next.updatedAt = now; }
+  }
 
   persistStore(state);
+  enqueue('goal.delete', { goal: goalId, dest, surface: opts?.surface ?? 'goals_page' });
   return buildSummary(currentRange);
 }
 
 // Claves de autenticación que se conservan tras el reset
 const AUTH_KEYS_TO_PRESERVE = ['isAuthenticated', 'userEmail', 'userName', 'supabaseUserId', 'rememberMe', 'theme'];
+// La outbox V2, los flags y el marcador de import se conservan: el reset debe llegar al servidor.
+const isPreservedKey = (k: string) => AUTH_KEYS_TO_PRESERVE.includes(k) || k.startsWith('ai_v2_');
 
 export function storeResetAllData(): void {
   if (typeof window === 'undefined') return;
+  enqueue('account.reset', {});
   try {
     // 1. Snapshot de claves auth a conservar
     const preserved: Record<string, string> = {};
-    AUTH_KEYS_TO_PRESERVE.forEach((k) => {
-      const v = localStorage.getItem(k);
-      if (v !== null) preserved[k] = v;
-    });
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && isPreservedKey(k)) { const v = localStorage.getItem(k); if (v !== null) preserved[k] = v; }
+    }
 
     // 2. Borrar todas las claves de app (incluye widget_collapse_*, sync timestamps, onboarding, etc.)
     const keysToDelete: string[] = [];
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i);
-      if (k && !AUTH_KEYS_TO_PRESERVE.includes(k)) keysToDelete.push(k);
+      if (k && !isPreservedKey(k)) keysToDelete.push(k);
     }
     keysToDelete.forEach((k) => localStorage.removeItem(k));
 
@@ -1019,33 +1168,28 @@ export function storeListArchivedGoals(): Goal[] {
   return state.goals.filter((g) => g.archived);
 }
 
-// ─── Multiplicador de impacto por rango de ingresos ──────────────────────────
-function incomeMultiplier(incomeRange: IncomeRange | null): number {
-  if (!incomeRange) return 1.0;
-  const mid = (incomeRange.min + incomeRange.max) / 2;
-  if (mid < 1500) return 0.80;
-  if (mid < 2500) return 0.90;
-  if (mid < 4000) return 1.00;
-  if (mid < 6000) return 1.15;
-  return 1.30;
-}
+// D1 (Data Model V2): se ELIMINA el multiplicador por ingresos. Lo que el usuario declara
+// es lo que se registra (credit_rule_version = identity_v1).
 
 // ─── Día de gracia (streak recovery) ─────────────────────────────────────────
 export function storeUseGraceDay(
   currentRange: '7d' | '30d' | '90d' = '30d',
 ): DashboardSummary {
   const state = loadStore();
-  const yesterday = new Date(Date.now() - 86_400_000).toISOString().split('T')[0];
+  const yesterday = localDateDaysAgo(1);
   const now = new Date().toISOString();
-  const currentMonth = new Date().toISOString().slice(0, 7);
-  if (state.decisions.some(d => d.date === yesterday)) return buildSummary(currentRange);
-  const primaryGoal = state.goals.find(g => !g.archived && g.isPrimary) ?? state.goals.find(g => !g.archived);
+  const currentMonth = localMonthStr();
+  if (state.decisions.some(d => d.date === yesterday && d.questionId !== 'extra_saving')) return buildSummary(currentRange);
+  if (state.graceUsedMonth === currentMonth || state.decisions.some(d => d.questionId === 'grace_day' && d.date.slice(0, 7) === currentMonth)) {
+    return buildSummary(currentRange);
+  }
+  const id = `grace_${nextIdMs()}`;
   state.decisions.push({
-    id: `grace_${Date.now()}`,
+    id,
     date: yesterday,
     questionId: 'grace_day',
     answerKey: 'grace',
-    goalId: primaryGoal?.id ?? '',
+    goalId: '',
     deltaAmount: 0,
     monthlyProjection: 0,
     yearlyProjection: 0,
@@ -1053,6 +1197,7 @@ export function storeUseGraceDay(
   });
   state.graceUsedMonth = currentMonth;
   persistStore(state);
+  enqueue('grace.use', { decision: id, surface: 'dashboard_widget' });
   return buildSummary(currentRange);
 }
 
@@ -1126,9 +1271,21 @@ export function storeMarkGoalPercentMilestone(goalId: string, percent: number): 
 
 export function storeAcknowledgeAdaptiveEvaluation(newPercent?: number): void {
   const state = loadStore();
-  state.lastAdaptiveEvaluation = new Date().toISOString().split('T')[0];
+  state.lastAdaptiveEvaluation = localDateStr();
   if (newPercent !== undefined) state.savingsPercent = newPercent;
   persistStore(state);
+}
+
+/** Traduce el answerKey de la UI ('saved|Etiqueta', 'zero|custom:texto', 'saved') a opción del catálogo. */
+function parseAnswer(answerKey: string): { optionKey: string; customText: string | null } {
+  const idx = answerKey.indexOf('|');
+  const signal = idx >= 0 ? answerKey.slice(idx + 1) : '';
+  if (signal.startsWith('custom:')) {
+    const text = signal.slice(7).trim().slice(0, 200);
+    return text ? { optionKey: '__custom__', customText: text } : { optionKey: '__unspecified__', customText: null };
+  }
+  const slug = signal ? slugifyOption(signal) : '';
+  return slug ? { optionKey: slug, customText: null } : { optionKey: '__unspecified__', customText: null };
 }
 
 /**
@@ -1136,7 +1293,7 @@ export function storeAcknowledgeAdaptiveEvaluation(newPercent?: number): void {
  *
  * Nuevo flujo (formato importe):
  *   - savedAmount: cuánto ha ahorrado el usuario (0 = no ahorró nada)
- *   - El importe lo pone el usuario directamente (default 0 €)
+ *   - El importe lo pone el usuario directamente (default 0 €) y se registra TAL CUAL (D1).
  */
 export function storeSubmitDecision(
   questionId: string,
@@ -1144,45 +1301,152 @@ export function storeSubmitDecision(
   goalId: string,
   currentRange: '7d' | '30d' | '90d' = '30d',
   customAmount?: number,
+  opts?: { surface?: Surface },
 ): DashboardSummary {
   const state = loadStore();
-  const today = new Date().toISOString().split('T')[0];
+  const today = localDateStr();
 
   if (state.decisions.some((d) => d.date === today && isDaily(d))) {
     return buildSummary(currentRange);
   }
 
-  const multiplier = incomeMultiplier(state.incomeRange);
-  const savedAmount = customAmount != null && customAmount > 0 ? customAmount : 0;
-  const effectiveDelta = Math.round(savedAmount * multiplier * 100) / 100;
-  const effectiveMonthly = 0;
-  const effectiveYearly = 0;
+  const savedAmount = customAmount != null && customAmount > 0 ? money(Math.min(customAmount, 100000)) : 0;
+  const goal = activeGoal(state, goalId);
+  // Un ahorro siempre cae en un objetivo activo (la UI no permite otra cosa).
+  if (savedAmount > 0 && !goal) return buildSummary(currentRange);
 
   const now = new Date().toISOString();
+  const id = `dec_${nextIdMs()}`;
   state.decisions.push({
-    id: `dec_${Date.now()}`,
+    id,
     date: today,
     questionId,
     answerKey,
-    goalId,
-    deltaAmount: effectiveDelta,
-    monthlyProjection: effectiveMonthly,
-    yearlyProjection: effectiveYearly,
+    goalId: goal ? goalId : '',
+    deltaAmount: savedAmount,
+    monthlyProjection: 0,
+    yearlyProjection: 0,
     createdAt: now,
   });
 
-  const goal = state.goals.find((g) => g.id === goalId);
   if (goal) {
-    goal.currentAmount += effectiveDelta;
+    goal.currentAmount = money(goal.currentAmount + savedAmount);
     goal.updatedAt = now;
   }
 
   persistStore(state);
+  const { optionKey, customText } = parseAnswer(answerKey);
+  enqueue('daily.record', {
+    decision: id, questionId, optionKey, customText, amount: savedAmount,
+    goal: goal ? goalId : null, surface: opts?.surface ?? 'daily_page',
+  });
 
   return buildSummary(currentRange);
 }
 
+// ─── Proyección del estado V2 (get_dashboard_state) sobre la caché local ─────
+type V2Goal = {
+  id: string; legacy_id: string | null; title: string; target_amount: number | string; final_target_amount: number | string | null;
+  step_index: number | null; horizon_months: number; status: string; is_primary: boolean; source: string;
+  start_date: string | null; created_at: string; updated_at: string; first_completed_at: string | null; balance: number | string;
+};
+type V2Decision = {
+  kind: 'daily' | 'grace' | 'extra'; id: string; legacy_id: string | null; local_date: string; occurred_at: string;
+  outcome?: string; question_id?: string | null; option_key?: string | null; custom_text?: string | null; note?: string | null;
+  goal_id: string | null; amount: number | string; credited: boolean;
+};
+export type V2DashboardState = {
+  today: string; timezone: string;
+  onboarding: { completed: boolean; source: string };
+  income: { band_code: string } | null;
+  avatar: string | null;
+  goals: V2Goal[];
+  primary_goal_id: string | null;
+  hucha: { balance: number | string; entries: { amount: number | string; date: string; from_goal_id: string | null }[] };
+  totals: { registered_savings: number | string; total_balance: number | string };
+  streak: number; streak_broke_yesterday: boolean; grace_available: boolean;
+  decisions: V2Decision[];
+};
 
+/** Sustituye la caché de negocio por el estado autoritativo del servidor (sin tocar preferencias de UI). */
+export function storeApplyV2State(s: V2DashboardState, ownerUid: string): void {
+  const prev = loadStore();
+  const sameOwner = !prev.ownerUid || prev.ownerUid === ownerUid;
+  const state: StoreState = sameOwner ? prev : { ...structuredClone(SEED), userName: prev.userName, userEmail: prev.userEmail };
+  const prevGoals = new Map(state.goals.map((g) => [g.id, g]));
+  const prevDecs = new Map(state.decisions.map((d) => [d.id, d]));
+  const localGoalId = new Map<string, string>();
+  for (const g of s.goals) localGoalId.set(g.id, g.legacy_id ?? g.id);
+  const mapGoal = (id: string | null | undefined) => (id ? localGoalId.get(id) ?? '' : '');
+
+  state.goals = s.goals.map((g) => {
+    const id = g.legacy_id ?? g.id;
+    const p = prevGoals.get(id);
+    const start = g.start_date ?? g.created_at.slice(0, 10);
+    return {
+      id,
+      title: g.title,
+      targetAmount: Number(g.target_amount),
+      finalGoalAmount: g.final_target_amount != null ? Number(g.final_target_amount) : undefined,
+      currentAmount: Number(g.balance),
+      horizonMonths: g.horizon_months,
+      isPrimary: g.is_primary,
+      archived: g.status !== 'active',
+      createdAt: g.created_at,
+      updatedAt: g.updated_at,
+      source: g.source === 'onboarding' ? 'onboarding' : 'dashboard',
+      completedAt: g.first_completed_at,
+      startDate: start,
+      targetDate: addMonthsStr(start, g.horizon_months),
+      isUnrealistic: p?.isUnrealistic ?? false,
+      subGoalIndex: g.step_index ?? p?.subGoalIndex ?? 0,
+    } satisfies Goal;
+  });
+
+  state.decisions = s.decisions.map((d) => {
+    const id = d.legacy_id ?? d.id;
+    const p = prevDecs.get(id);
+    if (d.kind === 'grace') {
+      return { id, date: d.local_date, questionId: 'grace_day', answerKey: 'grace', goalId: '', deltaAmount: 0,
+        monthlyProjection: 0, yearlyProjection: 0, createdAt: d.occurred_at };
+    }
+    if (d.kind === 'extra') {
+      return { id, date: d.local_date, questionId: 'extra_saving', answerKey: d.note ?? p?.answerKey ?? 'Ahorro extra',
+        goalId: mapGoal(d.goal_id), deltaAmount: Number(d.amount), monthlyProjection: 0, yearlyProjection: 0,
+        createdAt: d.occurred_at };
+    }
+    const outcome = d.outcome === 'saved' ? 'saved' : 'zero';
+    const signal = d.custom_text ? `custom:${d.custom_text}` : d.option_key && !d.option_key.startsWith('__') ? d.option_key : '';
+    return {
+      id, date: d.local_date, questionId: d.question_id ?? p?.questionId ?? 'legacy_v1',
+      answerKey: p?.answerKey ?? (signal ? `${outcome}|${signal}` : outcome),
+      goalId: mapGoal(d.goal_id), deltaAmount: Number(d.amount), monthlyProjection: 0, yearlyProjection: 0,
+      createdAt: d.occurred_at, v2Credited: d.credited,
+    };
+  });
+
+  const titleOf = (id: string | null) => s.goals.find((g) => g.id === id)?.title ?? '';
+  state.hucha = {
+    balance: Number(s.hucha.balance),
+    entries: s.hucha.entries.map((e) => ({ amount: Number(e.amount), fromGoalId: mapGoal(e.from_goal_id), fromGoalTitle: titleOf(e.from_goal_id), date: e.date })),
+    updatedAt: new Date().toISOString(),
+  };
+  state.graceUsedMonth = s.grace_available ? null : localMonthStr();
+  if (s.income?.band_code && BAND_RANGES[s.income.band_code]) state.incomeRange = BAND_RANGES[s.income.band_code];
+  if (s.avatar === 'comodo' || s.avatar === 'social' || s.avatar === 'impulsivo') state.userAvatar = s.avatar;
+  state.ownerUid = ownerUid;
+  state.v2 = {
+    streak: s.streak, streakBrokeYesterday: s.streak_broke_yesterday, graceAvailable: s.grace_available,
+    totalSaved: Number(s.totals.registered_savings), fetchedAt: Date.now(),
+  };
+  persistStore(state);
+}
+
+/** Marca el dueño de la caché local (para descartarla si entra otro usuario en el mismo navegador). */
+export function storeSetOwner(uid: string): void {
+  const state = loadStore();
+  if (state.ownerUid !== uid) { state.ownerUid = uid; persistStore(state); }
+}
 
 // ─── Progreso de objetivo: puntos para gráfica ───────────────────────────────
 export type GoalProgressPoint = {

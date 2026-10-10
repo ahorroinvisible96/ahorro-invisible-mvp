@@ -63,26 +63,25 @@ export async function generateWeeklyInsight(
 
     const supabase = getSupabase();
 
-    // Obtener datos del usuario
-    const [profileRes, goalsRes, decisionsRes] = await Promise.all([
-      supabase.from('user_profiles').select('name, income_range, money_feeling').eq('id', userId).single(),
-      supabase.from('goals').select('title, current_amount, target_amount, horizon_months').eq('user_id', userId).eq('archived', false),
-      supabase.from('decisions').select('date, question_id, delta_amount').eq('user_id', userId).order('date', { ascending: false }).limit(14),
+    // Obtener datos del usuario (fuente de verdad V2: saldos = ledger)
+    const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
+    const [profileRes, goalsRes, decisionsRes, ledgerRes] = await Promise.all([
+      supabase.from('user_profiles').select('name').eq('id', userId).single(),
+      supabase.from('v_goal_state').select('title, current_balance, target_amount, is_primary, status').eq('user_id', userId).eq('status', 'active'),
+      supabase.from('daily_decisions').select('local_date').eq('user_id', userId).eq('status', 'active').neq('outcome', 'grace')
+        .gte('local_date', weekAgo),
+      supabase.from('savings_transactions').select('amount').eq('user_id', userId)
+        .in('transaction_type', ['daily_saving', 'extra_saving', 'amendment', 'reversal']).gte('local_date', weekAgo),
     ]);
 
     const profile = profileRes.data;
-    const goals = goalsRes.data ?? [];
+    const goals = (goalsRes.data ?? []).sort((a, b) => Number(b.is_primary) - Number(a.is_primary));
     const decisions = decisionsRes.data ?? [];
 
     // Calcular métricas rápidas
-    const totalSavedThisWeek = decisions
-      .filter(d => {
-        const daysAgo = (Date.now() - new Date(d.date).getTime()) / (1000 * 60 * 60 * 24);
-        return daysAgo <= 7;
-      })
-      .reduce((s, d) => s + Number(d.delta_amount ?? 0), 0);
+    const totalSavedThisWeek = (ledgerRes.data ?? []).reduce((s, t) => s + Number(t.amount ?? 0), 0);
 
-    const activeDays = new Set(decisions.slice(0, 7).map(d => d.date)).size;
+    const activeDays = new Set(decisions.map(d => d.local_date)).size;
 
     // Construir contexto para Gemini (sin datos sensibles)
     const context = `
@@ -94,7 +93,7 @@ Datos del usuario esta semana:
 - Dinero ahorrado esta semana: ${totalSavedThisWeek.toFixed(2)}€
 - Días activos de 7: ${activeDays}
 - Objetivos activos: ${goals.length}
-- Objetivo principal: ${goals[0]?.title ?? 'sin objetivo'} (${Math.round((goals[0]?.current_amount / goals[0]?.target_amount) * 100) || 0}% completado)
+- Objetivo principal: ${goals[0]?.title ?? 'sin objetivo'} (${Math.round((Number(goals[0]?.current_balance) / Number(goals[0]?.target_amount)) * 100) || 0}% completado)
 
 Genera un mensaje de insight personalizado y motivador para esta semana.
 `.trim();

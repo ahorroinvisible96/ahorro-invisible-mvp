@@ -42,23 +42,26 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: true, sent: 0 });
   }
 
-  // Obtener decisiones de los últimos 7 días agrupadas por user
+  // Decisiones y ahorro registrado de los últimos 7 días (fuente de verdad V2)
   const userIds = subs.map((s: { user_id: string }) => s.user_id);
-  const { data: decisions } = await supabase
-    .from('decisions')
-    .select('user_id, delta_amount, question_id')
-    .gte('date', cutoff)
-    .in('user_id', userIds);
+  const [{ data: decisions }, { data: ledger }] = await Promise.all([
+    supabase.from('daily_decisions').select('user_id')
+      .gte('local_date', cutoff).eq('status', 'active').neq('outcome', 'grace').in('user_id', userIds),
+    supabase.from('savings_transactions').select('user_id, amount')
+      .gte('local_date', cutoff).in('transaction_type', ['daily_saving', 'extra_saving', 'amendment', 'reversal'])
+      .in('user_id', userIds),
+  ]);
 
   // Calcular resumen por usuario
   type UserStats = { count: number; saved: number };
   const statsMap: Record<string, UserStats> = {};
   for (const d of decisions ?? []) {
     if (!statsMap[d.user_id]) statsMap[d.user_id] = { count: 0, saved: 0 };
-    if (d.question_id !== 'grace_day') {
-      statsMap[d.user_id].count++;
-      statsMap[d.user_id].saved += d.delta_amount ?? 0;
-    }
+    statsMap[d.user_id].count++;
+  }
+  for (const t of ledger ?? []) {
+    if (!statsMap[t.user_id]) statsMap[t.user_id] = { count: 0, saved: 0 };
+    statsMap[t.user_id].saved += Number(t.amount ?? 0);
   }
 
   let sent = 0;

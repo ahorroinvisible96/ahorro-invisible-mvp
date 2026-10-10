@@ -6,7 +6,8 @@ import { FormInput } from "@/components/ui/FormInput";
 import { analytics } from "@/services/analytics";
 import { authSignIn, authSendMagicLink, authResetPassword } from "@/services/authService";
 import { isSupabaseConfigured } from "@/lib/supabase";
-import { hasLocalDataToMigrate, pushLocalDataToSupabase, pullDataFromSupabase } from "@/services/syncService";
+import { hasLocalDataToMigrate, pushLocalDataToSupabase } from "@/services/syncService";
+import { restoreAfterLogin, runSyncCycle } from "@/services/v2/runtime";
 import { identifyUser } from "@/lib/posthog";
 import s from './login.module.css';
 
@@ -53,8 +54,9 @@ export default function LoginPage() {
     if (isSupabaseConfigured && user.id !== "local") {
       if (hasLocalDataToMigrate()) {
         pushLocalDataToSupabase(user.id).catch(() => null);
+        runSyncCycle().catch(() => null);
       } else {
-        await pullDataFromSupabase(user.id).catch(() => null);
+        await restoreAfterLogin(user.id).catch(() => null);
         if (user.name) localStorage.setItem("userName", user.name);
         localStorage.setItem("hasCompletedOnboarding", "true");
       }

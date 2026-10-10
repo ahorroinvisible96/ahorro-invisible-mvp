@@ -19,42 +19,36 @@ export async function GET() {
   }
 
   try {
-    // ── Queries en paralelo ───────────────────────────────────────────────────
-    const [
-      profilesRes,
-      goalsRes,
-      decisionsRes,
-      retentionRes,
-      questionStatsRes,
-      activationRes,
-    ] = await Promise.all([
-      supabase.from('user_profiles').select('*'),
-      supabase.from('goals').select('*'),
-      supabase.from('decisions').select('*').order('date', { ascending: false }).limit(500),
-      supabase.from('v_retention').select('*'),
-      supabase.from('v_question_stats').select('*'),
-      supabase.from('v_activation').select('*'),
+    // ── Queries en paralelo (fuente de verdad V2) ───────────────────────────────────────────────
+    const [profilesRes, goalsRes, decisionsRes, ledgerRes] = await Promise.all([
+      supabase.from('user_profiles').select('id, money_feeling, streak_current'),
+      supabase.from('v_goal_state').select('goal_id, title, target_amount, current_balance, is_primary, status, first_completed_at'),
+      supabase.from('daily_decisions').select('decision_id, local_date, question_id, selected_option_key, outcome, status')
+        .eq('status', 'active').neq('outcome', 'grace').order('local_date', { ascending: false }).limit(500),
+      supabase.from('savings_transactions').select('decision_id, amount, local_date, transaction_type')
+        .in('transaction_type', ['daily_saving', 'extra_saving', 'amendment', 'reversal']),
     ]);
 
     const profiles = profilesRes.data ?? [];
-    const goals = goalsRes.data ?? [];
-    const decisions = decisionsRes.data ?? [];
-    const retention = retentionRes.data?.[0] ?? null;
-    const questionStats = questionStatsRes.data ?? [];
-    const activation = activationRes.data ?? [];
+    const goals = (goalsRes.data ?? []).filter((g: Record<string, unknown>) => g.status !== 'deleted');
+    const ledger = ledgerRes.data ?? [];
+    const amountByDecision: Record<string, number> = {};
+    for (const t of ledger) if (t.decision_id) amountByDecision[t.decision_id] = (amountByDecision[t.decision_id] ?? 0) + Number(t.amount);
+    const decisions = (decisionsRes.data ?? []).map((d: Record<string, unknown>) => ({
+      id: d.decision_id, date: d.local_date, question_id: d.question_id, answer_key: d.selected_option_key,
+      delta_amount: amountByDecision[String(d.decision_id)] ?? 0,
+    }));
+    const retention = null;       // KPIs de retención/activación: Analytics V2 (5C)
+    const questionStats: unknown[] = [];
+    const activation: unknown[] = [];
 
     // ── KPI calculations ──────────────────────────────────────────────────────
     const totalUsers = profiles.length;
 
-    const totalSaved = decisions.reduce(
-      (sum: number, d: Record<string, unknown>) => sum + Number(d.delta_amount ?? 0),
-      0,
-    );
+    // Ahorro registrado (excluye saldos de apertura de migración y transferencias internas)
+    const totalSaved = ledger.reduce((sum: number, t: Record<string, unknown>) => sum + Number(t.amount ?? 0), 0);
 
-    const dailyDecisions = decisions.filter(
-      (d: Record<string, unknown>) =>
-        d.question_id !== 'extra_saving' && d.question_id !== 'grace_day',
-    );
+    const dailyDecisions = decisions;
 
     const avgStreak =
       profiles.length > 0
@@ -66,10 +60,10 @@ export async function GET() {
         : 0;
 
     const activeGoals = goals.filter(
-      (g: Record<string, unknown>) => !g.archived,
+      (g: Record<string, unknown>) => g.status === 'active',
     );
     const completedGoals = goals.filter(
-      (g: Record<string, unknown>) => g.completed_at != null,
+      (g: Record<string, unknown>) => g.first_completed_at != null,
     );
 
     // ── Daily savings aggregation (last 30 days) ──────────────────────────────
@@ -78,10 +72,10 @@ export async function GET() {
     const thirtyDaysStr = thirtyDaysAgo.toISOString().split('T')[0];
 
     const dailySavingsMap: Record<string, number> = {};
-    for (const d of dailyDecisions) {
-      const date = String(d.date);
+    for (const t of ledger) {
+      const date = String(t.local_date);
       if (date >= thirtyDaysStr) {
-        dailySavingsMap[date] = (dailySavingsMap[date] ?? 0) + Number(d.delta_amount ?? 0);
+        dailySavingsMap[date] = (dailySavingsMap[date] ?? 0) + Number(t.amount ?? 0);
       }
     }
 
@@ -106,25 +100,25 @@ export async function GET() {
     }
 
     // ── Recent decisions (last 50) ────────────────────────────────────────────
-    const recentDecisions = decisions.slice(0, 50).map((d: Record<string, unknown>) => ({
+    const recentDecisions = decisions.slice(0, 50).map((d) => ({
       id: d.id,
       date: d.date,
       question_id: d.question_id,
       answer_key: d.answer_key,
       delta_amount: d.delta_amount,
-      monthly_projection: d.monthly_projection,
-      yearly_projection: d.yearly_projection,
+      monthly_projection: null,
+      yearly_projection: null,
     }));
 
     // ── Goal progress ─────────────────────────────────────────────────────────
     const goalProgress = activeGoals.slice(0, 20).map((g: Record<string, unknown>) => ({
-      id: g.id,
+      id: g.goal_id,
       title: g.title,
       target_amount: Number(g.target_amount ?? 0),
-      current_amount: Number(g.current_amount ?? 0),
+      current_amount: Number(g.current_balance ?? 0),
       percent:
         Number(g.target_amount) > 0
-          ? Math.min(100, Math.round((Number(g.current_amount) / Number(g.target_amount)) * 100))
+          ? Math.min(100, Math.round((Number(g.current_balance) / Number(g.target_amount)) * 100))
           : 0,
       is_primary: g.is_primary,
     }));

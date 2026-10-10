@@ -2,10 +2,11 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { pushLocalDataToSupabase, pullDataFromSupabase, pullAndMergeFromSupabase } from "@/services/syncService";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 import { identifyUser } from "@/lib/posthog";
 import { analytics } from "@/services/analytics";
+import { runSyncCycle, restoreAfterLogin } from "@/services/v2/runtime";
+import { onEnqueue, flushOutbox } from "@/services/v2/outbox";
 
 export default function SyncProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -36,8 +37,8 @@ export default function SyncProvider({ children }: { children: React.ReactNode }
       const days = remember ? 90 : 30;
       const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
       document.cookie = `ai_auth=1; path=/; expires=${expires}; SameSite=Lax`;
-      // Restaurar datos del usuario desde Supabase
-      await pullDataFromSupabase(session.user.id).catch(() => null);
+      // Restaurar datos del usuario desde la fuente de verdad vigente (V2 o, en transición, V1)
+      await restoreAfterLogin(session.user.id).catch(() => null);
       // Forzar re-evaluación de guardias de auth (critical for iOS PWA)
       router.refresh();
     });
@@ -47,39 +48,41 @@ export default function SyncProvider({ children }: { children: React.ReactNode }
     if (!isSupabaseConfigured) return;
 
     let debounceTimer: ReturnType<typeof setTimeout> | null = null;
-    let isSyncing = false;
+    let flushTimer: ReturnType<typeof setTimeout> | null = null;
 
-    async function syncAll() {
+    function syncAll(delay = 2000) {
       if (debounceTimer) clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(async () => {
-        const userId = localStorage.getItem("supabaseUserId");
-        if (!userId || isSyncing) return;
-        isSyncing = true;
-        try {
-          // 1. Pull + merge primero (traer cambios de otros dispositivos)
-          await pullAndMergeFromSupabase(userId).catch(() => null);
-          // 2. Después push (enviar cambios locales)
-          await pushLocalDataToSupabase(userId).catch(() => null);
-        } finally {
-          isSyncing = false;
-        }
-      }, 2000);
+      debounceTimer = setTimeout(() => { runSyncCycle().catch(() => null); }, delay);
     }
+
+    // Cada acción encolada se envía casi inmediatamente (agrupando ráfagas / doble clic).
+    const off = onEnqueue(() => {
+      if (flushTimer) clearTimeout(flushTimer);
+      flushTimer = setTimeout(() => { flushOutbox().catch(() => null); }, 300);
+    });
 
     // Sync al cargar
     syncAll();
 
     const handleFocus = () => syncAll();
+    const handleOnline = () => syncAll(500);
     const handleVisibility = () => {
       if (document.visibilityState === "visible") syncAll();
     };
+    // Reintentos con backoff de la cola aunque el usuario no interactúe
+    const interval = setInterval(() => { flushOutbox().catch(() => null); }, 30_000);
 
     window.addEventListener("focus", handleFocus);
+    window.addEventListener("online", handleOnline);
     document.addEventListener("visibilitychange", handleVisibility);
 
     return () => {
+      off();
+      clearInterval(interval);
       if (debounceTimer) clearTimeout(debounceTimer);
+      if (flushTimer) clearTimeout(flushTimer);
       window.removeEventListener("focus", handleFocus);
+      window.removeEventListener("online", handleOnline);
       document.removeEventListener("visibilitychange", handleVisibility);
     };
   }, []);

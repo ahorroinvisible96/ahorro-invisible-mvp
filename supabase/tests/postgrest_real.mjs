@@ -73,7 +73,34 @@ await t('R7 helpers private no expuestos por PostgREST', async () => {
   const r2 = await req('POST', '/rest/v1/rpc/lock_user_ledger', A.jwt, { p_user_id: A.id });
   assert(r2.s >= 400, `private expuesto ${r2.s}`);
 });
-await t('R8 compatibilidad V1 vía PostgREST: user_profiles y goals (insert/update/archive/delete) con el patrón actual de la app', async () => {
+const flags = await req('GET', '/rest/v1/app_flags?select=key,enabled', C.anon);
+const RETIRED = Array.isArray(flags.j) && flags.j.some(f => f.key === 'V1_RUNTIME_RETIRED' && f.enabled);
+if (RETIRED) await t('R8 V1 retirada (019): escritura V1 bloqueada para authenticated/service_role; user_profiles (KEEP) operativa; lectura propia OK', async () => {
+  const p = await req('POST', '/rest/v1/user_profiles', B.jwt, { id: B.id, name: 'Test' });
+  assert(p.s === 201, `profile ${p.s} ${JSON.stringify(p.j)}`);
+  const pu = await req('PATCH', `/rest/v1/user_profiles?id=eq.${B.id}`, B.jwt, { money_feeling: 'ok' });
+  assert(pu.s === 200 && pu.j.length === 1, `profile update ${pu.s} ${JSON.stringify(pu.j)}`);
+  const gid = 'goal_' + Date.now();
+  for (const [who, jwt, key] of [['authenticated', B.jwt, C.anon], ['service_role', C.service, C.service]]) {
+    const g = await req('POST', '/rest/v1/goals', jwt, { id: gid, user_id: B.id, title: 'V1 goal', target_amount: 100, current_amount: 0, is_primary: true, created_at: now(), updated_at: now() }, key);
+    assert(g.s === 401 || g.s === 403, `${who} goals insert ${g.s} ${JSON.stringify(g.j)}`);
+    const d = await req('POST', '/rest/v1/decisions', jwt, { id: 'd_' + Date.now(), user_id: B.id, date: '2026-01-01', question_id: 'q', answer_key: 'a', delta_amount: 1 }, key);
+    assert(d.s === 401 || d.s === 403, `${who} decisions insert ${d.s} ${JSON.stringify(d.j)}`);
+    const h = await req('POST', '/rest/v1/hucha', jwt, { user_id: B.id, balance: 1, entries: [] }, key);
+    assert(h.s === 401 || h.s === 403, `${who} hucha insert ${h.s} ${JSON.stringify(h.j)}`);
+    const q = await req('POST', '/rest/v1/question_interactions', jwt, { user_id: B.id, question_id: 'q', local_date: '2026-01-01', time_slot: 'Tarde' }, key);
+    assert(q.s === 401 || q.s === 403, `${who} question_interactions insert ${q.s} ${JSON.stringify(q.j)}`);
+    const u = await req('PATCH', `/rest/v1/goals?user_id=eq.${A.id}`, jwt, { title: 'x' }, key);
+    assert(u.s === 401 || u.s === 403, `${who} goals update ${u.s} ${JSON.stringify(u.j)}`);
+    const del = await req('DELETE', `/rest/v1/decisions?user_id=eq.${B.id}`, jwt, null, key);
+    assert(del.s === 401 || del.s === 403, `${who} decisions delete ${del.s} ${JSON.stringify(del.j)}`);
+  }
+  const r = await req('GET', `/rest/v1/goals?select=id&user_id=eq.${A.id}`, A.jwt);
+  assert(r.s === 200 && r.j.length >= 1, `lectura propia goals ${r.s}`);
+  const x = await req('GET', `/rest/v1/user_profiles?id=eq.${B.id}`, A.jwt);
+  assert(x.j.length === 0, 'A ve perfil de B');
+});
+else await t('R8 compatibilidad V1 vía PostgREST: user_profiles y goals (insert/update/archive/delete) con el patrón actual de la app', async () => {
   const p = await req('POST', '/rest/v1/user_profiles', B.jwt, { id: B.id, name: 'Test' });
   assert(p.s === 201, `profile ${p.s} ${JSON.stringify(p.j)}`);
   const gid = 'goal_' + Date.now();

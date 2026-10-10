@@ -43,12 +43,13 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: true, sent: 0, message: 'No subscriptions found' });
   }
 
-  // 2. Obtener los users que YA tienen decisión hoy
+  // 2. Obtener los users que YA tienen decisión hoy (fuente de verdad V2; la gracia no cuenta)
   const { data: doneToday } = await supabase
-    .from('decisions')
+    .from('daily_decisions')
     .select('user_id')
-    .eq('date', today)
-    .not('question_id', 'in', '(grace_day,extra_saving)');
+    .eq('local_date', today)
+    .eq('status', 'active')
+    .neq('outcome', 'grace');
 
   const doneSet = new Set((doneToday ?? []).map((d: { user_id: string }) => d.user_id));
 

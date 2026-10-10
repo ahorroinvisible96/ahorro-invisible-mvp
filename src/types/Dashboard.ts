@@ -52,6 +52,8 @@ export type DailyDecision = {
   createdAt: string;
   /** Timestamp de última modificación. Opcional: ausente en datos locales pre-migración 004. */
   updatedAt?: string;
+  /** V2: false si es una decisión histórica V1 sin asiento en el ledger (no editable). */
+  v2Credited?: boolean;
 };
 
 export type SavingsEvolutionPoint = {
