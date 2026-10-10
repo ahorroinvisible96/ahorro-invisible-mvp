@@ -29,9 +29,8 @@ export default function DailyPage() {
   const [savedAmount, setSavedAmount] = useState<string>('');
   const [selectedGoalId, setSelectedGoalId] = useState<string>('');
   const [completedDecisionId, setCompletedDecisionId] = useState<string | null>(null);
-  const [currentTimeWindow, setCurrentTimeWindow] = useState<string>(() =>
-    typeof window !== 'undefined' ? getCurrentTimeWindow() : 'Mañana'
-  );
+  // Valor estable en SSR y primer render; la franja real (hora local) se calcula tras montar.
+  const [currentTimeWindow, setCurrentTimeWindow] = useState<string>('Mañana');
   // ── Estado para señal de avatar (fill_blank) ─────────────────────────────────
   const [signalValue, setSignalValue] = useState<string | null>(null);
   const [customText, setCustomText] = useState<string>('');
@@ -44,6 +43,7 @@ export default function DailyPage() {
 
   useEffect(() => {
     analytics.setScreen('daily_question');
+    setCurrentTimeWindow(getCurrentTimeWindow());
     const isAuthenticated = localStorage.getItem('isAuthenticated');
     if (isAuthenticated !== 'true') { router.replace('/login'); return; }
     const hasOnboarding = localStorage.getItem('hasCompletedOnboarding');
@@ -118,7 +118,7 @@ export default function DailyPage() {
     const answerKey = signalKey
       ? (hasSaving ? `saved|${signalKey}` : `zero|${signalKey}`)
       : (hasSaving ? 'saved' : 'zero');
-    analytics.dailyAnswerSubmitted(today, question.questionId, answerKey, selectedGoalId, goals.find(g => g.id === selectedGoalId)?.isPrimary ?? false);
+    analytics.dailyAnswerSubmitted(today, question.questionId, answerKey, goals.find(g => g.id === selectedGoalId)?.isPrimary ?? false, 'daily_page');
 
     const summary = storeSubmitDecision(
       question.questionId,
@@ -126,6 +126,7 @@ export default function DailyPage() {
       selectedGoalId,
       '30d',
       hasSaving ? parsedAmount! : undefined,
+      { surface: 'daily_page' },
     );
     const dec = summary.daily.decisionId;
     setCompletedDecisionId(dec);

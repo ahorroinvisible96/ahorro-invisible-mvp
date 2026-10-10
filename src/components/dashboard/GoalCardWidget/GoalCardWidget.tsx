@@ -24,7 +24,7 @@ export function GoalCardWidget({
   const { collapsed, toggle } = useWidgetCollapse(`goal_card_${goal.id}`, !goal.isPrimary);
 
   useEffect(() => {
-    analytics.goalCardViewed(goal.id, goal.isPrimary, pct);
+    analytics.goalCardViewed(goal.isPrimary, pct);
   }, [goal.id]);
 
   const handleArchive = (e: React.MouseEvent) => {

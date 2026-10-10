@@ -11,6 +11,13 @@ import {
   type EventName, type ConfirmedEventName, SCHEMA_VERSION, DATA_VERSION,
   scrubProps, normalizeErrorCode, safeAnswerKey,
 } from '@/services/analyticsCatalog';
+import type { Surface } from '@/services/v2/outbox';
+
+/*
+ * IDs: los eventos de intención/vista NO llevan goal_id / decision_id / transaction_id.
+ * En cliente esos IDs pueden ser locales (goal_<timestamp>) y no coinciden con el UUID del servidor.
+ * Solo los `*_confirmed` (outbox) llevan IDs, y siempre son los UUID confirmados por la RPC.
+ */
 
 /** Versión de la app: SHA corto del commit desplegado en Vercel (o versión local). */
 export const ANALYTICS_APP_VERSION =
@@ -187,11 +194,12 @@ class Analytics {
   }
 
   /** Envío del formulario; la confirmación llega como `goal_created_confirmed`. */
-  goalCreateSubmitted(isPrimaryGoal: boolean, targetAmount?: number, timeHorizonMonths?: number | null) {
+  goalCreateSubmitted(isPrimaryGoal: boolean, targetAmount: number | undefined, timeHorizonMonths: number | null | undefined, surface: Surface) {
     this.track('goal_create_submitted', {
       is_primary_goal: isPrimaryGoal,
       goal_target_amount: targetAmount,
       goal_time_horizon_months: timeHorizonMonths,
+      surface,
     });
   }
 
@@ -200,8 +208,8 @@ class Analytics {
   }
 
   /** Pulsa archivar/eliminar; la confirmación llega como `goal_archived_confirmed` / `goal_deleted_confirmed`. */
-  goalArchiveSubmitted(goalId: string, wasPrimaryGoal: boolean) {
-    this.track('goal_archive_submitted', { goal_id: goalId, was_primary_goal: wasPrimaryGoal });
+  goalArchiveSubmitted(wasPrimaryGoal: boolean, surface: Surface) {
+    this.track('goal_archive_submitted', { was_primary_goal: wasPrimaryGoal, surface });
   }
 
   // EVENTOS DE DASHBOARD
@@ -238,13 +246,13 @@ class Analytics {
   }
 
   /** Envío de la decisión; la confirmación llega como `daily_decision_confirmed`. Sin texto libre. */
-  dailyAnswerSubmitted(date: string, questionId: string, answerKey: string, goalId: string, isPrimaryGoal: boolean) {
+  dailyAnswerSubmitted(date: string, questionId: string, answerKey: string, isPrimaryGoal: boolean, surface: Surface) {
     this.track('daily_answer_submitted', {
       date,
       question_id: questionId,
       answer_key: safeAnswerKey(answerKey),
-      goal_id: goalId,
       is_primary_goal: isPrimaryGoal,
+      surface,
     });
   }
 
@@ -254,21 +262,17 @@ class Analytics {
 
   // EVENTOS DE IMPACTO
 
-  impactViewed(date: string, decisionId: string, questionId: string, answerKey: string, goalId: string, impactAvailable: boolean, monthlyDelta?: number | null, yearlyDelta?: number | null) {
+  impactViewed(date: string, questionId: string, answerKey: string, impactAvailable: boolean) {
     this.track('impact_viewed', {
       date,
-      decision_id: decisionId,
       question_id: questionId,
       answer_key: safeAnswerKey(answerKey),
-      goal_id: goalId,
       impact_available: impactAvailable,
-      monthly_delta: monthlyDelta,
-      yearly_delta: yearlyDelta,
     });
   }
 
-  impactCtaExtraSavingsClicked(decisionId: string, goalId: string) {
-    this.track('impact_cta_extra_savings_clicked', { decision_id: decisionId, goal_id: goalId, destination: 'extra_saving' });
+  impactCtaExtraSavingsClicked() {
+    this.track('impact_cta_extra_savings_clicked', { destination: 'extra_saving' });
   }
 
   impactCtaHistoryClicked() {
@@ -277,13 +281,16 @@ class Analytics {
 
   // EVENTOS DE AHORRO EXTRA
 
-  extraSavingStarted(source: string, goalId?: string) {
-    this.track('extra_saving_started', { source, goal_id: goalId });
+  extraSavingStarted(source: string) {
+    this.track('extra_saving_started', { source });
   }
 
-  /** Envío; la confirmación llega como `extra_saving_confirmed`. La nota nunca se envía. */
-  extraSavingSubmitted(date: string, goalId: string, amount: number) {
-    this.track('extra_saving_submitted', { date, goal_id: goalId, amount });
+  /**
+   * Envío (antes de confirmar), misma semántica en página y modal del dashboard.
+   * La confirmación llega como `extra_saving_confirmed` desde el outbox. La nota nunca se envía.
+   */
+  extraSavingSubmitted(date: string, amount: number, surface: Surface) {
+    this.track('extra_saving_submitted', { date, amount, surface });
   }
 
   extraSavingError(errorCode: string) {
@@ -328,8 +335,8 @@ class Analytics {
     this.track('income_update_submitted', { screen_name: 'dashboard' });
   }
 
-  goalCardViewed(goalId: string, isPrimary: boolean, pct: number) {
-    this.track('goal_card_viewed', { goal_id: goalId, is_primary: isPrimary, progress_pct: pct, screen_name: 'dashboard' });
+  goalCardViewed(isPrimary: boolean, pct: number) {
+    this.track('goal_card_viewed', { is_primary: isPrimary, progress_pct: pct, screen_name: 'dashboard' });
   }
 
   dashboardMotivationCardViewed() {

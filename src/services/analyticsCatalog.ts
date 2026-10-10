@@ -23,7 +23,7 @@ export const EVENT_CATALOG = {
   // ── Auth ──────────────────────────────────────────────────────────────────
   signup_started:            { kind: 'auth', props: [], desc: 'Pantalla de registro abierta' },
   signup_success:            { kind: 'auth', props: [], desc: 'Supabase Auth ha creado la cuenta' },
-  signup_error:              { kind: 'auth', props: ['error_code'], desc: 'Error de validación o de Auth (código normalizado)' },
+  signup_error:              { kind: 'auth', props: ['error_code', 'error_field'], desc: 'Error de validación o de Auth (código normalizado; error_field = email|name|password, nunca el valor)' },
   logout_clicked:            { kind: 'auth', props: ['source'], desc: 'Pulsa cerrar sesión' },
   logout_success:            { kind: 'auth', props: [], desc: 'Sesión cerrada' },
 
@@ -36,9 +36,9 @@ export const EVENT_CATALOG = {
 
   // ── Objetivos ─────────────────────────────────────────────────────────────
   goal_create_started:       { kind: 'intent', props: ['source'], desc: 'Abre la creación de objetivo' },
-  goal_create_submitted:     { kind: 'intent', props: ['is_primary_goal', 'goal_target_amount', 'goal_time_horizon_months'], desc: 'Envía el formulario de objetivo' },
+  goal_create_submitted:     { kind: 'intent', props: ['is_primary_goal', 'goal_target_amount', 'goal_time_horizon_months', 'surface'], desc: 'Envía el formulario de objetivo' },
   goal_create_error:         { kind: 'intent', props: ['error_code'], desc: 'Fallo local al crear objetivo' },
-  goal_archive_submitted:    { kind: 'intent', props: ['goal_id', 'was_primary_goal'], desc: 'Pulsa archivar/eliminar objetivo' },
+  goal_archive_submitted:    { kind: 'intent', props: ['was_primary_goal', 'surface'], desc: 'Pulsa archivar/eliminar objetivo' },
   goal_created_confirmed:    { kind: 'confirmed', props: ['goal_id', 'is_primary', 'target_amount', 'horizon_months', 'source'], desc: 'create_goal confirmado' },
   goal_updated_confirmed:    { kind: 'confirmed', props: ['goal_id', 'changed'], desc: 'update_goal / set_primary_goal confirmado' },
   goal_archived_confirmed:   { kind: 'confirmed', props: ['goal_id', 'destination_type', 'balance_moved_amount'], desc: 'archive_goal confirmado' },
@@ -49,11 +49,11 @@ export const EVENT_CATALOG = {
 
   // ── Decisión diaria / ahorro ──────────────────────────────────────────────
   daily_question_viewed:     { kind: 'view',   props: ['date', 'question_id', 'daily_status'], desc: 'Pregunta diaria vista' },
-  daily_answer_submitted:    { kind: 'intent', props: ['date', 'question_id', 'answer_key', 'goal_id'], desc: 'Envía la decisión diaria (antes de confirmar)' },
+  daily_answer_submitted:    { kind: 'intent', props: ['date', 'question_id', 'answer_key', 'is_primary_goal', 'surface'], desc: 'Envía la decisión diaria (antes de confirmar)' },
   daily_skipped:             { kind: 'intent', props: ['date', 'question_id'], desc: 'Sale de la pregunta sin responder' },
   daily_decision_confirmed:  { kind: 'confirmed', props: ['decision_id', 'transaction_id', 'outcome', 'amount', 'question_id', 'option_key', 'goal_id', 'local_date'], desc: 'record_daily_decision confirmado (transaction_id solo si outcome=saved)' },
   extra_saving_started:      { kind: 'intent', props: ['source'], desc: 'Abre ahorro extra' },
-  extra_saving_submitted:    { kind: 'intent', props: ['date', 'goal_id', 'amount'], desc: 'Envía ahorro extra (antes de confirmar)' },
+  extra_saving_submitted:    { kind: 'intent', props: ['date', 'amount', 'surface'], desc: 'Envía ahorro extra (antes de confirmar; página o modal del dashboard)' },
   extra_saving_error:        { kind: 'intent', props: ['error_code'], desc: 'Fallo local al guardar ahorro extra' },
   extra_saving_confirmed:    { kind: 'confirmed', props: ['transaction_id', 'amount', 'goal_id', 'local_date'], desc: 'record_extra_saving confirmado' },
   saving_voided_confirmed:   { kind: 'confirmed', props: ['entity', 'entity_id', 'reason'], desc: 'void_decision / void_extra_saving confirmado' },
@@ -63,9 +63,9 @@ export const EVENT_CATALOG = {
   account_reset_confirmed:   { kind: 'confirmed', props: [], desc: 'reset_account_data confirmado' },
 
   // ── Impacto ───────────────────────────────────────────────────────────────
-  impact_viewed:                    { kind: 'view',   props: ['decision_id', 'question_id', 'goal_id', 'impact_available'], desc: 'Pantalla de impacto vista' },
-  impact_cta_extra_savings_clicked: { kind: 'intent', props: ['decision_id', 'goal_id'], desc: 'CTA ahorro extra desde impacto' },
-  impact_cta_history_clicked:       { kind: 'intent', props: [], desc: 'CTA historial desde impacto' },
+  impact_viewed:                    { kind: 'view',   props: ['date', 'question_id', 'answer_key', 'impact_available'], desc: 'Pantalla de impacto vista' },
+  impact_cta_extra_savings_clicked: { kind: 'intent', props: ['destination'], desc: 'CTA ahorro extra desde impacto' },
+  impact_cta_history_clicked:       { kind: 'intent', props: ['destination'], desc: 'CTA historial desde impacto' },
 
   // ── Dashboard y widgets ───────────────────────────────────────────────────
   dashboard_viewed:                 { kind: 'view',   props: ['daily_status', 'goals_count_active', 'has_primary_goal', 'has_income_range'], desc: 'Dashboard visto' },
@@ -74,7 +74,7 @@ export const EVENT_CATALOG = {
   motivation_cta_clicked:           { kind: 'intent', props: ['daily_status', 'destination'], desc: 'Pulsa CTA motivacional' },
   dashboard_motivation_card_viewed: { kind: 'view',   props: [], desc: 'Tarjeta motivacional vista' },
   goal_primary_widget_viewed:       { kind: 'view',   props: [], desc: 'Widget de objetivo principal visto' },
-  goal_card_viewed:                 { kind: 'view',   props: ['goal_id', 'is_primary', 'progress_pct'], desc: 'Tarjeta de objetivo vista' },
+  goal_card_viewed:                 { kind: 'view',   props: ['is_primary', 'progress_pct'], desc: 'Tarjeta de objetivo vista' },
   savings_evolution_range_changed:  { kind: 'intent', props: ['range', 'mode'], desc: 'Cambia rango del gráfico de evolución' },
   income_range_viewed:              { kind: 'view',   props: [], desc: 'Widget de ingresos visto' },
   income_edit_opened:               { kind: 'intent', props: [], desc: 'Abre edición de ingresos' },

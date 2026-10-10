@@ -101,8 +101,8 @@ export default function GoalDetailPage({ params }: { params: { id: string } }) {
 
   const handleConfirmArchive = () => {
     if (!goal) return;
-    storeArchiveGoalSafe(params.id, archiveDest);
-    analytics.goalArchiveSubmitted(params.id, goal.isPrimary);
+    storeArchiveGoalSafe(params.id, archiveDest, '30d', { surface: 'goal_detail' });
+    analytics.goalArchiveSubmitted(goal.isPrimary, 'goal_detail');
     syncGoalToSupabase({ ...goal, archived: true, currentAmount: 0 }).catch(() => null);
     setShowArchiveModal(false);
     router.push('/goals');

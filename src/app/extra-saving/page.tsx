@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { analytics } from "@/services/analytics";
 import { storeAddExtraSaving, storeListActiveGoals } from "@/services/dashboardStore";
+import { localDateStr } from "@/lib/dates";
 import { pushLocalDataToSupabase, syncDecisionToSupabase, syncGoalToSupabase } from "@/services/syncService";
 import type { Goal } from "@/types/Dashboard";
 
@@ -64,9 +65,10 @@ export default function ExtraSavingPage() {
       const today = new Date().toISOString().split('T')[0];
       const now = new Date().toISOString();
 
-      storeAddExtraSaving(note.trim() || 'Ahorro extra', amount, selectedGoalId);
+      // Intención antes de encolar; extra_saving_confirmed lo emite el outbox cuando la RPC confirma.
+      analytics.extraSavingSubmitted(localDateStr(), amount, 'extra_saving_page');
 
-      analytics.extraSavingSubmitted(today, selectedGoalId, amount);
+      storeAddExtraSaving(note.trim() || 'Ahorro extra', amount, selectedGoalId, '30d', { surface: 'extra_saving_page' });
 
       // Sync directo e inmediato: solo el registro nuevo + goal actualizado
       try {

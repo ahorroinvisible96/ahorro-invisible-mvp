@@ -8,14 +8,36 @@ export const isPosthogConfigured = !!posthogKey;
 
 let initialized = false;
 
+/** Quita query string y hash de cualquier propiedad con URL (p. ej. ?code= del callback de auth). */
+function sanitizeUrls(props: Record<string, unknown>): void {
+  for (const [k, v] of Object.entries(props)) {
+    if (typeof v !== 'string' || !/url|referrer/i.test(k) || !/^https?:\/\//i.test(v)) continue;
+    try { const u = new URL(v); props[k] = u.origin + u.pathname; } catch { props[k] = null; }
+  }
+}
+
 export function initPosthog(): void {
   if (!isPosthogConfigured || typeof window === 'undefined' || initialized) return;
   posthog.init(posthogKey!, {
     api_host: posthogHost,
     person_profiles: 'identified_only',
     capture_pageview: false,
-    capture_pageleave: true,
+    capture_pageleave: false,
     autocapture: false,
+    // Decisión de privacidad 5C: la app muestra datos financieros y texto del usuario en pantalla.
+    // Session replay, heatmaps, dead clicks y excepciones automáticas quedan desactivados en código,
+    // independientemente de la configuración remota del proyecto. Ver docs/analytics/privacy.md.
+    disable_session_recording: true,
+    enable_heatmaps: false,
+    capture_dead_clicks: false,
+    capture_exceptions: false,
+    disable_surveys: true,
+    before_send: (event) => {
+      if (event?.properties) sanitizeUrls(event.properties);
+      if (event?.$set) sanitizeUrls(event.$set as Record<string, unknown>);
+      if (event?.$set_once) sanitizeUrls(event.$set_once as Record<string, unknown>);
+      return event;
+    },
   });
   initialized = true;
 }

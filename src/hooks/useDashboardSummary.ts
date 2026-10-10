@@ -14,6 +14,12 @@ import {
   storeResetDecision,
   storeAddExtraSaving,
 } from '@/services/dashboardStore';
+import { analytics } from '@/services/analytics';
+import { localDateStr } from '@/lib/dates';
+
+// Todas las acciones de este hook nacen en el dashboard (taxonomía de surfaces aprobada en BD).
+const DASH = { surface: 'dashboard_widget' as const };
+const EXTRA_MODAL = { surface: 'extra_saving_modal' as const };
 
 type CreateGoalInput = {
   title: string;
@@ -72,11 +78,11 @@ export function useDashboardSummary(): UseDashboardSummaryReturn {
   }, [range]);
 
   const createGoal = useCallback((data: CreateGoalInput) => {
-    setSummary(storeCreateGoal({ ...data, currentAmount: data.currentAmount ?? 0 }, range));
+    setSummary(storeCreateGoal({ ...data, currentAmount: data.currentAmount ?? 0 }, range, DASH));
   }, [range]);
 
   const updateGoal = useCallback((goalId: string, patch: UpdateGoalInput) => {
-    setSummary(storeUpdateGoal(goalId, patch, range));
+    setSummary(storeUpdateGoal(goalId, patch, range, DASH));
   }, [range]);
 
   const archiveGoal = useCallback((goalId: string) => {
@@ -84,19 +90,21 @@ export function useDashboardSummary(): UseDashboardSummaryReturn {
   }, [range]);
 
   const setPrimaryGoal = useCallback((goalId: string) => {
-    setSummary(storeSetPrimaryGoal(goalId, range));
+    setSummary(storeSetPrimaryGoal(goalId, range, DASH));
   }, [range]);
 
   const submitDecision = useCallback((questionId: string, answerKey: string, goalId: string, customAmount?: number) => {
-    setSummary(storeSubmitDecision(questionId, answerKey, goalId, range, customAmount));
+    setSummary(storeSubmitDecision(questionId, answerKey, goalId, range, customAmount, DASH));
   }, [range]);
 
   const resetDecision = useCallback(() => {
-    setSummary(storeResetDecision(range));
+    setSummary(storeResetDecision(range, DASH));
   }, [range]);
 
   const addExtraSaving = useCallback((saving: { name: string; amount: number; goalId: string }) => {
-    setSummary(storeAddExtraSaving(saving.name, saving.amount, saving.goalId, range));
+    // Intención (antes de confirmar). La confirmación llega como extra_saving_confirmed desde el outbox.
+    analytics.extraSavingSubmitted(localDateStr(), saving.amount, 'extra_saving_modal');
+    setSummary(storeAddExtraSaving(saving.name, saving.amount, saving.goalId, range, EXTRA_MODAL));
   }, [range]);
 
   return {

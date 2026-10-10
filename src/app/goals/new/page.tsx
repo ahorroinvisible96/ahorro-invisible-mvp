@@ -67,7 +67,7 @@ function CreateGoalInner() {
         subGoalIndex: opts.subGoalIndex ?? 0,
       });
       const newGoal = summary.goals.filter(g => !g.archived).slice(-1)[0];
-      analytics.goalCreateSubmitted(isFirst, opts.amount, opts.months);
+      analytics.goalCreateSubmitted(isFirst, opts.amount, opts.months, goalSource === 'onboarding' ? 'onboarding' : 'goals_page');
       if (newGoal) await syncGoalToSupabase(newGoal);
       router.push("/dashboard");
       const userId = localStorage.getItem('supabaseUserId');

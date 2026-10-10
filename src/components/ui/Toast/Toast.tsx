@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 import styles from './Toast.module.css';
 
@@ -25,8 +25,14 @@ export function useToast() {
   return React.useContext(ToastContext);
 }
 
+const noopSubscribe = () => () => {};
+
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
+  // El portal solo existe en cliente: se monta DESPUÉS de hidratar para que el primer render del
+  // cliente sea idéntico al HTML del servidor (antes: rama `typeof window` → React #418 en todas las páginas).
+  // useSyncExternalStore: getServerSnapshot=false durante SSR/hidratación, true después; sin setState en efecto.
+  const mounted = useSyncExternalStore(noopSubscribe, () => true, () => false);
 
   const addToast = useCallback((message: string, variant: ToastVariant = 'success', duration = 3500) => {
     const id = `toast-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
@@ -40,7 +46,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={{ addToast }}>
       {children}
-      {typeof window !== 'undefined' && createPortal(
+      {mounted && createPortal(
         <div className={styles.container}>
           {toasts.map((toast) => (
             <ToastMessage

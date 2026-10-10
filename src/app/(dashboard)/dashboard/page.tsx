@@ -837,7 +837,7 @@ export default function DashboardPage() {
 
   const handleSaveGoal = (data: { title: string; targetAmount: number; horizonMonths: number }) => {
     createGoal({ title: data.title, targetAmount: data.targetAmount, horizonMonths: data.horizonMonths });
-    analytics.goalCreateSubmitted(activeGoals.length === 0, data.targetAmount, data.horizonMonths);
+    analytics.goalCreateSubmitted(activeGoals.length === 0, data.targetAmount, data.horizonMonths, 'dashboard_widget');
     // No cerramos el modal aquí — el CreateGoalModal mostrará el roadmap de fases
     // y se cerrará solo cuando el usuario pulse "¡Empezar!"
   };
@@ -862,8 +862,8 @@ export default function DashboardPage() {
 
   const handleArchiveConfirm = (destination: string | 'hucha') => {
     if (!archivingGoal) return;
-    storeArchiveGoalSafe(archivingGoal.id, destination);
-    analytics.goalArchiveSubmitted(archivingGoal.id, archivingGoal.isPrimary);
+    storeArchiveGoalSafe(archivingGoal.id, destination, '30d', { surface: 'dashboard_widget' });
+    analytics.goalArchiveSubmitted(archivingGoal.isPrimary, 'dashboard_widget');
     syncGoalToSupabase({ ...archivingGoal, archived: true, currentAmount: 0 }).catch(() => null);
     setArchivingGoal(null);
     refresh();
@@ -920,7 +920,7 @@ export default function DashboardPage() {
         balance={summary.hucha.balance}
         activeGoals={activeGoals}
         onAssign={(goalId, amount) => {
-          storeTransferFromHucha(goalId, amount);
+          storeTransferFromHucha(goalId, amount, '30d', { surface: 'dashboard_widget' });
           setShowHuchaModal(false);
           refresh();
           addToast('Saldo transferido al objetivo', 'success');

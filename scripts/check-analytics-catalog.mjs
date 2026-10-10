@@ -74,9 +74,76 @@ if (fs.existsSync(path.join(root, docPath))) {
   const documented = new Set([...doc.matchAll(/^\|\s*`([a-z0-9_]+)`\s*\|/gm)].map((m) => m[1]));
   for (const ev of catalog.keys()) if (!documented.has(ev)) errors.push(`${docPath}: falta ${ev}`);
   for (const ev of documented) if (!catalog.has(ev) && !doc.includes(`\`${ev}\` | obsoleto`)) errors.push(`${docPath}: ${ev} no está en el catálogo`);
+  // 6b. Las propiedades de cada fila coinciden con las del catálogo.
+  const catProps = new Map([...catalogBlock.matchAll(/^\s*([a-z0-9_]+):\s*\{\s*kind:\s*'\w+',\s*props:\s*\[([^\]]*)\]/gm)]
+    .map((m) => [m[1], [...m[2].matchAll(/'([a-z0-9_]+)'/g)].map((x) => x[1]).sort().join(',')]));
+  for (const m of doc.matchAll(/^\|\s*`([a-z0-9_]+)`\s*\|([^|]*)\|/gm)) {
+    const [, ev, cell] = m;
+    if (!catProps.has(ev)) continue;
+    const docProps = [...cell.matchAll(/`([a-z0-9_]+)`/g)].map((x) => x[1]).sort().join(',');
+    if (docProps !== catProps.get(ev)) errors.push(`${docPath}: ${ev} propiedades [${docProps}] ≠ catálogo [${catProps.get(ev)}]`);
+  }
 } else {
   errors.push(`falta ${docPath}`);
 }
+if (!fs.existsSync(path.join(root, 'docs/analytics/privacy.md'))) errors.push('falta docs/analytics/privacy.md (referenciado desde src/lib/posthog.ts)');
+
+// ── 7. Propiedades emitidas ⊆ catálogo (+ globales) ────────────────────────────
+const GLOBAL_PROPS = new Set(['user_id', 'supabase_user_id', 'platform', 'app_version', 'schema_version', 'data_version',
+  'device_locale', 'timezone', 'screen_name', 'session_id', 'is_internal']);
+const catalogProps = new Map([...catalogBlock.matchAll(/^\s*([a-z0-9_]+):\s*\{\s*kind:\s*'\w+',\s*props:\s*\[([^\]]*)\]/gm)]
+  .map((m) => [m[1], new Set([...m[2].matchAll(/'([a-z0-9_]+)'/g)].map((x) => x[1]))]));
+const analyticsSrc = read('src/services/analytics.ts');
+for (const m of analyticsSrc.replace(/`[^`]*`/g, "''").matchAll(/this\.track\(\s*'([a-z0-9_]+)'\s*(?:,\s*\{([^}]*)\})?/g)) {
+  const [, ev, body = ''] = m;
+  const keys = [...body.matchAll(/(?:^|,|\{)\s*([a-z_][a-z0-9_]*)\s*(?=[:,]|$)/gi)].map((x) => x[1]);
+  for (const k of keys) {
+    if (!catalogProps.get(ev)?.has(k) && !GLOBAL_PROPS.has(k)) errors.push(`analytics.ts: ${ev} emite propiedad fuera del catálogo: ${k}`);
+  }
+}
+
+// ── 8. IDs solo en *_confirmed (en cliente los IDs pueden ser locales: goal_<ts>) ─
+const URL_OR_TEXT = /url|href|referrer|path|title|name|note|text|email|message/;
+for (const [ev, props] of catalogProps) {
+  for (const p of props) {
+    if (catalog.get(ev) !== 'confirmed' && /_id$/.test(p) && p !== 'question_id') errors.push(`${ev}: ID '${p}' en evento no confirmado (usar solo en *_confirmed)`);
+    if (URL_OR_TEXT.test(p)) errors.push(`${ev}: propiedad '${p}' con riesgo de URL/texto libre/PII`);
+  }
+}
+
+// ── 9. Enums: surface y screen_name ───────────────────────────────────────────
+const outboxSrc = read('src/services/v2/outbox.ts');
+const surfaceBlock = (outboxSrc.match(/export type Surface =([^;]*);/) || [])[1] || '';
+const SURFACES = new Set([...surfaceBlock.matchAll(/'([a-z_]+)'/g)].map((m) => m[1]));
+if (SURFACES.size < 5) errors.push('no se pudo leer el enum Surface de outbox.ts');
+const screenBlock = (analyticsSrc.match(/type ScreenName =([^;]*);/) || [])[1] || '';
+const SCREENS = new Set([...screenBlock.matchAll(/'([a-z0-9_]+)'/g)].map((m) => m[1]));
+for (const m of analyticsSrc.matchAll(/screen_name:\s*'([a-z0-9_]+)'/g)) {
+  if (!SCREENS.has(m[1])) errors.push(`screen_name fuera del enum ScreenName: ${m[1]}`);
+}
+for (const f of files) {
+  const rel = path.relative(root, f).replace(/\\/g, '/');
+  const src = fs.readFileSync(f, 'utf8');
+  for (const m of src.matchAll(/surface:\s*'([a-z_]+)'/g)) if (!SURFACES.has(m[1])) errors.push(`${rel}: surface fuera del enum: ${m[1]}`);
+  for (const m of src.matchAll(/analytics\.(goalCreateSubmitted|goalArchiveSubmitted|dailyAnswerSubmitted|extraSavingSubmitted)\(([^;]*)\);/g)) {
+    const lits = [...m[2].matchAll(/'([a-z_]+)'/g)].map((x) => x[1]).filter((v) => !['saved', 'zero'].includes(v));
+    if (!lits.length) errors.push(`${rel}: analytics.${m[1]} sin surface literal`);
+    for (const v of lits) if (!SURFACES.has(v)) errors.push(`${rel}: analytics.${m[1]} surface inválida '${v}'`);
+  }
+}
+
+// ── 10. Configuración de privacidad de PostHog ────────────────────────────────
+const phSrc = read('src/lib/posthog.ts');
+for (const [re, label] of [
+  [/disable_session_recording:\s*true/, 'Session Replay desactivado (disable_session_recording: true)'],
+  [/autocapture:\s*false/, 'autocapture: false'],
+  [/capture_pageview:\s*false/, 'capture_pageview: false'],
+  [/enable_heatmaps:\s*false/, 'enable_heatmaps: false'],
+  [/before_send:/, 'before_send con saneado de URLs'],
+]) if (!re.test(phSrc)) errors.push(`src/lib/posthog.ts: falta ${label}`);
+
+// ── 11. Inventario de importes (informativo: importes de ahorro registrados, nunca ingresos) ─
+const amountEvents = [...catalogProps].filter(([, ps]) => [...ps].some((p) => /amount|delta/.test(p))).map(([ev]) => ev);
 
 if (errors.length) {
   console.error(`analytics:check FAIL (${errors.length})`);
@@ -84,3 +151,6 @@ if (errors.length) {
   process.exit(1);
 }
 console.log(`analytics:check OK · ${catalog.size} eventos en catálogo · ${[...catalog.values()].filter((k) => k === 'confirmed').length} confirmados · ${files.length} ficheros revisados`);
+console.log(`  surfaces: ${[...SURFACES].join(', ')}`);
+console.log(`  eventos con importes de ahorro (sin ingresos): ${amountEvents.join(', ')}`);
+

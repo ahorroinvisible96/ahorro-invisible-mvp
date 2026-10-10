@@ -320,8 +320,8 @@ export function DailyDecisionWidget({
       daily.date,
       todayQuestion.questionId,
       answerKey,
-      goalId,
       primaryGoal?.id === goalId,
+      'dashboard_widget',
     );
     onSubmitDecision(todayQuestion.questionId, answerKey, goalId, finalAmount);
     setConfirmed(true);

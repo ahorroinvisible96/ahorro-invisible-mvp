@@ -55,10 +55,8 @@ export default function ImpactPage({ params }: { params: { decision_id: string }
       setLoading(false);
 
       analytics.impactViewed(
-        found.date, found.id, found.questionId, found.answerKey, found.goalId,
+        found.date, found.questionId, found.answerKey,
         found.monthlyProjection > 0 || found.yearlyProjection > 0,
-        found.monthlyProjection > 0 ? found.monthlyProjection : undefined,
-        found.yearlyProjection > 0 ? found.yearlyProjection : undefined,
       );
     } catch {
       setError(true);
@@ -233,7 +231,7 @@ export default function ImpactPage({ params }: { params: { decision_id: string }
             {shared ? '✅ Copiado al portapapeles' : '📤 Compartir mi logro'}
           </button>
           <button
-            onClick={() => { analytics.impactCtaExtraSavingsClicked(decision.id, decision.goalId); router.push('/extra-saving'); }}
+            onClick={() => { analytics.impactCtaExtraSavingsClicked(); router.push('/extra-saving'); }}
             style={{ padding: '13px 0', background: DARK.card, border: `1.5px solid ${DARK.border}`, borderRadius: 12, color: DARK.textPrimary, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}
           >
             Registrar acción extra
