@@ -13,12 +13,13 @@ import {
 import { pushLocalDataToSupabase, syncDecisionToSupabase, syncGoalToSupabase } from "@/services/syncService";
 import type { Goal } from "@/types/Dashboard";
 import { FillBlankInput } from "@/components/daily/FillBlankInput/FillBlankInput";
+import { CheckIcon, TargetIcon } from "@/components/ui/AppIcons";
 import styles from "./Daily.module.css";
 
 type Phase = 'loading' | 'no-goals' | 'completed' | 'pending' | 'confirming' | 'error';
 
 function formatEUR(n: number) {
-  return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
+  return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 2 }).format(n);
 }
 
 export default function DailyPage() {
@@ -29,14 +30,9 @@ export default function DailyPage() {
   const [savedAmount, setSavedAmount] = useState<string>('');
   const [selectedGoalId, setSelectedGoalId] = useState<string>('');
   const [completedDecisionId, setCompletedDecisionId] = useState<string | null>(null);
-  // Valor estable en SSR y primer render; la franja real (hora local) se calcula tras montar.
   const [currentTimeWindow, setCurrentTimeWindow] = useState<string>('Mañana');
-  // ── Estado para señal de avatar (fill_blank) ─────────────────────────────────
   const [signalValue, setSignalValue] = useState<string | null>(null);
   const [customText, setCustomText] = useState<string>('');
-  // ── Estado del importe manual ──────────────────────────────────────
-  // amountTouched: el usuario ha escrito explícitamente un valor (aunque sea 0)
-  // Sin esto, el campo vacío no es un 0 válido
   const [amountTouched, setAmountTouched] = useState<boolean>(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const today = new Date().toISOString().split('T')[0];
@@ -70,10 +66,8 @@ export default function DailyPage() {
     }
   }, [router, today]);
 
-  // ── Auto-refresh: si cambia la franja horaria y no se respondió ──────────
   useEffect(() => {
     if (phase !== 'pending') return;
-
     const interval = setInterval(() => {
       const newWindow = getCurrentTimeWindow();
       if (newWindow !== currentTimeWindow) {
@@ -84,11 +78,9 @@ export default function DailyPage() {
         setSavedAmount('');
       }
     }, 60_000);
-
     return () => clearInterval(interval);
   }, [phase, currentTimeWindow, today]);
 
-  // Focus en el input cuando se muestra la pregunta
   useEffect(() => {
     if (phase === 'pending' && inputRef.current) {
       const t = setTimeout(() => inputRef.current?.focus(), 300);
@@ -102,11 +94,9 @@ export default function DailyPage() {
     return isNaN(n) || n < 0 ? null : n;
   })();
 
-  // El importe es válido si el usuario ha escrito explícitamente un número >= 0
-  // (incluyendo 0 cuando no ha ahorrado nada)
   const hasValidAmount = parsedAmount !== null;
-  const savingAmount  = parsedAmount ?? 0;  // Para mostrar en el banner
-  const hasSaving     = hasValidAmount && parsedAmount! > 0;
+  const savingAmount = parsedAmount ?? 0;
+  const hasSaving = hasValidAmount && parsedAmount! > 0;
 
   const handleConfirm = async () => {
     if (!question || !selectedGoalId) return;
@@ -130,9 +120,7 @@ export default function DailyPage() {
     );
     const dec = summary.daily.decisionId;
     setCompletedDecisionId(dec);
-    // daily_decision_confirmed lo emite el outbox V2 cuando el servidor confirma (primera decisión: derivada en BigQuery).
 
-    // Sync directo
     try {
       const raw = localStorage.getItem('ahorro_invisible_dashboard_v1');
       if (raw) {
@@ -156,7 +144,6 @@ export default function DailyPage() {
     router.push('/dashboard');
   };
 
-  // ── Loading ────────────────────────────────────────────────────────────
   if (phase === 'loading') {
     return (
       <div className={styles.statusScreen}>
@@ -165,34 +152,38 @@ export default function DailyPage() {
     );
   }
 
-  // ── No goals ──────────────────────────────────────────────────────────
   if (phase === 'no-goals') {
     return (
       <div className={styles.statusScreen}>
-        <div className={styles.statusEmoji}>🎯</div>
+        <div className={`${styles.statusMedallion} ${styles.statusMedallionCobalt}`}>
+          <TargetIcon size={24} />
+        </div>
         <h2 className={styles.statusTitle}>Crea un objetivo primero</h2>
         <p className={styles.statusSubtitle}>Necesitas al menos un objetivo activo para registrar tu decisión diaria.</p>
-        <button onClick={() => router.push('/dashboard')} className={styles.btnPrimary}>
-          Ir al dashboard
-        </button>
+        <div className={styles.statusActions}>
+          <button type="button" onClick={() => router.push('/dashboard')} className={styles.btnPrimary}>
+            Ir al dashboard
+          </button>
+        </div>
       </div>
     );
   }
 
-  // ── Completed / Confirming ────────────────────────────────────────────
   if (phase === 'completed' || phase === 'confirming') {
     return (
       <div className={styles.statusScreen}>
-        <div className={styles.statusEmoji}>✅</div>
-        <h2 className={styles.statusTitle}>¡Decisión registrada!</h2>
-        <p className={styles.statusSubtitle}>Ya tomaste tu decisión de hoy. Vuelve mañana.</p>
+        <div className={styles.statusMedallion}>
+          <CheckIcon size={26} />
+        </div>
+        <h2 className={styles.statusTitle}>Decisión registrada</h2>
+        <p className={styles.statusSubtitle}>Ya tomaste tu decisión de hoy. Vuelve mañana para seguir sumando.</p>
         <div className={styles.statusActions}>
           {completedDecisionId && (
-            <button onClick={() => router.push(`/impact/${completedDecisionId}`)} className={styles.btnPrimary}>
+            <button type="button" onClick={() => router.push(`/impact/${completedDecisionId}`)} className={styles.btnPrimary}>
               Ver impacto
             </button>
           )}
-          <button onClick={() => router.push('/dashboard')} className={styles.btnSecondary}>
+          <button type="button" onClick={() => router.push('/dashboard')} className={styles.btnSecondary}>
             Volver al dashboard
           </button>
         </div>
@@ -202,108 +193,111 @@ export default function DailyPage() {
 
   if (!question) return null;
 
-  // ── Pending: main question UI ─────────────────────────────────────────
   return (
     <div className={styles.page}>
-      <div className={styles.content}>
-        <button onClick={handleSkip} className={styles.backBtn}>
-          ← Dashboard
-        </button>
+      <div className={styles.sky}>
+        <div className={styles.inner}>
+          <div className={styles.topBar}>
+            <button type="button" onClick={handleSkip} className={styles.glassBackBtn} aria-label="Volver al dashboard">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+            <span className={styles.windowPill}>Decisión de hoy · {currentTimeWindow}</span>
+            <div style={{ width: 38 }} />
+          </div>
 
-        {/* Pregunta / Escenario */}
-        <div className={styles.questionCard}>
-          <p className={styles.questionLabel}>Decisión del día</p>
-
-          {/* Pregunta con hueco [___] — siempre usa opciones del banco */}
-          {question.options && question.options.length > 0 ? (
-            <FillBlankInput
-              sentence={question.text}
-              options={(question.options ?? []).map((o: string) => ({ label: o, value: o }))}
-              value={signalValue}
-              customText={customText}
-              onSelect={setSignalValue}
-              onCustomTextChange={setCustomText}
-            />
-          ) : (
-            <h1 className={styles.questionTitle}>{question.text}</h1>
-          )}
-        </div>
-
-        {/* Input de importe */}
-        <div className={`${styles.amountCard} ${hasValidAmount ? styles.amountCardActive : ''}`}>
-          <p className={`${styles.amountLabel} ${hasValidAmount ? styles.amountLabelActive : ''}`}>
-            ¿Cuánto te has ahorrado?
-          </p>
-          <div className={styles.amountRow}>
-            <div className={styles.amountInputWrap}>
-              <input
-                ref={inputRef}
-                type="number"
-                inputMode="decimal"
-                min="0"
-                step="0.5"
-                value={savedAmount}
-                onChange={(e) => {
-                  setSavedAmount(e.target.value);
-                  setAmountTouched(true);
-                }}
-                placeholder="0"
-                className={`${styles.amountInput} ${hasValidAmount ? styles.amountInputActive : ''}`}
+          <div className={styles.heroQuestion}>
+            {question.options && question.options.length > 0 ? (
+              <FillBlankInput
+                sentence={question.text}
+                options={(question.options ?? []).map((o: string) => ({ label: o, value: o }))}
+                value={signalValue}
+                customText={customText}
+                onSelect={setSignalValue}
+                onCustomTextChange={setCustomText}
               />
-              <span className={`${styles.amountUnit} ${hasValidAmount ? styles.amountUnitActive : ''}`}>€</span>
-            </div>
+            ) : (
+              <h1 className={styles.questionTitle}>{question.text}</h1>
+            )}
           </div>
-          <p className={styles.amountHint}>
-            {!amountTouched
-              ? 'Introduce un importe (0 si no has ahorrado nada)'
-              : parsedAmount === null
-              ? 'Introduce un número válido (mínimo 0)'
-              : 'Si no ahorraste nada, deja 0'
-            }
-          </p>
+        </div>
+      </div>
+
+      <div className={styles.body}>
+        <div className={styles.card}>
+          <div className={`${styles.unifiedBar} ${hasSaving ? styles.unifiedBarActive : ''}`}>
+            <div className={styles.amountBlock}>
+              <label htmlFor="daily-amount" className={styles.amountLabel}>Importe ahorrado</label>
+              <div className={styles.amountInputRow}>
+                <input
+                  id="daily-amount"
+                  ref={inputRef}
+                  type="number"
+                  inputMode="decimal"
+                  min="0"
+                  step="0.5"
+                  value={savedAmount}
+                  onChange={(e) => {
+                    setSavedAmount(e.target.value);
+                    setAmountTouched(true);
+                  }}
+                  placeholder="0"
+                  className={styles.amountInput}
+                />
+                <span className={styles.amountUnit}>€</span>
+              </div>
+            </div>
+
+            {goals.length > 1 && (
+              <select
+                aria-label="Asignar a objetivo"
+                value={selectedGoalId}
+                onChange={(e) => setSelectedGoalId(e.target.value)}
+                className={styles.goalSelect}
+              >
+                {goals.map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.title}{g.isPrimary ? ' ★' : ''}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+
+          <div className={styles.metaRow}>
+            {hasSaving ? (
+              <span className={styles.savingsPositive}>+{formatEUR(savingAmount)} hacia tu objetivo</span>
+            ) : (
+              <span className={styles.amountHint}>
+                {!amountTouched
+                  ? 'Introduce un importe (0 si no ahorraste)'
+                  : parsedAmount === null
+                  ? 'Introduce un número válido (mínimo 0)'
+                  : 'Registrado como 0 €'}
+              </span>
+            )}
+          </div>
         </div>
 
-        {/* Banner de ahorro */}
-        {hasSaving && (
-          <div className={styles.savingsBanner}>
-            <p className={styles.savingsLabel}>¡Genial! Has ahorrado hoy</p>
-            <span className={styles.savingsAmount}>+{formatEUR(savingAmount)}</span>
-          </div>
-        )}
+        <div className={styles.bottomCta}>
+          <button
+            type="button"
+            onClick={handleConfirm}
+            disabled={!selectedGoalId || !hasValidAmount}
+            className={`${styles.btnConfirm} ${hasValidAmount && !hasSaving ? styles.btnConfirmZero : ''}`}
+          >
+            {!hasValidAmount
+              ? 'Introduce un importe para continuar'
+              : hasSaving
+              ? `Confirmar ${formatEUR(savingAmount)}`
+              : 'Hoy no he ahorrado (0 €)'}
+          </button>
 
-        {/* Selector de objetivo */}
-        {goals.length > 1 && (
-          <div className={styles.goalSection}>
-            <label className={styles.goalLabel}>Asignar a objetivo</label>
-            <select
-              value={selectedGoalId}
-              onChange={(e) => setSelectedGoalId(e.target.value)}
-              className={styles.goalSelect}
-            >
-              {goals.map((g) => (
-                <option key={g.id} value={g.id}>{g.title}{g.isPrimary ? ' (principal)' : ''}</option>
-              ))}
-            </select>
-          </div>
-        )}
-
-        {/* Botón confirmar */}
-        <button
-          onClick={handleConfirm}
-          disabled={!selectedGoalId || !hasValidAmount}
-          className={`${styles.btnConfirm} ${hasSaving ? styles.btnConfirmSave : styles.btnConfirmZero}`}
-        >
-          {!hasValidAmount
-            ? 'Introduce un importe para continuar'
-            : hasSaving
-            ? `Registrar ahorro de ${formatEUR(savingAmount)}`
-            : 'Hoy no he ahorrado (0 €)'
-          }
-        </button>
-
-        <p className={styles.hint}>
-          Cualquier respuesta es válida. Lo importante es ser consciente.
-        </p>
+          <p className={styles.hint}>
+            Cualquier respuesta cuenta. Lo importante es ser consciente.
+          </p>
+        </div>
       </div>
     </div>
   );

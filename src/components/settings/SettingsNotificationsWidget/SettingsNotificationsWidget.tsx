@@ -116,17 +116,17 @@ export function SettingsNotificationsWidget(): React.ReactElement {
                     onClick={handleToggle}
                     disabled={loading}
                     style={{
-                      width: 44, height: 24, borderRadius: 12, border: 'none', cursor: loading ? 'not-allowed' : 'pointer',
-                      background: enabled ? 'linear-gradient(90deg,#16a34a,#15803d)' : 'rgba(51,65,85,0.6)',
-                      position: 'relative', transition: 'background 250ms', flexShrink: 0,
+                      width: 46, height: 27, borderRadius: 999, border: 'none', cursor: loading ? 'not-allowed' : 'pointer',
+                      background: enabled ? '#30d158' : 'rgba(148,163,184,0.28)',
+                      position: 'relative', transition: 'background 220ms ease', flexShrink: 0,
                     }}
                     aria-label={enabled ? 'Desactivar recordatorio' : 'Activar recordatorio'}
                   >
                     <span style={{
                       position: 'absolute', top: 3, left: enabled ? 22 : 3,
-                      width: 18, height: 18, borderRadius: '50%',
-                      background: '#fff', transition: 'left 250ms',
-                      boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
+                      width: 21, height: 21, borderRadius: '50%',
+                      background: '#ffffff', transition: 'left 220ms ease',
+                      boxShadow: '0 2px 5px rgba(0,0,0,0.28)',
                     }} />
                   </button>
                 </div>

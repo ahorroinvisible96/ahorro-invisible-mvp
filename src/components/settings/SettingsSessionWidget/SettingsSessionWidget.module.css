@@ -1,43 +1,16 @@
-/* ── Container ── */
+/* SettingsSessionWidget — Unified Reference Dark Matte V2 */
 .wrapper {
   position: relative;
-  border-radius: var(--radius-widget);
+  border-radius: 24px;
+  background: #171822;
+  border: 1px solid rgba(255, 255, 255, 0.045);
   overflow: hidden;
 }
 
-.bgGradient {
-  position: absolute;
-  inset: 0;
-  background: var(--widget-bg-alt);
-}
-
-.glowGreen {
-  position: absolute;
-  bottom: -20px;
-  right: -20px;
-  width: 110px;
-  height: 110px;
-  border-radius: 50%;
-  background: rgba(34, 197, 94, 0.08);
-  filter: blur(30px);
-  pointer-events: none;
-}
-
+.bgGradient,
+.glowGreen,
 .borderLayer {
-  position: absolute;
-  inset: 0;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--widget-border);
-  box-shadow: var(--widget-shadow-sm);
-  pointer-events: none;
-}
-
-/* ── Categoría: system — glow mínimo, borde sobrio ── */
-.wrapper[data-widget-cat="system"] .borderLayer {
-  border-color: var(--widget-cat-system-border);
-}
-.wrapper[data-widget-cat="system"] .glowGreen {
-  opacity: 0.5;
+  display: none;
 }
 
 .content {
@@ -45,112 +18,115 @@
   padding: 20px;
 }
 
-/* ── Header ── */
 .header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 16px;
+  gap: 12px;
+  margin-bottom: 14px;
 }
 
 .iconWrap {
-  width: 34px;
-  height: 34px;
-  border-radius: var(--radius-icon);
-  background: rgba(34, 197, 94, 0.12);
-  border: 1px solid rgba(34, 197, 94, 0.25);
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: #12c48b;
+  color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-success-light);
   flex-shrink: 0;
 }
 
 .title {
-  font-size: var(--widget-title-size, 15px);
-  font-weight: var(--widget-title-weight, 700);
-  color: var(--text-primary, #f1f5f9);
+  font-size: 15px;
+  font-weight: 650;
+  color: #ffffff;
   margin: 0;
 }
 
-/* ── Estado sesión ── */
 .statusRow {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 12px 14px;
-  background: rgba(34, 197, 94, 0.07);
-  border: 1px solid rgba(34, 197, 94, 0.18);
-  border-radius: var(--radius-icon);
-  margin-bottom: 14px;
+  background: #1f202d;
+  border-radius: 15px;
+  margin-bottom: 12px;
 }
 
 .statusDot {
   width: 8px;
   height: 8px;
-  border-radius: 50%;
-  background: #22c55e;
-  box-shadow: 0 0 6px rgba(34, 197, 94, 0.6);
+  border-radius: 999px;
+  background: #30d158;
   flex-shrink: 0;
 }
 
 .statusLabel {
-  font-size: var(--widget-body-size, 13px);
+  font-size: 13.5px;
   font-weight: 600;
-  color: var(--color-success-light);
+  color: #ffffff;
 }
 
 .statusEmail {
-  font-size: var(--widget-row-sub, 12px);
-  color: var(--text-muted, rgba(100, 116, 139, 0.65));
+  font-size: 12.5px;
+  color: #9a9fb2;
   margin-left: auto;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 160px;
+  max-width: 170px;
 }
 
-/* ── Botón cerrar sesión ── */
 .logoutBtn {
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+  gap: 8px;
   width: 100%;
-  padding: 12px 16px;
-  background: var(--widget-logout-bg);
-  border: 1px solid var(--widget-border);
-  border-radius: var(--btn-radius, 10px);
-  color: rgba(148, 163, 184, 0.8);
-  font-size: var(--widget-row-label, 14px);
-  font-weight: var(--btn-font-weight, 600);
+  height: 44px;
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  border-radius: 999px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all var(--transition-fast);
-  text-align: left;
   font-family: inherit;
+  transition: background 150ms ease;
 }
 
 .logoutBtn:hover {
-  background: rgba(239, 68, 68, 0.08);
-  border-color: rgba(239, 68, 68, 0.3);
-  color: #fca5a5;
+  background: rgba(255, 69, 58, 0.18);
+  color: #ff6961;
 }
 
 .logoutIcon {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: var(--radius-sm);
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  color: var(--color-error-light);
-  flex-shrink: 0;
-  transition: all var(--transition-fast);
 }
 
-.logoutBtn:hover .logoutIcon {
-  background: rgba(239, 68, 68, 0.2);
-  border-color: rgba(239, 68, 68, 0.4);
+:global([data-theme="light"]) .wrapper {
+  background: #ffffff;
+  border-color: rgba(11, 18, 32, 0.07);
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.05);
 }
 
+:global([data-theme="light"]) .title,
+:global([data-theme="light"]) .statusLabel {
+  color: #0b1220;
+}
+
+:global([data-theme="light"]) .statusRow {
+  background: #f1f4fa;
+}
+
+:global([data-theme="light"]) .statusEmail {
+  color: #475569;
+}
+
+:global([data-theme="light"]) .logoutBtn {
+  background: #eef1f7;
+  color: #0b1220;
+}

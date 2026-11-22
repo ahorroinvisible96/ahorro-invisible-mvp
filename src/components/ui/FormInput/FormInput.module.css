@@ -10,43 +10,43 @@
   gap: 6px;
 }
 
-/* ── Label ── */
+/* ── Label (Sentence case, Reference Dark V3) ── */
 .label {
   display: block;
-  font-size: var(--type-label-size, 11px);
-  font-weight: var(--type-label-weight, 600);
-  color: var(--auth-label-color, rgba(148, 163, 184, 0.6));
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  font-size: 12.5px;
+  font-weight: 550;
+  color: var(--color-text-secondary, #9a9fb2);
+  letter-spacing: -0.005em;
 }
 
 /* ── Input base ── */
 .input {
   display: block;
   width: 100%;
-  padding: 11px 14px;
-  font-size: var(--type-body-size, 14px);
-  font-weight: 400;
+  min-height: 48px;
+  padding: 12px 15px;
+  font-size: 14.5px;
+  font-weight: 450;
   font-family: var(--font-app);
-  line-height: 1.5;
+  line-height: 1.45;
   color: var(--color-text-primary);
-  background: var(--widget-input-bg);
-  border: var(--border-thin) solid var(--color-border-input);
-  border-radius: var(--radius-input, var(--radius-sm));
+  background: var(--widget-input-bg, #1f202d);
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  border-radius: 15px;
   outline: none;
   box-sizing: border-box;
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  transition: border-color 150ms ease, background 150ms ease, box-shadow 150ms ease;
 }
 
 .input::placeholder {
-  color: var(--color-text-muted);
+  color: var(--color-text-muted, #6c7185);
   opacity: 1;
 }
 
 /* ── Estados ── */
 .input:focus {
-  border-color: rgba(168, 85, 247, 0.5);
-  box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.15);
+  border-color: rgba(167, 139, 250, 0.55);
+  box-shadow: 0 0 0 3px rgba(126, 66, 245, 0.14);
 }
 
 .input.error {
@@ -72,14 +72,25 @@
   cursor: not-allowed;
 }
 
-/* ── Variante auth (fondo más oscuro, para auth pages) ── */
+/* ── Variante auth (Reference Dark velvety surface) ── */
 .authVariant {
-  background: var(--auth-input-bg, rgba(15, 23, 42, 0.6));
-  border-color: var(--auth-input-border, rgba(255, 255, 255, 0.06));
+  background: var(--auth-input-bg, #1f202d);
+  border-color: var(--auth-input-border, rgba(255, 255, 255, 0.055));
 }
 
 .authVariant:focus {
-  border-color: var(--auth-input-focus, rgba(168, 85, 247, 0.5));
+  border-color: var(--auth-input-focus, rgba(167, 139, 250, 0.55));
+}
+
+:global([data-theme="light"]) .input,
+:global([data-theme="light"]) .authVariant {
+  background: #f1f4fa;
+  border-color: rgba(11, 18, 32, 0.10);
+  color: #0b1220;
+}
+
+:global([data-theme="light"]) .label {
+  color: #475569;
 }
 
 /* ── Mensajes de feedback ── */

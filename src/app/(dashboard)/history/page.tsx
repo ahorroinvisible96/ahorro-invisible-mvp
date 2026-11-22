@@ -7,7 +7,6 @@ import { useHistorySummary } from '@/hooks/useHistorySummary';
 import { HistoryDecisionsListWidget } from '@/components/history/HistoryDecisionsListWidget/HistoryDecisionsListWidget';
 import { HistoryEmptyStateWidget } from '@/components/history/HistoryEmptyStateWidget/HistoryEmptyStateWidget';
 import styles from './History.module.css';
-import { BarChartIcon } from '@/components/ui/AppIcons';
 import { WidgetSkeleton } from '@/components/ui/Skeleton/Skeleton';
 
 function formatEUR(amount: number): string {
@@ -19,14 +18,12 @@ function formatEUR(amount: number): string {
   }).format(amount);
 }
 
-// ── Opciones de periodo ───────────────────────────────────────────────────────
 const RANGE_OPTIONS = [
   { label: '7 días', value: '7d' },
   { label: '30 días', value: '30d' },
   { label: '90 días', value: '90d' },
 ] as const;
 
-// ── Página ────────────────────────────────────────────────────────────────────
 export default function HistoryPage() {
   const router = useRouter();
   const {
@@ -50,7 +47,6 @@ export default function HistoryPage() {
     analytics.historyViewed('sidebar');
   }, [router]);
 
-  // Cerrar dropdowns al hacer click fuera
   useEffect(() => {
     if (!rangeOpen && !goalOpen) return;
     const handleClick = () => { setRangeOpen(false); setGoalOpen(false); };
@@ -74,62 +70,56 @@ export default function HistoryPage() {
     );
   }
 
-  // Métricas para el header
   const totalDecisions = filtered.length;
-  const totalAmount    = totalSaved;
+  const totalAmount = totalSaved;
   const avgPerDecision = totalDecisions > 0 ? totalAmount / totalDecisions : 0;
-
-  // Calcular mejores días
   const daysWithSavings = new Set(filtered.filter(d => d.deltaAmount > 0).map(d => d.date)).size;
+  const activeRangeLabel = RANGE_OPTIONS.find(o => o.value === filters.range)?.label ?? '30 días';
 
   return (
     <div className={styles.page}>
-
-      {/* ══════════════════════════════════════════════════════════════════════
-          ZONA 1 — HEADER PRINCIPAL (degradado navy-índigo, igual que Objetivos)
-          ══════════════════════════════════════════════════════════════════════ */}
       <div className={styles.headerZone}>
         <div className={styles.zoneInner}>
           <div className={styles.headerContent}>
+            <div className={styles.topBar}>
+              <h1 className={styles.headerTitle}>Historial</h1>
+            </div>
 
-            {/* Fila superior: icono + título */}
-            <div className={styles.headerTop}>
-              <div className={styles.headerLeft}>
-                <div className={styles.headerIconWrap}>
-                  <BarChartIcon size={22} />
-                </div>
-                <div className={styles.headerTitles}>
-                  <span className={styles.headerSub}>Tu actividad</span>
-                  <h1 className={styles.headerTitle}>Historial</h1>
-                </div>
+            <div className={styles.heroCenter}>
+              <span className={styles.heroKicker}>
+                Ahorrado · {filters.range === 'all' ? 'en total' : `últimos ${activeRangeLabel}`}
+              </span>
+              <div className={styles.heroAmount}>
+                {totalAmount > 0 ? '+' : ''}{formatEUR(totalAmount)}
+              </div>
+              <div className={styles.heroPill}>
+                {totalDecisions} {totalDecisions === 1 ? 'decisión' : 'decisiones'} · media {formatEUR(avgPerDecision)}
+                {daysWithSavings > 0 ? ` · ${daysWithSavings}d activos` : ''}
               </div>
             </div>
 
-            {/* ── Filtros integrados: Periodo + Objetivo ── */}
             <div className={styles.headerFilters}>
-              {/* Dropdown Periodo */}
               <div className={styles.dropdownWrap}>
                 <button
+                  type="button"
                   className={styles.dropdownTrigger}
                   onClick={() => { setRangeOpen(!rangeOpen); setGoalOpen(false); }}
                 >
-                  <span className={styles.dropdownLabel}>Periodo</span>
-                  <span className={styles.dropdownValue}>
-                    {RANGE_OPTIONS.find(o => o.value === filters.range)?.label ?? '30 días'}
-                  </span>
-                  <svg className={`${styles.dropdownChevron} ${rangeOpen ? styles.dropdownChevronOpen : ''}`} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                  <span className={styles.dropdownValue}>{activeRangeLabel}</span>
+                  <svg className={`${styles.dropdownChevron} ${rangeOpen ? styles.dropdownChevronOpen : ''}`} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
                 </button>
                 {rangeOpen && (
                   <div className={styles.dropdownMenu}>
                     {RANGE_OPTIONS.map((opt) => (
                       <button
+                        type="button"
                         key={opt.value}
                         className={`${styles.dropdownItem} ${filters.range === opt.value ? styles.dropdownItemActive : ''}`}
                         onClick={() => { setFilters({ range: opt.value }); setRangeOpen(false); }}
                       >
                         {opt.label}
                         {filters.range === opt.value && (
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
                         )}
                       </button>
                     ))}
@@ -137,41 +127,42 @@ export default function HistoryPage() {
                 )}
               </div>
 
-              {/* Dropdown Objetivo */}
               {goals.length > 0 && (
                 <div className={styles.dropdownWrap}>
                   <button
+                    type="button"
                     className={styles.dropdownTrigger}
                     onClick={() => { setGoalOpen(!goalOpen); setRangeOpen(false); }}
                   >
-                    <span className={styles.dropdownLabel}>Objetivo</span>
                     <span className={styles.dropdownValue}>
                       {filters.goalId === 'all'
-                        ? 'Todos'
+                        ? 'Todos los objetivos'
                         : (goals.find(g => g.id === filters.goalId)?.title ?? 'Todos')}
                     </span>
-                    <svg className={`${styles.dropdownChevron} ${goalOpen ? styles.dropdownChevronOpen : ''}`} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                    <svg className={`${styles.dropdownChevron} ${goalOpen ? styles.dropdownChevronOpen : ''}`} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
                   </button>
                   {goalOpen && (
                     <div className={styles.dropdownMenu}>
                       <button
+                        type="button"
                         className={`${styles.dropdownItem} ${filters.goalId === 'all' ? styles.dropdownItemActive : ''}`}
                         onClick={() => { setFilters({ goalId: 'all' }); setGoalOpen(false); }}
                       >
                         Todos los objetivos
                         {filters.goalId === 'all' && (
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
                         )}
                       </button>
                       {goals.map((g) => (
                         <button
+                          type="button"
                           key={g.id}
                           className={`${styles.dropdownItem} ${filters.goalId === g.id ? styles.dropdownItemActive : ''}`}
                           onClick={() => { setFilters({ goalId: g.id }); setGoalOpen(false); }}
                         >
                           {g.title}
                           {filters.goalId === g.id && (
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
                           )}
                         </button>
                       ))}
@@ -180,84 +171,35 @@ export default function HistoryPage() {
                 </div>
               )}
             </div>
-
-            {/* Divisor */}
-            <div className={styles.headerDivider} />
-
-            {/* Métricas clave: 3 tarjetas (igual que Objetivos) */}
-            <div className={styles.metricsRow}>
-              <div className={styles.metricCard}>
-                <span className={styles.metricLabel}>Decisiones</span>
-                <span className={styles.metricValue}>{totalDecisions}</span>
-                <span className={styles.metricSub}>
-                  {filters.range === 'all' ? 'en total' : `últimos ${filters.range}`}
-                </span>
-              </div>
-              <div className={styles.metricCard}>
-                <span className={styles.metricLabel}>Ahorro</span>
-                <span className={styles.metricValueAccent}>
-                  {totalAmount > 0 ? '+' : ''}{formatEUR(totalAmount)}
-                </span>
-                <span className={styles.metricSub}>
-                  acumulado
-                </span>
-              </div>
-              <div className={styles.metricCard}>
-                <span className={styles.metricLabel}>Media</span>
-                <span className={styles.metricValue}>
-                  {formatEUR(avgPerDecision)}
-                </span>
-                <span className={styles.metricSub}>
-                  {daysWithSavings > 0 ? `${daysWithSavings} días activos` : 'por decisión'}
-                </span>
-              </div>
-            </div>
-
           </div>
         </div>
       </div>
 
-      {/* ══════════════════════════════════════════════════════════════════════
-          ZONA 2 — CONTENIDO (fondo oscuro, lista de decisiones)
-          ══════════════════════════════════════════════════════════════════════ */}
       <div className={styles.contentZone}>
         <div className={styles.zoneInner}>
-          <div className={styles.contentCol}>
-
-            {/* ─── Bloque: Lista de decisiones ─── */}
-            <div className={styles.sectionGroup}>
-              <p className={styles.sectionLabel}>
-                DECISIONES
-                {totalDecisions > 0 && (
-                  <span style={{ color: 'rgba(255,255,255,0.18)', fontWeight: 400, marginLeft: 6 }}>
-                    ({totalDecisions})
-                  </span>
-                )}
-              </p>
-
-              {filtered.length > 0 ? (
-                <div className={styles.listCard}>
-                  <HistoryDecisionsListWidget
-                    decisions={filtered}
-                    onOpenDecision={() => {}}
-                    onDeleteDecision={deleteDecision}
-                    onEditDecision={editDecision}
-                  />
-                </div>
-              ) : (
-                <div className={styles.listCard}>
-                  <HistoryEmptyStateWidget
-                    hasFilters={hasActiveFilters}
-                    onGoToDashboard={() => router.push('/dashboard')}
-                  />
-                </div>
-              )}
-            </div>
-
-          </div>
+          {filtered.length > 0 ? (
+            <section className={styles.listCard}>
+              <div className={styles.listCardHead}>
+                <h2 className={styles.listCardTitle}>Movimientos</h2>
+                <span className={styles.listCardCount}>
+                  {totalDecisions} {totalDecisions === 1 ? 'registro' : 'registros'}
+                </span>
+              </div>
+              <HistoryDecisionsListWidget
+                decisions={filtered}
+                onOpenDecision={() => {}}
+                onDeleteDecision={deleteDecision}
+                onEditDecision={editDecision}
+              />
+            </section>
+          ) : (
+            <HistoryEmptyStateWidget
+              hasFilters={hasActiveFilters}
+              onGoToDashboard={() => router.push('/dashboard')}
+            />
+          )}
         </div>
       </div>
-
     </div>
   );
 }

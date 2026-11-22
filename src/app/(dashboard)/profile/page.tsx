@@ -19,7 +19,6 @@ import {
   ChevronRightIcon,
   ChevronDownIcon,
   UserIcon,
-  EditIcon,
   FlameIcon,
   SproutIcon,
   MedalIcon,
@@ -29,32 +28,30 @@ import {
   LogoutIcon,
 } from '@/components/ui/AppIcons';
 
-// ── Icono ojo inline (abre / cierra privacidad) ───────────────────────────────
-function EyeIcon({ open, size = 14 }: { open: boolean; size?: number }) {
+function EyeIcon({ open, size = 17 }: { open: boolean; size?: number }) {
   return open ? (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
-         strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M1 12S5 4 12 4s11 8 11 8-4 8-11 8S1 12 1 12z"/>
-      <circle cx="12" cy="12" r="3"/>
+      strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M1 12S5 4 12 4s11 8 11 8-4 8-11 8S1 12 1 12z" />
+      <circle cx="12" cy="12" r="3" />
     </svg>
   ) : (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
-         strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20C5 20 1 12 1 12a18.45 18.45 0 0 1 5.06-5.94"/>
-      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
-      <line x1="1" y1="1" x2="23" y2="23"/>
+      strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20C5 20 1 12 1 12a18.45 18.45 0 0 1 5.06-5.94" />
+      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+      <line x1="1" y1="1" x2="23" y2="23" />
     </svg>
   );
 }
 
-// ── Niveles de medalla ────────────────────────────────────────────────────────
 const MEDAL_TIERS = [
-  { amount: 5000, Icon: CrownIcon,   color: '#FFD700', label: 'Corona'   },
-  { amount: 2000, Icon: TrophyIcon,  color: '#4ade80', label: 'Trofeo'   },
+  { amount: 5000, Icon: CrownIcon, color: '#FFD700', label: 'Corona' },
+  { amount: 2000, Icon: TrophyIcon, color: '#4ade80', label: 'Trofeo' },
   { amount: 1000, Icon: DiamondIcon, color: '#60a5fa', label: 'Diamante' },
-  { amount: 500,  Icon: MedalIcon,   color: '#fbbf24', label: 'Oro'      },
-  { amount: 100,  Icon: MedalIcon,   color: '#cbd5e1', label: 'Plata'    },
-  { amount: 50,   Icon: MedalIcon,   color: '#cd7f32', label: 'Bronce'   },
+  { amount: 500, Icon: MedalIcon, color: '#fbbf24', label: 'Oro' },
+  { amount: 100, Icon: MedalIcon, color: '#cbd5e1', label: 'Plata' },
+  { amount: 50, Icon: MedalIcon, color: '#cd7f32', label: 'Bronce' },
 ];
 
 function getMedal(totalSaved: number) {
@@ -70,6 +67,12 @@ function formatIncome(range: IncomeRange | null): string {
   }).format(v);
 }
 
+function formatEUR(n: number): string {
+  return new Intl.NumberFormat('es-ES', {
+    style: 'currency', currency: 'EUR', maximumFractionDigits: 0,
+  }).format(n);
+}
+
 function getInitials(name: string, email: string): string {
   const src = name.trim() || email;
   const parts = src.split(/[\s@._-]+/).filter(Boolean);
@@ -77,7 +80,6 @@ function getInitials(name: string, email: string): string {
   return (parts[0]?.slice(0, 2) ?? '?').toUpperCase();
 }
 
-// ── Componente auxiliar: lee ?section= ───────────────────────────────────────
 function SectionOpener({ onOpen }: { onOpen: (s: string) => void }) {
   const searchParams = useSearchParams();
   useEffect(() => {
@@ -87,46 +89,22 @@ function SectionOpener({ onOpen }: { onOpen: (s: string) => void }) {
   return null;
 }
 
-// ── Fila de lista estilo iOS ──────────────────────────────────────────────────
-function ListRow({
-  icon,
-  label,
-  onClick,
-  last = false,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  onClick?: () => void;
-  last?: boolean;
-}) {
-  return (
-    <button className={`${styles.listRow} ${last ? styles.listRowLast : ''}`} onClick={onClick}>
-      <span className={styles.listRowIcon}>{icon}</span>
-      <span className={styles.listRowLabel}>{label}</span>
-      <ChevronRightIcon size={14} className={styles.listRowChevron} />
-    </button>
-  );
-}
-
-// ── Página principal ──────────────────────────────────────────────────────────
 export default function ProfilePage() {
   const router = useRouter();
-  const [userName, setUserName]         = useState('');
-  const [email, setEmail]               = useState('');
-  const [incomeRange, setIncomeRange]   = useState<IncomeRange | null>(null);
-  const [loading, setLoading]           = useState(true);
-  const [totalSaved, setTotalSaved]     = useState(0);
-  const [streak, setStreak]             = useState(0);
-  const [infoOpen, setInfoOpen]           = useState(false);
-  const [editingName, setEditingName]     = useState('');
-  const [nameSaved, setNameSaved]         = useState(false);
-  // Estado de privacidad de ingresos — persiste en localStorage
+  const [userName, setUserName] = useState('');
+  const [email, setEmail] = useState('');
+  const [incomeRange, setIncomeRange] = useState<IncomeRange | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [totalSaved, setTotalSaved] = useState(0);
+  const [streak, setStreak] = useState(0);
+  const [activeGoalsCount, setActiveGoalsCount] = useState(0);
+  const [infoOpen, setInfoOpen] = useState(false);
+  const [editingName, setEditingName] = useState('');
+  const [nameSaved, setNameSaved] = useState(false);
   const [incomeVisible, setIncomeVisible] = useState(true);
-  // Estado del modal de personalización
-  const [profilingOpen, setProfilingOpen]       = useState(false);
-  const [profilingDone, setProfilingDone]       = useState(false);
+  const [profilingOpen, setProfilingOpen] = useState(false);
+  const [profilingDone, setProfilingDone] = useState(false);
   const { addToast } = useToast();
-  // Estado de tema
   const [currentTheme, setCurrentTheme] = useState<Theme>('dark');
 
   const toggleIncomeVisibility = useCallback(() => {
@@ -151,13 +129,11 @@ export default function ProfilePage() {
     setIncomeRange(summary.incomeRange);
     setTotalSaved(summary.totalSaved);
     setStreak(summary.streak ?? 0);
+    setActiveGoalsCount(summary.goals.filter(g => !g.archived).length);
     setEditingName(summary.userName);
-    // Restaurar preferencia de privacidad
     const savedVisible = localStorage.getItem('profile_income_visible');
     if (savedVisible === '0') setIncomeVisible(false);
-    // Comprobar si ya completó profiling
     setProfilingDone(hasCompletedProfiling());
-    // Inicializar tema actual
     setCurrentTheme(getTheme());
     analytics.profileViewed();
     setLoading(false);
@@ -167,6 +143,7 @@ export default function ProfilePage() {
     storeUpdateIncome(range);
     setIncomeRange(range);
   }, []);
+  void handleSaveIncome;
 
   const handleSaveName = useCallback(() => {
     if (!editingName.trim()) return;
@@ -183,7 +160,11 @@ export default function ProfilePage() {
     router.replace('/login');
   }, [router]);
 
-
+  const toggleThemeQuick = useCallback(() => {
+    const next: Theme = currentTheme === 'dark' ? 'light' : 'dark';
+    setCurrentTheme(next);
+    applyTheme(next);
+  }, [currentTheme]);
 
   if (loading) {
     return (
@@ -200,9 +181,7 @@ export default function ProfilePage() {
   const firstName = userName.trim().split(' ')[0] || 'Usuario';
   const medal = getMedal(totalSaved);
   const incomeStr = formatIncome(incomeRange);
-
-  // Muestra ingresos o blur
-  const incomeDisplay = incomeVisible ? incomeStr : '••••••';
+  const incomeDisplay = incomeVisible ? `${incomeStr}/m` : '••••';
 
   return (
     <div className={styles.page}>
@@ -210,231 +189,187 @@ export default function ProfilePage() {
         <SectionOpener onOpen={handleSectionOpen} />
       </Suspense>
 
-      {/* ══════════════════════════════════════════════════════════════════════
-          ZONA 1 — HEADER PRINCIPAL (degradado púrpura)
-          Contiene: avatar + nombre → métricas clave → ingresos con privacidad
-          ══════════════════════════════════════════════════════════════════════ */}
       <div className={styles.headerZone}>
         <div className={styles.zoneInner}>
           <div className={styles.headerContent}>
+            <div className={styles.topBar}>
+              <div className={styles.topBarSpacer} />
+              <span className={styles.topBarTitle}>Perfil</span>
+              <button
+                type="button"
+                className={styles.glassCircleBtn}
+                onClick={() => router.push('/settings')}
+                aria-label="Configuración avanzada"
+              >
+                <SettingsIcon size={17} />
+              </button>
+            </div>
 
-            {/* Fila superior: avatar + nombre */}
-            <div className={styles.heroTop}>
+            <div className={styles.heroCenter}>
               <div className={styles.avatar}>{initials}</div>
-              <div className={styles.heroGreeting}>
-                <span className={styles.heroSub}>Bienvenido de nuevo</span>
-                <span className={styles.heroName}>{firstName}</span>
+              <h1 className={styles.heroName}>{firstName}</h1>
+              <div className={styles.heroPill}>
+                {formatEUR(totalSaved)} ahorrados · Racha {streak} d · {medal.label}
               </div>
             </div>
 
-            {/* Divisor */}
-            <div className={styles.heroDivider} />
-
-            {/* Tarjetas de métricas: total ahorrado · racha · nivel */}
-            <div className={styles.metricsRow}>
-
-              {/* Métrica 1: Total ahorrado */}
-              <div className={styles.metricCard}>
-                <span className={styles.metricLabel}>Total ahorrado</span>
-                <span className={styles.metricValueAccent} style={{ color: '#4ade80' }}>
-                  {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(totalSaved)}
+            <div className={styles.circleActions}>
+              <button type="button" className={styles.circleAction} onClick={() => setProfilingOpen(true)}>
+                <span className={styles.circleBtn}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                  </svg>
                 </span>
-                <span className={styles.metricSub}>acumulado</span>
-              </div>
+                <span className={styles.circleLbl}>Personalizar</span>
+              </button>
 
-              {/* Métrica 2: Racha actual */}
-              <div className={styles.metricCard}>
-                <span className={styles.metricLabel}>Racha</span>
-                <span className={styles.metricValue} style={{ color: streak > 0 ? '#fb923c' : undefined }}>
-                  {streak}
-                </span>
-                <span className={styles.metricSub}>{streak === 1 ? 'día seguido' : 'días seguidos'}</span>
-              </div>
+              <button
+                type="button"
+                className={styles.circleAction}
+                onClick={toggleIncomeVisibility}
+                aria-label={incomeVisible ? 'Ocultar ingresos' : 'Mostrar ingresos'}
+              >
+                <span className={styles.circleBtn}><EyeIcon open={incomeVisible} size={18} /></span>
+                <span className={`${styles.circleLbl} ${!incomeVisible ? styles.incomeBlur : ''}`}>{incomeDisplay}</span>
+              </button>
 
-              {/* Métrica 3: Nivel actual (medalla) */}
-              <div className={styles.metricCard}>
-                <span className={styles.metricLabel}>Nivel</span>
-                <span className={styles.metricValueAccent} style={{ color: medal.color }}>
-                  {medal.label}
+              <button type="button" className={styles.circleAction} onClick={toggleThemeQuick}>
+                <span className={styles.circleBtn}>
+                  {currentTheme === 'dark' ? (
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                    </svg>
+                  ) : (
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="4" />
+                      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2" />
+                    </svg>
+                  )}
                 </span>
-                <span className={styles.metricSub}>
-                  {totalSaved > 0
-                    ? `${new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(totalSaved)} guardados`
-                    : 'empieza a ahorrar'}
-                </span>
-              </div>
-
+                <span className={styles.circleLbl}>{currentTheme === 'dark' ? 'Oscuro' : 'Claro'}</span>
+              </button>
             </div>
-
-            {/* Fila de ingresos compacta con toggle de privacidad */}
-            <div className={styles.incomeRow}>
-              <div className={styles.incomeLeft}>
-                <span className={styles.incomeLabel}>INGRESOS MENSUALES</span>
-                <span className={`${styles.incomeValue} ${!incomeVisible ? styles.incomeBlur : ''}`}>
-                  {incomeDisplay}
-                </span>
-              </div>
-              <div className={styles.incomePills}>
-                <button
-                  className={styles.heroIconPill}
-                  onClick={toggleIncomeVisibility}
-                  aria-label={incomeVisible ? 'Ocultar ingresos' : 'Mostrar ingresos'}
-                >
-                  <EyeIcon open={incomeVisible} size={13} />
-                </button>
-                <button
-                  className={styles.heroEditPill}
-                  onClick={() => setInfoOpen(true)}
-                  aria-label="Editar ingresos"
-                >
-                  <EditIcon size={12} />
-                  Editar
-                </button>
-              </div>
-            </div>
-
           </div>
         </div>
       </div>
 
-      {/* ══════════════════════════════════════════════════════════════════════
-          ZONA 2 — CONTENIDO SECUNDARIO (fondo oscuro sólido, igual que dashboard)
-          Contiene: acceso rápido, motivación, información personal
-          ══════════════════════════════════════════════════════════════════════ */}
       <div className={styles.contentZone}>
         <div className={styles.zoneInner}>
-          <div className={styles.contentCol}>
+          <div className={styles.contentGrid}>
+            {/* Columna principal: menú Revolut con medallones cromáticos */}
+            <div className={styles.colStack}>
+              <section className={styles.card}>
+                <div className={styles.rowsStack}>
+                  <button type="button" className={styles.listRow} onClick={() => setProfilingOpen(true)}>
+                    <span className={`${styles.medallion} ${styles.mViolet}`}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                      </svg>
+                    </span>
+                    <span className={styles.rowMid}>
+                      <span className={styles.rowTitle}>
+                        {profilingDone ? 'Personalización completada' : 'Personaliza tu experiencia'}
+                      </span>
+                      <span className={styles.rowSub}>
+                        {profilingDone ? 'Tu perfil está optimizado · repetir' : 'Afina tus preguntas y recomendaciones'}
+                      </span>
+                    </span>
+                    <ChevronRightIcon size={16} className={styles.rowChevron} />
+                  </button>
 
-            {/* ─── Bloque: Personalización (PRIMERO después del header) ─── */}
-            <div className={styles.sectionGroup}>
-              <p className={styles.sectionLabel}>PERSONALIZACIÓN</p>
-              <button
-                className={styles.personalizationCard}
-                onClick={() => setProfilingOpen(true)}
-              >
-                <div className={styles.personalizationIconBig}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                    strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26Z" />
-                  </svg>
+                  <button type="button" className={styles.listRow} onClick={() => router.push('/goals')}>
+                    <span className={`${styles.medallion} ${styles.mCobalt}`}><TargetIcon size={18} /></span>
+                    <span className={styles.rowMid}>
+                      <span className={styles.rowTitle}>Mis objetivos</span>
+                      <span className={styles.rowSub}>{activeGoalsCount} {activeGoalsCount === 1 ? 'activo' : 'activos'}</span>
+                    </span>
+                    <ChevronRightIcon size={16} className={styles.rowChevron} />
+                  </button>
+
+                  <button type="button" className={styles.listRow} onClick={() => router.push('/history')}>
+                    <span className={`${styles.medallion} ${styles.mSky}`}><BarChartIcon size={18} /></span>
+                    <span className={styles.rowMid}>
+                      <span className={styles.rowTitle}>Historial de ahorro</span>
+                      <span className={styles.rowSub}>Revisa tus decisiones pasadas</span>
+                    </span>
+                    <ChevronRightIcon size={16} className={styles.rowChevron} />
+                  </button>
+
+                  <div className={`${styles.listRow} ${styles.listRowStatic}`}>
+                    <span className={`${styles.medallion} ${styles.mEmerald}`}><medal.Icon size={18} /></span>
+                    <span className={styles.rowMid}>
+                      <span className={styles.rowTitle}>Nivel {medal.label}</span>
+                      <span className={styles.rowSub}>
+                        {streak > 0 ? `Racha actual de ${streak} ${streak === 1 ? 'día' : 'días'}` : 'Empieza tu racha hoy'}
+                      </span>
+                    </span>
+                    {streak > 0 && (
+                      <span className={styles.streakPill}>
+                        <FlameIcon size={13} />
+                        {streak}d
+                      </span>
+                    )}
+                  </div>
+
+                  <button type="button" className={styles.listRow} onClick={() => router.push('/settings')}>
+                    <span className={`${styles.medallion} ${styles.mCyan}`}><SettingsIcon size={18} /></span>
+                    <span className={styles.rowMid}>
+                      <span className={styles.rowTitle}>Configuración avanzada</span>
+                      <span className={styles.rowSub}>Datos, avisos y sesión</span>
+                    </span>
+                    <ChevronRightIcon size={16} className={styles.rowChevron} />
+                  </button>
                 </div>
-                <div className={styles.personalizationContent}>
-                  <span className={styles.personalizationTitle}>
-                    {profilingDone ? 'Personalización completada' : 'Personaliza tu experiencia'}
-                  </span>
-                  <span className={styles.personalizationSub}>
-                    {profilingDone
-                      ? 'Tu perfil está optimizado. Puedes repetirlo cuando quieras.'
-                      : 'Responde unas preguntas rápidas para mejorar tus recomendaciones'}
-                  </span>
-                </div>
-                <ChevronRightIcon size={16} className={styles.listRowChevron} />
-              </button>
+              </section>
             </div>
 
-            {/* ─── Bloque: Acceso rápido ─── */}
-            <div className={styles.sectionGroup}>
-              <p className={styles.sectionLabel}>ACCESO RÁPIDO</p>
-              <div className={styles.listCard}>
-                <ListRow
-                  icon={<TargetIcon size={16} />}
-                  label="Mis objetivos"
-                  onClick={() => router.push('/goals')}
-                />
-                <ListRow
-                  icon={<BarChartIcon size={16} />}
-                  label="Historial de ahorro"
-                  onClick={() => router.push('/history')}
-                />
-                <ListRow
-                  icon={<SettingsIcon size={16} />}
-                  label="Configuración avanzada"
-                  onClick={() => router.push('/settings')}
-                  last
-                />
-              </div>
-            </div>
-
-            {/* ─── Bloque: Apariencia — selector segmentado inline ─── */}
-            <div className={styles.sectionGroup}>
-              <p className={styles.sectionLabel}>APARIENCIA</p>
-              <div className={styles.listCard}>
-                <div className={styles.listRow} style={{ cursor: 'default', justifyContent: 'space-between' }}>
-                  <span className={styles.listRowIcon}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="12" r="4"/>
-                      <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+            {/* Columna secundaria: apariencia + datos de la cuenta */}
+            <div className={styles.colStack}>
+              <section className={styles.card}>
+                <div className={`${styles.listRow} ${styles.listRowStatic}`}>
+                  <span className={`${styles.medallion} ${styles.mSlate}`}>
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="4" />
+                      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2" />
                     </svg>
                   </span>
-                  <span className={styles.listRowLabel}>Modo</span>
+                  <span className={styles.rowMid}>
+                    <span className={styles.rowTitle}>Apariencia</span>
+                    <span className={styles.rowSub}>Modo de pantalla</span>
+                  </span>
                   <div className={styles.themeSegmented}>
                     <button
+                      type="button"
                       className={`${styles.themeSegBtn} ${currentTheme === 'light' ? styles.themeSegActive : ''}`}
                       onClick={() => { setCurrentTheme('light'); applyTheme('light'); }}
                     >
-                      ☀️ Claro
+                      Claro
                     </button>
                     <button
+                      type="button"
                       className={`${styles.themeSegBtn} ${currentTheme === 'dark' ? styles.themeSegActive : ''}`}
                       onClick={() => { setCurrentTheme('dark'); applyTheme('dark'); }}
                     >
-                      🌙 Oscuro
+                      Oscuro
                     </button>
                   </div>
                 </div>
-              </div>
-            </div>
+              </section>
 
-            {/* ─── Bloque: Motivación ─── */}
-            <div className={styles.sectionGroup}>
-              <p className={styles.sectionLabel}>MOTIVACIÓN</p>
-              <div className={styles.listCard}>
-                <div className={styles.motivationRow}>
-                  {/* Medalla */}
-                  <span className={styles.listRowIcon} style={{ color: medal.color }}>
-                    <medal.Icon size={18} />
+              <section className={styles.card}>
+                <button type="button" className={styles.listRow} onClick={() => setInfoOpen(v => !v)}>
+                  <span className={`${styles.medallion} ${styles.mSlate}`}><UserIcon size={17} /></span>
+                  <span className={styles.rowMid}>
+                    <span className={styles.rowTitle}>Datos de la cuenta</span>
+                    <span className={styles.rowSub}>Nombre, email y sesión</span>
                   </span>
-                  <div className={styles.motivationTexts}>
-                    <span className={styles.listRowLabel}>{medal.label}</span>
-                    <span className={styles.motivationSub}>Nivel actual</span>
-                  </div>
-                  {/* Racha */}
-                  {streak > 0 && (
-                    <div className={styles.streakPill}>
-                      <FlameIcon size={13} className={styles.flameIcon} />
-                      <span className={styles.streakNum}>{streak}</span>
-                      <span className={styles.streakUnit}>días</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* ─── Bloque: Información personal ─── */}
-            <div className={styles.sectionGroup}>
-              <p className={styles.sectionLabel}>INFORMACIÓN PERSONAL</p>
-              <div className={styles.listCard}>
-
-                {/* Cabecera colapsable */}
-                <button
-                  className={`${styles.listRow} ${!infoOpen ? styles.listRowLast : ''}`}
-                  onClick={() => setInfoOpen(v => !v)}
-                >
-                  <span className={styles.listRowIcon}><UserIcon size={16} /></span>
-                  <span className={styles.listRowLabel} style={{ flex: 1 }}>Datos de la cuenta</span>
-                  <ChevronDownIcon
-                    size={14}
-                    className={`${styles.listRowChevron} ${infoOpen ? styles.chevronOpen : ''}`}
-                  />
+                  <ChevronDownIcon size={16} className={`${styles.rowChevron} ${infoOpen ? styles.chevronOpen : ''}`} />
                 </button>
 
-                {/* Cuerpo expandible */}
                 {infoOpen && (
                   <div className={styles.infoBody}>
-
-                    {/* Fila nombre editable */}
-                    <div className={styles.infoRow}>
-                      <span className={styles.infoLabel}>Nombre</span>
+                    <div className={styles.fieldGroup}>
+                      <label className={styles.infoLabel}>Nombre</label>
                       <input
                         className={styles.infoInput}
                         value={editingName}
@@ -443,43 +378,33 @@ export default function ProfilePage() {
                         placeholder="Tu nombre"
                       />
                     </div>
-
-                    {/* Fila email (solo lectura) */}
                     {email && (
-                      <div className={styles.infoRow}>
+                      <div className={styles.fieldGroup}>
                         <span className={styles.infoLabel}>Email</span>
-                        <span className={styles.infoValue}>{email}</span>
+                        <div className={styles.infoStatic}>{email}</div>
                       </div>
                     )}
-
-                    {/* Guardar nombre */}
-                    <button className={styles.saveBtn} onClick={handleSaveName}>
-                      {nameSaved ? '✓ Guardado' : 'Guardar cambios'}
+                    <button type="button" className={styles.saveBtn} onClick={handleSaveName}>
+                      {nameSaved ? 'Guardado' : 'Guardar cambios'}
                     </button>
-
-                    {/* Cerrar sesión */}
-                    <button className={styles.logoutBtn} onClick={handleLogout}>
-                      <LogoutIcon size={14} />
+                    <button type="button" className={styles.logoutBtn} onClick={handleLogout}>
+                      <LogoutIcon size={15} />
                       Cerrar sesión
                     </button>
-
                   </div>
                 )}
-              </div>
+              </section>
             </div>
-
           </div>
         </div>
       </div>
 
-      {/* ── Modal de personalización ── */}
       {profilingOpen && (
         <ProfilingModal
           onClose={() => setProfilingOpen(false)}
           onCompleted={() => setProfilingDone(true)}
         />
       )}
-
     </div>
   );
 }

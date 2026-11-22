@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { storeCreateGoal, storeListActiveGoals, computeInitialGoalSuggestion, buildSummary, checkGoalRealism } from "@/services/dashboardStore";
 import { analytics } from "@/services/analytics";
 import { pushLocalDataToSupabase, syncGoalToSupabase } from "@/services/syncService";
+import { BoltIcon, TargetIcon, TrendingUpIcon, TrophyIcon } from "@/components/ui/AppIcons";
+import s from "./NewGoal.module.css";
 
 type UIState = 'form' | 'recommendation' | 'restructuring';
 
@@ -94,50 +96,55 @@ function CreateGoalInner() {
     await doSave({ amount, months });
   };
 
-  // ── Recommendation modal (overlay sobre el form) ─────────────────────────
+  // ── Recommendation screen ────────────────────────────────────────────────
   if (uiState === 'recommendation' && realismData) {
     const userAmount = Number(targetAmount);
     return (
-      <main style={{ minHeight: '100vh', background: 'linear-gradient(135deg,#0f172a 0%,#1e1b4b 50%,#0f172a 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 16px', fontFamily: 'var(--font-app)' }}>
-        <div style={{ width: '100%', maxWidth: 480 }}>
-          <div style={{ borderRadius: 20, background: 'linear-gradient(135deg,#1e293b 0%,#0f172a 100%)', border: '1px solid rgba(251,191,36,0.3)', boxShadow: '0 25px 50px rgba(2,6,23,0.7)', padding: '28px 24px' }}>
-            <div style={{ fontSize: 48, textAlign: 'center', marginBottom: 16 }}>⚡</div>
-            <h2 style={{ fontSize: 19, fontWeight: 800, color: '#f1f5f9', margin: '0 0 8px', textAlign: 'center', lineHeight: 1.3 }}>Este objetivo puede tardar más de lo esperado</h2>
-            <p style={{ fontSize: 13, color: 'rgba(148,163,184,0.8)', margin: '0 0 20px', textAlign: 'center', lineHeight: 1.6 }}>
-              Los usuarios que empiezan con metas más pequeñas tienen <strong style={{ color: '#fbbf24' }}>3 veces más probabilidades</strong> de tener éxito.
+      <main className={s.page}>
+        <div className={s.sky} />
+        <div className={s.container}>
+          <div className={s.card}>
+            <div className={`${s.medallionLarge} ${s.medallionAmber}`}>
+              <BoltIcon size={26} />
+            </div>
+            <h2 className={`${s.title} ${s.titleCenter}`}>Este objetivo puede tardar más de lo esperado</h2>
+            <p className={`${s.sub} ${s.subCenter}`}>
+              Los usuarios que empiezan con metas más pequeñas tienen{' '}
+              <strong className={s.highlightAmber}>3 veces más probabilidades</strong> de tener éxito.
             </p>
-            {/* Stats box */}
-            <div style={{ background: 'rgba(15,23,42,0.6)', borderRadius: 12, padding: '14px 16px', marginBottom: 20 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
-                <span style={{ fontSize: 12, color: 'rgba(148,163,184,0.6)' }}>Tu objetivo</span>
-                <span style={{ fontSize: 13, fontWeight: 700, color: '#f1f5f9' }}>{fmtEUR(userAmount)}</span>
+
+            <div className={s.statsCard}>
+              <div className={s.statRow}>
+                <span className={s.statLabel}>Tu objetivo</span>
+                <span className={s.statVal}>{fmtEUR(userAmount)}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
-                <span style={{ fontSize: 12, color: 'rgba(148,163,184,0.6)' }}>Tiempo estimado</span>
-                <span style={{ fontSize: 13, fontWeight: 700, color: '#f87171' }}>~{realismData.estimatedMonths} meses</span>
+              <div className={s.statRow}>
+                <span className={s.statLabel}>Tiempo estimado</span>
+                <span className={`${s.statVal} ${s.statValWarn}`}>~{realismData.estimatedMonths} meses</span>
               </div>
-              <div style={{ borderTop: '1px solid rgba(51,65,85,0.4)', paddingTop: 10 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                  <span style={{ fontSize: 12, color: 'rgba(74,222,128,0.8)', fontWeight: 600 }}>💡 Objetivo recomendado</span>
-                  <span style={{ fontSize: 13, fontWeight: 800, color: '#4ade80' }}>{fmtEUR(realismData.suggestedAmount)}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: 12, color: 'rgba(148,163,184,0.5)' }}>Alcanzable en</span>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: '#4ade80' }}>{realismData.suggestedHorizonMonths} meses</span>
-                </div>
+              <div className={s.statsDivider} />
+              <div className={s.statRow}>
+                <span className={s.statLabelEmerald}>Objetivo recomendado</span>
+                <span className={`${s.statVal} ${s.statValEmerald}`}>{fmtEUR(realismData.suggestedAmount)}</span>
+              </div>
+              <div className={s.statRow}>
+                <span className={s.statLabel}>Alcanzable en</span>
+                <span className={`${s.statVal} ${s.statValEmerald}`}>{realismData.suggestedHorizonMonths} meses</span>
               </div>
             </div>
-            {/* Buttons */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+
+            <div className={s.btnStack}>
               <button
+                type="button"
                 onClick={() => doSave({ amount: realismData.suggestedAmount, months: realismData.suggestedHorizonMonths })}
-                style={{ padding: '13px', border: 'none', borderRadius: 12, background: 'linear-gradient(90deg,#16a34a,#15803d)', color: '#fff', fontSize: 15, fontWeight: 700, cursor: 'pointer' }}
+                className={s.primaryBtn}
               >
-                Empezar con {fmtEUR(realismData.suggestedAmount)} ✓
+                Empezar con {fmtEUR(realismData.suggestedAmount)}
               </button>
               <button
+                type="button"
                 onClick={() => setUiState('restructuring')}
-                style={{ padding: '13px', border: '1px solid rgba(51,65,85,0.5)', borderRadius: 12, background: 'transparent', color: 'rgba(203,213,225,0.7)', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}
+                className={s.secondaryBtn}
               >
                 Continuar con {fmtEUR(userAmount)} de todas formas
               </button>
@@ -152,36 +159,41 @@ function CreateGoalInner() {
   if (uiState === 'restructuring' && realismData) {
     const userAmount = Number(targetAmount);
     return (
-      <main style={{ minHeight: '100vh', background: 'linear-gradient(135deg,#0f172a 0%,#1e1b4b 50%,#0f172a 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 16px', fontFamily: 'var(--font-app)' }}>
-        <div style={{ width: '100%', maxWidth: 480 }}>
-          <div style={{ borderRadius: 20, background: 'linear-gradient(135deg,#1e293b 0%,#0f172a 100%)', border: '1px solid rgba(99,102,241,0.35)', boxShadow: '0 25px 50px rgba(2,6,23,0.7)', padding: '28px 24px' }}>
-            <div style={{ fontSize: 48, textAlign: 'center', marginBottom: 16 }}>🗺️</div>
-            <h2 style={{ fontSize: 19, fontWeight: 800, color: '#f1f5f9', margin: '0 0 8px', textAlign: 'center', lineHeight: 1.3 }}>Perfecto. Lo dividimos en pasos.</h2>
-            <p style={{ fontSize: 13, color: 'rgba(148,163,184,0.8)', margin: '0 0 20px', textAlign: 'center', lineHeight: 1.6 }}>
-              Tu objetivo final es <strong style={{ color: '#a78bfa' }}>{fmtEUR(userAmount)}</strong>. Empezamos con el primer paso que puedes conseguir pronto.
+      <main className={s.page}>
+        <div className={s.sky} />
+        <div className={s.container}>
+          <div className={s.card}>
+            <div className={`${s.medallionLarge} ${s.medallionIndigo}`}>
+              <TrendingUpIcon size={26} />
+            </div>
+            <h2 className={`${s.title} ${s.titleCenter}`}>Perfecto. Lo dividimos en pasos.</h2>
+            <p className={`${s.sub} ${s.subCenter}`}>
+              Tu objetivo final es <strong className={s.highlightViolet}>{fmtEUR(userAmount)}</strong>. Empezamos con el primer paso que puedes conseguir pronto.
             </p>
-            {/* Plan visual */}
-            <div style={{ background: 'rgba(15,23,42,0.6)', borderRadius: 12, padding: '16px', marginBottom: 20 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-                <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg,#6366f1,#a855f7)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800, color: '#fff', flexShrink: 0 }}>1</div>
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 13, fontWeight: 700, color: '#f1f5f9', margin: 0 }}>Primer paso — {fmtEUR(realismData.suggestedAmount)}</p>
-                  <p style={{ fontSize: 12, color: 'rgba(148,163,184,0.6)', margin: '2px 0 0' }}>Activo ahora · {realismData.suggestedHorizonMonths} meses</p>
+
+            <div className={s.statsCard}>
+              <div className={s.planRow}>
+                <div className={s.planStepBadge}>1</div>
+                <div className={s.planStepBody}>
+                  <p className={s.planStepTitle}>Primer paso — {fmtEUR(realismData.suggestedAmount)}</p>
+                  <p className={s.planStepSub}>Activo ahora · {realismData.suggestedHorizonMonths} meses</p>
                 </div>
-                <span style={{ fontSize: 18 }}>🎯</span>
+                <TargetIcon size={18} />
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, opacity: 0.45 }}>
-                <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(51,65,85,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: 'rgba(148,163,184,0.6)', flexShrink: 0 }}>…</div>
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: 'rgba(148,163,184,0.5)', margin: 0 }}>Próximos pasos · auto-generados</p>
-                  <p style={{ fontSize: 12, color: 'rgba(100,116,139,0.5)', margin: '2px 0 0' }}>Hasta {fmtEUR(userAmount)}</p>
+              <div className={`${s.planRow} ${s.planRowMuted}`}>
+                <div className={`${s.planStepBadge} ${s.planStepBadgeMuted}`}>…</div>
+                <div className={s.planStepBody}>
+                  <p className={s.planStepTitle}>Próximos pasos · auto-generados</p>
+                  <p className={s.planStepSub}>Hasta {fmtEUR(userAmount)}</p>
                 </div>
-                <span style={{ fontSize: 18, opacity: 0.3 }}>🏆</span>
+                <TrophyIcon size={18} />
               </div>
             </div>
+
             <button
+              type="button"
               onClick={() => doSave({ amount: realismData.suggestedAmount, months: realismData.suggestedHorizonMonths, finalGoalAmount: userAmount, isUnrealistic: true, subGoalIndex: 0 })}
-              style={{ width: '100%', padding: '13px', border: 'none', borderRadius: 12, background: 'linear-gradient(90deg,#6366f1,#a855f7)', color: '#fff', fontSize: 15, fontWeight: 700, cursor: 'pointer' }}
+              className={s.primaryBtn}
             >
               Empezar paso 1 → {fmtEUR(realismData.suggestedAmount)}
             </button>
@@ -191,220 +203,99 @@ function CreateGoalInner() {
     );
   }
 
-  const inputStyle: React.CSSProperties = {
-    width: '100%',
-    padding: '11px 14px',
-    background: 'rgba(15,23,42,0.6)',
-    border: '1px solid rgba(51,65,85,0.55)',
-    borderRadius: 10,
-    color: '#f1f5f9',
-    fontSize: 14,
-    fontWeight: 500,
-    outline: 'none',
-    boxSizing: 'border-box',
-    fontFamily: 'var(--font-app)',
-    transition: 'border-color 180ms ease',
-  };
-
-  const labelStyle: React.CSSProperties = {
-    display: 'block',
-    fontSize: 11,
-    fontWeight: 700,
-    color: 'rgba(148,163,184,0.6)',
-    textTransform: 'uppercase',
-    letterSpacing: '0.06em',
-    marginBottom: 6,
-  };
-
+  // ── Form screen ───────────────────────────────────────────────────────────
   return (
-    <main style={{
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '24px 16px',
-      fontFamily: 'var(--font-app)',
-    }}>
-      {/* Glow decorativo */}
-      <div style={{
-        position: 'fixed', top: '20%', left: '50%', transform: 'translateX(-50%)',
-        width: 600, height: 400,
-        background: 'radial-gradient(ellipse, rgba(37,99,235,0.1) 0%, transparent 70%)',
-        pointerEvents: 'none',
-      }} />
+    <main className={s.page}>
+      <div className={s.sky} />
 
-      <div style={{ width: '100%', maxWidth: 480, position: 'relative' }}>
-
-        {/* Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 32 }}>
-          <div style={{
-            width: 36, height: 36, borderRadius: 10,
-            background: 'linear-gradient(135deg, #a855f7, #2563eb)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: '#fff', fontWeight: 800, fontSize: 18,
-            boxShadow: '0 4px 14px rgba(168,85,247,0.4)',
-          }}>A</div>
+      <div className={s.container}>
+        <div className={s.brandRow}>
+          <div className={s.brandMark}>A</div>
           <div>
-            <span style={{ color: '#f1f5f9', fontWeight: 700, fontSize: 16 }}>Ahorro </span>
-            <span style={{ color: '#a855f7', fontWeight: 700, fontSize: 16 }}>Invisible</span>
+            <span className={s.brandName}>Ahorro </span>
+            <span className={s.brandAccent}>Invisible</span>
           </div>
         </div>
 
-        {/* Card principal */}
-        <div style={{
-          position: 'relative',
-          borderRadius: 20,
-          background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
-          border: '1px solid rgba(51,65,85,0.6)',
-          boxShadow: '0 25px 50px rgba(2,6,23,0.7)',
-          overflow: 'hidden',
-          padding: '28px 24px',
-        }}>
-          {/* Glow interior */}
-          <div style={{
-            position: 'absolute', top: -40, right: -40,
-            width: 200, height: 200,
-            background: 'radial-gradient(ellipse, rgba(37,99,235,0.1) 0%, transparent 70%)',
-            pointerEvents: 'none',
-          }} />
-
-          {/* Header */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-            <div style={{
-              width: 34, height: 34, borderRadius: 10,
-              background: 'linear-gradient(135deg, #2563eb, #6366f1)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 16, flexShrink: 0,
-              boxShadow: '0 4px 14px rgba(37,99,235,0.35)',
-            }}>🎯</div>
-            <span style={{
-              fontSize: 11, fontWeight: 700,
-              color: 'rgba(148,163,184,0.7)',
-              letterSpacing: '0.1em',
-              textTransform: 'uppercase',
-            }}>ÚLTIMO PASO · TU OBJETIVO</span>
+        <div className={s.card}>
+          <div className={s.stepHeader}>
+            <div className={s.medallion}>
+              <TargetIcon size={16} />
+            </div>
+            <span className={s.stepLabel}>Último paso · Tu objetivo</span>
           </div>
 
-          <h1 style={{
-            fontSize: 20, fontWeight: 800,
-            color: '#f1f5f9', margin: '0 0 6px',
-            lineHeight: 1.25,
-          }}>Define tu primer objetivo</h1>
-          <p style={{
-            fontSize: 13, color: 'rgba(148,163,184,0.75)',
-            margin: '0 0 28px', lineHeight: 1.5,
-          }}>
+          <h1 className={s.title}>Define tu primer objetivo</h1>
+          <p className={s.sub}>
             Será tu referencia diaria. Puedes editarlo en cualquier momento.
           </p>
 
-          {/* Sugerencia adaptativa */}
           {suggestion && goalSource === 'onboarding' && (
-            <div style={{ marginBottom: 20, padding: '12px 14px', background: 'rgba(168,85,247,0.1)', border: '1px solid rgba(168,85,247,0.3)', borderRadius: 12 }}>
-              <p style={{ fontSize: 12, fontWeight: 700, color: 'rgba(196,181,253,0.9)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>💡 Sugerido para tu perfil</p>
-              <p style={{ fontSize: 13, color: 'rgba(196,181,253,0.75)', margin: 0 }}>
-                Con tus ingresos puedes ahorrar ~<strong style={{ color: '#c4b5fd' }}>{new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(suggestion.monthly)}/mes</strong>. Meta inicial: <strong style={{ color: '#c4b5fd' }}>{new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(suggestion.target)}</strong> en {suggestion.horizonMonths} {suggestion.horizonMonths === 1 ? 'mes' : 'meses'}. Puedes ajustarlo.
+            <div className={s.suggestionBox}>
+              <p className={s.suggestionTitle}>Sugerido para tu perfil</p>
+              <p className={s.suggestionText}>
+                Con tus ingresos puedes ahorrar ~<strong className={s.highlightViolet}>{fmtEUR(suggestion.monthly)}/mes</strong>. Meta inicial: <strong className={s.highlightViolet}>{fmtEUR(suggestion.target)}</strong> en {suggestion.horizonMonths} {suggestion.horizonMonths === 1 ? 'mes' : 'meses'}. Puedes ajustarlo.
               </p>
             </div>
           )}
 
-          {/* Error */}
-          {error && (
-            <div style={{
-              marginBottom: 20,
-              padding: '10px 14px',
-              background: 'rgba(239,68,68,0.1)',
-              border: '1px solid rgba(239,68,68,0.3)',
-              borderRadius: 10,
-              fontSize: 13, color: '#fca5a5',
-            }}>
-              {error}
-            </div>
-          )}
+          {error && <div className={s.errorBox}>{error}</div>}
 
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-
+          <form onSubmit={handleSubmit} className={s.form}>
             <div>
-              <label style={labelStyle}>Nombre del objetivo</label>
+              <label className={s.label} htmlFor="new-goal-title">Nombre del objetivo</label>
               <input
+                id="new-goal-title"
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Viaje, emergencia, formación..."
-                style={inputStyle}
-                onFocus={(e) => { e.target.style.borderColor = 'rgba(99,102,241,0.5)'; }}
-                onBlur={(e) => { e.target.style.borderColor = 'rgba(51,65,85,0.55)'; }}
+                className={s.input}
               />
             </div>
 
             <div>
-              <label style={labelStyle}>Meta (€)</label>
+              <label className={s.label} htmlFor="new-goal-amount">Meta (€)</label>
               <input
+                id="new-goal-amount"
                 type="number"
                 min="1"
                 value={targetAmount}
                 onChange={(e) => setTargetAmount(e.target.value)}
                 placeholder="5000"
-                style={inputStyle}
-                onFocus={(e) => { e.target.style.borderColor = 'rgba(99,102,241,0.5)'; }}
-                onBlur={(e) => { e.target.style.borderColor = 'rgba(51,65,85,0.55)'; }}
+                className={s.input}
               />
             </div>
 
             <div>
-              <label style={labelStyle}>Horizonte (meses)</label>
+              <label className={s.label} htmlFor="new-goal-months">Horizonte (meses)</label>
               <input
+                id="new-goal-months"
                 type="number"
                 min="1"
                 value={horizonMonths}
                 onChange={(e) => setHorizonMonths(e.target.value)}
                 placeholder="12"
-                style={inputStyle}
-                onFocus={(e) => { e.target.style.borderColor = 'rgba(99,102,241,0.5)'; }}
-                onBlur={(e) => { e.target.style.borderColor = 'rgba(51,65,85,0.55)'; }}
+                className={s.input}
               />
             </div>
 
-            {/* Info hint */}
-            <div style={{
-              display: 'flex', alignItems: 'flex-start', gap: 10,
-              padding: '12px 14px',
-              background: 'rgba(37,99,235,0.08)',
-              border: '1px solid rgba(37,99,235,0.2)',
-              borderRadius: 10,
-            }}>
-              <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>💡</span>
-              <p style={{ fontSize: 12, color: 'rgba(148,163,184,0.75)', margin: 0, lineHeight: 1.5 }}>
+            <div className={s.hintBox}>
+              <span className={s.hintIcon}><TrendingUpIcon size={13} /></span>
+              <p className={s.hintText}>
                 Con cada decisión diaria irás acumulando pequeños ahorros hacia este objetivo.
               </p>
             </div>
 
-            <button
-              type="submit"
-              style={{
-                width: '100%', padding: '13px 0', marginTop: 4,
-                background: 'linear-gradient(90deg, #a855f7, #2563eb)',
-                border: 'none', borderRadius: 10,
-                color: '#fff', fontSize: 15, fontWeight: 700,
-                cursor: 'pointer', fontFamily: 'inherit',
-                boxShadow: '0 4px 14px rgba(168,85,247,0.35)',
-                transition: 'all 200ms ease',
-              }}
-            >
+            <button type="submit" className={s.primaryBtn}>
               Ir al Dashboard →
             </button>
-
           </form>
         </div>
 
-        <p style={{
-          textAlign: 'center', marginTop: 20,
-          fontSize: 13, color: 'rgba(148,163,184,0.4)',
-        }}>
-          Ya casi estás. Solo queda este paso ✨
+        <p className={s.footerNote}>
+          Ya casi estás. Solo queda este paso
         </p>
-
       </div>
     </main>
   );

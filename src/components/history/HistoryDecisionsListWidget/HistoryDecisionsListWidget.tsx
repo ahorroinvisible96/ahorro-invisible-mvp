@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import type { HistoryDecisionItem } from '@/hooks/useHistorySummary';
 import type { HistoryDecisionsListWidgetProps } from './HistoryDecisionsListWidget.types';
 import styles from './HistoryDecisionsListWidget.module.css';
-import { CloseIcon, EditIcon, TrashIcon } from '@/components/ui/AppIcons';
+import { CloseIcon, EditIcon, TrashIcon, BoltIcon, PlusIcon } from '@/components/ui/AppIcons';
 
 function formatDate(dateString: string): string {
   return new Intl.DateTimeFormat('es-ES', {
@@ -22,7 +22,8 @@ function formatEUR(amount: number): string {
   }).format(amount);
 }
 
-// ── Modal eliminar ───────────────────────────────────────────────────────────
+const ACCENT_MEDALLIONS = [styles.mViolet, styles.mCobalt, styles.mAmber];
+
 function DeleteModal({
   decision,
   onConfirm,
@@ -35,26 +36,26 @@ function DeleteModal({
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.grabber} />
         <div className={styles.modalHeader}>
           <h3 className={styles.modalTitle}>¿Eliminar este ahorro?</h3>
-          <button className={styles.modalClose} onClick={onClose}>
+          <button type="button" className={styles.modalClose} onClick={onClose} aria-label="Cerrar">
             <CloseIcon size={14} />
           </button>
         </div>
         <p className={styles.modalText}>
-          Se eliminará <strong style={{ color: '#f1f5f9' }}>{decision.questionText}</strong> y se revertirán{' '}
-          <strong style={{ color: '#4ade80' }}>{formatEUR(decision.deltaAmount)}</strong> del objetivo asociado.
+          Se eliminará <strong>{decision.questionText}</strong> y se revertirán{' '}
+          <strong style={{ color: '#12C48B' }}>{formatEUR(decision.deltaAmount)}</strong> del objetivo asociado.
         </p>
         <div className={styles.modalFooter}>
-          <button className={styles.btnCancel} onClick={onClose}>Cancelar</button>
-          <button className={styles.btnDanger} onClick={onConfirm}>Sí, eliminar</button>
+          <button type="button" className={styles.btnCancel} onClick={onClose}>Cancelar</button>
+          <button type="button" className={styles.btnDanger} onClick={onConfirm}>Eliminar</button>
         </div>
       </div>
     </div>
   );
 }
 
-// ── Modal editar ─────────────────────────────────────────────────────────────
 function EditModal({
   decision,
   onConfirm,
@@ -80,20 +81,20 @@ function EditModal({
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.grabber} />
         <div className={styles.modalHeader}>
           <h3 className={styles.modalTitle}>Editar ahorro</h3>
-          <button className={styles.modalClose} onClick={onClose}>
+          <button type="button" className={styles.modalClose} onClick={onClose} aria-label="Cerrar">
             <CloseIcon size={14} />
           </button>
         </div>
 
         <p className={styles.modalText}>
-          Modifica la cantidad ahorrada para{' '}
-          <strong style={{ color: '#f1f5f9' }}>{decision.questionText}</strong>.
+          Modifica la cantidad ahorrada para <strong>{decision.questionText}</strong>.
         </p>
 
         {error && (
-          <p style={{ fontSize: 12, color: '#f87171', marginBottom: 12, padding: '8px 12px', background: 'rgba(239,68,68,0.1)', borderRadius: 8 }}>
+          <p style={{ fontSize: 12.5, color: '#ff6961', marginBottom: 12, padding: '9px 12px', background: 'rgba(255,69,58,0.12)', borderRadius: 12 }}>
             {error}
           </p>
         )}
@@ -112,18 +113,16 @@ function EditModal({
         </div>
 
         <div className={styles.modalFooter}>
-          <button className={styles.btnCancel} onClick={onClose}>Cancelar</button>
-          <button className={styles.btnSave} onClick={handleSave}>Guardar cambio</button>
+          <button type="button" className={styles.btnCancel} onClick={onClose}>Cancelar</button>
+          <button type="button" className={styles.btnSave} onClick={handleSave}>Guardar</button>
         </div>
       </div>
     </div>
   );
 }
 
-// ── Componente principal — Lista simple ──────────────────────────────────────
 export function HistoryDecisionsListWidget({
   decisions,
-  onOpenDecision,
   onDeleteDecision,
   onEditDecision,
 }: HistoryDecisionsListWidgetProps): React.ReactElement {
@@ -136,44 +135,58 @@ export function HistoryDecisionsListWidget({
   return (
     <>
       <div className={styles.simpleList}>
-        {decisions.map((d, i) => (
-          <div
-            key={d.id}
-            className={`${styles.row} ${i < decisions.length - 1 ? styles.rowBorder : ''}`}
-          >
-            {/* Fecha */}
-            <span className={styles.rowDate}>{formatDate(d.date)}</span>
+        {decisions.map((d, idx) => {
+          const isExtra = d.questionId === 'extra_saving';
+          const isZero = d.deltaAmount === 0;
+          const medallionCls = isZero
+            ? styles.mSlate
+            : isExtra
+            ? styles.mEmerald
+            : ACCENT_MEDALLIONS[idx % ACCENT_MEDALLIONS.length];
+          return (
+            <div key={d.id} className={styles.row}>
+              <div className={`${styles.medallion} ${medallionCls}`}>
+                {isExtra ? <PlusIcon size={17} /> : <BoltIcon size={16} />}
+              </div>
 
-            {/* Texto de la pregunta (truncado) */}
-            <span className={styles.rowQuestion}>{d.questionText}</span>
+              <div className={styles.rowMain}>
+                <span className={styles.rowQuestion}>{d.questionText}</span>
+                <span className={styles.rowMeta}>
+                  {formatDate(d.date)}{d.goalTitle ? ` · ${d.goalTitle}` : ''}
+                </span>
+              </div>
 
-            {/* Importe */}
-            <span className={`${styles.rowAmount} ${d.deltaAmount === 0 ? styles.rowAmountZero : ''}`}>
-              {d.deltaAmount > 0 ? '+' : ''}{formatEUR(d.deltaAmount)}
-            </span>
+              <div className={styles.rowRight}>
+                <span className={`${styles.rowAmount} ${isZero ? styles.rowAmountZero : ''}`}>
+                  {d.deltaAmount > 0 ? '+' : ''}{formatEUR(d.deltaAmount)}
+                </span>
 
-            {/* Acciones mini */}
-            <div className={styles.rowActions}>
-              <button
-                className={styles.rowBtn}
-                title="Editar"
-                onClick={(e) => { e.stopPropagation(); setEditingId(d.id); }}
-              >
-                <EditIcon size={12} />
-              </button>
-              <button
-                className={`${styles.rowBtn} ${styles.rowBtnDanger}`}
-                title="Eliminar"
-                onClick={(e) => { e.stopPropagation(); setDeletingId(d.id); }}
-              >
-                <TrashIcon size={12} />
-              </button>
+                <div className={styles.rowActions}>
+                  <button
+                    type="button"
+                    className={styles.rowBtn}
+                    title="Editar"
+                    aria-label="Editar ahorro"
+                    onClick={(e) => { e.stopPropagation(); setEditingId(d.id); }}
+                  >
+                    <EditIcon size={13} />
+                  </button>
+                  <button
+                    type="button"
+                    className={`${styles.rowBtn} ${styles.rowBtnDanger}`}
+                    title="Eliminar"
+                    aria-label="Eliminar ahorro"
+                    onClick={(e) => { e.stopPropagation(); setDeletingId(d.id); }}
+                  >
+                    <TrashIcon size={13} />
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      {/* Modal eliminar */}
       {deletingDecision && (
         <DeleteModal
           decision={deletingDecision}
@@ -182,7 +195,6 @@ export function HistoryDecisionsListWidget({
         />
       )}
 
-      {/* Modal editar */}
       {editingDecision && (
         <EditModal
           decision={editingDecision}

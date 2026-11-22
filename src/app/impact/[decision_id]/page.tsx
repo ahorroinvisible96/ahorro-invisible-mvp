@@ -1,23 +1,31 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { analytics } from "@/services/analytics";
 import { QUESTIONS_BANK } from "@/services/dailyQuestionsBank";
 import type { DailyDecision, Goal } from "@/types/Dashboard";
+import { CheckIcon, BoltIcon, TargetIcon } from "@/components/ui/AppIcons";
+import styles from "./Impact.module.css";
 
 type StoreShape = { decisions: DailyDecision[]; goals: Goal[] };
 
 function formatEUR(n: number): string {
-  return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
+  return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 2 }).format(n);
 }
 
 function formatDate(d: string): string {
   return new Intl.DateTimeFormat('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date(d));
 }
 
-export default function ImpactPage({ params }: { params: { decision_id: string } }) {
+export default function ImpactPage() {
   const router = useRouter();
+  const routeParams = useParams();
+  const decisionId = typeof routeParams?.decision_id === 'string'
+    ? routeParams.decision_id
+    : Array.isArray(routeParams?.decision_id)
+      ? routeParams.decision_id[0]
+      : '';
   const [decision, setDecision] = useState<DailyDecision | null>(null);
   const [goal, setGoal] = useState<Goal | null>(null);
   const [sameDecisionCount, setSameDecisionCount] = useState(0);
@@ -35,18 +43,16 @@ export default function ImpactPage({ params }: { params: { decision_id: string }
       if (!raw) { setError(true); setLoading(false); return; }
 
       const store = JSON.parse(raw) as StoreShape;
-      const found = store.decisions.find((d) => d.id === params.decision_id) ?? null;
+      const found = store.decisions.find((d) => d.id === decisionId) ?? null;
       if (!found) { setError(true); setLoading(false); return; }
 
       const foundGoal = store.goals.find((g) => g.id === found.goalId) ?? null;
 
-      // Histórico: cuántas veces han tomado la misma decisión (mismo questionId + answerKey)
       const count = store.decisions.filter(
         (d) => d.questionId === found.questionId && d.answerKey === found.answerKey
       ).length;
       setSameDecisionCount(count);
 
-      // Total ahorrado acumulado en toda la historia
       const total = store.decisions.reduce((s, d) => s + (d.deltaAmount ?? 0), 0);
       setTotalSavedAllTime(total);
 
@@ -62,35 +68,21 @@ export default function ImpactPage({ params }: { params: { decision_id: string }
       setError(true);
       setLoading(false);
     }
-  }, [params.decision_id, router]);
+  }, [decisionId, router]);
 
   useEffect(() => {
     analytics.setScreen("impact");
     load();
   }, [load]);
 
-  const q = decision ? QUESTIONS_BANK.find((q) => q.id === decision.questionId) : null;
-  const answerLabel = decision && decision.deltaAmount > 0 ? `Ahorré ${formatEUR(decision.deltaAmount)}` : 'No ahorré hoy';
+  const q = decision ? QUESTIONS_BANK.find((item) => item.id === decision.questionId) : null;
   const goalPct = goal ? Math.min(100, Math.round((goal.currentAmount / goal.targetAmount) * 100)) : 0;
 
-  const DARK = {
-    page: '#0f172a',
-    card: '#1e293b',
-    cardBorder: 'rgba(51,65,85,0.6)',
-    textPrimary: '#f1f5f9',
-    textSecondary: 'rgba(148,163,184,0.85)',
-    textMuted: 'rgba(148,163,184,0.5)',
-    border: 'rgba(51,65,85,0.55)',
-    green: { bg: 'rgba(22,163,74,0.12)', border: 'rgba(22,163,74,0.3)', text: '#4ade80', label: '#86efac' },
-    amber: { bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.25)', text: '#fcd34d', label: '#fde68a' },
-    blue: { bg: 'rgba(37,99,235,0.12)', border: 'rgba(37,99,235,0.3)' },
-  };
-
   const NEGATIVE_TIPS: Record<string, string> = {
-    coffee:       'Mañana tienes otra oportunidad. El hábito se construye con la tendencia, no con cada día.',
-    delivery:     'Cocinar en casa suma poco a poco. La próxima vez que lo evites, habrás compensado hoy.',
-    transport:    'El transporte tiene días inevitables. Lo que cuenta es la tendencia semanal.',
-    impulse:      'Haberlo registrado ya es un acto de consciencia. La próxima vez el freno llegará antes.',
+    coffee: 'Mañana tienes otra oportunidad. El hábito se construye con la tendencia, no con cada día.',
+    delivery: 'Cocinar en casa suma poco a poco. La próxima vez que lo evites, habrás compensado hoy.',
+    transport: 'El transporte tiene días inevitables. Lo que cuenta es la tendencia semanal.',
+    impulse: 'Haberlo registrado ya es un acto de consciencia. La próxima vez el freno llegará antes.',
     subscription: 'Las suscripciones se optimizan una vez y ahorran para siempre. Anótatela para revisarla.',
   };
 
@@ -100,18 +92,14 @@ export default function ImpactPage({ params }: { params: { decision_id: string }
     : null;
 
   if (loading) {
-    return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: DARK.page }}>
-        <span style={{ color: DARK.textMuted, fontSize: 14 }}>Cargando impacto...</span>
-      </div>
-    );
+    return <div className={styles.centerState}>Cargando impacto...</div>;
   }
 
   if (error || !decision) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: DARK.page, padding: 24 }}>
-        <p style={{ color: DARK.textSecondary, fontSize: 14, marginBottom: 16 }}>No se encontró esta decisión.</p>
-        <button onClick={() => router.push('/dashboard')} style={{ padding: '10px 20px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight: 600 }}>
+      <div className={styles.centerState}>
+        <p style={{ margin: 0, fontSize: 14 }}>No se encontró esta decisión.</p>
+        <button type="button" onClick={() => router.push('/dashboard')} className={styles.btnWhite} style={{ width: 'auto', padding: '0 24px' }}>
           Volver al dashboard
         </button>
       </div>
@@ -119,105 +107,98 @@ export default function ImpactPage({ params }: { params: { decision_id: string }
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: DARK.page, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '24px 16px' }}>
-      <div style={{ width: '100%', maxWidth: 480 }}>
+    <div className={styles.page}>
+      <div className={`${styles.sky} ${isNegativeDecision ? styles.skyNeutral : ''}`}>
+        <div className={styles.inner}>
+          <div className={styles.topBar}>
+            <button type="button" onClick={() => router.push('/dashboard')} className={styles.glassBtn} aria-label="Volver al dashboard">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+            <span className={styles.dateLabel}>{formatDate(decision.date)}</span>
+            <div style={{ width: 38 }} />
+          </div>
 
-        {/* Header */}
-        <button onClick={() => router.push('/dashboard')} style={{ background: 'none', border: 'none', color: DARK.textSecondary, fontSize: 13, cursor: 'pointer', marginBottom: 20, padding: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
-          ← Volver al dashboard
-        </button>
-
-        {/* Título */}
-        <div style={{ background: DARK.card, borderRadius: 16, padding: '24px', border: `1px solid ${DARK.cardBorder}`, marginBottom: 16 }}>
-          <p style={{ fontSize: 12, color: DARK.textMuted, marginBottom: 4, textTransform: 'capitalize' }}>{formatDate(decision.date)}</p>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: DARK.textPrimary, marginBottom: 8 }}>
-            {isNegativeDecision ? 'Decisión registrada' : 'Impacto de hoy'}
-          </h1>
-          <p style={{ fontSize: 14, color: DARK.textSecondary, marginBottom: 0 }}>
-            {isNegativeDecision ? 'La constancia importa más que cada día individual.' : 'Esto es lo que suma tu constancia.'}
-          </p>
-        </div>
-
-        {/* Decisión tomada */}
-        <div style={{ background: DARK.card, borderRadius: 16, padding: '20px 24px', border: `1px solid ${DARK.cardBorder}`, marginBottom: 16 }}>
-          <p style={{ fontSize: 12, fontWeight: 700, color: DARK.textMuted, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10 }}>Decisión tomada</p>
-          <p style={{ fontSize: 14, fontWeight: 600, color: DARK.textPrimary, marginBottom: 6 }}>{q?.text ?? decision.questionId}</p>
-          <div style={{ display: 'inline-flex', alignItems: 'center', background: DARK.blue.bg, border: `1px solid ${DARK.blue.border}`, borderRadius: 8, padding: '5px 12px' }}>
-            <span style={{ fontSize: 13, color: '#93c5fd', fontWeight: 600 }}>{answerLabel}</span>
+          <div className={styles.heroCenter}>
+            <div className={`${styles.heroMedallion} ${isNegativeDecision ? styles.heroMedallionNeutral : ''}`}>
+              <CheckIcon size={24} />
+            </div>
+            <div className={styles.heroAmount}>
+              {decision.deltaAmount > 0 ? `+${formatEUR(decision.deltaAmount)}` : '0 €'}
+            </div>
+            <h1 className={styles.heroTitle}>
+              {isNegativeDecision ? 'Decisión registrada' : 'Impacto registrado hoy'}
+            </h1>
+            <p className={styles.heroSub}>
+              {isNegativeDecision ? 'La constancia importa más que cada día individual.' : 'Esto es lo que suma tu constancia.'}
+            </p>
+            {totalSavedAllTime > 0 && (
+              <div className={styles.heroPill}>Total acumulado · {formatEUR(totalSavedAllTime)}</div>
+            )}
           </div>
         </div>
+      </div>
 
-        {/* Feedback negativo (delta = 0) */}
-        {isNegativeDecision && negativeTip && (
-          <div style={{ background: DARK.amber.bg, border: `1px solid ${DARK.amber.border}`, borderRadius: 16, padding: '20px 24px', marginBottom: 16 }}>
-            <p style={{ fontSize: 12, fontWeight: 700, color: DARK.amber.label, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8 }}>💡 Para la próxima</p>
-            <p style={{ fontSize: 14, color: DARK.textSecondary, lineHeight: 1.6, margin: 0 }}>{negativeTip}</p>
+      <div className={styles.body}>
+        <section className={styles.card}>
+          <div className={styles.rows}>
+            <div className={styles.row}>
+              <div className={`${styles.medallion} ${styles.mViolet}`}>
+                <BoltIcon size={18} />
+              </div>
+              <div className={styles.rowMid}>
+                <p className={styles.rowTitle}>{q?.text ?? decision.questionId}</p>
+                <p className={styles.rowSub}>
+                  {sameDecisionCount > 1
+                    ? `${sameDecisionCount}ª vez tomando esta decisión`
+                    : decision.deltaAmount > 0 ? `Ahorré ${formatEUR(decision.deltaAmount)}` : 'Registrado hoy'}
+                </p>
+              </div>
+            </div>
+
+            {isNegativeDecision && negativeTip && (
+              <div className={styles.row}>
+                <div className={`${styles.medallion} ${styles.mAmber}`}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 18h6" /><path d="M10 22h4" />
+                    <path d="M12 2a7 7 0 0 0-4 12.74V17h8v-2.26A7 7 0 0 0 12 2z" />
+                  </svg>
+                </div>
+                <div className={styles.rowMid}>
+                  <p className={styles.rowTitle}>Para la próxima</p>
+                  <p className={styles.rowSub}>{negativeTip}</p>
+                </div>
+              </div>
+            )}
+
+            {goal && (
+              <div className={styles.row}>
+                <div className={`${styles.medallion} ${styles.mCobalt}`}>
+                  <TargetIcon size={18} />
+                </div>
+                <div className={styles.rowMid}>
+                  <div className={styles.rowTitleRow}>
+                    <span className={styles.rowTitle}>{goal.title}</span>
+                    <span className={styles.rowPct}>{goalPct}%</span>
+                  </div>
+                  <p className={styles.rowSub}>
+                    {formatEUR(goal.currentAmount)} de {formatEUR(goal.targetAmount)}
+                  </p>
+                  <div className={styles.barTrack}>
+                    <div className={styles.barFill} style={{ width: `${goalPct}%` }} />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
-        )}
+        </section>
 
-        {/* Ahorro registrado */}
-        {decision.deltaAmount > 0 && (
-          <div style={{ background: DARK.green.bg, border: `1px solid ${DARK.green.border}`, borderRadius: 16, padding: '20px 24px', marginBottom: 16 }}>
-            <p style={{ fontSize: 12, fontWeight: 700, color: DARK.green.label, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 14 }}>Ahorro registrado</p>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: 14, color: DARK.textSecondary }}>Hoy has ahorrado</span>
-              <span style={{ fontSize: 18, fontWeight: 700, color: DARK.green.text }}>+{formatEUR(decision.deltaAmount)}</span>
-            </div>
-          </div>
-        )}
-
-        {/* Progreso del objetivo */}
-        {goal && (
-          <div style={{ background: DARK.card, borderRadius: 16, padding: '20px 24px', border: `1px solid ${DARK.cardBorder}`, marginBottom: 16 }}>
-            <p style={{ fontSize: 12, fontWeight: 700, color: DARK.textMuted, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 12 }}>Objetivo</p>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-              <span style={{ fontSize: 14, fontWeight: 600, color: DARK.textPrimary }}>{goal.title}</span>
-              <span style={{ fontSize: 14, fontWeight: 700, color: '#60a5fa' }}>{goalPct}%</span>
-            </div>
-            <div style={{ background: 'rgba(51,65,85,0.6)', borderRadius: 999, height: 8, overflow: 'hidden' }}>
-              <div style={{ width: `${goalPct}%`, height: 8, background: 'linear-gradient(90deg, #60a5fa, #2563eb)', borderRadius: 999, transition: 'width 0.4s' }} />
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
-              <span style={{ fontSize: 12, color: DARK.textMuted }}>{formatEUR(goal.currentAmount)}</span>
-              <span style={{ fontSize: 12, color: DARK.textMuted }}>{formatEUR(goal.targetAmount)}</span>
-            </div>
-          </div>
-        )}
-
-        {/* Total acumulado */}
-        {totalSavedAllTime > 0 && (
-          <div style={{ background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.25)', borderRadius: 16, padding: '20px 24px', marginBottom: 16 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: 14, color: DARK.textSecondary }}>Total ahorrado hasta hoy</span>
-              <span style={{ fontSize: 18, fontWeight: 800, color: '#c4b5fd' }}>{formatEUR(totalSavedAllTime)}</span>
-            </div>
-          </div>
-        )}
-
-        {/* Comparativa histórica */}
-        {sameDecisionCount > 1 && (
-          <div style={{ background: DARK.card, borderRadius: 16, padding: '16px 24px', border: `1px solid ${DARK.cardBorder}`, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 14 }}>
-            <span style={{ fontSize: 28 }}>🔥</span>
-            <div>
-              <p style={{ fontSize: 14, fontWeight: 700, color: DARK.textPrimary, margin: 0 }}>
-                Llevas {sameDecisionCount} {sameDecisionCount === 1 ? 'vez' : 'veces'} tomando esta decisión
-              </p>
-              <p style={{ fontSize: 12, color: DARK.textSecondary, margin: '3px 0 0' }}>
-                La constancia es tu superpoder financiero.
-              </p>
-            </div>
-          </div>
-        )}
-
-
-
-        {/* CTAs */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {/* Compartir */}
+        <div className={styles.ctas}>
           <button
+            type="button"
             onClick={async () => {
-              const q = QUESTIONS_BANK.find((q) => q.id === decision.questionId);
-              const shareText = `Con Ahorro Invisible acabo de registrar una decisión consciente. ¡Construyendo hábitos de ahorro! 💡`;
+              const shareText = `Con Ahorro Invisible acabo de registrar una decisión consciente. ¡Construyendo hábitos de ahorro!`;
               if (navigator.share) {
                 await navigator.share({ title: 'Mi decisión en Ahorro Invisible', text: shareText, url: 'https://ahorro-invisible.vercel.app' }).catch(() => null);
               } else {
@@ -226,19 +207,21 @@ export default function ImpactPage({ params }: { params: { decision_id: string }
                 setTimeout(() => setShared(false), 2500);
               }
             }}
-            style={{ padding: '13px 0', background: 'linear-gradient(90deg,#a855f7,#2563eb)', border: 'none', borderRadius: 12, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}
+            className={styles.btnWhite}
           >
-            {shared ? '✅ Copiado al portapapeles' : '📤 Compartir mi logro'}
+            {shared ? 'Copiado al portapapeles' : 'Compartir mi logro'}
           </button>
           <button
+            type="button"
             onClick={() => { analytics.impactCtaExtraSavingsClicked(); router.push('/extra-saving'); }}
-            style={{ padding: '13px 0', background: DARK.card, border: `1.5px solid ${DARK.border}`, borderRadius: 12, color: DARK.textPrimary, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}
+            className={styles.btnGhost}
           >
             Registrar acción extra
           </button>
           <button
+            type="button"
             onClick={() => { analytics.impactCtaHistoryClicked(); router.push('/history'); }}
-            style={{ padding: '13px 0', background: 'transparent', border: 'none', color: DARK.textMuted, fontSize: 14, cursor: 'pointer' }}
+            className={styles.btnLink}
           >
             Ver historial completo
           </button>

@@ -1,42 +1,19 @@
-/* ── Container ── */
+/* ═══════════════════════════════════════════════════════════
+   HISTORY EMPTY STATE — Reference Dark / Liquid Glass V2
+   ═══════════════════════════════════════════════════════════ */
+
 .wrapper {
   position: relative;
-  border-radius: var(--radius-widget);
+  border-radius: 24px;
+  background: #171822;
+  border: 1px solid rgba(255, 255, 255, 0.045);
   overflow: hidden;
 }
 
-.bgGradient {
-  position: absolute;
-  inset: 0;
-  background: var(--widget-bg);
-}
-
-.glowBlue {
-  position: absolute;
-  bottom: -30px;
-  left: -30px;
-  width: 160px;
-  height: 160px;
-  border-radius: 50%;
-  background: rgba(59, 130, 246, 0.12);
-  filter: blur(40px);
-  pointer-events: none;
-}
-
+.bgGradient,
+.glowBlue,
 .borderLayer {
-  position: absolute;
-  inset: 0;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--widget-border);
-  pointer-events: none;
-}
-
-/* ── Categoría: summary — glow neutro reducido ── */
-.wrapper[data-widget-cat="summary"] .borderLayer {
-  border-color: var(--widget-cat-summary-border);
-}
-.wrapper[data-widget-cat="summary"] .glowBlue {
-  opacity: 0.6;
+  display: none;
 }
 
 .content {
@@ -46,53 +23,68 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .iconWrap {
   width: 52px;
   height: 52px;
-  border-radius: var(--radius-md);
-  background: var(--widget-icon-bg);
-  border: 1px solid var(--widget-icon-border);
+  border-radius: 999px;
+  background: #5b6cf9;
+  color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-text-muted);
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 .title {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 700;
-  color: var(--color-text-primary);
+  color: #ffffff;
   margin: 0;
 }
 
 .subtitle {
-  font-size: 13px;
-  color: rgba(148, 163, 184, 0.65);
+  font-size: 13.5px;
+  color: #9a9fb2;
   margin: 0;
   line-height: 1.5;
-  max-width: 280px;
+  max-width: 290px;
 }
 
 .btn {
-  margin-top: 8px;
-  padding: 10px 20px;
+  margin-top: 10px;
+  padding: 12px 24px;
   border: none;
-  border-radius: var(--radius-icon);
-  background: linear-gradient(90deg, #2563eb, #a855f7);
-  color: #fff;
-  font-size: 13px;
-  font-weight: 700;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #080910;
+  font-size: 14px;
+  font-weight: 650;
   cursor: pointer;
-  transition: all var(--transition-normal);
-  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+  font-family: inherit;
+  transition: opacity 150ms ease;
 }
 
 .btn:hover {
-  background: linear-gradient(90deg, #1d4ed8, #9333ea);
-  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.45);
+  opacity: 0.9;
 }
 
+:global([data-theme="light"]) .wrapper {
+  background: #ffffff;
+  border-color: rgba(11, 18, 32, 0.07);
+}
+
+:global([data-theme="light"]) .title {
+  color: #0b1220;
+}
+
+:global([data-theme="light"]) .subtitle {
+  color: #475569;
+}
+
+:global([data-theme="light"]) .btn {
+  background: #0b1220;
+  color: #ffffff;
+}

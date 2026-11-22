@@ -9,6 +9,7 @@ import { authSignUp, authSendMagicLink } from '@/services/authService';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import { saveUserProfileToSupabase } from "@/services/syncService";
 import { identifyUser } from "@/lib/posthog";
+import { TargetIcon, BoltIcon, TrendingUpIcon, StarIcon, ShieldIcon } from "@/components/ui/AppIcons";
 import s from './signup.module.css';
 
 export default function SignupPage() {
@@ -90,7 +91,7 @@ export default function SignupPage() {
       <div className={s.verifyPage}>
         <div className={s.verifyContainer}>
           <div className={s.verifyCard}>
-            <div className={s.verifyEmoji}>✉️</div>
+            <div className={s.verifyEmoji}><ShieldIcon size={26} /></div>
             <h2 className={s.verifyTitle}>Verifica tu email</h2>
             <p className={s.verifyText}>Enviamos un enlace de confirmación a:</p>
             <p className={s.verifyEmail}>{email}</p>
@@ -151,12 +152,12 @@ export default function SignupPage() {
 
             <div className={s.features}>
               {[
-                { icon: '🎯', text: 'Define objetivos y sigue tu progreso' },
-                { icon: '⚡', text: 'Decisiones diarias que generan ahorro real' },
-                { icon: '📈', text: 'Visualiza tu evolución en el tiempo' },
+                { icon: <TargetIcon size={17} />, tone: '', text: 'Define objetivos y sigue tu progreso' },
+                { icon: <BoltIcon size={17} />, tone: s.featureIconEmerald, text: 'Decisiones diarias que generan ahorro real' },
+                { icon: <TrendingUpIcon size={17} />, tone: s.featureIconSky, text: 'Visualiza tu evolución en el tiempo' },
               ].map((f) => (
                 <div key={f.text} className={s.featureItem}>
-                  <span className={s.featureIcon}>{f.icon}</span>
+                  <span className={`${s.featureIcon} ${f.tone}`}>{f.icon}</span>
                   <span className={s.featureText}>{f.text}</span>
                 </div>
               ))}
@@ -184,8 +185,8 @@ export default function SignupPage() {
               <div className={s.cardGlow} />
 
               <div className={s.stepHeader}>
-                <div className={s.stepIcon}>✨</div>
-                <span className={s.stepLabel}>PASO 1 DE 4 · REGISTRO</span>
+                <div className={s.stepIcon}><StarIcon size={15} /></div>
+                <span className={s.stepLabel}>Paso 1 de 4 · Registro</span>
               </div>
 
               <h2 className={s.cardTitle}>Crea tu cuenta</h2>

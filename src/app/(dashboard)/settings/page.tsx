@@ -14,29 +14,27 @@ import { SettingsSessionWidget } from '@/components/settings/SettingsSessionWidg
 import { SettingsDangerZoneWidget } from '@/components/settings/SettingsDangerZoneWidget/SettingsDangerZoneWidget';
 import { SettingsHelpWidget } from '@/components/settings/SettingsHelpWidget/SettingsHelpWidget';
 import styles from './Settings.module.css';
-import { SettingsIcon } from '@/components/ui/AppIcons';
 import { WidgetSkeleton } from '@/components/ui/Skeleton/Skeleton';
 import { useToast } from '@/components/ui/Toast/Toast';
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-function truncateEmail(email: string, max = 18): string {
-  if (!email || email.length <= max) return email || '—';
+function truncateEmail(email: string, max = 26): string {
+  if (!email || email.length <= max) return email || 'Sesión local';
   const [local, domain] = email.split('@');
   if (!domain) return email.slice(0, max) + '…';
-  const localShort = local.length > 8 ? local.slice(0, 7) + '…' : local;
+  const localShort = local.length > 10 ? local.slice(0, 9) + '…' : local;
   return `${localShort}@${domain}`;
 }
 
 const THEME_LABELS: Record<string, string> = {
-  dark:   'Oscuro',
-  light:  'Claro',
+  dark: 'Modo oscuro',
+  light: 'Modo claro',
   system: 'Sistema',
 };
 
 export default function SettingsPage() {
   const router = useRouter();
-  const [loading, setLoading]           = useState(true);
-  const [userEmail, setUserEmail]       = useState('');
+  const [loading, setLoading] = useState(true);
+  const [userEmail, setUserEmail] = useState('');
   const [notifEnabled, setNotifEnabled] = useState(false);
   const [currentTheme, setCurrentTheme] = useState('dark');
 
@@ -46,11 +44,9 @@ export default function SettingsPage() {
     if (isAuth !== 'true') { router.replace('/login'); return; }
     const summary = buildSummary('30d');
     setUserEmail(summary.userEmail);
-    // Estado de notificaciones
     const notifPerm = typeof Notification !== 'undefined' ? Notification.permission : 'default';
     const notifSaved = localStorage.getItem('push_reminders_enabled');
     setNotifEnabled(notifPerm === 'granted' && notifSaved === 'true');
-    // Tema actual
     setCurrentTheme(getTheme());
     analytics.settingsViewed();
     setLoading(false);
@@ -71,7 +67,7 @@ export default function SettingsPage() {
   }, [addToast]);
 
   const handleDownloadQuestions = useCallback(() => {
-    const escapeCSV = (val: any): string => {
+    const escapeCSV = (val: unknown): string => {
       if (val === null || val === undefined) return '';
       let str = String(val);
       str = str.replace(/\r?\n|\r/g, ' ');
@@ -82,7 +78,6 @@ export default function SettingsPage() {
     };
 
     const headers = ['ID', 'Texto', 'Avatar', 'Franja Horaria', 'Opción 1', 'Opción 2', 'Opción 3'];
-
     const rows = QUESTIONS_BANK.map(q => [
       q.id, q.text, q.avatar, q.timeSlot,
       q.options[0] ?? '', q.options[1] ?? '', q.options[2] ?? '',
@@ -134,129 +129,51 @@ export default function SettingsPage() {
     );
   }
 
-  const themeLabel = THEME_LABELS[currentTheme] ?? 'Oscuro';
-  const themeColor = currentTheme === 'light' ? '#fbbf24' : currentTheme === 'system' ? '#60a5fa' : '#a78bfa';
-  const notifLabel = notifEnabled ? 'Activas' : 'Inactivas';
-  const notifColor = notifEnabled ? '#4ade80' : 'rgba(255,255,255,0.35)';
+  const themeLabel = THEME_LABELS[currentTheme] ?? 'Modo oscuro';
+  const notifLabel = notifEnabled ? 'Notificaciones activas' : 'Notificaciones inactivas';
   const emailShort = truncateEmail(userEmail);
 
   return (
     <div className={styles.page}>
-
-      {/* ══════════════════════════════════════════════════════════════════════
-          ZONA 1 — HEADER PRINCIPAL (degradado azul)
-          Contiene: icono + título → 3 métricas clave (cuenta, notifs, tema)
-          ══════════════════════════════════════════════════════════════════════ */}
       <div className={styles.headerZone}>
         <div className={styles.zoneInner}>
-          <div className={styles.headerContent}>
-
-            {/* Icono + título */}
-            <div className={styles.headerTop}>
-              <div className={styles.headerIconWrap}>
-                <SettingsIcon size={22} />
-              </div>
-              <div className={styles.headerTitles}>
-                <span className={styles.headerSub}>Ajustes de la app</span>
-                <h1 className={styles.headerTitle}>Configuración</h1>
-              </div>
-            </div>
-
-            {/* Divisor */}
-            <div className={styles.headerDivider} />
-
-            {/* Tarjetas de métricas: cuenta · notificaciones · tema */}
-            <div className={styles.metricsRow}>
-
-              {/* Métrica 1: Cuenta activa */}
-              <div className={styles.metricCard}>
-                <span className={styles.metricLabel}>Cuenta</span>
-                <span className={styles.metricValue} title={userEmail}>
-                  {emailShort}
-                </span>
-                <span className={styles.metricSub}>sesión activa</span>
-              </div>
-
-              {/* Métrica 2: Estado de notificaciones */}
-              <div className={styles.metricCard}>
-                <span className={styles.metricLabel}>Notifs</span>
-                <span className={styles.metricValueAccent} style={{ color: notifColor }}>
-                  {notifLabel}
-                </span>
-                <span className={styles.metricSub}>recordatorio diario</span>
-              </div>
-
-              {/* Métrica 3: Tema actual */}
-              <div className={styles.metricCard}>
-                <span className={styles.metricLabel}>Tema</span>
-                <span className={styles.metricValueAccent} style={{ color: themeColor }}>
-                  {themeLabel}
-                </span>
-                <span className={styles.metricSub}>modo de pantalla</span>
-              </div>
-
-            </div>
-
+          <div className={styles.topBar}>
+            <button type="button" className={styles.glassBtn} onClick={() => router.push('/profile')} aria-label="Volver a perfil">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+            <span className={styles.topBarLabel}>Configuración</span>
+            <div style={{ width: 36 }} />
           </div>
+
+          <h1 className={styles.headerTitle}>Ajustes</h1>
+          <p className={styles.headerMeta}>
+            {emailShort} · {notifLabel} · {themeLabel}
+          </p>
         </div>
       </div>
 
-      {/* ══════════════════════════════════════════════════════════════════════
-          ZONA 2 — CONTENIDO SECUNDARIO (fondo oscuro sólido)
-          Widgets de ajuste agrupados por categoría
-          ══════════════════════════════════════════════════════════════════════ */}
       <div className={styles.contentZone}>
         <div className={styles.zoneInner}>
-          <div className={styles.contentCol}>
-
-            {/* ─── Mis datos y privacidad ─── */}
-            <div className={styles.sectionGroup}>
-              <p className={styles.sectionLabel}>MIS DATOS</p>
-              <div className={styles.listCard}>
-                <SettingsMyDataWidget
-                  onExport={handleExport}
-                  onResetOnboarding={handleResetOnboarding}
-                  onDownloadQuestions={handleDownloadQuestions}
-                />
-              </div>
+          <div className={styles.contentGrid}>
+            <div className={styles.colStack}>
+              <SettingsNotificationsWidget />
+              <SettingsMyDataWidget
+                onExport={handleExport}
+                onResetOnboarding={handleResetOnboarding}
+                onDownloadQuestions={handleDownloadQuestions}
+              />
             </div>
 
-            {/* ─── Notificaciones ─── */}
-            <div className={styles.sectionGroup}>
-              <p className={styles.sectionLabel}>NOTIFICACIONES</p>
-              <div className={styles.listCard}>
-                <SettingsNotificationsWidget />
-              </div>
+            <div className={styles.colStack}>
+              <SettingsHelpWidget />
+              <SettingsSessionWidget email={userEmail} onLogout={handleLogout} />
+              <SettingsDangerZoneWidget onResetAll={handleResetAll} />
             </div>
-
-            {/* ─── Sesión ─── */}
-            <div className={styles.sectionGroup}>
-              <p className={styles.sectionLabel}>SESIÓN</p>
-              <div className={styles.listCard}>
-                <SettingsSessionWidget email={userEmail} onLogout={handleLogout} />
-              </div>
-            </div>
-
-            {/* ─── Zona de peligro ─── */}
-            <div className={styles.sectionGroup}>
-              <p className={styles.sectionLabel}>ZONA DE PELIGRO</p>
-              <div className={styles.listCard}>
-                <SettingsDangerZoneWidget onResetAll={handleResetAll} />
-              </div>
-            </div>
-
-            {/* ─── Ayuda y soporte ─── */}
-            <div className={styles.sectionGroup}>
-              <p className={styles.sectionLabel}>AYUDA</p>
-              <div className={styles.listCard}>
-                <SettingsHelpWidget />
-              </div>
-            </div>
-
           </div>
         </div>
       </div>
-
     </div>
   );
 }

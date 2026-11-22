@@ -1,6 +1,6 @@
-/* 
+/*
  * ═══════════════════════════════════════════════════════════
- * LOGIN PAGE — CSS Modules
+ * LOGIN PAGE — V2 Refinada · Reference Dark / Liquid Glass
  * Importa estilos compartidos de auth-shared.module.css
  * ═══════════════════════════════════════════════════════════
  */
@@ -24,6 +24,9 @@
 .features { composes: features from '../auth-shared.module.css'; }
 .featureItem { composes: featureItem from '../auth-shared.module.css'; }
 .featureIcon { composes: featureIcon from '../auth-shared.module.css'; }
+.featureIconEmerald { composes: featureIconEmerald from '../auth-shared.module.css'; }
+.featureIconSky { composes: featureIconSky from '../auth-shared.module.css'; }
+.featureIconViolet { composes: featureIconViolet from '../auth-shared.module.css'; }
 .featureText { composes: featureText from '../auth-shared.module.css'; }
 
 .formPanel { composes: formPanel from '../auth-shared.module.css'; }
@@ -49,34 +52,49 @@
    ESTILOS PROPIOS DE LOGIN
    ═══════════════════════════════════════════════════════════ */
 
-/* Mode toggle tabs */
+/* Segmented control iOS pill */
 .modeToggle {
   display: flex;
-  background: rgba(10, 8, 25, 0.60);
-  border-radius: var(--radius-input);
-  padding: 3px;
+  background: #0f1019;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 999px;
+  padding: 4px;
   margin-bottom: 20px;
-  gap: 3px;
+  gap: 4px;
 }
 
 .modeBtn {
   flex: 1;
-  padding: 8px 0;
-  border-radius: var(--radius-sm);
+  min-height: 38px;
+  padding: 0 12px;
+  border-radius: 999px;
   border: none;
   background: transparent;
-  color: rgba(148, 163, 184, 0.6);
+  color: rgba(255, 255, 255, 0.58);
   font-size: 13px;
-  font-weight: 400;
+  font-weight: 600;
   cursor: pointer;
-  transition: all var(--transition-normal);
+  transition: background 180ms ease, color 180ms ease;
   font-family: inherit;
 }
 
+.modeBtn:hover {
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.modeBtn:focus-visible {
+  outline: 2px solid #8b7dff;
+  outline-offset: 2px;
+}
+
 .modeBtnActive {
-  background: rgba(168, 85, 247, 0.25);
-  color: #c4b5fd;
-  font-weight: 600;
+  background: #ffffff;
+  color: #080910;
+  font-weight: 700;
+}
+
+.modeBtnActive:hover {
+  color: #080910;
 }
 
 /* Password row (label + forgot link) */
@@ -84,42 +102,60 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 6px;
+  margin-bottom: 7px;
 }
 
 .forgotLink {
   background: none;
   border: none;
-  color: rgba(148, 163, 184, 0.5);
+  color: rgba(255, 255, 255, 0.56);
   font-size: 12px;
+  font-weight: 500;
   cursor: pointer;
   padding: 0;
-  text-decoration: underline;
+  text-decoration: none;
   font-family: inherit;
+  transition: color 150ms ease;
+}
+
+.forgotLink:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+.forgotLink:focus-visible {
+  outline: 2px solid #8b7dff;
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
 /* Back to login button */
 .backBtn {
   background: none;
   border: none;
-  color: rgba(148, 163, 184, 0.6);
+  color: rgba(255, 255, 255, 0.62);
   font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
   padding: 0;
   margin-bottom: 12px;
   font-family: inherit;
 }
 
+.backBtn:hover {
+  color: #ffffff;
+}
+
 .resetTitle {
   font-size: 18px;
   font-weight: 700;
-  color: var(--slate-100);
+  color: #ffffff;
   margin: 0 0 4px;
 }
 
 .resetSub {
   font-size: 13px;
-  color: rgba(148, 163, 184, 0.6);
+  color: rgba(255, 255, 255, 0.58);
   margin: 0;
 }
 
@@ -133,38 +169,88 @@
 }
 
 .checkboxBox {
-  width: 18px;
-  height: 18px;
-  border-radius: 5px;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all var(--transition-fast);
+  transition: background 150ms ease, border-color 150ms ease;
 }
 
 .checkboxBoxChecked {
-  background: var(--grad-brand-135);
-  border: none;
+  background: #5b6cf9;
+  border: 1px solid #5b6cf9;
 }
 
 .checkboxBoxUnchecked {
-  background: rgba(10, 8, 25, 0.60);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: #1f202d;
+  border: 1px solid rgba(255, 255, 255, 0.14);
 }
 
 .checkboxText {
   font-size: 13px;
-  color: rgba(148, 163, 184, 0.8);
+  color: rgba(255, 255, 255, 0.72);
   font-weight: 500;
 }
 
-/* Password label inline (matches FormInput label style) */
+/* Password label — Sentence case matching FormInput */
 .passwordLabel {
   display: block;
-  font-size: 11px;
-  font-weight: 600;
-  color: rgba(148, 163, 184, 0.6);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.68);
+  letter-spacing: -0.005em;
+}
+
+/* ── Light Mode ── */
+:global([data-theme="light"]) .modeToggle {
+  background: #eef1f7;
+  border-color: rgba(11, 18, 32, 0.08);
+}
+
+:global([data-theme="light"]) .modeBtn {
+  color: #64748b;
+}
+
+:global([data-theme="light"]) .modeBtn:hover {
+  color: #0b1220;
+}
+
+:global([data-theme="light"]) .modeBtnActive {
+  background: #0b1220;
+  color: #ffffff;
+}
+
+:global([data-theme="light"]) .modeBtnActive:hover {
+  color: #ffffff;
+}
+
+:global([data-theme="light"]) .passwordLabel {
+  color: #475569;
+}
+
+:global([data-theme="light"]) .forgotLink,
+:global([data-theme="light"]) .backBtn {
+  color: #64748b;
+}
+
+:global([data-theme="light"]) .forgotLink:hover,
+:global([data-theme="light"]) .backBtn:hover {
+  color: #0b1220;
+}
+
+:global([data-theme="light"]) .resetTitle {
+  color: #0b1220;
+}
+
+:global([data-theme="light"]) .resetSub,
+:global([data-theme="light"]) .checkboxText {
+  color: #475569;
+}
+
+:global([data-theme="light"]) .checkboxBoxUnchecked {
+  background: #f1f5f9;
+  border-color: rgba(11, 18, 32, 0.18);
 }

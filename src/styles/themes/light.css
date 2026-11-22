@@ -5,24 +5,24 @@
 
 :root[data-theme="light"] {
   /* ── Variables base (body) ── */
-  --background: #f1f5f9;
-  --foreground: #0f172a;
+  --background: #f3f5fa;
+  --foreground: #0b1220;
 
   /* ── Patrón de fondo: desactivado en modo claro ── */
   --pattern-line-color: transparent;
 
   /* ── Fondos de página ── */
-  --color-background-main: #f1f5f9;
-  --color-background-page: linear-gradient(160deg, #e2e8f0 0%, #f1f5f9 50%, #e8edf4 100%);
+  --color-background-main: #f3f5fa;
+  --color-background-page: #f3f5fa;
   --color-background-card: #ffffff;
-  --color-background-badge: #f0fdf4;
-  --color-background-input: #ffffff;
-  --color-background-hover: rgba(0,0,0,0.04);
-  --color-background-sidebar: linear-gradient(180deg, #1e293b 0%, #0f172a 60%, #1a2540 100%);
-  --color-background-bottomnav: rgba(15, 23, 42, 0.97);
-  --color-background-modal: linear-gradient(135deg, #ffffff 0%, #f8fafc 60%, #ffffff 100%);
-  --color-background-header: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.98) 100%);
-  --color-background-overlay: rgba(15, 23, 42, 0.5);
+  --color-background-badge: #ecfdf5;
+  --color-background-input: #f1f4fa;
+  --color-background-hover: rgba(11, 18, 32, 0.04);
+  --color-background-sidebar: #ffffff;
+  --color-background-bottomnav: rgba(255, 255, 255, 0.88);
+  --color-background-modal: #ffffff;
+  --color-background-header: transparent;
+  --color-background-overlay: rgba(11, 18, 32, 0.42);
 
   /* ── Texto ── */
   --color-text-primary: #0f172a;

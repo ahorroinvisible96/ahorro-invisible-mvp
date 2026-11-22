@@ -2,12 +2,17 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/Button";
 import { analytics } from "@/services/analytics";
 import { storeAddExtraSaving, storeListActiveGoals } from "@/services/dashboardStore";
 import { localDateStr } from "@/lib/dates";
 import { pushLocalDataToSupabase, syncDecisionToSupabase, syncGoalToSupabase } from "@/services/syncService";
 import type { Goal } from "@/types/Dashboard";
+import { TargetIcon } from "@/components/ui/AppIcons";
+import styles from "./ExtraSaving.module.css";
+
+function formatEUR(n: number) {
+  return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 2 }).format(n);
+}
 
 export default function ExtraSavingPage() {
   const router = useRouter();
@@ -62,15 +67,10 @@ export default function ExtraSavingPage() {
     }
 
     try {
-      const today = new Date().toISOString().split('T')[0];
-      const now = new Date().toISOString();
-
-      // Intención antes de encolar; extra_saving_confirmed lo emite el outbox cuando la RPC confirma.
       analytics.extraSavingSubmitted(localDateStr(), amount, 'extra_saving_page');
 
       storeAddExtraSaving(note.trim() || 'Ahorro extra', amount, selectedGoalId, '30d', { surface: 'extra_saving_page' });
 
-      // Sync directo e inmediato: solo el registro nuevo + goal actualizado
       try {
         const raw = localStorage.getItem('ahorro_invisible_dashboard_v1');
         if (raw) {
@@ -86,98 +86,114 @@ export default function ExtraSavingPage() {
       } catch { /* no bloquear navegación */ }
 
       router.push("/dashboard");
-      // Full sync en background como catch-all
       const userId = localStorage.getItem('supabaseUserId');
       if (userId) pushLocalDataToSupabase(userId).catch(() => null);
-    } catch (err) {
-      const today = new Date().toISOString().split('T')[0];
+    } catch {
       setError("No se pudo guardar. Intenta de nuevo.");
       analytics.extraSavingError("store_error");
     }
   };
-  
+
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-ahorro-500"></div>
-      </div>
-    );
+    return <div className={styles.centerLoad}>Cargando...</div>;
   }
-  
+
+  const selectedGoal = goals.find((g) => g.id === selectedGoalId) ?? goals[0];
+  const projectedTotal = selectedGoal ? selectedGoal.currentAmount + (amount > 0 ? amount : 0) : 0;
+  const projectedPct = selectedGoal ? Math.min(100, Math.round((projectedTotal / selectedGoal.targetAmount) * 100)) : 0;
+
   return (
-    <main className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="mb-6">
-          <h1 className="text-2xl font-semibold text-text-primary mb-2">Acción extra</h1>
-          <p className="text-text-secondary">Registra un ahorro adicional para impulsar tu objetivo.</p>
-        </div>
-          
-          {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
-              {error}
+    <main className={styles.page}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+        <div className={styles.sky}>
+          <div className={styles.inner}>
+            <div className={styles.topBar}>
+              <button type="button" onClick={() => router.back()} className={styles.glassBtn} aria-label="Volver">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+              </button>
+              <h1 className={styles.topTitle}>Acción extra</h1>
+              <div style={{ width: 38 }} />
             </div>
-          )}
-          
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="block text-sm font-medium text-text-primary mb-1.5">
-                Cantidad
-              </label>
-              <div className="flex items-center">
-                <span className="text-text-secondary text-lg mr-2">€</span>
+
+            <div className={styles.heroCenter}>
+              <span className={styles.heroKicker}>¿Cuánto quieres sumar hoy?</span>
+              <div className={styles.amountInputWrap}>
                 <input
                   type="number"
+                  inputMode="decimal"
                   min="0.01"
                   step="0.01"
                   value={amount || ""}
                   onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
-                  className="w-full rounded-xl border border-gray-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ahorro-500 focus:border-ahorro-500"
-                  placeholder="0.00"
+                  className={styles.amountInput}
+                  placeholder="0"
+                  aria-label="Cantidad en euros"
+                  autoFocus
                 />
+                <span className={styles.amountUnit}>€</span>
               </div>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-text-primary mb-1.5">
-                Objetivo
-              </label>
+
               <select
+                aria-label="Objetivo destino"
                 value={selectedGoalId || ""}
                 onChange={(e) => setSelectedGoalId(e.target.value)}
-                className="w-full rounded-xl border border-gray-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ahorro-500 focus:border-ahorro-500"
+                className={styles.goalPillSelect}
               >
                 <option value="" disabled>Selecciona un objetivo</option>
                 {goals.map((goal) => (
                   <option key={goal.id} value={goal.id}>
-                    {goal.title} {goal.isPrimary ? "(Principal)" : ""}
+                    Destino: {goal.title}{goal.isPrimary ? ' (Principal)' : ''}
                   </option>
                 ))}
               </select>
             </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-text-primary mb-1.5">
-                Nota (opcional)
-              </label>
-              <textarea
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                className="w-full rounded-xl border border-gray-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ahorro-500 focus:border-ahorro-500"
-                placeholder="Ej: No pedí café fuera"
-                rows={3}
-              />
+          </div>
+        </div>
+
+        <div className={styles.formBody}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {error && <div className={styles.errorBox}>{error}</div>}
+
+            <div className={styles.card}>
+              <div>
+                <label htmlFor="extra-note" className={styles.label}>Nota (opcional)</label>
+                <textarea
+                  id="extra-note"
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  className={styles.textarea}
+                  placeholder="Ej: No pedí café fuera o reembolso recibido"
+                  rows={3}
+                />
+              </div>
+
+              {selectedGoal && (
+                <div className={styles.previewRow}>
+                  <div className={styles.medallion}><TargetIcon size={17} /></div>
+                  <div>
+                    <div className={styles.previewTitle}>{selectedGoal.title}</div>
+                    <div className={styles.previewSub}>
+                      {amount > 0
+                        ? `Pasará a ${formatEUR(projectedTotal)} (${projectedPct}%)`
+                        : `Actual: ${formatEUR(selectedGoal.currentAmount)} de ${formatEUR(selectedGoal.targetAmount)}`}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-            
-            <Button
-              type="submit"
-              variant="primary"
-              fullWidth
-              disabled={!selectedGoalId || !amount || amount <= 0}
-            >
-              Guardar
-            </Button>
-          </form>
-      </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={!selectedGoalId || !amount || amount <= 0}
+            className={styles.btnWhite}
+          >
+            {amount > 0 ? `Guardar ${formatEUR(amount)}` : 'Guardar ahorro extra'}
+          </button>
+        </div>
+      </form>
     </main>
   );
 }

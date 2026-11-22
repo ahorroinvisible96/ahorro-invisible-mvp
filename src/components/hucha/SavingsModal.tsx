@@ -49,20 +49,21 @@ export function SavingsModal({
   return (
     <div className={s.overlay} onClick={onClose}>
       <div className={s.box} onClick={e => e.stopPropagation()}>
+        <div className={s.grabber} />
 
         {/* Header */}
         <div className={s.header}>
           <div className={s.headerLeft}>
             <div className={s.headerIcon}>
-              <Wallet size={22} color="#34d399" strokeWidth={1.8} />
+              <Wallet size={20} color="#ffffff" strokeWidth={1.9} />
             </div>
             <div>
               <h2 className={s.headerTitle}>Asignar Hucha</h2>
-              <p className={s.headerSub}>Transfiere tu ahorro a un objetivo activo</p>
+              <p className={s.headerSub}>Transfiere tu saldo a un objetivo</p>
             </div>
           </div>
           <button onClick={onClose} className={s.closeBtn} aria-label="Cerrar">
-            <X size={16} strokeWidth={2.5} />
+            <X size={15} strokeWidth={2.4} />
           </button>
         </div>
 

@@ -1,0 +1,1167 @@
+/*
+ * ═══════════════════════════════════════════════════════════
+ * ONBOARDING & ROADMAP — V2 Refinada · Reference Dark / Liquid Glass
+ * ═══════════════════════════════════════════════════════════
+ */
+
+.page {
+  min-height: 100vh;
+  width: 100%;
+  background: var(--bg-primary, #080910);
+  color: var(--text-primary, #ffffff);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 16px 56px;
+  font-family: var(--font-app);
+  position: relative;
+  overflow-x: hidden;
+}
+
+.pageTop {
+  justify-content: flex-start;
+  padding: 28px 16px 84px;
+}
+
+.sky {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 440px;
+  background: radial-gradient(
+    120% 95% at 50% -18%,
+    #8244f7 0%,
+    #5d54f6 36%,
+    #31318c 64%,
+    rgba(8, 9, 16, 0) 96%
+  );
+  opacity: 0.92;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.skyRoadmap {
+  background: radial-gradient(
+    120% 95% at 50% -18%,
+    #12c48b 0%,
+    #3b5cf6 42%,
+    #282874 68%,
+    rgba(8, 9, 16, 0) 96%
+  );
+}
+
+.container {
+  width: 100%;
+  max-width: 472px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Top bar brand ── */
+.brandRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 22px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brandMark {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 17px;
+  flex-shrink: 0;
+}
+
+.brandName {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: -0.02em;
+}
+
+.brandAccent {
+  color: rgba(255, 255, 255, 0.76);
+  font-weight: 600;
+  font-size: 16px;
+  letter-spacing: -0.02em;
+}
+
+.stepCounterPill {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  font-size: 12px;
+  font-weight: 600;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Velvety Card ── */
+.card {
+  position: relative;
+  border-radius: 26px;
+  background: #171822;
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  padding: 26px 22px 24px;
+}
+
+/* ── Progress bar ── */
+.progressWrap {
+  margin-bottom: 24px;
+}
+
+.progressTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.progressDots {
+  display: flex;
+  gap: 6px;
+}
+
+.progressDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  transition: width 240ms ease, background 240ms ease;
+}
+
+.progressDotDone {
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.progressDotCurrent {
+  width: 24px;
+  background: #ffffff;
+}
+
+.progressPct {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.48);
+  font-variant-numeric: tabular-nums;
+}
+
+.progressTrack {
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #8244f7 0%, #5b6cf9 100%);
+  transition: width 320ms ease;
+}
+
+/* ── Step Header ── */
+.stepHead {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 10px;
+}
+
+.stepMedallion {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  flex-shrink: 0;
+  background: #5b6cf9;
+}
+
+.stepMedallionEmerald {
+  background: #12c48b;
+}
+
+.stepMedallionViolet {
+  background: #a855f7;
+}
+
+.stepMedallionAmber {
+  background: #f59e0b;
+}
+
+.stepLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.54);
+  letter-spacing: 0.01em;
+}
+
+.questionTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.025em;
+  margin: 0 0 8px;
+  line-height: 1.3;
+}
+
+.questionTitleSpacing {
+  margin-bottom: 20px;
+}
+
+.questionSub {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.56);
+  margin: 0 0 20px;
+  line-height: 1.5;
+}
+
+/* ── Option Rows (sin divisores, radio suave) ── */
+.optionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.optionBtn {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 15px;
+  border-radius: 17px;
+  text-align: left;
+  background: #1f202d;
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 150ms ease, border-color 150ms ease, transform 140ms ease;
+}
+
+.optionBtn:hover {
+  background: #252636;
+}
+
+.optionBtn:active {
+  transform: scale(0.99);
+}
+
+.optionBtn:focus-visible {
+  outline: 2px solid #8b7dff;
+  outline-offset: 2px;
+}
+
+.optionBtnActive {
+  background: rgba(91, 108, 249, 0.14);
+  border-color: #6d7cff;
+}
+
+.optionBtnActiveEmerald {
+  background: rgba(18, 196, 139, 0.13);
+  border-color: #12c48b;
+}
+
+.optionBadge {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.65);
+  transition: background 150ms ease, color 150ms ease;
+}
+
+.optionBadgeActive {
+  background: #5b6cf9;
+  color: #ffffff;
+}
+
+.optionBadgeActiveEmerald {
+  background: #12c48b;
+  color: #ffffff;
+}
+
+.optionContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.optionTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.92);
+  margin-bottom: 3px;
+  line-height: 1.35;
+}
+
+.optionSub {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.52);
+  line-height: 1.4;
+}
+
+.optionBtnActive .optionSub {
+  color: rgba(205, 214, 255, 0.78);
+}
+
+.optionBtnActiveEmerald .optionSub {
+  color: rgba(167, 243, 208, 0.8);
+}
+
+/* ── Paso 5: Ingresos + Objetivo ── */
+.fieldLabel {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.66);
+  margin-bottom: 9px;
+}
+
+.fieldLabelRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 9px;
+}
+
+.fieldLabelRow .fieldLabel {
+  margin-bottom: 0;
+}
+
+.recHint {
+  font-size: 12px;
+  font-weight: 600;
+  color: #a5b4fc;
+  font-variant-numeric: tabular-nums;
+}
+
+.incomeGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.incomeBtn {
+  min-height: 44px;
+  padding: 10px 10px;
+  border-radius: 14px;
+  text-align: center;
+  background: #1f202d;
+  border: 1.5px solid transparent;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.3;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+
+.incomeBtn:hover {
+  background: #262838;
+  color: #ffffff;
+}
+
+.incomeBtn:focus-visible {
+  outline: 2px solid #8b7dff;
+  outline-offset: 2px;
+}
+
+.incomeBtnSelected {
+  background: rgba(91, 108, 249, 0.16);
+  border-color: #6d7cff;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.softDivider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.07);
+  margin: 0 0 18px;
+}
+
+.fieldBlock {
+  margin-bottom: 16px;
+}
+
+.textInput {
+  width: 100%;
+  min-height: 48px;
+  background: #1f202d;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 15px;
+  padding: 0 15px;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 500;
+  font-family: inherit;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 150ms ease, background 150ms ease;
+}
+
+.textInput:focus {
+  border-color: #6d7cff;
+  background: #232436;
+}
+
+.monthsRow {
+  display: flex;
+  gap: 7px;
+}
+
+.monthBtn {
+  flex: 1;
+  min-height: 44px;
+  padding: 0 4px;
+  border-radius: 13px;
+  position: relative;
+  background: #1f202d;
+  border: 1.5px solid transparent;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
+}
+
+.monthBtn:hover {
+  background: #272838;
+  color: #ffffff;
+}
+
+.monthBtn:focus-visible {
+  outline: 2px solid #8b7dff;
+  outline-offset: 2px;
+}
+
+.monthBtnRec {
+  border-color: rgba(130, 68, 247, 0.4);
+  color: #c4b5fd;
+}
+
+.monthBtnSelected {
+  background: #ffffff;
+  border-color: #ffffff;
+  color: #080910;
+  font-weight: 700;
+}
+
+.monthBtnSelected:hover {
+  background: #f1f5f9;
+  color: #080910;
+}
+
+.recTag {
+  position: absolute;
+  top: -9px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #5b6cf9;
+  border-radius: 999px;
+  padding: 2px 7px;
+  font-size: 8.5px;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+  pointer-events: none;
+  letter-spacing: 0.03em;
+}
+
+/* ── Amount Stepper ── */
+.stepperWrap {
+  display: flex;
+  align-items: stretch;
+  background: #1f202d;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 17px;
+  overflow: hidden;
+}
+
+.stepperBtn {
+  width: 56px;
+  min-height: 62px;
+  background: rgba(255, 255, 255, 0.04);
+  border: none;
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: 400;
+  cursor: pointer;
+  font-family: inherit;
+  flex-shrink: 0;
+  transition: background 140ms ease;
+}
+
+.stepperBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.stepperBtn:focus-visible {
+  outline: 2px solid #8b7dff;
+  outline-offset: -2px;
+}
+
+.stepperCenter {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 6px;
+}
+
+.stepperInputRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px;
+}
+
+.stepperInput {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 28px;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  font-family: inherit;
+  text-align: right;
+  min-width: 3ch;
+  max-width: 10ch;
+}
+
+.stepperInput::-webkit-inner-spin-button,
+.stepperInput::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.stepperInput {
+  -moz-appearance: textfield;
+}
+
+.stepperCurrency {
+  font-size: 18px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.52);
+  flex-shrink: 0;
+}
+
+.stepperHint {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.42);
+  margin-top: 2px;
+}
+
+/* ── Validation Feedback Banners ── */
+.feedbackAmber {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.28);
+  border-radius: 17px;
+  padding: 14px 16px;
+  margin-bottom: 4px;
+}
+
+.feedbackIndigo {
+  background: rgba(91, 108, 249, 0.1);
+  border: 1px solid rgba(91, 108, 249, 0.28);
+  border-radius: 17px;
+  padding: 14px 16px;
+  margin-bottom: 4px;
+}
+
+.feedbackEmerald {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(18, 196, 139, 0.1);
+  border: 1px solid rgba(18, 196, 139, 0.26);
+  border-radius: 15px;
+  padding: 12px 14px;
+  margin-bottom: 4px;
+}
+
+.feedbackTitleAmber {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fbbf24;
+  margin: 0 0 6px;
+}
+
+.feedbackTitleIndigo {
+  font-size: 13px;
+  font-weight: 700;
+  color: #c4b5fd;
+  margin: 0 0 6px;
+}
+
+.feedbackBody {
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.78);
+  margin: 0 0 10px;
+  line-height: 1.5;
+}
+
+.feedbackBodyEmerald {
+  font-size: 12.5px;
+  color: #6ee7b7;
+  line-height: 1.45;
+}
+
+.feedbackRefRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(245, 158, 11, 0.1);
+  border-radius: 11px;
+  padding: 9px 12px;
+  margin-bottom: 10px;
+}
+
+.feedbackRefLabel {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.feedbackRefVal {
+  font-size: 14px;
+  font-weight: 700;
+  color: #fbbf24;
+  font-variant-numeric: tabular-nums;
+}
+
+.feedbackActionBtn {
+  width: 100%;
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  background: rgba(245, 158, 11, 0.14);
+  color: #fde68a;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.feedbackActionBtnIndigo {
+  border-color: rgba(139, 125, 255, 0.38);
+  background: rgba(91, 108, 249, 0.18);
+  color: #ddd6fe;
+}
+
+/* ── Navigation Footer ── */
+.navFooter {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.navFooterCompact {
+  margin-top: 0;
+}
+
+.backBtn {
+  flex: 1;
+  min-height: 50px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 14.5px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 150ms ease;
+}
+
+.backBtn:hover {
+  background: rgba(255, 255, 255, 0.11);
+}
+
+.nextBtn {
+  flex: 2;
+  min-height: 50px;
+  padding: 0 20px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: none;
+  color: #080910;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 140ms ease, background 140ms ease;
+}
+
+.nextBtnFull {
+  flex: 1;
+}
+
+.nextBtn:hover:not(:disabled) {
+  background: #f1f5f9;
+}
+
+.nextBtn:active:not(:disabled) {
+  transform: scale(0.985);
+}
+
+.nextBtn:focus-visible,
+.backBtn:focus-visible {
+  outline: 2px solid #8b7dff;
+  outline-offset: 2px;
+}
+
+.nextBtn:disabled {
+  background: rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.4);
+  cursor: not-allowed;
+}
+
+.greeting {
+  text-align: center;
+  margin-top: 18px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.48);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ROADMAP SCREEN — Tu recorrido
+   ═══════════════════════════════════════════════════════════ */
+.roadmapHero {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.roadmapPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 16px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  margin-bottom: 14px;
+}
+
+.roadmapPillDot {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #12c48b;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.roadmapPillText {
+  font-size: 13px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.roadmapHeroAmount {
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.05;
+  margin: 0 0 6px;
+}
+
+.roadmapHeroSub {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.76);
+  margin: 0;
+}
+
+.timelineScroll {
+  max-height: 380px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.phaseRow {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.phaseRail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 36px;
+  flex-shrink: 0;
+}
+
+.phaseNode {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  color: #ffffff;
+}
+
+.phaseLine {
+  width: 2px;
+  flex: 1;
+  min-height: 22px;
+  margin: 4px 0;
+  border-radius: 2px;
+}
+
+.phaseBody {
+  flex: 1;
+  padding-top: 5px;
+  padding-bottom: 18px;
+}
+
+.phaseBodyLast {
+  padding-bottom: 4px;
+}
+
+.phaseHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 3px;
+}
+
+.phaseLabel {
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.phaseTarget {
+  font-size: 16px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.phaseDesc {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.56);
+  line-height: 1.4;
+}
+
+.roadmapNote {
+  margin-top: 18px;
+  background: #1f202d;
+  border-radius: 16px;
+  padding: 13px 15px;
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+}
+
+.roadmapNoteIcon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #a855f7;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.roadmapNoteText {
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.72);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.roadmapCta {
+  width: 100%;
+  min-height: 52px;
+  margin-top: 18px;
+  border-radius: 999px;
+  border: none;
+  background: #ffffff;
+  color: #080910;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 140ms ease, background 140ms ease;
+}
+
+.roadmapCta:hover {
+  background: #f1f5f9;
+}
+
+.roadmapCta:active {
+  transform: scale(0.985);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LIGHT MODE
+   ═══════════════════════════════════════════════════════════ */
+:global([data-theme="light"]) .page {
+  background: #f3f5fa;
+  color: #0b1220;
+}
+
+:global([data-theme="light"]) .sky {
+  background: radial-gradient(
+    120% 95% at 50% -18%,
+    rgba(130, 68, 247, 0.28) 0%,
+    rgba(93, 84, 246, 0.16) 40%,
+    rgba(243, 245, 250, 0) 92%
+  );
+  opacity: 1;
+}
+
+:global([data-theme="light"]) .skyRoadmap {
+  background: radial-gradient(
+    120% 95% at 50% -18%,
+    rgba(18, 196, 139, 0.28) 0%,
+    rgba(91, 108, 249, 0.15) 45%,
+    rgba(243, 245, 250, 0) 92%
+  );
+}
+
+:global([data-theme="light"]) .brandMark {
+  background: linear-gradient(135deg, #8244f7 0%, #5b6cf9 100%);
+  border-color: transparent;
+}
+
+:global([data-theme="light"]) .brandName,
+:global([data-theme="light"]) .questionTitle,
+:global([data-theme="light"]) .roadmapHeroAmount,
+:global([data-theme="light"]) .optionTitle,
+:global([data-theme="light"]) .textInput,
+:global([data-theme="light"]) .stepperInput,
+:global([data-theme="light"]) .stepperBtn {
+  color: #0b1220;
+}
+
+:global([data-theme="light"]) .brandAccent {
+  color: #5d54f6;
+}
+
+:global([data-theme="light"]) .stepCounterPill,
+:global([data-theme="light"]) .roadmapPill {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(11, 18, 32, 0.1);
+  color: #0b1220;
+}
+
+:global([data-theme="light"]) .roadmapPillText {
+  color: #0b1220;
+}
+
+:global([data-theme="light"]) .card {
+  background: #ffffff;
+  border-color: rgba(11, 18, 32, 0.08);
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
+}
+
+:global([data-theme="light"]) .progressDot {
+  background: rgba(11, 18, 32, 0.12);
+}
+
+:global([data-theme="light"]) .progressDotDone {
+  background: rgba(93, 84, 246, 0.55);
+}
+
+:global([data-theme="light"]) .progressDotCurrent {
+  background: #0b1220;
+}
+
+:global([data-theme="light"]) .progressTrack {
+  background: rgba(11, 18, 32, 0.08);
+}
+
+:global([data-theme="light"]) .progressPct,
+:global([data-theme="light"]) .stepLabel,
+:global([data-theme="light"]) .questionSub,
+:global([data-theme="light"]) .optionSub,
+:global([data-theme="light"]) .phaseDesc,
+:global([data-theme="light"]) .stepperHint,
+:global([data-theme="light"]) .stepperCurrency,
+:global([data-theme="light"]) .roadmapHeroSub,
+:global([data-theme="light"]) .greeting {
+  color: #64748b;
+}
+
+:global([data-theme="light"]) .fieldLabel {
+  color: #334155;
+}
+
+:global([data-theme="light"]) .recHint {
+  color: #4f46e5;
+}
+
+:global([data-theme="light"]) .optionBtn,
+:global([data-theme="light"]) .incomeBtn,
+:global([data-theme="light"]) .textInput,
+:global([data-theme="light"]) .monthBtn,
+:global([data-theme="light"]) .stepperWrap,
+:global([data-theme="light"]) .roadmapNote {
+  background: #f1f5f9;
+}
+
+:global([data-theme="light"]) .optionBtn:hover,
+:global([data-theme="light"]) .incomeBtn:hover,
+:global([data-theme="light"]) .monthBtn:hover {
+  background: #e8eef7;
+}
+
+:global([data-theme="light"]) .optionBtnActive,
+:global([data-theme="light"]) .incomeBtnSelected {
+  background: rgba(91, 108, 249, 0.1);
+  border-color: #5b6cf9;
+  color: #0b1220;
+}
+
+:global([data-theme="light"]) .optionBtnActiveEmerald {
+  background: rgba(18, 196, 139, 0.1);
+  border-color: #12c48b;
+}
+
+:global([data-theme="light"]) .optionBtnActive .optionSub,
+:global([data-theme="light"]) .optionBtnActiveEmerald .optionSub {
+  color: #475569;
+}
+
+:global([data-theme="light"]) .optionBadge {
+  background: rgba(11, 18, 32, 0.08);
+  color: #475569;
+}
+
+:global([data-theme="light"]) .incomeBtn,
+:global([data-theme="light"]) .monthBtn {
+  color: #334155;
+}
+
+:global([data-theme="light"]) .monthBtnSelected {
+  background: #0b1220;
+  border-color: #0b1220;
+  color: #ffffff;
+}
+
+:global([data-theme="light"]) .stepperBtn {
+  background: rgba(11, 18, 32, 0.04);
+}
+
+:global([data-theme="light"]) .softDivider {
+  background: rgba(11, 18, 32, 0.08);
+}
+
+:global([data-theme="light"]) .feedbackBody,
+:global([data-theme="light"]) .roadmapNoteText {
+  color: #334155;
+}
+
+:global([data-theme="light"]) .feedbackTitleAmber {
+  color: #b45309;
+}
+
+:global([data-theme="light"]) .feedbackRefVal {
+  color: #b45309;
+}
+
+:global([data-theme="light"]) .feedbackActionBtn {
+  color: #92400e;
+}
+
+:global([data-theme="light"]) .feedbackTitleIndigo {
+  color: #4f46e5;
+}
+
+:global([data-theme="light"]) .feedbackActionBtnIndigo {
+  color: #4338ca;
+}
+
+:global([data-theme="light"]) .feedbackBodyEmerald {
+  color: #047857;
+}
+
+:global([data-theme="light"]) .backBtn {
+  background: rgba(11, 18, 32, 0.05);
+  border-color: rgba(11, 18, 32, 0.12);
+  color: #0b1220;
+}
+
+:global([data-theme="light"]) .nextBtn,
+:global([data-theme="light"]) .roadmapCta {
+  background: #0b1220;
+  color: #ffffff;
+}
+
+:global([data-theme="light"]) .nextBtn:hover:not(:disabled),
+:global([data-theme="light"]) .roadmapCta:hover {
+  background: #1e293b;
+}
+
+:global([data-theme="light"]) .nextBtn:disabled {
+  background: rgba(11, 18, 32, 0.15);
+  color: rgba(11, 18, 32, 0.42);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progressDot,
+  .progressFill,
+  .optionBtn,
+  .incomeBtn,
+  .monthBtn,
+  .nextBtn,
+  .backBtn,
+  .roadmapCta {
+    transition: none;
+  }
+}

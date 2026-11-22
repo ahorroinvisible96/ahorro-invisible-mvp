@@ -14,6 +14,15 @@ import {
 import type { SavingsProfile, IncomeRange } from "@/types/Dashboard";
 import { pushLocalDataToSupabase } from "@/services/syncService";
 import { enqueueOnboardingComplete } from "@/services/v2/onboarding";
+import {
+  BoltIcon,
+  TargetIcon,
+  TrendingUpIcon,
+  TrophyIcon,
+  StarIcon,
+  FlameIcon,
+} from "@/components/ui/AppIcons";
+import s from "./Onboarding.module.css";
 
 // ─── Constantes ────────────────────────────────────────────────────────────────
 const INCOME_OPTIONS = [
@@ -44,7 +53,7 @@ interface OnboardingStep   { icon: string; label: string; question: string; opti
 
 const BEHAVIORAL_STEPS: OnboardingStep[] = [
   {
-    icon: '💸', label: 'GASTO',
+    icon: '💸', label: 'Gasto',
     question: '¿En qué tipo de gasto sientes que más se te escapa el dinero?',
     options: [
       { value: 'comodo',    label: 'En cosas que hago por rutina o comodidad: delivery, taxi, café fuera…',    sub: 'Sé que podría hacerlo más barato, pero elijo lo fácil' },
@@ -53,7 +62,7 @@ const BEHAVIORAL_STEPS: OnboardingStep[] = [
     ],
   },
   {
-    icon: '🧠', label: 'COMPORTAMIENTO',
+    icon: '🧠', label: 'Comportamiento',
     question: '¿Qué suele hacer que gastes más de lo que querías?',
     options: [
       { value: 'comodo',    label: 'Que elijo lo más cómodo o rápido sin pararme a buscar algo mejor',          sub: 'La pereza me sale cara' },
@@ -62,7 +71,7 @@ const BEHAVIORAL_STEPS: OnboardingStep[] = [
     ],
   },
   {
-    icon: '⚡', label: 'MOMENTO CLAVE',
+    icon: '⚡', label: 'Momento clave',
     question: '¿Cuándo te resulta más difícil ahorrar?',
     options: [
       { value: 'comodo',    label: 'Cuando estoy cansado, con prisa o sin ganas de complicarme',                sub: 'Si estoy agotado, elijo lo fácil sin pensar' },
@@ -139,9 +148,7 @@ export const PHASE_CONFIGS = [
   { emoji: '✨', color: '#fb7185', rgba: '251,113,133' },
 ];
 
-const btnBase: React.CSSProperties = {
-  border: 'none', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 200ms ease',
-};
+const PHASE_PALETTE = ['#5b6cf9', '#14a3f6', '#a855f7', '#10b5ce', '#ec4899', '#12c48b'];
 
 // ─── Pantalla "Tu recorrido" (post-onboarding, no es un paso) ─────────────────
 function RoadmapScreen({
@@ -158,98 +165,98 @@ function RoadmapScreen({
   onContinue: () => void;
 }) {
   return (
-    <main style={{
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)',
-      display: 'flex', flexDirection: 'column', alignItems: 'center',
-      justifyContent: 'flex-start', padding: '24px 16px 80px',
-      fontFamily: 'var(--font-app)',
-    }}>
-      <div style={{ position: 'fixed', top: '15%', left: '50%', transform: 'translateX(-50%)', width: 700, height: 500, background: 'radial-gradient(ellipse, rgba(251,191,36,0.06) 0%, transparent 65%)', pointerEvents: 'none' }} />
-      <div style={{ width: '100%', maxWidth: 480, position: 'relative' }}>
-
-        {/* Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
-          <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg, #a855f7, #2563eb)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800, fontSize: 18, boxShadow: '0 4px 14px rgba(168,85,247,0.4)' }}>A</div>
-          <div><span style={{ color: '#f1f5f9', fontWeight: 700, fontSize: 16 }}>Ahorro </span><span style={{ color: '#a855f7', fontWeight: 700, fontSize: 16 }}>Invisible</span></div>
+    <main className={`${s.page} ${s.pageTop}`}>
+      <div className={`${s.sky} ${s.skyRoadmap}`} />
+      <div className={s.container}>
+        {/* Top brand */}
+        <div className={s.brandRow}>
+          <div className={s.brand}>
+            <div className={s.brandMark}>A</div>
+            <div>
+              <span className={s.brandName}>Ahorro </span>
+              <span className={s.brandAccent}>Invisible</span>
+            </div>
+          </div>
+          <span className={s.stepCounterPill}>Tu plan listo</span>
         </div>
 
-        {/* Pill de objetivo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.2)', borderRadius: 12, padding: '10px 16px', marginBottom: 20 }}>
-          <span style={{ fontSize: 18 }}>🏆</span>
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: '#fbbf24' }}>{goalName || 'Mi primer objetivo de ahorro'}</div>
-            <div style={{ fontSize: 11, color: 'rgba(251,191,36,0.6)' }}>{fmtEUR(goalAmount)} · {goalMonths} {goalMonths === 1 ? 'mes' : 'meses'}</div>
+        {/* Open celebratory hero */}
+        <div className={s.roadmapHero}>
+          <div className={s.roadmapPill}>
+            <span className={s.roadmapPillDot}><TrophyIcon size={13} /></span>
+            <span className={s.roadmapPillText}>{goalName || 'Mi primer objetivo de ahorro'}</span>
           </div>
+          <p className={s.roadmapHeroAmount}>{fmtEUR(goalAmount)}</p>
+          <p className={s.roadmapHeroSub}>
+            En {goalMonths} {goalMonths === 1 ? 'mes' : 'meses'} · {phases.length} hitos progresivos
+          </p>
         </div>
 
-        {/* Card principal */}
-        <div style={{
-          borderRadius: 20, background: 'linear-gradient(160deg, #1e293b 0%, #0f172a 100%)',
-          border: '1px solid rgba(51,65,85,0.6)', boxShadow: '0 25px 60px rgba(2,6,23,0.7)',
-          overflow: 'hidden', padding: '28px 24px', position: 'relative',
-        }}>
-          <div style={{ position: 'absolute', top: -50, left: -50, width: 220, height: 220, background: 'radial-gradient(ellipse, rgba(251,191,36,0.06) 0%, transparent 70%)', pointerEvents: 'none' }} />
-
-          {/* Header */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-            <div style={{ width: 34, height: 34, borderRadius: 10, background: 'linear-gradient(135deg, #fbbf24, #f97316)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0, boxShadow: '0 4px 14px rgba(251,191,36,0.35)' }}>🗺️</div>
-            <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(148,163,184,0.6)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>TU RECORRIDO</span>
+        {/* Velvety Timeline Card */}
+        <div className={s.card}>
+          <div className={s.stepHead}>
+            <div className={`${s.stepMedallion} ${s.stepMedallionEmerald}`}>
+              <TrendingUpIcon size={16} />
+            </div>
+            <span className={s.stepLabel}>Tu recorrido</span>
           </div>
 
-          <h2 style={{ fontSize: 18, fontWeight: 700, color: '#f1f5f9', margin: '0 0 4px', lineHeight: 1.35 }}>Así vas a alcanzar tu objetivo</h2>
-          <p style={{ fontSize: 12, color: 'rgba(148,163,184,0.55)', margin: '0 0 22px', lineHeight: 1.5 }}>
+          <h2 className={s.questionTitle}>Así vas a alcanzar tu objetivo</h2>
+          <p className={s.questionSub}>
             Hemos dividido tu reto en pequeñas fases para que el progreso sea visible desde el primer día. No tienes que conseguirlo todo de golpe.
           </p>
 
-          {/* Timeline */}
-          <div style={{ maxHeight: 400, overflowY: 'auto', paddingRight: 2 }}>
+          <div className={s.timelineScroll}>
             {phases.map((phase, i) => {
-              const isLast    = i === phases.length - 1;
-              const conf      = isLast ? { emoji: '🏆', color: '#fbbf24', rgba: '251,191,36' } : PHASE_CONFIGS[Math.min(i, PHASE_CONFIGS.length - 1)];
-              const nextConf  = PHASE_CONFIGS[Math.min(i + 1, PHASE_CONFIGS.length - 1)];
+              const isLast = i === phases.length - 1;
+              const color = isLast ? '#12c48b' : PHASE_PALETTE[i % PHASE_PALETTE.length];
               const prevTarget = i > 0 ? phases[i - 1].target : 0;
-              const increment  = phase.target - prevTarget;
+              const increment = phase.target - prevTarget;
               return (
-                <div key={i} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 36, flexShrink: 0 }}>
-                    <div style={{ width: 36, height: 36, borderRadius: '50%', flexShrink: 0, background: isLast ? 'linear-gradient(135deg, #fbbf24, #f97316)' : `rgba(${conf.rgba},0.15)`, border: `2px solid rgba(${conf.rgba},${isLast ? 0.8 : 0.4})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, boxShadow: isLast ? '0 0 18px rgba(251,191,36,0.4)' : `0 0 8px rgba(${conf.rgba},0.2)` }}>
-                      {conf.emoji}
+                <div key={i} className={s.phaseRow}>
+                  <div className={s.phaseRail}>
+                    <div
+                      className={s.phaseNode}
+                      style={{ background: color }}
+                    >
+                      {isLast ? <TrophyIcon size={16} /> : i === 0 ? <BoltIcon size={15} /> : <FlameIcon size={15} />}
                     </div>
-                    {!isLast && <div style={{ width: 2, flex: 1, minHeight: 20, background: `linear-gradient(to bottom, rgba(${conf.rgba},0.4), rgba(${nextConf.rgba},0.25))`, margin: '3px 0' }} />}
+                    {!isLast && (
+                      <div
+                        className={s.phaseLine}
+                        style={{ background: `linear-gradient(to bottom, ${color}, rgba(255,255,255,0.12))` }}
+                      />
+                    )}
                   </div>
-                  <div style={{ flex: 1, paddingTop: 6, paddingBottom: isLast ? 4 : 18 }}>
-                    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, marginBottom: 3 }}>
-                      <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', color: `rgba(${conf.rgba},0.85)`, textTransform: 'uppercase' }}>{phase.label}</span>
-                      <span style={{ fontSize: 16, fontWeight: 700, color: isLast ? '#fbbf24' : conf.color, flexShrink: 0 }}>{fmtEUR(phase.target)}</span>
+                  <div className={`${s.phaseBody} ${isLast ? s.phaseBodyLast : ''}`}>
+                    <div className={s.phaseHead}>
+                      <span className={s.phaseLabel} style={{ color }}>{phase.label}</span>
+                      <span className={s.phaseTarget} style={{ color: isLast ? '#12c48b' : undefined }}>
+                        {fmtEUR(phase.target)}
+                      </span>
                     </div>
-                    <div style={{ fontSize: 11, color: 'rgba(148,163,184,0.5)', lineHeight: 1.4 }}>
-                      {isLast ? '🏆 ¡Objetivo alcanzado!' : phase.type === 'week' ? `Ahorra ${fmtEUR(increment)} esta semana` : `+${fmtEUR(increment)} este mes · acumulas ${fmtEUR(phase.target)}`}
+                    <div className={s.phaseDesc}>
+                      {isLast
+                        ? '¡Objetivo alcanzado!'
+                        : phase.type === 'week'
+                          ? `Ahorra ${fmtEUR(increment)} esta semana`
+                          : `+${fmtEUR(increment)} este mes · acumulas ${fmtEUR(phase.target)}`}
                     </div>
-                    {!isLast && <div style={{ height: 1, background: `rgba(${conf.rgba},0.1)`, marginTop: 10 }} />}
                   </div>
                 </div>
               );
             })}
           </div>
 
-          {/* Nota motivacional */}
-          <div style={{ marginTop: 20, background: 'rgba(168,85,247,0.07)', border: '1px solid rgba(168,85,247,0.2)', borderRadius: 12, padding: '12px 14px', display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-            <span style={{ fontSize: 16, flexShrink: 0 }}>💜</span>
-            <p style={{ fontSize: 12, color: 'rgba(148,163,184,0.7)', margin: 0, lineHeight: 1.5 }}>
+          <div className={s.roadmapNote}>
+            <span className={s.roadmapNoteIcon}><StarIcon size={14} /></span>
+            <p className={s.roadmapNoteText}>
               Cada pequeña fase que superes es una victoria real. Ahorro Invisible te acompañará en cada paso del camino.
             </p>
           </div>
 
-          {/* CTA */}
-          <button onClick={onContinue} style={{
-            ...btnBase, width: '100%', marginTop: 20, padding: '14px 0', borderRadius: 12,
-            background: 'linear-gradient(90deg, #fbbf24, #f97316)',
-            color: '#0f172a', fontSize: 14, fontWeight: 600,
-            boxShadow: '0 4px 20px rgba(251,191,36,0.4)',
-            letterSpacing: '-0.2px',
-          }}>
-            Comenzar mi recorrido 🚀
+          <button onClick={onContinue} className={s.roadmapCta}>
+            Comenzar mi recorrido →
           </button>
         </div>
       </div>
@@ -363,6 +370,7 @@ export default function OnboardingPage() {
       setGoalAmount(resolvedAmount);
       saveOnboardingData(resolvedAmount);
       setShowRoadmap(true);
+      if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
     }
   }
 
@@ -438,40 +446,39 @@ export default function OnboardingPage() {
   // RENDER PRINCIPAL (pasos 1–5)
   // ═══════════════════════════════════════════════════════════════════════════
   return (
-    <main style={{
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)',
-      display: 'flex', flexDirection: 'column', alignItems: 'center',
-      justifyContent: step >= 5 ? 'flex-start' : 'center',
-      padding: step >= 5 ? '24px 16px 80px' : '24px 16px',
-      fontFamily: 'var(--font-app)',
-    }}>
-      <div style={{ position: 'fixed', top: '20%', left: '50%', transform: 'translateX(-50%)', width: 700, height: 500, background: 'radial-gradient(ellipse, rgba(168,85,247,0.1) 0%, transparent 70%)', pointerEvents: 'none' }} />
+    <main className={`${s.page} ${step >= 5 ? s.pageTop : ''}`}>
+      <div className={s.sky} />
 
-      <div style={{ width: '100%', maxWidth: 480, position: 'relative' }}>
-
-        {/* ── Logo ── */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 28 }}>
-          <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg, #a855f7, #2563eb)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800, fontSize: 18, boxShadow: '0 4px 14px rgba(168,85,247,0.4)' }}>A</div>
-          <div><span style={{ color: '#f1f5f9', fontWeight: 700, fontSize: 16 }}>Ahorro </span><span style={{ color: '#a855f7', fontWeight: 700, fontSize: 16 }}>Invisible</span></div>
+      <div className={s.container}>
+        {/* ── Logo + Step pill ── */}
+        <div className={s.brandRow}>
+          <div className={s.brand}>
+            <div className={s.brandMark}>A</div>
+            <div>
+              <span className={s.brandName}>Ahorro </span>
+              <span className={s.brandAccent}>Invisible</span>
+            </div>
+          </div>
+          <span className={s.stepCounterPill}>Paso {step} de {totalSteps}</span>
         </div>
 
-        {/* ── Card ── */}
-        <div style={{ position: 'relative', borderRadius: 20, background: 'linear-gradient(160deg, #1e293b 0%, #0f172a 100%)', border: '1px solid rgba(51,65,85,0.6)', boxShadow: '0 25px 60px rgba(2,6,23,0.7)', overflow: 'hidden', padding: '28px 24px' }}>
-          <div style={{ position: 'absolute', top: -50, left: -50, width: 220, height: 220, background: 'radial-gradient(ellipse, rgba(168,85,247,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
-
+        {/* ── Card aterciopelada ── */}
+        <div className={s.card}>
           {/* ── Barra de progreso ── */}
-          <div style={{ marginBottom: 26 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-              <div style={{ display: 'flex', gap: 5 }}>
-                {[1, 2, 3, 4, 5].map(s => (
-                  <div key={s} style={{ width: s === step ? 24 : 7, height: 7, borderRadius: 999, background: s <= step ? 'linear-gradient(90deg, #a855f7, #2563eb)' : 'rgba(51,65,85,0.6)', transition: 'all 300ms ease', boxShadow: s <= step ? '0 0 8px rgba(168,85,247,0.5)' : 'none' }} />
+          <div className={s.progressWrap}>
+            <div className={s.progressTop}>
+              <div className={s.progressDots}>
+                {[1, 2, 3, 4, 5].map(idx => (
+                  <div
+                    key={idx}
+                    className={`${s.progressDot} ${idx === step ? s.progressDotCurrent : idx < step ? s.progressDotDone : ''}`}
+                  />
                 ))}
               </div>
-              <span style={{ fontSize: 10, fontWeight: 600, color: 'rgba(148,163,184,0.5)', letterSpacing: '0.10em' }}>{pct}% COMPLETADO</span>
+              <span className={s.progressPct}>{pct}% completado</span>
             </div>
-            <div style={{ height: 3, borderRadius: 999, background: 'rgba(51,65,85,0.5)', overflow: 'hidden' }}>
-              <div style={{ width: `${pct}%`, height: '100%', background: 'linear-gradient(90deg, #a855f7, #2563eb)', borderRadius: 999, transition: 'width 400ms ease', boxShadow: '0 0 8px rgba(168,85,247,0.5)' }} />
+            <div className={s.progressTrack}>
+              <div className={s.progressFill} style={{ width: `${pct}%` }} />
             </div>
           </div>
 
@@ -480,24 +487,29 @@ export default function OnboardingPage() {
           ══════════════════════════════ */}
           {step <= 3 && currentStep && (
             <>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-                <div style={{ width: 34, height: 34, borderRadius: 10, background: 'linear-gradient(135deg, #a855f7, #2563eb)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0, boxShadow: '0 4px 14px rgba(168,85,247,0.3)' }}>{currentStep.icon}</div>
-                <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(148,163,184,0.6)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                  PASO {step} DE {totalSteps} · {currentStep.label}
-                </span>
+              <div className={s.stepHead}>
+                <div className={s.stepMedallion}>
+                  {step === 1 ? <BoltIcon size={16} /> : step === 2 ? <StarIcon size={16} /> : <FlameIcon size={16} />}
+                </div>
+                <span className={s.stepLabel}>Paso {step} de {totalSteps} · {currentStep.label}</span>
               </div>
-              <h2 style={{ fontSize: 18, fontWeight: 700, color: '#f1f5f9', margin: '0 0 22px', lineHeight: 1.3 }}>{currentStep.question}</h2>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 28 }}>
+              <h2 className={`${s.questionTitle} ${s.questionTitleSpacing}`}>{currentStep.question}</h2>
+              <div className={s.optionsList}>
                 {currentStep.options.map((opt, i) => {
                   const isActive = selectedAnswer === opt.value;
                   return (
-                    <button key={opt.value} onClick={() => setAnswer(opt.value)} style={{ ...btnBase, display: 'flex', alignItems: 'flex-start', gap: 12, width: '100%', padding: '13px 14px', borderRadius: 12, textAlign: 'left', background: isActive ? 'linear-gradient(135deg,rgba(168,85,247,0.18),rgba(37,99,235,0.18))' : 'rgba(15,23,42,0.5)', border: isActive ? '1px solid rgba(168,85,247,0.55)' : '1px solid rgba(51,65,85,0.5)', boxShadow: isActive ? '0 0 16px rgba(168,85,247,0.15)' : 'none' }}>
-                      <div style={{ width: 26, height: 26, borderRadius: 8, flexShrink: 0, marginTop: 1, background: isActive ? 'linear-gradient(135deg, #a855f7, #2563eb)' : 'rgba(51,65,85,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: isActive ? '#fff' : 'rgba(148,163,184,0.6)', transition: 'all 180ms ease' }}>
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setAnswer(opt.value)}
+                      className={`${s.optionBtn} ${isActive ? s.optionBtnActive : ''}`}
+                    >
+                      <div className={`${s.optionBadge} ${isActive ? s.optionBadgeActive : ''}`}>
                         {['A', 'B', 'C', 'D'][i]}
                       </div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 13, fontWeight: 600, color: isActive ? '#f1f5f9' : '#cbd5e1', marginBottom: 2, lineHeight: 1.3 }}>{opt.label}</div>
-                        <div style={{ fontSize: 11, color: isActive ? 'rgba(196,181,253,0.7)' : 'rgba(100,116,139,0.6)', lineHeight: 1.3 }}>{opt.sub}</div>
+                      <div className={s.optionContent}>
+                        <div className={s.optionTitle}>{opt.label}</div>
+                        <div className={s.optionSub}>{opt.sub}</div>
                       </div>
                     </button>
                   );
@@ -511,25 +523,32 @@ export default function OnboardingPage() {
           ══════════════════════════════ */}
           {step === 4 && (
             <>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-                <div style={{ width: 34, height: 34, borderRadius: 10, background: 'linear-gradient(135deg, #10b981, #059669)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0, boxShadow: '0 4px 14px rgba(16,185,129,0.3)' }}>💰</div>
-                <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(148,163,184,0.6)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>PASO 4 DE {totalSteps} · SITUACIÓN ACTUAL</span>
+              <div className={s.stepHead}>
+                <div className={`${s.stepMedallion} ${s.stepMedallionEmerald}`}>
+                  <TrendingUpIcon size={16} />
+                </div>
+                <span className={s.stepLabel}>Paso 4 de {totalSteps} · Situación actual</span>
               </div>
-              <h2 style={{ fontSize: 18, fontWeight: 700, color: '#f1f5f9', margin: '0 0 6px', lineHeight: 1.3 }}>¿Cómo dirías que es tu ahorro actualmente?</h2>
-              <p style={{ fontSize: 12, color: 'rgba(148,163,184,0.5)', margin: '0 0 22px', lineHeight: 1.5 }}>
+              <h2 className={s.questionTitle}>¿Cómo dirías que es tu ahorro actualmente?</h2>
+              <p className={s.questionSub}>
                 No hay respuesta correcta ni incorrecta. Esto nos ayuda a proponerte un buen punto de partida.
               </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 28 }}>
+              <div className={s.optionsList}>
                 {HABIT_OPTIONS.map((opt, i) => {
                   const isActive = savingsHabit === opt.value;
                   return (
-                    <button key={opt.value} onClick={() => setSavingsHabit(opt.value)} style={{ ...btnBase, display: 'flex', alignItems: 'flex-start', gap: 12, width: '100%', padding: '13px 14px', borderRadius: 12, textAlign: 'left', background: isActive ? 'linear-gradient(135deg,rgba(16,185,129,0.15),rgba(5,150,105,0.15))' : 'rgba(15,23,42,0.5)', border: isActive ? '1px solid rgba(16,185,129,0.5)' : '1px solid rgba(51,65,85,0.5)', boxShadow: isActive ? '0 0 16px rgba(16,185,129,0.12)' : 'none' }}>
-                      <div style={{ width: 26, height: 26, borderRadius: 8, flexShrink: 0, marginTop: 1, background: isActive ? 'linear-gradient(135deg, #10b981, #059669)' : 'rgba(51,65,85,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: isActive ? '#fff' : 'rgba(148,163,184,0.6)', transition: 'all 180ms ease' }}>
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setSavingsHabit(opt.value)}
+                      className={`${s.optionBtn} ${isActive ? s.optionBtnActiveEmerald : ''}`}
+                    >
+                      <div className={`${s.optionBadge} ${isActive ? s.optionBadgeActiveEmerald : ''}`}>
                         {['A', 'B', 'C', 'D'][i]}
                       </div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 13, fontWeight: 600, color: isActive ? '#f1f5f9' : '#cbd5e1', marginBottom: 2, lineHeight: 1.3 }}>{opt.label}</div>
-                        <div style={{ fontSize: 11, color: isActive ? 'rgba(110,231,183,0.65)' : 'rgba(100,116,139,0.6)', lineHeight: 1.3 }}>{opt.sub}</div>
+                      <div className={s.optionContent}>
+                        <div className={s.optionTitle}>{opt.label}</div>
+                        <div className={s.optionSub}>{opt.sub}</div>
                       </div>
                     </button>
                   );
@@ -543,42 +562,28 @@ export default function OnboardingPage() {
           ══════════════════════════════ */}
           {step === 5 && (
             <>
-              {/* Header */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-                <div style={{ width: 34, height: 34, borderRadius: 10, background: 'linear-gradient(135deg, #ec4899, #a855f7, #2563eb)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0, boxShadow: '0 4px 14px rgba(168,85,247,0.3)' }}>🎯</div>
-                <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(148,163,184,0.6)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>PASO 5 DE {totalSteps} · TU OBJETIVO</span>
+              <div className={s.stepHead}>
+                <div className={`${s.stepMedallion} ${s.stepMedallionViolet}`}>
+                  <TargetIcon size={16} />
+                </div>
+                <span className={s.stepLabel}>Paso 5 de {totalSteps} · Tu objetivo</span>
               </div>
-              <h2 style={{ fontSize: 18, fontWeight: 700, color: '#f1f5f9', margin: '0 0 4px', lineHeight: 1.3 }}>Cuéntanos sobre tu objetivo</h2>
-              <p style={{ fontSize: 12, color: 'rgba(148,163,184,0.55)', margin: '0 0 22px', lineHeight: 1.5 }}>
+              <h2 className={s.questionTitle}>Cuéntanos sobre tu objetivo</h2>
+              <p className={s.questionSub}>
                 Vamos a proponerte un punto de partida adaptado a tu situación. Siempre puedes cambiarlo.
               </p>
 
               {/* Ingresos — 6 opciones en grid 2 columnas */}
-              <div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(148,163,184,0.4)', textTransform: 'uppercase', letterSpacing: '0.10em', marginBottom: 10 }}>¿Cuáles son tus ingresos netos aproximados?</div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 20 }}>
+              <div className={s.fieldLabel}>¿Cuáles son tus ingresos netos aproximados?</div>
+              <div className={s.incomeGrid}>
                 {INCOME_OPTIONS.map((opt, i) => {
                   const isSel = selectedIncomeIdx === i;
                   return (
                     <button
                       key={i}
+                      type="button"
                       onClick={() => { setSelectedIncomeIdx(i); setHasAutoFilled(false); }}
-                      style={{
-                        ...btnBase,
-                        padding: '11px 10px',
-                        borderRadius: 12,
-                        textAlign: 'center',
-                        background: isSel
-                          ? 'linear-gradient(135deg,rgba(236,72,153,0.22),rgba(168,85,247,0.22))'
-                          : 'rgba(15,23,42,0.5)',
-                        border: isSel
-                          ? '1px solid rgba(168,85,247,0.55)'
-                          : '1px solid rgba(51,65,85,0.5)',
-                        color: isSel ? '#f1f5f9' : '#94a3b8',
-                        fontSize: 12,
-                        fontWeight: isSel ? 600 : 400,
-                        boxShadow: isSel ? '0 0 14px rgba(168,85,247,0.15)' : 'none',
-                        lineHeight: 1.35,
-                      }}
+                      className={`${s.incomeBtn} ${isSel ? s.incomeBtnSelected : ''}`}
                     >
                       {opt.label}
                     </button>
@@ -586,34 +591,37 @@ export default function OnboardingPage() {
                 })}
               </div>
 
-              {/* Divider */}
-              <div style={{ height: 1, background: 'linear-gradient(90deg, transparent, rgba(168,85,247,0.3), transparent)', margin: '0 0 20px' }} />
+              <div className={s.softDivider} />
 
               {/* Nombre del objetivo */}
-              <div style={{ marginBottom: 16 }}>
-                <div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(148,163,184,0.4)', textTransform: 'uppercase', letterSpacing: '0.10em', marginBottom: 8 }}>¿Cómo se llama tu objetivo?</div>
+              <div className={s.fieldBlock}>
+                <label className={s.fieldLabel} htmlFor="onb-goal-name">¿Cómo se llama tu objetivo?</label>
                 <input
+                  id="onb-goal-name"
                   type="text"
                   value={goalName}
                   onChange={e => setGoalName(e.target.value)}
                   placeholder="Viaje, fondo de emergencia, coche..."
-                  style={{ width: '100%', background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(51,65,85,0.5)', borderRadius: 12, padding: '11px 14px', color: '#f1f5f9', fontSize: 14, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', transition: 'border-color 200ms ease' }}
-                  onFocus={e => (e.target.style.borderColor = 'rgba(168,85,247,0.5)')}
-                  onBlur={e => (e.target.style.borderColor = 'rgba(51,65,85,0.5)')}
+                  className={s.textInput}
                 />
               </div>
 
               {/* Duración */}
-              <div style={{ marginBottom: 16 }}>
-                <div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(148,163,184,0.4)', textTransform: 'uppercase', letterSpacing: '0.10em', marginBottom: 8 }}>¿En cuántos meses?</div>
-                <div style={{ display: 'flex', gap: 8 }}>
+              <div className={s.fieldBlock}>
+                <div className={s.fieldLabel}>¿En cuántos meses?</div>
+                <div className={s.monthsRow}>
                   {[1, 2, 3, 6, 12].map(m => {
                     const isSel = goalMonths === m;
                     const isRec = m === 3;
                     return (
-                      <button key={m} onClick={() => setGoalMonths(m)} style={{ ...btnBase, flex: 1, padding: '10px 0', borderRadius: 10, position: 'relative', background: isSel ? 'linear-gradient(135deg, #a855f7, #2563eb)' : 'rgba(15,23,42,0.5)', border: isSel ? 'none' : isRec ? '1px solid rgba(168,85,247,0.35)' : '1px solid rgba(51,65,85,0.5)', color: isSel ? '#fff' : isRec ? '#c4b5fd' : 'rgba(148,163,184,0.55)', fontSize: 13, fontWeight: isSel ? 700 : 600, boxShadow: isSel ? '0 4px 14px rgba(168,85,247,0.3)' : 'none' }}>
+                      <button
+                        key={m}
+                        type="button"
+                        onClick={() => setGoalMonths(m)}
+                        className={`${s.monthBtn} ${isSel ? s.monthBtnSelected : isRec ? s.monthBtnRec : ''}`}
+                      >
                         {m}m
-                        {isRec && !isSel && <div style={{ position: 'absolute', top: -8, left: '50%', transform: 'translateX(-50%)', background: 'linear-gradient(90deg, #a855f7, #2563eb)', borderRadius: 999, padding: '1px 6px', fontSize: 8, fontWeight: 700, color: '#fff', whiteSpace: 'nowrap', pointerEvents: 'none' }}>★ REC</div>}
+                        {isRec && !isSel && <span className={s.recTag}>REC</span>}
                       </button>
                     );
                   })}
@@ -621,68 +629,84 @@ export default function OnboardingPage() {
               </div>
 
               {/* Cantidad: stepper + input manual */}
-              <div style={{ marginBottom: 14 }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(148,163,184,0.4)', textTransform: 'uppercase', letterSpacing: '0.10em' }}>¿Cuánto quieres ahorrar?</div>
-                  <div style={{ fontSize: 11, color: 'rgba(168,85,247,0.7)', fontWeight: 600 }}>Recomendamos: {fmtEUR(recTotal)}</div>
+              <div className={s.fieldBlock}>
+                <div className={s.fieldLabelRow}>
+                  <span className={s.fieldLabel}>¿Cuánto quieres ahorrar?</span>
+                  <span className={s.recHint}>Recomendamos: {fmtEUR(recTotal)}</span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'stretch', background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(51,65,85,0.5)', borderRadius: 14, overflow: 'hidden' }}>
-                  <button onClick={() => setGoalAmount(a => Math.max(50, a - 50))} style={{ ...btnBase, width: 52, background: 'rgba(255,255,255,0.04)', color: 'rgba(148,163,184,0.8)', fontSize: 26, flexShrink: 0 }}>−</button>
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '8px 4px' }}>
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
+                <div className={s.stepperWrap}>
+                  <button
+                    type="button"
+                    onClick={() => setGoalAmount(a => Math.max(50, a - 50))}
+                    className={s.stepperBtn}
+                    aria-label="Restar 50 euros"
+                  >
+                    −
+                  </button>
+                  <div className={s.stepperCenter}>
+                    <div className={s.stepperInputRow}>
                       <input
-                        type="number" inputMode="numeric" value={goalInputValue}
+                        type="number"
+                        inputMode="numeric"
+                        value={goalInputValue}
                         onChange={e => setGoalInputValue(e.target.value)}
                         onBlur={handleGoalInputBlur}
-                        style={{ background: 'transparent', border: 'none', outline: 'none', color: '#f1f5f9', fontWeight: 800, fontSize: 26, letterSpacing: '-0.5px', fontFamily: 'inherit', textAlign: 'right', width: `${Math.max(3, String(goalInputValue).length)}ch`, minWidth: '3ch', maxWidth: '10ch' } as React.CSSProperties}
+                        className={s.stepperInput}
+                        style={{ width: `${Math.max(3, String(goalInputValue).length)}ch` }}
+                        aria-label="Cantidad del objetivo en euros"
                       />
-                      <span style={{ fontSize: 16, fontWeight: 700, color: 'rgba(241,245,249,0.5)', flexShrink: 0 }}>€</span>
+                      <span className={s.stepperCurrency}>€</span>
                     </div>
-                    <div style={{ fontSize: 10, color: 'rgba(148,163,184,0.3)', marginTop: 2 }}>toca para escribir · o usa los botones</div>
+                    <div className={s.stepperHint}>toca para escribir · o usa los botones</div>
                   </div>
-                  <button onClick={() => setGoalAmount(a => a + 50)} style={{ ...btnBase, width: 52, background: 'rgba(255,255,255,0.04)', color: 'rgba(148,163,184,0.8)', fontSize: 26, flexShrink: 0 }}>+</button>
+                  <button
+                    type="button"
+                    onClick={() => setGoalAmount(a => a + 50)}
+                    className={s.stepperBtn}
+                    aria-label="Sumar 50 euros"
+                  >
+                    +
+                  </button>
                 </div>
               </div>
 
               {/* Mensaje de validación */}
               {goalAmount > 0 && (
                 isOver30 ? (
-                  /* Nivel 2: supera el 30% — amable pero notable */
-                  <div style={{ background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.22)', borderRadius: 14, padding: '14px 16px', marginBottom: 4 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                      <span style={{ fontSize: 16 }}>💡</span>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: '#fbbf24' }}>Una meta muy ambiciosa</span>
-                    </div>
-                    <p style={{ fontSize: 12, color: 'rgba(251,191,36,0.8)', margin: '0 0 8px', lineHeight: 1.6 }}>
+                  <div className={s.feedbackAmber}>
+                    <p className={s.feedbackTitleAmber}>Una meta muy ambiciosa</p>
+                    <p className={s.feedbackBody}>
                       Es una meta muy ambiciosa y puede ser difícil mantenerla en el tiempo. Te recomendamos empezar con una cantidad más cómoda y, más adelante, ir ajustándola si te ves con margen.
                     </p>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(251,191,36,0.08)', borderRadius: 10, padding: '8px 12px', marginBottom: 10 }}>
-                      <span style={{ fontSize: 11, color: 'rgba(251,191,36,0.6)' }}>Referencia para tu perfil</span>
-                      <span style={{ fontSize: 14, fontWeight: 700, color: '#fbbf24' }}>{fmtEUR(recTotal)}</span>
+                    <div className={s.feedbackRefRow}>
+                      <span className={s.feedbackRefLabel}>Referencia para tu perfil</span>
+                      <span className={s.feedbackRefVal}>{fmtEUR(recTotal)}</span>
                     </div>
-                    <button onClick={() => { setGoalAmount(recTotal); setGoalInputValue(String(recTotal)); }} style={{ ...btnBase, width: '100%', padding: '9px', borderRadius: 10, background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.28)', color: '#fbbf24', fontSize: 12, fontWeight: 600 }}>
+                    <button
+                      type="button"
+                      onClick={() => { setGoalAmount(recTotal); setGoalInputValue(String(recTotal)); }}
+                      className={s.feedbackActionBtn}
+                    >
                       Empezar con {fmtEUR(recTotal)} →
                     </button>
                   </div>
                 ) : isOverRec ? (
-                  /* Nivel 1: supera recomendación pero no el 30% — tono suave */
-                  <div style={{ background: 'rgba(168,85,247,0.07)', border: '1px solid rgba(168,85,247,0.2)', borderRadius: 14, padding: '14px 16px', marginBottom: 4 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                      <span style={{ fontSize: 16 }}>💜</span>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: '#c4b5fd' }}>Una propuesta amigable</span>
-                    </div>
-                    <p style={{ fontSize: 12, color: 'rgba(196,181,253,0.8)', margin: '0 0 10px', lineHeight: 1.6 }}>
+                  <div className={s.feedbackIndigo}>
+                    <p className={s.feedbackTitleIndigo}>Una propuesta amigable</p>
+                    <p className={s.feedbackBody}>
                       Esta meta es un poco más ambiciosa que la que te recomendamos para empezar. Puedes seguir con ella, aunque empezar con una cantidad más realista puede ayudarte a mantener el ritmo mejor.
                     </p>
-                    <button onClick={() => { setGoalAmount(recTotal); setGoalInputValue(String(recTotal)); }} style={{ ...btnBase, width: '100%', padding: '9px', borderRadius: 10, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.28)', color: '#c4b5fd', fontSize: 12, fontWeight: 600 }}>
+                    <button
+                      type="button"
+                      onClick={() => { setGoalAmount(recTotal); setGoalInputValue(String(recTotal)); }}
+                      className={`${s.feedbackActionBtn} ${s.feedbackActionBtnIndigo}`}
+                    >
                       Usar {fmtEUR(recTotal)} como objetivo →
                     </button>
                   </div>
                 ) : (
-                  /* Dentro de la recomendación — feedback positivo */
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(16,185,129,0.07)', border: '1px solid rgba(16,185,129,0.18)', borderRadius: 10, padding: '10px 14px', marginBottom: 4 }}>
-                    <span style={{ fontSize: 15 }}>✅</span>
-                    <span style={{ fontSize: 12, color: '#34d399', lineHeight: 1.4 }}>
+                  <div className={s.feedbackEmerald}>
+                    <span className={s.feedbackBodyEmerald}>
                       Un objetivo bien ajustado a tu situación. ¡Buen punto de partida!
                     </span>
                   </div>
@@ -692,13 +716,18 @@ export default function OnboardingPage() {
           )}
 
           {/* ── Botones de navegación ── */}
-          <div style={{ display: 'flex', gap: 10, marginTop: step >= 4 ? 20 : 0 }}>
+          <div className={`${s.navFooter} ${step < 4 ? s.navFooterCompact : ''}`}>
             {step > 1 && (
-              <button onClick={handleBack} style={{ ...btnBase, flex: 1, padding: '12px 0', borderRadius: 10, background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(51,65,85,0.5)', color: 'rgba(148,163,184,0.8)', fontSize: 14, fontWeight: 600 }}>
+              <button type="button" onClick={handleBack} className={s.backBtn}>
                 Atrás
               </button>
             )}
-            <button onClick={handleNext} disabled={isDisabled} style={{ ...btnBase, flex: step > 1 ? 2 : 1, padding: '12px 0', borderRadius: 10, background: isDisabled ? 'rgba(51,65,85,0.4)' : 'linear-gradient(90deg, #a855f7, #2563eb)', border: 'none', color: isDisabled ? 'rgba(100,116,139,0.6)' : '#fff', fontSize: 14, fontWeight: 600, cursor: isDisabled ? 'not-allowed' : 'pointer', boxShadow: isDisabled ? 'none' : '0 4px 14px rgba(168,85,247,0.35)' }}>
+            <button
+              type="button"
+              onClick={handleNext}
+              disabled={isDisabled}
+              className={`${s.nextBtn} ${step === 1 ? s.nextBtnFull : ''}`}
+            >
               {step < totalSteps ? 'Siguiente →' : 'Ver mi plan →'}
             </button>
           </div>
@@ -706,18 +735,11 @@ export default function OnboardingPage() {
 
         {/* Saludo personalizado */}
         {userName && (
-          <p style={{ textAlign: 'center', marginTop: 18, fontSize: 13, color: 'rgba(148,163,184,0.4)' }}>
-            Preparando tu experiencia, {userName} ✨
+          <p className={s.greeting}>
+            Preparando tu experiencia, {userName}
           </p>
         )}
       </div>
-
-      {/* Ocultar flechas del input number */}
-      <style>{`
-        input[type=number]::-webkit-inner-spin-button,
-        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-        input[type=number] { -moz-appearance: textfield; }
-      `}</style>
     </main>
   );
 }

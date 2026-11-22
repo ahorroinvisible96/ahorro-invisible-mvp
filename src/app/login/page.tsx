@@ -9,6 +9,7 @@ import { isSupabaseConfigured } from "@/lib/supabase";
 import { hasLocalDataToMigrate, pushLocalDataToSupabase } from "@/services/syncService";
 import { restoreAfterLogin, runSyncCycle } from "@/services/v2/runtime";
 import { identifyUser } from "@/lib/posthog";
+import { LockIcon, ShieldIcon, TrendingUpIcon } from "@/components/ui/AppIcons";
 import s from './login.module.css';
 
 type Mode = "password" | "magic" | "reset";
@@ -114,12 +115,12 @@ export default function LoginPage() {
             </p>
             <div className={s.features}>
               {[
-                { icon: "🔒", text: "Tus datos están seguros y cifrados" },
-                { icon: "📱", text: "Accede desde cualquier dispositivo" },
-                { icon: "🔄", text: "Sincronización automática en la nube" },
+                { icon: <LockIcon size={17} />, tone: '', text: "Tus datos están seguros y cifrados" },
+                { icon: <ShieldIcon size={17} />, tone: s.featureIconEmerald, text: "Accede desde cualquier dispositivo" },
+                { icon: <TrendingUpIcon size={17} />, tone: s.featureIconSky, text: "Sincronización automática en la nube" },
               ].map((f) => (
                 <div key={f.text} className={s.featureItem}>
-                  <span className={s.featureIcon}>{f.icon}</span>
+                  <span className={`${s.featureIcon} ${f.tone}`}>{f.icon}</span>
                   <span className={s.featureText}>{f.text}</span>
                 </div>
               ))}
@@ -157,7 +158,7 @@ export default function LoginPage() {
                       onClick={() => { setMode(m); setError(""); setInfo(""); }}
                       className={`${s.modeBtn} ${mode === m ? s.modeBtnActive : ''}`}
                     >
-                      {m === "password" ? "🔑 Contraseña" : "✉️ Magic link"}
+                      {m === "password" ? "Contraseña" : "Magic link"}
                     </button>
                   ))}
                 </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { analytics } from '@/services/analytics';
 import {
   buildSummary,
@@ -13,6 +13,8 @@ import {
 import { QUESTIONS_BANK } from '@/services/dailyQuestionsBank';
 import { syncGoalToSupabase } from '@/services/syncService';
 import type { Goal, DailyDecision } from '@/types/Dashboard';
+import { PlusIcon, EditIcon, StarIcon, BoltIcon } from '@/components/ui/AppIcons';
+import styles from './GoalDetail.module.css';
 
 function formatEUR(n: number) {
   return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 2 }).format(n);
@@ -23,8 +25,14 @@ function formatDate(d: string) {
 
 type StoreShape = { decisions: DailyDecision[]; goals: Goal[] };
 
-export default function GoalDetailPage({ params }: { params: { id: string } }) {
+export default function GoalDetailPage() {
   const router = useRouter();
+  const routeParams = useParams();
+  const goalId = typeof routeParams?.id === 'string'
+    ? routeParams.id
+    : Array.isArray(routeParams?.id)
+      ? routeParams.id[0]
+      : '';
   const [goal, setGoal] = useState<Goal | null>(null);
   const [decisions, setDecisions] = useState<DailyDecision[]>([]);
   const [editing, setEditing] = useState(false);
@@ -39,7 +47,7 @@ export default function GoalDetailPage({ params }: { params: { id: string } }) {
 
   const refresh = () => {
     const summary = buildSummary('30d');
-    const found = summary.goals.find(g => g.id === params.id) ?? null;
+    const found = summary.goals.find(g => g.id === goalId) ?? null;
     setGoal(found);
     if (found) {
       setTitle(found.title);
@@ -49,7 +57,7 @@ export default function GoalDetailPage({ params }: { params: { id: string } }) {
     const raw = localStorage.getItem('ahorro_invisible_dashboard_v1');
     if (raw) {
       const store = JSON.parse(raw) as StoreShape;
-      const goalDecisions = store.decisions.filter(d => d.goalId === params.id);
+      const goalDecisions = store.decisions.filter(d => d.goalId === goalId);
       setDecisions([...goalDecisions].sort((a, b) => b.date.localeCompare(a.date)));
     }
   };
@@ -60,11 +68,10 @@ export default function GoalDetailPage({ params }: { params: { id: string } }) {
     if (isAuth !== 'true') { router.replace('/signup'); return; }
     refresh();
     setLoading(false);
-  }, [router, params.id]);
+  }, [router, goalId]);
 
   const pct = goal ? Math.min(100, Math.round((goal.currentAmount / goal.targetAmount) * 100)) : 0;
   const isCompleted = goal ? goal.currentAmount >= goal.targetAmount : false;
-  const totalSaved = useMemo(() => decisions.reduce((s, d) => s + d.deltaAmount, 0), [decisions]);
 
   const avgMonthly = useMemo(() => {
     if (decisions.length === 0) return 0;
@@ -80,6 +87,27 @@ export default function GoalDetailPage({ params }: { params: { id: string } }) {
     return Math.ceil(remaining / avgMonthly);
   }, [goal, isCompleted, avgMonthly]);
 
+  const curveData = useMemo(() => {
+    const ordered = [...decisions].reverse().slice(-10);
+    if (ordered.length === 0) return null;
+    let running = 0;
+    const pts = ordered.map((d) => {
+      running += d.deltaAmount;
+      return running;
+    });
+    const maxVal = Math.max(...pts, 1);
+    const w = 320;
+    const h = 84;
+    const coords = pts.map((v, idx) => {
+      const x = pts.length === 1 ? w - 8 : (idx / (pts.length - 1)) * (w - 12) + 4;
+      const y = h - 10 - (v / maxVal) * (h - 22);
+      return { x, y };
+    });
+    const linePath = coords.map((c, i) => `${i === 0 ? 'M' : 'L'}${c.x.toFixed(1)} ${c.y.toFixed(1)}`).join(' ');
+    const areaPath = `${linePath} L${coords[coords.length - 1].x.toFixed(1)} ${h} L${coords[0].x.toFixed(1)} ${h} Z`;
+    return { linePath, areaPath, last: coords[coords.length - 1] };
+  }, [decisions]);
+
   const handleSaveEdit = () => {
     setEditErr('');
     if (!title.trim()) { setEditErr('Escribe un nombre.'); return; }
@@ -87,13 +115,13 @@ export default function GoalDetailPage({ params }: { params: { id: string } }) {
     if (!a || a <= 0) { setEditErr('Cantidad inválida.'); return; }
     const m = Number(horizonMonths);
     if (!m || m < 1) { setEditErr('Horizonte inválido.'); return; }
-    storeUpdateGoal(params.id, { title: title.trim(), targetAmount: a, horizonMonths: m });
+    storeUpdateGoal(goalId, { title: title.trim(), targetAmount: a, horizonMonths: m });
     setEditing(false);
     refresh();
   };
 
   const openArchiveModal = () => {
-    const active = storeListActiveGoals().filter((g) => g.id !== params.id);
+    const active = storeListActiveGoals().filter((g) => g.id !== goalId);
     setOtherGoals(active);
     setArchiveDest(active.length > 0 ? active[0].id : 'hucha');
     setShowArchiveModal(true);
@@ -101,7 +129,7 @@ export default function GoalDetailPage({ params }: { params: { id: string } }) {
 
   const handleConfirmArchive = () => {
     if (!goal) return;
-    storeArchiveGoalSafe(params.id, archiveDest, '30d', { surface: 'goal_detail' });
+    storeArchiveGoalSafe(goalId, archiveDest, '30d', { surface: 'goal_detail' });
     analytics.goalArchiveSubmitted(goal.isPrimary, 'goal_detail');
     syncGoalToSupabase({ ...goal, archived: true, currentAmount: 0 }).catch(() => null);
     setShowArchiveModal(false);
@@ -109,212 +137,211 @@ export default function GoalDetailPage({ params }: { params: { id: string } }) {
   };
 
   const handleSetPrimary = () => {
-    storeSetPrimaryGoal(params.id);
+    storeSetPrimaryGoal(goalId);
     refresh();
   };
 
-  const D = {
-    page: '#0f172a',
-    card: '#1e293b',
-    cardBorder: 'rgba(51,65,85,0.6)',
-    tp: '#f1f5f9',
-    ts: 'rgba(148,163,184,0.85)',
-    tm: 'rgba(148,163,184,0.5)',
-    border: 'rgba(51,65,85,0.55)',
-    stat: 'rgba(15,23,42,0.7)',
-    green: '#4ade80',
-    blue: '#60a5fa',
-  };
-
   if (loading) {
-    return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--color-background-page)' }}><span style={{ color: D.tm }}>Cargando...</span></div>;
+    return <div className={styles.centerState}>Cargando...</div>;
   }
 
   if (!goal) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24, background: 'var(--color-background-page)' }}>
-        <p style={{ color: D.ts, fontSize: 14, marginBottom: 16 }}>Objetivo no encontrado.</p>
-        <button onClick={() => router.push('/goals')} style={{ padding: '10px 20px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight: 600 }}>Ver objetivos</button>
+      <div className={styles.centerState}>
+        <p style={{ margin: 0, fontSize: 14 }}>Objetivo no encontrado.</p>
+        <button type="button" onClick={() => router.push('/goals')} className={styles.btnWhite} style={{ padding: '0 24px', flex: 'none' }}>
+          Ver objetivos
+        </button>
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: '100vh', padding: '24px 0', background: 'var(--color-background-page)' }}>
-      <div>
+    <div className={styles.page}>
+      <div className={styles.sky}>
+        <div className={styles.inner}>
+          <div className={styles.topBar}>
+            <button type="button" className={styles.glassBtn} onClick={() => router.push('/goals')} aria-label="Volver a objetivos">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+            <h1 className={styles.topTitle}>{goal.title}</h1>
+            <button type="button" className={styles.glassBtn} onClick={() => setEditing(v => !v)} aria-label="Editar objetivo">
+              <EditIcon size={16} />
+            </button>
+          </div>
 
-        {/* Nav */}
-        <button onClick={() => router.push('/goals')} style={{ background: 'none', border: 'none', color: D.ts, fontSize: 13, cursor: 'pointer', padding: 0, marginBottom: 20 }}>← Mis objetivos</button>
-
-        {/* Hero card */}
-        <div style={{ background: D.card, borderRadius: 20, padding: '24px', border: `1px solid ${D.cardBorder}`, marginBottom: 16 }}>
-          {editing ? (
-            <div>
-              <h2 style={{ fontSize: 17, fontWeight: 700, color: D.tp, marginBottom: 16 }}>Editar objetivo</h2>
-              {editErr && <p style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 8, padding: '8px 12px', color: '#fca5a5', fontSize: 13, marginBottom: 12 }}>{editErr}</p>}
-              <div style={{ marginBottom: 12 }}>
-                <label style={{ fontSize: 13, fontWeight: 600, color: D.ts, display: 'block', marginBottom: 5 }}>Nombre</label>
-                <input value={title} onChange={e => setTitle(e.target.value)} style={{ width: '100%', padding: '10px 12px', border: `1.5px solid ${D.border}`, borderRadius: 10, fontSize: 14, boxSizing: 'border-box', outline: 'none', background: D.stat, color: D.tp }} />
-              </div>
-              <div style={{ marginBottom: 12 }}>
-                <label style={{ fontSize: 13, fontWeight: 600, color: D.ts, display: 'block', marginBottom: 5 }}>Meta (€)</label>
-                <input type="number" min="1" value={targetAmount} onChange={e => setTargetAmount(e.target.value)} style={{ width: '100%', padding: '10px 12px', border: `1.5px solid ${D.border}`, borderRadius: 10, fontSize: 14, boxSizing: 'border-box', outline: 'none', background: D.stat, color: D.tp }} />
-              </div>
-              <div style={{ marginBottom: 16 }}>
-                <label style={{ fontSize: 13, fontWeight: 600, color: D.ts, display: 'block', marginBottom: 5 }}>Horizonte (meses)</label>
-                <input type="number" min="1" value={horizonMonths} onChange={e => setHorizonMonths(e.target.value)} style={{ width: '100%', padding: '10px 12px', border: `1.5px solid ${D.border}`, borderRadius: 10, fontSize: 14, boxSizing: 'border-box', outline: 'none', background: D.stat, color: D.tp }} />
-              </div>
-              <div style={{ display: 'flex', gap: 10 }}>
-                <button onClick={() => setEditing(false)} style={{ flex: 1, padding: '11px 0', background: 'transparent', border: `1.5px solid ${D.border}`, borderRadius: 10, cursor: 'pointer', fontSize: 14, color: D.ts }}>Cancelar</button>
-                <button onClick={handleSaveEdit} style={{ flex: 2, padding: '11px 0', background: '#2563eb', border: 'none', borderRadius: 10, cursor: 'pointer', fontSize: 14, fontWeight: 700, color: '#fff' }}>Guardar</button>
-              </div>
+          <div className={styles.heroCenter}>
+            <span className={styles.heroKicker}>
+              {goal.isPrimary ? 'Principal · ' : ''}{isCompleted ? 'Completado · ' : ''}{pct}% completado
+            </span>
+            <div className={styles.heroAmount}>{formatEUR(goal.currentAmount)}</div>
+            <div className={styles.heroPill}>
+              Meta {formatEUR(goal.targetAmount)}{!isCompleted && eta !== null ? ` · ETA ~${eta} ${eta === 1 ? 'mes' : 'meses'}` : ` · ${goal.horizonMonths}m`}
             </div>
-          ) : (
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
-                    <h1 style={{ fontSize: 20, fontWeight: 800, color: D.tp, margin: 0 }}>{goal.title}</h1>
-                    {goal.isPrimary && <span style={{ fontSize: 11, fontWeight: 700, background: 'rgba(37,99,235,0.2)', color: '#93c5fd', padding: '2px 8px', borderRadius: 20 }}>PRINCIPAL</span>}
-                    {isCompleted && <span style={{ fontSize: 11, fontWeight: 700, background: 'rgba(22,163,74,0.2)', color: '#4ade80', padding: '2px 8px', borderRadius: 20 }}>✓ COMPLETADO</span>}
-                  </div>
-                  <p style={{ fontSize: 13, color: D.tm, margin: 0 }}>Creado {formatDate(goal.createdAt)}</p>
-                </div>
-                <button onClick={() => setEditing(true)} style={{ fontSize: 12, padding: '6px 12px', background: 'rgba(51,65,85,0.4)', border: `1px solid ${D.border}`, borderRadius: 8, cursor: 'pointer', color: D.ts, fontWeight: 500, flexShrink: 0, marginLeft: 12 }}>Editar</button>
-              </div>
+            <div className={styles.heroBarTrack}>
+              <div className={`${styles.heroBarFill} ${isCompleted ? styles.heroBarFillDone : ''}`} style={{ width: `${pct}%` }} />
+            </div>
+          </div>
 
-              {/* Amounts + Progress */}
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, margin: '16px 0 8px' }}>
-                <span style={{ fontSize: 28, fontWeight: 800, color: D.tp }}>{formatEUR(goal.currentAmount)}</span>
-                <span style={{ fontSize: 16, color: D.tm }}>/ {formatEUR(goal.targetAmount)}</span>
-                <span style={{ fontSize: 16, fontWeight: 700, color: D.blue, marginLeft: 'auto' }}>{pct}%</span>
-              </div>
-              <div style={{ background: 'rgba(51,65,85,0.6)', borderRadius: 999, height: 10, overflow: 'hidden', marginBottom: 14 }}>
-                <div style={{ width: `${pct}%`, height: 10, background: isCompleted ? '#4ade80' : 'linear-gradient(90deg,#60a5fa,#2563eb)', borderRadius: 999, transition: 'width 0.5s' }} />
-              </div>
+          <div className={styles.circleActions}>
+            <button type="button" className={styles.circleAction} onClick={() => router.push('/extra-saving')}>
+              <span className={styles.circleBtn}><PlusIcon size={19} /></span>
+              <span className={styles.circleLbl}>Aportar</span>
+            </button>
+            <button type="button" className={styles.circleAction} onClick={() => setEditing(v => !v)}>
+              <span className={styles.circleBtn}><EditIcon size={17} /></span>
+              <span className={styles.circleLbl}>Editar</span>
+            </button>
+            {!goal.isPrimary && !goal.archived && (
+              <button type="button" className={styles.circleAction} onClick={handleSetPrimary}>
+                <span className={styles.circleBtn}><StarIcon size={17} /></span>
+                <span className={styles.circleLbl}>Principal</span>
+              </button>
+            )}
+            {!goal.archived && (
+              <button type="button" className={styles.circleAction} onClick={openArchiveModal}>
+                <span className={styles.circleBtn}>
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="4" width="18" height="4" rx="1" />
+                    <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8" />
+                  </svg>
+                </span>
+                <span className={styles.circleLbl}>Archivar</span>
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
 
-              {/* Stats row */}
-              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                <div style={{ flex: 1, minWidth: 100, background: D.stat, borderRadius: 10, padding: '10px 14px' }}>
-                  <p style={{ fontSize: 11, color: D.tm, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 3 }}>Horizonte</p>
-                  <p style={{ fontSize: 14, fontWeight: 700, color: D.tp, margin: 0 }}>{goal.horizonMonths} meses</p>
-                </div>
-                <div style={{ flex: 1, minWidth: 100, background: D.stat, borderRadius: 10, padding: '10px 14px' }}>
-                  <p style={{ fontSize: 11, color: D.tm, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 3 }}>Ahorrado</p>
-                  <p style={{ fontSize: 14, fontWeight: 700, color: D.green, margin: 0 }}>{formatEUR(totalSaved)}</p>
-                </div>
-                {!isCompleted && eta !== null && (
-                  <div style={{ flex: 1, minWidth: 100, background: 'rgba(37,99,235,0.12)', borderRadius: 10, padding: '10px 14px' }}>
-                    <p style={{ fontSize: 11, color: '#93c5fd', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 3 }}>ETA</p>
-                    <p style={{ fontSize: 14, fontWeight: 700, color: D.blue, margin: 0 }}>{eta} mes{eta !== 1 ? 'es' : ''}</p>
-                  </div>
-                )}
+      <div className={styles.inner}>
+        <div className={styles.content}>
+          {editing && (
+            <section className={styles.card}>
+              <div className={styles.cardHead} style={{ marginBottom: 14 }}>
+                <h2 className={styles.cardLabel}>Editar objetivo</h2>
               </div>
+              {editErr && <p className={styles.errorBox}>{editErr}</p>}
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Nombre</label>
+                <input value={title} onChange={e => setTitle(e.target.value)} className={styles.input} />
+              </div>
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Meta (€)</label>
+                <input type="number" min="1" value={targetAmount} onChange={e => setTargetAmount(e.target.value)} className={styles.input} />
+              </div>
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Horizonte (meses)</label>
+                <input type="number" min="1" value={horizonMonths} onChange={e => setHorizonMonths(e.target.value)} className={styles.input} />
+              </div>
+              <div className={styles.btnRow}>
+                <button type="button" onClick={() => setEditing(false)} className={styles.btnGhost}>Cancelar</button>
+                <button type="button" onClick={handleSaveEdit} className={styles.btnWhite}>Guardar</button>
+              </div>
+            </section>
+          )}
 
-              {/* Actions */}
-              <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
-                {!goal.isPrimary && !goal.archived && (
-                  <button onClick={handleSetPrimary} style={{ fontSize: 13, padding: '8px 14px', border: '1px solid rgba(37,99,235,0.4)', background: 'rgba(37,99,235,0.12)', color: '#93c5fd', borderRadius: 9, cursor: 'pointer', fontWeight: 600 }}>Hacer principal</button>
-                )}
-                {!goal.archived && (
-                  <button onClick={openArchiveModal} style={{ fontSize: 13, padding: '8px 14px', border: '1px solid rgba(239,68,68,0.3)', background: 'transparent', color: '#f87171', borderRadius: 9, cursor: 'pointer' }}>Archivar</button>
-                )}
+          {decisions.length > 0 && curveData && (
+            <section className={styles.card}>
+              <div className={styles.cardHead}>
+                <h2 className={styles.cardLabel}>Evolución del objetivo</h2>
+                <span className={styles.cardAccent}>+{formatEUR(avgMonthly)} / mes</span>
               </div>
+              <p className={styles.cardBigStat}>{decisions.length} {decisions.length === 1 ? 'decisión' : 'decisiones'}</p>
+              <svg viewBox="0 0 320 84" width="100%" height="84" style={{ display: 'block', overflow: 'visible' }}>
+                <defs>
+                  <linearGradient id="goalAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#8B5CF6" stopOpacity="0.36" />
+                    <stop offset="100%" stopColor="#8B5CF6" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+                <path d={curveData.areaPath} fill="url(#goalAreaGrad)" />
+                <path d={curveData.linePath} fill="none" stroke="#9F7AEA" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+                <circle cx={curveData.last.x} cy={curveData.last.y} r="4" fill="#FFFFFF" stroke="#8B5CF6" strokeWidth="2.5" />
+              </svg>
+            </section>
+          )}
+
+          {decisions.length > 0 && (
+            <section className={styles.card}>
+              <div className={styles.cardHead}>
+                <h2 className={styles.cardLabel}>Actividad reciente</h2>
+              </div>
+              <div className={styles.rowsStack}>
+                {decisions.slice(0, 20).map(d => {
+                  const q = QUESTIONS_BANK.find(item => item.id === d.questionId);
+                  const isExtra = d.questionId === 'extra_saving';
+                  return (
+                    <div key={d.id} className={styles.row}>
+                      <div className={`${styles.medallion} ${isExtra ? styles.medallionExtra : ''}`}>
+                        {isExtra ? <PlusIcon size={16} /> : <BoltIcon size={16} />}
+                      </div>
+                      <div className={styles.rowMid}>
+                        <p className={styles.rowTitle}>{q?.text ?? (isExtra ? 'Ahorro extra' : d.questionId)}</p>
+                        <p className={styles.rowSub}>{formatDate(d.date)}</p>
+                      </div>
+                      {d.deltaAmount > 0 && (
+                        <span className={styles.rowAmount}>+{formatEUR(d.deltaAmount)}</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+
+          {decisions.length === 0 && !editing && (
+            <div className={styles.emptyCard}>
+              <p className={styles.emptyText}>Aún no hay decisiones asignadas a este objetivo.</p>
+              <button type="button" onClick={() => router.push('/daily')} className={styles.btnWhite} style={{ padding: '0 24px', flex: 'none' }}>
+                Tomar decisión diaria
+              </button>
             </div>
           )}
         </div>
-
-        {/* Evolución individual */}
-        {decisions.length > 0 && (
-          <div style={{ background: D.card, borderRadius: 20, padding: '20px 24px', border: `1px solid ${D.cardBorder}`, marginBottom: 16 }}>
-            <h2 style={{ fontSize: 15, fontWeight: 700, color: D.tp, marginBottom: 4 }}>Evolución del objetivo</h2>
-            <p style={{ fontSize: 13, color: D.tm, marginBottom: 16 }}>{decisions.length} decisiones · media mensual {formatEUR(avgMonthly)}</p>
-            {/* Mini bar chart */}
-            {(() => {
-              const max = Math.max(...decisions.slice(0, 10).map(d => d.deltaAmount), 1);
-              return (
-                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 60, marginBottom: 8 }}>
-                  {[...decisions].reverse().slice(0, 10).map((d, i) => (
-                    <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
-                      <div style={{ width: '100%', background: '#2563eb', borderRadius: '3px 3px 0 0', height: `${Math.max(4, (d.deltaAmount / max) * 52)}px`, opacity: 0.7 + (i / 10) * 0.3 }} />
-                    </div>
-                  ))}
-                </div>
-              );
-            })()}
-            <p style={{ fontSize: 11, color: D.tm, textAlign: 'right' }}>Últimas {Math.min(10, decisions.length)} decisiones</p>
-          </div>
-        )}
-
-        {/* Historial de decisiones del objetivo */}
-        {decisions.length > 0 && (
-          <div style={{ background: D.card, borderRadius: 20, padding: '20px 24px', border: `1px solid ${D.cardBorder}` }}>
-            <h2 style={{ fontSize: 15, fontWeight: 700, color: D.tp, marginBottom: 16 }}>Historial de decisiones</h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {decisions.slice(0, 20).map(d => {
-                const q = QUESTIONS_BANK.find(q => q.id === d.questionId);
-                return (
-                  <div key={d.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: `1px solid ${D.border}` }}>
-                    <div>
-                      <p style={{ fontSize: 13, fontWeight: 600, color: D.ts, marginBottom: 2 }}>{q?.text ?? d.questionId}</p>
-                      <p style={{ fontSize: 12, color: D.tm, margin: 0 }}>{formatDate(d.date)}</p>
-                    </div>
-                    {d.deltaAmount > 0 && (
-                      <span style={{ fontSize: 14, fontWeight: 700, color: D.green, flexShrink: 0, marginLeft: 12 }}>+{formatEUR(d.deltaAmount)}</span>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Modal de archivar */}
-        {showArchiveModal && (
-          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: 16 }}>
-            <div style={{ background: D.card, border: `1px solid ${D.cardBorder}`, borderRadius: 20, padding: '28px 24px', width: '100%', maxWidth: 400, boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}>
-              <h3 style={{ fontSize: 17, fontWeight: 700, color: D.tp, marginBottom: 6 }}>Archivar objetivo</h3>
-              <p style={{ fontSize: 13, color: D.ts, marginBottom: 20 }}>
-                {goal && goal.currentAmount > 0
-                  ? `¿Dónde quieres transferir el saldo de ${formatEUR(goal.currentAmount)}?`
-                  : '¿Confirmas que quieres archivar este objetivo?'}
-              </p>
-              {goal && goal.currentAmount > 0 && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
-                  <button
-                    onClick={() => setArchiveDest('hucha')}
-                    style={{ padding: '12px 16px', borderRadius: 10, border: `2px solid ${archiveDest === 'hucha' ? '#2563eb' : D.border}`, background: archiveDest === 'hucha' ? 'rgba(37,99,235,0.15)' : D.stat, textAlign: 'left', cursor: 'pointer' }}
-                  >
-                    <div style={{ fontSize: 13, fontWeight: 600, color: archiveDest === 'hucha' ? '#93c5fd' : D.ts }}>🏦 Enviar a la Hucha</div>
-                    <div style={{ fontSize: 12, color: D.tm }}>Guarda el saldo para usarlo después</div>
-                  </button>
-                  {otherGoals.map((g) => (
-                    <button
-                      key={g.id}
-                      onClick={() => setArchiveDest(g.id)}
-                      style={{ padding: '12px 16px', borderRadius: 10, border: `2px solid ${archiveDest === g.id ? '#2563eb' : D.border}`, background: archiveDest === g.id ? 'rgba(37,99,235,0.15)' : D.stat, textAlign: 'left', cursor: 'pointer' }}
-                    >
-                      <div style={{ fontSize: 13, fontWeight: 600, color: archiveDest === g.id ? '#93c5fd' : D.ts }}>🎯 {g.title}</div>
-                      <div style={{ fontSize: 12, color: D.tm }}>Transferir saldo a este objetivo</div>
-                    </button>
-                  ))}
-                </div>
-              )}
-              <div style={{ display: 'flex', gap: 10 }}>
-                <button onClick={() => setShowArchiveModal(false)} style={{ flex: 1, padding: '11px 0', background: 'transparent', border: `1.5px solid ${D.border}`, borderRadius: 10, cursor: 'pointer', fontSize: 14, color: D.ts }}>Cancelar</button>
-                <button onClick={handleConfirmArchive} style={{ flex: 1, padding: '11px 0', background: '#dc2626', border: 'none', borderRadius: 10, cursor: 'pointer', fontSize: 14, fontWeight: 700, color: '#fff' }}>Archivar</button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {decisions.length === 0 && !editing && (
-          <div style={{ background: D.card, borderRadius: 16, padding: '32px 24px', textAlign: 'center', border: `1px solid ${D.cardBorder}` }}>
-            <p style={{ fontSize: 14, color: D.tm }}>Aún no hay decisiones asignadas a este objetivo.</p>
-            <button onClick={() => router.push('/daily')} style={{ marginTop: 16, padding: '10px 20px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight: 600, fontSize: 13 }}>Tomar decisión diaria</button>
-          </div>
-        )}
       </div>
+
+      {showArchiveModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowArchiveModal(false)}>
+          <div className={styles.modalSheet} onClick={e => e.stopPropagation()}>
+            <div className={styles.grabber} />
+            <h3 style={{ fontSize: 18, fontWeight: 700, margin: '0 0 6px' }}>Archivar objetivo</h3>
+            <p className={styles.rowSub} style={{ fontSize: 13.5, lineHeight: 1.5 }}>
+              {goal.currentAmount > 0
+                ? `¿Dónde quieres transferir el saldo de ${formatEUR(goal.currentAmount)}?`
+                : '¿Confirmas que quieres archivar este objetivo?'}
+            </p>
+            {goal.currentAmount > 0 && (
+              <div className={styles.destList}>
+                <button
+                  type="button"
+                  onClick={() => setArchiveDest('hucha')}
+                  className={`${styles.destOption} ${archiveDest === 'hucha' ? styles.destOptionActive : ''}`}
+                >
+                  <div style={{ fontSize: 14, fontWeight: 600 }}>Enviar a la Hucha</div>
+                  <div className={styles.rowSub}>Guarda el saldo para usarlo después</div>
+                </button>
+                {otherGoals.map((g) => (
+                  <button
+                    type="button"
+                    key={g.id}
+                    onClick={() => setArchiveDest(g.id)}
+                    className={`${styles.destOption} ${archiveDest === g.id ? styles.destOptionActive : ''}`}
+                  >
+                    <div style={{ fontSize: 14, fontWeight: 600 }}>{g.title}</div>
+                    <div className={styles.rowSub}>Transferir saldo a este objetivo</div>
+                  </button>
+                ))}
+              </div>
+            )}
+            <div className={styles.btnRow}>
+              <button type="button" onClick={() => setShowArchiveModal(false)} className={styles.btnGhost}>Cancelar</button>
+              <button type="button" onClick={handleConfirmArchive} className={styles.btnDanger}>Archivar</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

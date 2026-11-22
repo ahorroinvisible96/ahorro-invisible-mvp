@@ -1,6 +1,6 @@
-/* 
+/*
  * ═══════════════════════════════════════════════════════════
- * AUTH SHARED — Estilos compartidos entre login y signup
+ * AUTH SHARED — V2 Refinada · Reference Dark / Liquid Glass
  * ═══════════════════════════════════════════════════════════
  */
 
@@ -9,51 +9,65 @@
   min-height: 100vh;
   width: 100%;
   display: flex;
-  background: var(--auth-page-bg);
+  position: relative;
+  overflow-x: hidden;
+  background: var(--bg-primary, #080910);
   font-family: var(--font-app);
+  color: var(--text-primary, #ffffff);
 }
 
-/* ── Glows decorativos ── */
+/* ── Cielo atmosférico luminoso ── */
 .glowPurple {
   position: fixed;
-  top: 15%;
-  left: 25%;
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(ellipse, rgba(168, 85, 247, 0.1) 0%, transparent 70%);
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 420px;
+  background: radial-gradient(
+    120% 95% at 50% -18%,
+    #8244f7 0%,
+    #5d54f6 34%,
+    #2f3085 62%,
+    rgba(8, 9, 16, 0) 96%
+  );
+  opacity: 0.92;
   pointer-events: none;
+  z-index: 0;
 }
 
 .glowBlue {
   position: fixed;
-  bottom: 10%;
-  right: 20%;
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(ellipse, rgba(37, 99, 235, 0.08) 0%, transparent 70%);
+  bottom: -120px;
+  right: -80px;
+  width: 440px;
+  height: 440px;
+  background: radial-gradient(ellipse, rgba(91, 108, 249, 0.14) 0%, transparent 70%);
   pointer-events: none;
+  z-index: 0;
 }
 
-/* ── Layout de 2 columnas ── */
+/* ── Layout de 2 columnas en desktop ── */
 .layout {
+  position: relative;
+  z-index: 1;
   display: flex;
   width: 100%;
   min-height: 100vh;
 }
 
-/* ── Panel izquierdo (branding) ── */
+/* ── Panel izquierdo (branding desktop) ── */
 .brandPanel {
-  flex: 0 0 50%;
-  padding: 48px;
+  flex: 0 0 48%;
+  padding: 48px 52px;
   display: none;
   flex-direction: column;
   justify-content: space-between;
-  border-right: 1px solid rgba(255, 255, 255, 0.04);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
   position: relative;
   overflow: hidden;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 900px) {
   .brandPanel {
     display: flex;
   }
@@ -69,84 +83,111 @@
 .logoMark {
   width: 40px;
   height: 40px;
-  border-radius: var(--radius-md);
-  background: var(--grad-brand-135);
+  border-radius: 13px;
+  background: linear-gradient(135deg, #8244f7 0%, #5b6cf9 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: #ffffff;
   font-weight: 800;
-  font-size: 20px;
-  box-shadow: var(--shadow-glow-purple);
+  font-size: 19px;
+  box-shadow: 0 8px 24px rgba(104, 78, 246, 0.35);
   flex-shrink: 0;
 }
 
 .logoName {
-  color: var(--slate-100);
+  color: #ffffff;
   font-weight: 700;
-  font-size: 18px;
+  font-size: 17px;
+  letter-spacing: -0.02em;
 }
 
 .logoPurple {
-  color: var(--color-brand-purple);
+  color: #b7a8ff;
   font-weight: 700;
-  font-size: 18px;
+  font-size: 17px;
+  letter-spacing: -0.02em;
 }
 
 /* ── Claim ── */
 .claimTitle {
-  font-size: 32px;
+  font-size: 38px;
   font-weight: 800;
-  color: var(--slate-100);
-  line-height: 1.15;
+  color: #ffffff;
+  line-height: 1.1;
+  letter-spacing: -0.035em;
   margin: 0 0 16px;
 }
 
 .claimGradient {
-  background: var(--grad-brand);
+  background: linear-gradient(90deg, #c4b5fd 0%, #93c5fd 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .claimSub {
-  font-size: 14px;
-  color: rgba(148, 163, 184, 0.75);
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.72);
   line-height: 1.6;
   margin: 0;
 }
 
-/* ── Feature pills ── */
+/* ── Feature list aterciopelada (sin divisores) ── */
 .features {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
   margin-top: 36px;
+  padding: 20px;
+  border-radius: 24px;
+  background: rgba(23, 24, 34, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.055);
 }
 
 .featureItem {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: var(--radius-md);
+  gap: 14px;
+  padding: 2px 0;
 }
 
 .featureIcon {
-  font-size: 18px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  flex-shrink: 0;
+  font-size: 15px;
+  background: #5b6cf9;
+}
+
+.featureIconEmerald {
+  background: #12c48b;
+}
+
+.featureIconSky {
+  background: #14a3f6;
+}
+
+.featureIconViolet {
+  background: #a855f7;
 }
 
 .featureText {
   font-size: 14px;
-  color: rgba(203, 213, 225, 0.85);
-  font-weight: 400;
+  color: rgba(255, 255, 255, 0.88);
+  font-weight: 500;
+  line-height: 1.4;
 }
 
 /* ── Copyright ── */
 .copyright {
   font-size: 12px;
-  color: rgba(100, 116, 139, 0.6);
+  color: rgba(255, 255, 255, 0.42);
   margin: 0;
 }
 
@@ -156,109 +197,113 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px 16px;
+  padding: 28px 16px 40px;
 }
 
 .formContainer {
   width: 100%;
-  max-width: 440px;
+  max-width: 430px;
 }
 
-/* ── Logo mobile ── */
+/* ── Logo mobile centrado sobre el cielo ── */
 .logoMobile {
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 10px;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
+  text-align: center;
 }
 
 .logoMobileMark {
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-icon);
-  background: var(--grad-brand-135);
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.24);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: #ffffff;
   font-weight: 800;
-  font-size: 18px;
-  box-shadow: var(--shadow-glow-purple);
+  font-size: 21px;
+  box-shadow: 0 10px 28px rgba(8, 9, 16, 0.28);
 }
 
 .logoMobileName {
-  color: var(--slate-100);
+  color: #ffffff;
   font-weight: 700;
-  font-size: 16px;
+  font-size: 17px;
+  letter-spacing: -0.02em;
 }
 
 .logoMobilePurple {
-  color: var(--color-brand-purple);
-  font-weight: 700;
-  font-size: 16px;
+  color: rgba(255, 255, 255, 0.78);
+  font-weight: 600;
+  font-size: 17px;
+  letter-spacing: -0.02em;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 900px) {
   .logoMobile {
     display: none;
   }
 }
 
-/* ── Card del formulario ── */
+/* ── Card del formulario (Velvety Reference Dark) ── */
 .card {
   position: relative;
-  border-radius: var(--radius-xl);
-  background: var(--auth-card-bg);
-  border: 1px solid var(--auth-card-border);
-  box-shadow: var(--auth-card-shadow);
+  border-radius: 26px;
+  background: #171822;
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
   overflow: hidden;
-  padding: 32px 28px;
+  padding: 28px 24px;
 }
 
 .cardGlow {
-  position: absolute;
-  top: -40px;
-  right: -40px;
-  width: 200px;
-  height: 200px;
-  background: radial-gradient(ellipse, rgba(168, 85, 247, 0.1) 0%, transparent 70%);
-  pointer-events: none;
+  display: none;
 }
 
 /* ── Header ── */
 .cardTitle {
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 700;
-  color: var(--slate-100);
+  color: #ffffff;
+  letter-spacing: -0.025em;
   margin: 0 0 6px;
 }
 
 .cardSub {
-  font-size: 13px;
-  color: rgba(148, 163, 184, 0.75);
-  margin: 0 0 28px;
+  font-size: 13.5px;
+  color: rgba(255, 255, 255, 0.62);
+  margin: 0 0 22px;
   line-height: 1.5;
 }
 
 /* ── Alertas ── */
 .errorAlert {
-  margin-bottom: 20px;
-  padding: 10px 14px;
-  background: var(--color-error-muted);
-  border: 1px solid var(--color-error-border);
-  border-radius: var(--radius-input);
+  margin-bottom: 18px;
+  padding: 12px 14px;
+  background: rgba(244, 63, 94, 0.12);
+  border: 1px solid rgba(244, 63, 94, 0.28);
+  border-radius: 14px;
   font-size: 13px;
-  color: var(--color-error-pale);
+  color: #fda4af;
+  line-height: 1.45;
 }
 
 .infoAlert {
-  margin-bottom: 20px;
-  padding: 10px 14px;
-  background: var(--color-success-muted);
-  border: 1px solid var(--color-success-border);
-  border-radius: var(--radius-input);
+  margin-bottom: 18px;
+  padding: 12px 14px;
+  background: rgba(18, 196, 139, 0.12);
+  border: 1px solid rgba(18, 196, 139, 0.28);
+  border-radius: 14px;
   font-size: 13px;
-  color: var(--color-success-light);
+  color: #6ee7b7;
+  line-height: 1.45;
 }
 
 /* ── Formulario ── */
@@ -268,80 +313,210 @@
   gap: 16px;
 }
 
-/* ── Botón primario (submit) ── */
+/* ── Botón primario pill blanco puro ── */
 .submitBtn {
   width: 100%;
-  padding: 13px 0;
+  min-height: 50px;
+  padding: 0 20px;
   margin-top: 4px;
-  background: var(--grad-primary);
+  background: #ffffff;
   border: none;
-  border-radius: var(--radius-btn);
-  color: #fff;
-  font-size: 14px;
-  font-weight: 600;
+  border-radius: 999px;
+  color: #080910;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
   cursor: pointer;
   font-family: inherit;
-  box-shadow: var(--shadow-glow-brand);
-  transition: all var(--transition-normal);
+  transition: transform 150ms ease, opacity 150ms ease, background 150ms ease;
 }
 
 .submitBtn:hover:not(:disabled) {
-  background: var(--grad-primary-hover);
-  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+  background: #f1f5f9;
+}
+
+.submitBtn:active:not(:disabled) {
+  transform: scale(0.985);
 }
 
 .submitBtn:focus-visible {
-  outline: 2px solid var(--color-brand-purple-light);
-  outline-offset: 2px;
+  outline: 2px solid #8b7dff;
+  outline-offset: 3px;
 }
 
 .submitBtn:disabled {
-  background: rgba(168, 85, 247, 0.4);
+  background: rgba(255, 255, 255, 0.16);
+  color: rgba(255, 255, 255, 0.45);
   cursor: not-allowed;
-  box-shadow: none;
 }
 
 /* ── Separador ── */
 .divider {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-top: 24px;
+  gap: 12px;
+  margin-top: 22px;
 }
 
 .dividerLine {
   flex: 1;
   height: 1px;
-  background: var(--auth-divider);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .dividerText {
   font-size: 12px;
-  color: rgba(100, 116, 139, 0.5);
+  color: rgba(255, 255, 255, 0.46);
+  font-weight: 500;
 }
 
-/* ── Botón secundario ── */
+/* ── Botón secundario frosted pill ── */
 .secondaryBtn {
   width: 100%;
+  min-height: 48px;
   margin-top: 12px;
-  padding: 13px 0;
-  background: var(--auth-secondary-btn-bg);
-  border: 1px solid var(--auth-secondary-btn-border);
-  border-radius: var(--radius-btn);
-  color: var(--auth-secondary-btn-color);
+  padding: 0 20px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 999px;
+  color: #ffffff;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   font-family: inherit;
-  transition: all var(--transition-fast);
+  transition: background 150ms ease, border-color 150ms ease, transform 150ms ease;
 }
 
 .secondaryBtn:hover {
-  border-color: rgba(168, 85, 247, 0.4);
-  color: #c4b5fd;
+  background: rgba(255, 255, 255, 0.11);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.secondaryBtn:active {
+  transform: scale(0.985);
 }
 
 .secondaryBtn:focus-visible {
-  outline: 2px solid var(--color-brand-purple-light);
+  outline: 2px solid #8b7dff;
   outline-offset: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LIGHT MODE — Contraste limpio WCAG 2.2 AA
+   ═══════════════════════════════════════════════════════════ */
+:global([data-theme="light"]) .page {
+  background: #f3f5fa;
+  color: #0b1220;
+}
+
+:global([data-theme="light"]) .glowPurple {
+  background: radial-gradient(
+    120% 95% at 50% -18%,
+    rgba(130, 68, 247, 0.28) 0%,
+    rgba(93, 84, 246, 0.18) 38%,
+    rgba(243, 245, 250, 0) 92%
+  );
+  opacity: 1;
+}
+
+:global([data-theme="light"]) .brandPanel {
+  border-right-color: rgba(11, 18, 32, 0.08);
+}
+
+:global([data-theme="light"]) .logoName,
+:global([data-theme="light"]) .logoMobileName,
+:global([data-theme="light"]) .claimTitle,
+:global([data-theme="light"]) .cardTitle {
+  color: #0b1220;
+}
+
+:global([data-theme="light"]) .logoPurple,
+:global([data-theme="light"]) .logoMobilePurple {
+  color: #5d54f6;
+}
+
+:global([data-theme="light"]) .claimGradient {
+  background: linear-gradient(90deg, #5d54f6 0%, #2563eb 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+:global([data-theme="light"]) .claimSub,
+:global([data-theme="light"]) .cardSub {
+  color: #475569;
+}
+
+:global([data-theme="light"]) .features {
+  background: #ffffff;
+  border-color: rgba(11, 18, 32, 0.07);
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06);
+}
+
+:global([data-theme="light"]) .featureText {
+  color: #1e293b;
+}
+
+:global([data-theme="light"]) .copyright,
+:global([data-theme="light"]) .dividerText {
+  color: #64748b;
+}
+
+:global([data-theme="light"]) .logoMobileMark {
+  background: linear-gradient(135deg, #8244f7 0%, #5b6cf9 100%);
+  border-color: rgba(91, 108, 249, 0.25);
+  box-shadow: 0 10px 24px rgba(93, 84, 246, 0.25);
+}
+
+:global([data-theme="light"]) .card {
+  background: #ffffff;
+  border-color: rgba(11, 18, 32, 0.08);
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
+}
+
+:global([data-theme="light"]) .errorAlert {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+:global([data-theme="light"]) .infoAlert {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #047857;
+}
+
+:global([data-theme="light"]) .submitBtn {
+  background: #0b1220;
+  color: #ffffff;
+}
+
+:global([data-theme="light"]) .submitBtn:hover:not(:disabled) {
+  background: #1e293b;
+}
+
+:global([data-theme="light"]) .submitBtn:disabled {
+  background: rgba(11, 18, 32, 0.18);
+  color: rgba(11, 18, 32, 0.45);
+}
+
+:global([data-theme="light"]) .dividerLine {
+  background: rgba(11, 18, 32, 0.09);
+}
+
+:global([data-theme="light"]) .secondaryBtn {
+  background: rgba(11, 18, 32, 0.04);
+  border-color: rgba(11, 18, 32, 0.12);
+  color: #0b1220;
+}
+
+:global([data-theme="light"]) .secondaryBtn:hover {
+  background: rgba(11, 18, 32, 0.08);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .submitBtn,
+  .secondaryBtn {
+    transition: none;
+  }
 }

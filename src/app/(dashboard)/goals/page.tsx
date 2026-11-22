@@ -19,11 +19,11 @@ import {
 } from '@/services/dashboardStore';
 import { pushLocalDataToSupabase, syncGoalToSupabase, deleteGoalFromSupabase } from '@/services/syncService';
 import type { Goal, Hucha, DashboardSummary } from '@/types/Dashboard';
-import { TargetIcon, PlusIcon } from '@/components/ui/AppIcons';
+import { TargetIcon, PlusIcon, WalletIcon, CheckIcon } from '@/components/ui/AppIcons';
 import { WidgetSkeleton } from '@/components/ui/Skeleton/Skeleton';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { useToast } from '@/components/ui/Toast/Toast';
-import { computeGoalPhases, PHASE_CONFIGS, fmtEUR as goalFmt, SAVINGS_PCT, type SavingsHabit as SavingsHabitType } from '@/app/onboarding/page';
+import { computeGoalPhases, fmtEUR as goalFmt, SAVINGS_PCT, type SavingsHabit as SavingsHabitType } from '@/app/onboarding/page';
 import { STORE_UPDATED_EVENT } from '@/services/v2/runtime';
 import styles from './Goals.module.css';
 
@@ -37,19 +37,9 @@ function pct(g: Goal) {
 
 type ModalMode = 'create' | 'edit';
 
-const S = {
-  overlay: { position: 'fixed' as const, inset: 0, background: 'rgba(2,6,23,0.78)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: 16 },
-  box: { background: 'linear-gradient(135deg,#0f172a 0%,#1e293b 60%,#0f172a 100%)', border: '1px solid rgba(51,65,85,0.5)', borderRadius: 20, padding: 24, width: '100%', maxWidth: 440, boxShadow: '0 25px 50px -12px rgba(2,6,23,0.9)', display: 'flex', flexDirection: 'column' as const, gap: 16 },
-  label: { fontSize: 11, fontWeight: 700, color: 'rgba(148,163,184,0.7)', textTransform: 'uppercase' as const, letterSpacing: '0.08em', display: 'block', marginBottom: 6 },
-  input: { width: '100%', background: 'rgba(15,23,42,0.8)', border: '1px solid rgba(51,65,85,0.6)', borderRadius: 12, padding: '11px 14px', fontSize: 14, color: '#f1f5f9', outline: 'none', boxSizing: 'border-box' as const },
-  select: { width: '100%', background: 'rgba(15,23,42,0.8)', border: '1px solid rgba(51,65,85,0.6)', borderRadius: 12, padding: '11px 14px', fontSize: 14, color: '#f1f5f9', outline: 'none', boxSizing: 'border-box' as const },
-  btnCancel: { flex: 1, padding: '11px 0', border: '1px solid rgba(51,65,85,0.5)', borderRadius: 12, background: 'rgba(30,41,59,0.5)', color: 'rgba(203,213,225,0.8)', fontSize: 14, fontWeight: 600, cursor: 'pointer' },
-  btnSave: { flex: 2, padding: '11px 0', border: 'none', borderRadius: 12, background: 'linear-gradient(90deg,#a855f7,#2563eb)', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer' },
-  btnDanger: { flex: 2, padding: '11px 0', border: 'none', borderRadius: 12, background: 'linear-gradient(90deg,#ef4444,#dc2626)', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer' },
-  btnClose: { display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: 8, background: 'rgba(30,41,59,0.6)', border: '1px solid rgba(51,65,85,0.5)', color: 'rgba(148,163,184,0.7)', cursor: 'pointer', fontSize: 14 },
-  modalTitle: { fontSize: 17, fontWeight: 700, color: '#f1f5f9', margin: 0 },
-  errorBox: { fontSize: 13, color: '#f87171', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 10, padding: '10px 12px' },
-};
+const MEDALLION_CLASSES = [styles.mCobalt, styles.mSky, styles.mViolet, styles.mCyan];
+const BAR_COLORS = ['#7C6BF9', '#38BDF8', '#A855F7', '#10B5CE'];
+const NODE_COLORS = ['#5B6CF9', '#14A3F6', '#A855F7', '#10B5CE', '#7C6BF9'];
 
 function GoalModal({
   mode,
@@ -72,7 +62,6 @@ function GoalModal({
   const [applyHucha, setApplyHucha] = useState(false);
   const [err, setErr] = useState('');
 
-  // ── Create mode: multi-step state ─────────────────────────────────────────
   const [createStep, setCreateStep] = useState<1 | 2 | 'roadmap'>(1);
   const [horizonMonths, setHorizonMonths] = useState(3);
   const [goalAmount, setGoalAmount] = useState(0);
@@ -120,7 +109,6 @@ function GoalModal({
 
   const showHuchaOption = mode === 'create' && hucha.balance > 0;
 
-  // ── EDIT MODE: simple form ────────────────────────────────────────────────
   if (mode === 'edit') {
     function submitEdit() {
       setErr('');
@@ -130,26 +118,25 @@ function GoalModal({
       onSave({ title: title.trim(), targetAmount: a, horizonMonths: m, applyHucha: false });
     }
     return (
-      <div style={S.overlay} onClick={onClose}>
-        <div style={S.box} onClick={e => e.stopPropagation()}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h2 style={S.modalTitle}>Editar objetivo</h2>
-            <button style={S.btnClose} onClick={onClose}>✕</button>
+      <div className={styles.modalOverlay} onClick={onClose}>
+        <div className={styles.modalSheet} onClick={e => e.stopPropagation()}>
+          <div className={styles.modalGrabber} />
+          <div className={styles.modalHead}>
+            <h2 className={styles.modalTitle}>Editar objetivo</h2>
+            <button className={styles.modalCloseBtn} onClick={onClose} aria-label="Cerrar">✕</button>
           </div>
-          {err && <p style={S.errorBox}>{err}</p>}
-          <div><label style={S.label}>Nombre</label><input value={title} onChange={e => setTitle(e.target.value)} placeholder="Ej: Viaje" style={S.input} autoFocus /></div>
-          <div><label style={S.label}>Meta (€)</label><input type="number" min="1" value={amount} onChange={e => setAmount(e.target.value)} style={S.input} /></div>
-          <div><label style={S.label}>Horizonte (meses)</label><input type="number" min="1" value={months} onChange={e => setMonths(e.target.value)} style={S.input} /></div>
-          <div style={{ display: 'flex', gap: 10, paddingTop: 4 }}>
-            <button style={S.btnCancel} onClick={onClose}>Cancelar</button>
-            <button style={S.btnSave} onClick={submitEdit}>Guardar</button>
+          {err && <p className={styles.modalError}>{err}</p>}
+          <div><label className={styles.modalLabel}>Nombre</label><input value={title} onChange={e => setTitle(e.target.value)} placeholder="Ej: Viaje" className={styles.modalInput} autoFocus /></div>
+          <div><label className={styles.modalLabel}>Meta (€)</label><input type="number" min="1" value={amount} onChange={e => setAmount(e.target.value)} className={styles.modalInput} /></div>
+          <div><label className={styles.modalLabel}>Horizonte (meses)</label><input type="number" min="1" value={months} onChange={e => setMonths(e.target.value)} className={styles.modalInput} /></div>
+          <div className={styles.modalActionsRow}>
+            <button className={styles.btnGhost} onClick={onClose}>Cancelar</button>
+            <button className={styles.btnWhite} onClick={submitEdit}>Guardar</button>
           </div>
         </div>
       </div>
     );
   }
-
-  // ── CREATE MODE: multi-step ───────────────────────────────────────────────
 
   function handleCreateNext() {
     setErr('');
@@ -166,89 +153,86 @@ function GoalModal({
     }
   }
 
-  // ── ROADMAP SCREEN ────────────────────────────────────────────────────────
   if (createStep === 'roadmap') {
     return (
-      <div style={S.overlay} onClick={onClose}>
-        <div style={{ ...S.box, maxHeight: '90vh', overflowY: 'auto' as const }} onClick={e => e.stopPropagation()}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h2 style={S.modalTitle}>Tu recorrido</h2>
-            <button style={S.btnClose} onClick={onClose}>✕</button>
+      <div className={styles.modalOverlay} onClick={onClose}>
+        <div className={styles.modalSheet} onClick={e => e.stopPropagation()}>
+          <div className={styles.modalGrabber} />
+          <div className={styles.modalHead}>
+            <h2 className={styles.modalTitle}>Tu recorrido</h2>
+            <button className={styles.modalCloseBtn} onClick={onClose} aria-label="Cerrar">✕</button>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.2)', borderRadius: 12, padding: '10px 16px' }}>
-            <span style={{ fontSize: 18 }}>🏆</span>
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: '#fbbf24' }}>{title}</div>
-              <div style={{ fontSize: 11, color: 'rgba(251,191,36,0.6)' }}>{goalFmt(goalAmount)} · {horizonMonths} {horizonMonths === 1 ? 'mes' : 'meses'}</div>
-            </div>
+          <div className={styles.modalInfoBox}>
+            <div className={styles.roadmapTitle}>{title}</div>
+            <div className={styles.roadmapSub}>{goalFmt(goalAmount)} · {horizonMonths} {horizonMonths === 1 ? 'mes' : 'meses'}</div>
           </div>
-          <p style={{ fontSize: 12, color: 'rgba(148,163,184,0.55)', margin: '4px 0 0', lineHeight: 1.5 }}>Hemos dividido tu reto en pequeñas fases para que el progreso sea visible desde el primer día.</p>
-          <div style={{ maxHeight: 340, overflowY: 'auto', paddingRight: 2, marginTop: 8 }}>
+          <div className={styles.roadmapList}>
             {phases.map((phase, i) => {
               const isLast = i === phases.length - 1;
-              const conf = isLast ? { emoji: '🏆', color: '#fbbf24', rgba: '251,191,36' } : PHASE_CONFIGS[Math.min(i, PHASE_CONFIGS.length - 1)];
-              const nextConf = PHASE_CONFIGS[Math.min(i + 1, PHASE_CONFIGS.length - 1)];
               const prevTarget = i > 0 ? phases[i - 1].target : 0;
               const increment = phase.target - prevTarget;
               return (
-                <div key={i} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 36, flexShrink: 0 }}>
-                    <div style={{ width: 36, height: 36, borderRadius: '50%', background: isLast ? 'linear-gradient(135deg,#fbbf24,#f97316)' : `rgba(${conf.rgba},0.15)`, border: `2px solid rgba(${conf.rgba},${isLast ? 0.8 : 0.4})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, boxShadow: isLast ? '0 0 18px rgba(251,191,36,0.4)' : `0 0 8px rgba(${conf.rgba},0.2)` }}>{conf.emoji}</div>
-                    {!isLast && <div style={{ width: 2, flex: 1, minHeight: 20, background: `linear-gradient(to bottom, rgba(${conf.rgba},0.4), rgba(${nextConf.rgba},0.25))`, margin: '3px 0' }} />}
+                <div key={i} className={styles.roadmapRow}>
+                  <div
+                    className={styles.roadmapNode}
+                    style={{ background: isLast ? '#12C48B' : NODE_COLORS[i % NODE_COLORS.length] }}
+                  >
+                    {isLast ? <CheckIcon size={16} /> : i + 1}
                   </div>
-                  <div style={{ flex: 1, paddingTop: 6, paddingBottom: isLast ? 4 : 18 }}>
-                    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, marginBottom: 3 }}>
-                      <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', color: `rgba(${conf.rgba},0.85)`, textTransform: 'uppercase' }}>{phase.label}</span>
-                      <span style={{ fontSize: 16, fontWeight: 700, color: isLast ? '#fbbf24' : conf.color, flexShrink: 0 }}>{goalFmt(phase.target)}</span>
+                  <div className={styles.roadmapMid}>
+                    <div className={styles.roadmapTitle} style={isLast ? { color: '#12C48B' } : undefined}>{phase.label}</div>
+                    <div className={styles.roadmapSub}>
+                      {isLast ? 'Objetivo alcanzado' : phase.type === 'week' ? `Ahorra ${goalFmt(increment)} esta semana` : `+${goalFmt(increment)} este mes`}
                     </div>
-                    <div style={{ fontSize: 11, color: 'rgba(148,163,184,0.5)', lineHeight: 1.4 }}>
-                      {isLast ? '🏆 ¡Objetivo alcanzado!' : phase.type === 'week' ? `Ahorra ${goalFmt(increment)} esta semana` : `+${goalFmt(increment)} este mes · acumulas ${goalFmt(phase.target)}`}
-                    </div>
-                    {!isLast && <div style={{ height: 1, background: `rgba(${conf.rgba},0.1)`, marginTop: 10 }} />}
                   </div>
+                  <span className={styles.roadmapVal} style={isLast ? { color: '#12C48B' } : undefined}>{goalFmt(phase.target)}</span>
                 </div>
               );
             })}
           </div>
-          <div style={{ background: 'rgba(168,85,247,0.07)', border: '1px solid rgba(168,85,247,0.2)', borderRadius: 12, padding: '12px 14px', display: 'flex', alignItems: 'flex-start', gap: 10, marginTop: 4 }}>
-            <span style={{ fontSize: 16, flexShrink: 0 }}>💜</span>
-            <p style={{ fontSize: 12, color: 'rgba(148,163,184,0.7)', margin: 0, lineHeight: 1.5 }}>Cada pequeña fase que superes es una victoria real.</p>
-          </div>
-          <button onClick={onClose} style={{ ...S.btnSave, marginTop: 4, width: '100%' }}>¡Empezar! 🚀</button>
+          <button onClick={onClose} className={styles.btnWhite} style={{ width: '100%', flex: 'none' }}>Comenzar</button>
         </div>
       </div>
     );
   }
 
-  // ── STEP 1 & 2 ────────────────────────────────────────────────────────────
   return (
-    <div style={S.overlay} onClick={onClose}>
-      <div style={{ ...S.box, maxHeight: '90vh', overflowY: 'auto' as const }} onClick={e => e.stopPropagation()}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={S.modalTitle}>{createStep === 1 ? 'Nuevo objetivo' : 'Define la meta'}</h2>
-          <button style={S.btnClose} onClick={onClose}>✕</button>
+    <div className={styles.modalOverlay} onClick={onClose}>
+      <div className={styles.modalSheet} onClick={e => e.stopPropagation()}>
+        <div className={styles.modalGrabber} />
+        <div className={styles.modalHead}>
+          <h2 className={styles.modalTitle}>{createStep === 1 ? 'Nuevo objetivo' : 'Define la meta'}</h2>
+          <button className={styles.modalCloseBtn} onClick={onClose} aria-label="Cerrar">✕</button>
         </div>
-        {/* Progress */}
-        <div style={{ display: 'flex', gap: 6 }}>
+
+        <div className={styles.stepTrackRow}>
           {[1, 2].map(s => (
-            <div key={s} style={{ flex: 1, height: 4, borderRadius: 999, background: s <= createStep ? 'linear-gradient(90deg,#a855f7,#2563eb)' : 'rgba(255,255,255,0.06)', transition: 'all 300ms', boxShadow: s <= createStep ? '0 0 8px rgba(168,85,247,0.4)' : 'none' }} />
+            <div key={s} className={`${styles.stepBar} ${s <= createStep ? styles.stepBarActive : ''}`} />
           ))}
         </div>
-        {err && <p style={S.errorBox}>{err}</p>}
+
+        {err && <p className={styles.modalError}>{err}</p>}
 
         {createStep === 1 && (<>
-          <div><label style={S.label}>¿Cómo se llama tu objetivo?</label>
-            <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Viaje, emergencia, formación..." style={S.input} autoFocus />
+          <div>
+            <label className={styles.modalLabel}>¿Cómo se llama tu objetivo?</label>
+            <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Viaje, emergencia, formación..." className={styles.modalInput} autoFocus />
           </div>
-          <div><label style={S.label}>¿En cuántos meses?</label>
-            <div style={{ display: 'flex', gap: 8 }}>
+          <div>
+            <label className={styles.modalLabel}>¿En cuántos meses?</label>
+            <div className={styles.horizonGrid}>
               {[1, 2, 3, 6, 12].map(m => {
-                const isSel = horizonMonths === m; const isRec = m === 3;
+                const isSel = horizonMonths === m;
+                const isRec = m === 3;
                 return (
-                  <button key={m} onClick={() => { setHorizonMonths(m); setHasAutoFilled(false); }}
-                    style={{ flex: 1, padding: '10px 0', borderRadius: 10, position: 'relative', background: isSel ? 'linear-gradient(135deg,#a855f7,#2563eb)' : 'rgba(10,8,25,0.50)', border: isSel ? 'none' : isRec ? '1px solid rgba(168,85,247,0.35)' : '1px solid rgba(255,255,255,0.06)', color: isSel ? '#fff' : isRec ? '#c4b5fd' : 'rgba(148,163,184,0.55)', fontSize: 13, fontWeight: isSel ? 700 : 600, cursor: 'pointer', boxShadow: isSel ? '0 4px 14px rgba(168,85,247,0.3)' : 'none', fontFamily: 'inherit', transition: 'all 200ms' }}>
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => { setHorizonMonths(m); setHasAutoFilled(false); }}
+                    className={`${styles.horizonPill} ${isSel ? styles.horizonPillActive : ''}`}
+                  >
                     {m}m
-                    {isRec && !isSel && <div style={{ position: 'absolute', top: -8, left: '50%', transform: 'translateX(-50%)', background: 'linear-gradient(90deg,#a855f7,#2563eb)', borderRadius: 999, padding: '1px 6px', fontSize: 8, fontWeight: 700, color: '#fff', whiteSpace: 'nowrap', pointerEvents: 'none' }}>★ REC</div>}
+                    {isRec && !isSel && <span className={styles.horizonRecTag}>Rec</span>}
                   </button>
                 );
               })}
@@ -257,70 +241,76 @@ function GoalModal({
         </>)}
 
         {createStep === 2 && (<>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(168,85,247,0.06)', border: '1px solid rgba(168,85,247,0.15)', borderRadius: 12, padding: '10px 14px' }}>
-            <span style={{ fontSize: 15 }}>🎯</span>
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: '#e2e8f0' }}>{title}</div>
-              <div style={{ fontSize: 11, color: 'rgba(148,163,184,0.5)' }}>{horizonMonths} {horizonMonths === 1 ? 'mes' : 'meses'}</div>
-            </div>
+          <div className={styles.modalInfoBox}>
+            <div className={styles.roadmapTitle}>{title}</div>
+            <div className={styles.roadmapSub}>{horizonMonths} {horizonMonths === 1 ? 'mes' : 'meses'} · Recomendado: {goalFmt(recTotal)}</div>
           </div>
+
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-              <label style={{ ...S.label, margin: 0 }}>¿Cuánto quieres ahorrar?</label>
-              <div style={{ fontSize: 11, color: 'rgba(168,85,247,0.7)', fontWeight: 600 }}>Recomendamos: {goalFmt(recTotal)}</div>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'stretch', background: 'rgba(10,8,25,0.60)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, overflow: 'hidden' }}>
-              <button onClick={() => setGoalAmount(a => Math.max(50, a - 50))} style={{ width: 52, background: 'rgba(255,255,255,0.04)', color: 'rgba(148,163,184,0.8)', fontSize: 26, flexShrink: 0, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>−</button>
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '8px 4px' }}>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
-                  <input type="number" inputMode="numeric" value={goalInputValue} onChange={e => setGoalInputValue(e.target.value)} onBlur={handleGoalInputBlur}
-                    style={{ background: 'transparent', border: 'none', outline: 'none', color: '#f1f5f9', fontWeight: 800, fontSize: 26, letterSpacing: '-0.5px', fontFamily: 'inherit', textAlign: 'right', width: `${Math.max(3, String(goalInputValue).length)}ch`, minWidth: '3ch', maxWidth: '10ch' } as React.CSSProperties} />
-                  <span style={{ fontSize: 16, fontWeight: 700, color: 'rgba(241,245,249,0.5)', flexShrink: 0 }}>€</span>
+            <label className={styles.modalLabel}>¿Cuánto quieres ahorrar?</label>
+            <div className={styles.stepperBox}>
+              <button type="button" onClick={() => setGoalAmount(a => Math.max(50, a - 50))} className={styles.stepperBtn} aria-label="Restar 50 euros">−</button>
+              <div className={styles.stepperCenter}>
+                <div className={styles.stepperAmountRow}>
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    value={goalInputValue}
+                    onChange={e => setGoalInputValue(e.target.value)}
+                    onBlur={handleGoalInputBlur}
+                    className={styles.stepperInput}
+                    style={{ width: `${Math.max(3, String(goalInputValue).length)}ch` }}
+                  />
+                  <span className={styles.stepperUnit}>€</span>
                 </div>
-                <div style={{ fontSize: 10, color: 'rgba(148,163,184,0.3)', marginTop: 2 }}>toca para escribir · o usa los botones</div>
+                <div className={styles.stepperHint}>toca para escribir o usa los botones</div>
               </div>
-              <button onClick={() => setGoalAmount(a => a + 50)} style={{ width: 52, background: 'rgba(255,255,255,0.04)', color: 'rgba(148,163,184,0.8)', fontSize: 26, flexShrink: 0, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>+</button>
+              <button type="button" onClick={() => setGoalAmount(a => a + 50)} className={styles.stepperBtn} aria-label="Sumar 50 euros">+</button>
             </div>
           </div>
-          {/* Validation */}
+
           {goalAmount > 0 && (
             isOver30 ? (
-              <div style={{ background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.22)', borderRadius: 14, padding: '14px 16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}><span style={{ fontSize: 16 }}>💡</span><span style={{ fontSize: 12, fontWeight: 700, color: '#fbbf24' }}>Una meta muy ambiciosa</span></div>
-                <p style={{ fontSize: 12, color: 'rgba(251,191,36,0.8)', margin: '0 0 8px', lineHeight: 1.6 }}>Te recomendamos empezar con una cantidad más cómoda.</p>
-                <button onClick={() => { setGoalAmount(recTotal); setGoalInputValue(String(recTotal)); }} style={{ width: '100%', padding: '9px', borderRadius: 10, background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.28)', color: '#fbbf24', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>Empezar con {goalFmt(recTotal)} →</button>
+              <div className={styles.modalInfoBox} style={{ border: '1px solid rgba(245,158,11,0.28)' }}>
+                <div style={{ fontSize: 13, fontWeight: 650, color: '#fbbf24', marginBottom: 4 }}>Una meta muy ambiciosa</div>
+                <p style={{ fontSize: 12.5, color: '#9a9fb2', margin: '0 0 10px', lineHeight: 1.45 }}>Te recomendamos empezar con una cantidad más cómoda.</p>
+                <button type="button" onClick={() => { setGoalAmount(recTotal); setGoalInputValue(String(recTotal)); }} className={styles.btnGhost} style={{ width: '100%', height: 38, fontSize: 12.5 }}>
+                  Empezar con {goalFmt(recTotal)}
+                </button>
               </div>
             ) : isOverRec ? (
-              <div style={{ background: 'rgba(168,85,247,0.07)', border: '1px solid rgba(168,85,247,0.2)', borderRadius: 14, padding: '14px 16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}><span style={{ fontSize: 16 }}>💜</span><span style={{ fontSize: 12, fontWeight: 700, color: '#c4b5fd' }}>Una propuesta amigable</span></div>
-                <button onClick={() => { setGoalAmount(recTotal); setGoalInputValue(String(recTotal)); }} style={{ width: '100%', padding: '9px', borderRadius: 10, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.28)', color: '#c4b5fd', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>Usar {goalFmt(recTotal)} →</button>
+              <div className={styles.modalInfoBox} style={{ border: '1px solid rgba(167,139,250,0.28)' }}>
+                <div style={{ fontSize: 13, fontWeight: 650, color: '#c4b5fd', marginBottom: 8 }}>Propuesta recomendada: {goalFmt(recTotal)}</div>
+                <button type="button" onClick={() => { setGoalAmount(recTotal); setGoalInputValue(String(recTotal)); }} className={styles.btnGhost} style={{ width: '100%', height: 38, fontSize: 12.5 }}>
+                  Usar {goalFmt(recTotal)}
+                </button>
               </div>
             ) : (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(16,185,129,0.07)', border: '1px solid rgba(16,185,129,0.18)', borderRadius: 10, padding: '10px 14px' }}>
-                <span style={{ fontSize: 15 }}>✅</span><span style={{ fontSize: 12, color: '#34d399' }}>¡Buen punto de partida!</span>
+              <div className={styles.modalInfoBox} style={{ color: '#34d399', fontSize: 13, fontWeight: 600 }}>
+                Buen punto de partida adaptado a tu ritmo
               </div>
             )
           )}
-          {/* Hucha option */}
+
           {showHuchaOption && (
-            <label style={{ display: 'flex', alignItems: 'flex-start', gap: 12, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.25)', borderRadius: 12, padding: '12px 14px', cursor: 'pointer' }}>
-              <input type="checkbox" checked={applyHucha} onChange={e => setApplyHucha(e.target.checked)} style={{ marginTop: 2, accentColor: '#a855f7', width: 16, height: 16, flexShrink: 0 }} />
-              <span style={{ fontSize: 13, color: '#fbbf24', lineHeight: 1.4 }}>
+            <label className={styles.modalInfoBox} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, cursor: 'pointer' }}>
+              <input type="checkbox" checked={applyHucha} onChange={e => setApplyHucha(e.target.checked)} style={{ marginTop: 2, accentColor: '#12C48B', width: 17, height: 17, flexShrink: 0 }} />
+              <span style={{ fontSize: 13, lineHeight: 1.4 }}>
                 <strong>Asignar saldo de la Hucha</strong><br />
-                <span style={{ color: 'rgba(251,191,36,0.7)', fontSize: 12 }}>Transferir {formatEUR(hucha.balance)} al nuevo objetivo</span>
+                <span style={{ color: '#9a9fb2', fontSize: 12 }}>Transferir {formatEUR(hucha.balance)} al nuevo objetivo</span>
               </span>
             </label>
           )}
         </>)}
 
-        <div style={{ display: 'flex', gap: 10, paddingTop: 4 }}>
+        <div className={styles.modalActionsRow}>
           {createStep === 1 ? (
-            <button style={S.btnCancel} onClick={onClose}>Cancelar</button>
+            <button type="button" className={styles.btnGhost} onClick={onClose}>Cancelar</button>
           ) : (
-            <button style={S.btnCancel} onClick={() => setCreateStep(1)}>Atrás</button>
+            <button type="button" className={styles.btnGhost} onClick={() => setCreateStep(1)}>Atrás</button>
           )}
-          <button style={{ ...S.btnSave, opacity: (createStep === 1 && !title.trim()) ? 0.5 : 1 }} onClick={handleCreateNext} disabled={createStep === 1 && !title.trim()}>
-            {createStep === 1 ? 'Siguiente →' : 'Ver mi plan →'}
+          <button type="button" className={styles.btnWhite} onClick={handleCreateNext} disabled={createStep === 1 && !title.trim()}>
+            {createStep === 1 ? 'Siguiente' : 'Ver mi plan'}
           </button>
         </div>
       </div>
@@ -346,72 +336,57 @@ function ArchiveModal({
   const hasBalance = goal.currentAmount > 0;
 
   return (
-    <div style={S.overlay} onClick={onClose}>
-      <div style={S.box} onClick={e => e.stopPropagation()}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={S.modalTitle}>Archivar objetivo</h2>
-          <button style={S.btnClose} onClick={onClose}>✕</button>
+    <div className={styles.modalOverlay} onClick={onClose}>
+      <div className={styles.modalSheet} onClick={e => e.stopPropagation()}>
+        <div className={styles.modalGrabber} />
+        <div className={styles.modalHead}>
+          <h2 className={styles.modalTitle}>Archivar objetivo</h2>
+          <button className={styles.modalCloseBtn} onClick={onClose} aria-label="Cerrar">✕</button>
         </div>
-        <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 12, padding: '12px 14px' }}>
-          <p style={{ fontSize: 13, color: '#f87171', margin: 0, fontWeight: 600 }}>📦 {goal.title}</p>
+        <div className={styles.modalInfoBox}>
+          <div className={styles.roadmapTitle}>{goal.title}</div>
           {hasBalance && (
-            <p style={{ fontSize: 13, color: 'rgba(248,113,113,0.8)', margin: '4px 0 0' }}>
-              Saldo acumulado: <strong style={{ color: '#f87171' }}>{formatEUR(goal.currentAmount)}</strong>
-            </p>
+            <div className={styles.roadmapSub}>Saldo acumulado: <strong>{formatEUR(goal.currentAmount)}</strong></div>
           )}
         </div>
         {hasBalance ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <p style={{ fontSize: 13, color: 'rgba(148,163,184,0.9)', margin: 0 }}>
-              ¿Dónde quieres transferir el saldo acumulado?
-            </p>
-            {hasOthers ? (
-              <div>
-                <label style={S.label}>Transferir saldo a</label>
-                <select style={S.select} value={destination} onChange={e => setDestination(e.target.value)}>
-                  {otherGoals.map(g => (
-                    <option key={g.id} value={g.id} style={{ background: '#1e293b' }}>
-                      {g.title} ({formatEUR(g.currentAmount)} ahorrados)
-                    </option>
-                  ))}
-                  <option value="hucha" style={{ background: '#1e293b' }}>🪣 Enviar a la Hucha</option>
-                </select>
+          hasOthers ? (
+            <div>
+              <label className={styles.modalLabel}>Transferir saldo a</label>
+              <select className={styles.modalSelect} value={destination} onChange={e => setDestination(e.target.value)}>
+                {otherGoals.map(g => (
+                  <option key={g.id} value={g.id} style={{ background: '#171822' }}>
+                    {g.title} ({formatEUR(g.currentAmount)} ahorrados)
+                  </option>
+                ))}
+                <option value="hucha" style={{ background: '#171822' }}>Enviar a la Hucha</option>
+              </select>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {onCreateNew && (
+                <button type="button" onClick={onCreateNew} className={styles.btnWhite} style={{ width: '100%', flex: 'none' }}>
+                  + Crear nuevo objetivo y transferir
+                </button>
+              )}
+              <div className={styles.modalInfoBox}>
+                <div className={styles.roadmapTitle}>O guardar en la Hucha</div>
+                <div className={styles.roadmapSub}>El saldo quedará disponible hasta que crees un nuevo objetivo.</div>
               </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {onCreateNew && (
-                  <button
-                    onClick={onCreateNew}
-                    style={{ padding: '11px 0', border: 'none', borderRadius: 12, background: 'linear-gradient(90deg,#a855f7,#2563eb)', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}
-                  >
-                    + Crear nuevo objetivo y transferir
-                  </button>
-                )}
-                <div style={{ background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.25)', borderRadius: 12, padding: '12px 14px' }}>
-                  <p style={{ fontSize: 13, color: '#fbbf24', margin: 0, fontWeight: 600 }}>🪣 O guardar en la Hucha</p>
-                  <p style={{ fontSize: 12, color: 'rgba(251,191,36,0.7)', margin: '4px 0 0' }}>
-                    El saldo se guardará hasta que crees un nuevo objetivo.
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
+            </div>
+          )
         ) : (
-          <p style={{ fontSize: 13, color: 'rgba(148,163,184,0.7)', margin: 0 }}>
-            Este objetivo no tiene saldo acumulado. Se archivará directamente.
-          </p>
+          <p className={styles.roadmapSub} style={{ margin: 0 }}>Este objetivo no tiene saldo acumulado. Se archivará directamente.</p>
         )}
-        <div style={{ display: 'flex', gap: 10, paddingTop: 4 }}>
-          <button style={S.btnCancel} onClick={onClose}>Cancelar</button>
-          <button style={S.btnDanger} onClick={() => onConfirm(hasBalance ? destination : 'hucha')}>Archivar</button>
+        <div className={styles.modalActionsRow}>
+          <button type="button" className={styles.btnGhost} onClick={onClose}>Cancelar</button>
+          <button type="button" className={styles.btnDanger} onClick={() => onConfirm(hasBalance ? destination : 'hucha')}>Archivar</button>
         </div>
       </div>
     </div>
   );
 }
 
-
-// ── Modal Eliminar definitivo (objetivo archivado) ────────────────────────────
 function DeleteArchivedModal({
   goal,
   activeGoals,
@@ -424,51 +399,47 @@ function DeleteArchivedModal({
   onClose: () => void;
 }) {
   const hasBalance = goal.currentAmount > 0;
-  activeGoals = activeGoals.filter((g) => g.id !== goal.id);
-  const hasOthers = activeGoals.length > 0;
-  const [destination, setDestination] = useState<string>(hasOthers ? activeGoals[0].id : 'hucha');
+  const filteredActive = activeGoals.filter((g) => g.id !== goal.id);
+  const hasOthers = filteredActive.length > 0;
+  const [destination, setDestination] = useState<string>(hasOthers ? filteredActive[0].id : 'hucha');
 
   return (
-    <div style={S.overlay} onClick={onClose}>
-      <div style={S.box} onClick={e => e.stopPropagation()}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={{ ...S.modalTitle, color: '#f87171' }}>Eliminar definitivamente</h2>
-          <button style={S.btnClose} onClick={onClose}>✕</button>
+    <div className={styles.modalOverlay} onClick={onClose}>
+      <div className={styles.modalSheet} onClick={e => e.stopPropagation()}>
+        <div className={styles.modalGrabber} />
+        <div className={styles.modalHead}>
+          <h2 className={`${styles.modalTitle} ${styles.modalTitleDanger}`}>Eliminar definitivamente</h2>
+          <button className={styles.modalCloseBtn} onClick={onClose} aria-label="Cerrar">✕</button>
         </div>
-        <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 12, padding: '12px 14px' }}>
-          <p style={{ fontSize: 13, color: '#f87171', margin: 0, fontWeight: 600 }}>⚠️ Esta acción es irreversible</p>
-          <p style={{ fontSize: 13, color: 'rgba(248,113,113,0.8)', margin: '4px 0 0' }}>Objetivo: <strong>{goal.title}</strong></p>
-          {hasBalance && (
-            <p style={{ fontSize: 13, color: 'rgba(248,113,113,0.8)', margin: '4px 0 0' }}>
-              Saldo: <strong style={{ color: '#f87171' }}>{formatEUR(goal.currentAmount)}</strong> — debe reasignarse
-            </p>
-          )}
+        <div className={styles.modalInfoBox}>
+          <div className={styles.roadmapTitle}>{goal.title}</div>
+          <div className={styles.roadmapSub}>
+            Esta acción es irreversible.{hasBalance ? ` Saldo de ${formatEUR(goal.currentAmount)} debe reasignarse.` : ''}
+          </div>
         </div>
         {hasBalance && (
           <div>
-            <label style={S.label}>Reasignar saldo a</label>
-            <select style={S.select} value={destination} onChange={e => setDestination(e.target.value)}>
-              {hasOthers && activeGoals.map(g => (
-                <option key={g.id} value={g.id} style={{ background: '#1e293b' }}>{g.title} ({formatEUR(g.currentAmount)})</option>
+            <label className={styles.modalLabel}>Reasignar saldo a</label>
+            <select className={styles.modalSelect} value={destination} onChange={e => setDestination(e.target.value)}>
+              {hasOthers && filteredActive.map(g => (
+                <option key={g.id} value={g.id} style={{ background: '#171822' }}>{g.title} ({formatEUR(g.currentAmount)})</option>
               ))}
-              <option value="hucha" style={{ background: '#1e293b' }}>🪣 Enviar a la Hucha</option>
+              <option value="hucha" style={{ background: '#171822' }}>Enviar a la Hucha</option>
             </select>
           </div>
         )}
-        {!hasBalance && (
-          <p style={{ fontSize: 13, color: 'rgba(148,163,184,0.7)', margin: 0 }}>Este objetivo no tiene saldo. Se eliminará directamente.</p>
-        )}
-        <div style={{ display: 'flex', gap: 10, paddingTop: 4 }}>
-          <button style={S.btnCancel} onClick={onClose}>Cancelar</button>
-          <button style={S.btnDanger} onClick={() => onConfirm(hasBalance ? destination : null)}>Eliminar definitivamente</button>
+        <div className={styles.modalActionsRow}>
+          <button type="button" className={styles.btnGhost} onClick={onClose}>Cancelar</button>
+          <button type="button" className={styles.btnDanger} onClick={() => onConfirm(hasBalance ? destination : null)}>Eliminar</button>
         </div>
       </div>
     </div>
   );
 }
 
-function GoalCard({
+function GoalRow({
   goal,
+  index,
   onEdit,
   onArchive,
   onDelete,
@@ -476,6 +447,7 @@ function GoalCard({
   onDetail,
 }: {
   goal: Goal;
+  index: number;
   onEdit: () => void;
   onArchive: () => void;
   onDelete: () => void;
@@ -487,7 +459,6 @@ function GoalCard({
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = React.useRef<HTMLDivElement>(null);
 
-  // Close menu on outside click
   React.useEffect(() => {
     if (!menuOpen) return;
     const close = (e: MouseEvent) => {
@@ -497,63 +468,62 @@ function GoalCard({
     return () => document.removeEventListener('mousedown', close);
   }, [menuOpen]);
 
+  const medallionCls = isCompleted ? styles.mEmerald : MEDALLION_CLASSES[index % MEDALLION_CLASSES.length];
+  const barColor = isCompleted ? '#12C48B' : BAR_COLORS[index % BAR_COLORS.length];
+
   return (
-    <div
-      className={`${styles.goalCard} ${goal.isPrimary ? styles.goalCardPrimary : ''}`}
-      onClick={onDetail}
-    >
-      {/* Header: Title + chips + percentage */}
-      <div className={styles.goalCardHeader}>
-        <div className={styles.goalCardInfo}>
-          <div className={styles.goalCardTitleRow}>
-            <span className={styles.goalCardTitle}>{goal.title}</span>
-            {goal.isPrimary && <span className={styles.chipPrimary}>★ Principal</span>}
-            {isCompleted && <span className={styles.chipCompleted}>✓ Completado</span>}
-          </div>
-          <div className={styles.goalCardAmounts}>
-            <span className={styles.goalCardCurrent}>{formatEUR(goal.currentAmount)}</span>
-            <span className={styles.goalCardTarget}>de {formatEUR(goal.targetAmount)}</span>
-          </div>
-          <div className={styles.goalCardHorizon}>{goal.horizonMonths} {goal.horizonMonths === 1 ? 'mes' : 'meses'}</div>
+    <div className={styles.goalRowWrap}>
+      <button type="button" className={styles.goalRowMain} onClick={onDetail}>
+        <div className={`${styles.medallion} ${medallionCls}`}>
+          {isCompleted ? <CheckIcon size={18} /> : <TargetIcon size={18} />}
         </div>
-        <span
-          className={styles.goalCardPct}
-          style={{ color: isCompleted ? 'rgba(74,222,128,0.85)' : p > 0 ? 'rgba(167,139,250,0.85)' : 'rgba(148,163,184,0.4)' }}
-        >
-          {p}%
-        </span>
-      </div>
+        <div className={styles.goalMid}>
+          <div className={styles.goalTitleRow}>
+            <span className={styles.goalTitle}>{goal.title}</span>
+            {goal.isPrimary && <span className={styles.chipPrimary}>Principal</span>}
+            {isCompleted && <span className={styles.chipCompleted}>Completado</span>}
+          </div>
+          <div className={styles.goalSub}>
+            Meta {formatEUR(goal.targetAmount)} · {goal.horizonMonths} {goal.horizonMonths === 1 ? 'mes' : 'meses'}
+          </div>
+          {!isCompleted && (
+            <div className={styles.progressTrack}>
+              <div className={styles.progressFill} style={{ width: `${p}%`, background: barColor }} />
+            </div>
+          )}
+        </div>
+        <div className={styles.goalRight}>
+          <div className={styles.goalCurrent}>{formatEUR(goal.currentAmount)}</div>
+          <div className={`${styles.goalPct} ${isCompleted ? styles.goalPctDone : goal.isPrimary ? styles.goalPctPrimary : ''}`}>
+            {p}%
+          </div>
+        </div>
+      </button>
 
-      {/* Progress bar */}
-      <div className={styles.goalProgressTrack}>
-        <div
-          className={`${styles.goalProgressFill} ${isCompleted ? styles.goalProgressComplete : styles.goalProgressDefault}`}
-          style={{ width: `${p}%` }}
-        />
-      </div>
-
-      {/* Actions */}
-      <div className={styles.goalCardActions} onClick={e => e.stopPropagation()} ref={menuRef}>
-        <button className={styles.goalActionEdit} onClick={onEdit}>Editar</button>
-        <div style={{ flex: 1 }} />
+      <div className={styles.moreWrap} ref={menuRef}>
         <button
+          type="button"
           className={styles.moreBtn}
           onClick={() => setMenuOpen(v => !v)}
-          aria-label="Más opciones"
-        >⋯</button>
-
+          aria-label={`Opciones de ${goal.title}`}
+        >
+          ⋯
+        </button>
         {menuOpen && (
           <div className={styles.moreMenu}>
+            <button type="button" className={styles.moreMenuItem} onClick={() => { onEdit(); setMenuOpen(false); }}>
+              Editar
+            </button>
             {!goal.isPrimary && (
-              <button className={styles.moreMenuItem} onClick={() => { onSetPrimary(); setMenuOpen(false); }}>
-                <span style={{ fontSize: 14, opacity: 0.6 }}>★</span> Hacer principal
+              <button type="button" className={styles.moreMenuItem} onClick={() => { onSetPrimary(); setMenuOpen(false); }}>
+                Hacer principal
               </button>
             )}
-            <button className={styles.moreMenuItem} onClick={() => { onArchive(); setMenuOpen(false); }}>
-              <span style={{ fontSize: 14, opacity: 0.6 }}>📦</span> Archivar
+            <button type="button" className={styles.moreMenuItem} onClick={() => { onArchive(); setMenuOpen(false); }}>
+              Archivar
             </button>
-            <button className={`${styles.moreMenuItem} ${styles.moreMenuDanger}`} onClick={() => { onDelete(); setMenuOpen(false); }}>
-              <span style={{ fontSize: 14, opacity: 0.6 }}>🗑</span> Eliminar
+            <button type="button" className={`${styles.moreMenuItem} ${styles.moreMenuDanger}`} onClick={() => { onDelete(); setMenuOpen(false); }}>
+              Eliminar
             </button>
           </div>
         )}
@@ -620,7 +590,6 @@ export default function GoalsPage() {
     if (newGoal) syncGoalToSupabase(newGoal).catch(() => null);
     const userId = localStorage.getItem('supabaseUserId');
     if (userId) pushLocalDataToSupabase(userId).catch(() => null);
-    // No cerramos el modal: el GoalModal mostrará el roadmap de fases
     refresh();
   };
 
@@ -699,16 +668,15 @@ export default function GoalsPage() {
     );
   }
 
-  const primaryGoal     = summary.primaryGoal;
-  const primaryPct      = primaryGoal ? Math.min(100, Math.round((primaryGoal.currentAmount / primaryGoal.targetAmount) * 100)) : 0;
-  const primaryTitle    = primaryGoal ? (primaryGoal.title.length > 16 ? primaryGoal.title.slice(0, 15) + '…' : primaryGoal.title) : 'Sin objetivo';
+  const primaryGoal = summary.primaryGoal;
+  const primaryPct = primaryGoal ? Math.min(100, Math.round((primaryGoal.currentAmount / primaryGoal.targetAmount) * 100)) : 0;
+  const primaryTitle = primaryGoal ? (primaryGoal.title.length > 20 ? primaryGoal.title.slice(0, 19) + '…' : primaryGoal.title) : 'Sin objetivo';
+  const totalInGoals = activeGoals.reduce((acc, g) => acc + g.currentAmount, 0);
   const inProgressGoals = activeGoals.filter(g => g.currentAmount < g.targetAmount);
-  const completedGoals  = activeGoals.filter(g => g.currentAmount >= g.targetAmount);
+  const completedGoals = activeGoals.filter(g => g.currentAmount >= g.targetAmount);
 
   return (
     <div className={styles.page}>
-
-      {/* ── Modals ── */}
       {modalMode && (
         <GoalModal
           mode={modalMode}
@@ -749,166 +717,163 @@ export default function GoalsPage() {
         onCreateGoal={() => { setShowHuchaModal(false); setModalMode('create'); }}
       />
 
-      {/* ══════════════════════════════════════════════════════════════════════
-          ZONA 1 — HEADER PRINCIPAL (degradado índigo-púrpura)
-          Contiene: título + 3 métricas clave + botón nuevo objetivo
-          ══════════════════════════════════════════════════════════════════════ */}
+      {/* ── Open atmospheric sky hero ── */}
       <div className={styles.headerZone}>
         <div className={styles.zoneInner}>
           <div className={styles.headerContent}>
-
-            {/* Fila superior: icono + título + botón nuevo */}
-            <div className={styles.headerTop}>
-              <div className={styles.headerLeft}>
-                <div className={styles.headerIconWrap}>
-                  <TargetIcon size={22} />
-                </div>
-                <div className={styles.headerTitles}>
-                  <span className={styles.headerSub}>Tu planificación</span>
-                  <h1 className={styles.headerTitle}>Objetivos</h1>
-                </div>
-              </div>
+            <div className={styles.topBar}>
+              <h1 className={styles.topBarTitle}>Objetivos</h1>
               <button
-                className={styles.newGoalBtn}
+                type="button"
+                className={styles.glassCircleBtn}
                 onClick={() => setModalMode('create')}
                 aria-label="Crear nuevo objetivo"
               >
-                <PlusIcon size={14} />
-                Nuevo
+                <PlusIcon size={17} />
               </button>
             </div>
 
-            {/* Divisor */}
-            <div className={styles.headerDivider} />
-
-            {/* Tarjetas métricas: objetivo principal · progreso · activos */}
-            <div className={styles.metricsRow}>
-
-              {/* Métrica 1: Nombre del objetivo principal */}
-              <div className={styles.metricCard}>
-                <span className={styles.metricLabel}>Principal</span>
-                <span className={styles.metricValueAccent} style={{ color: primaryGoal ? '#c4b5fd' : 'rgba(255,255,255,0.30)' }}>
-                  {primaryTitle}
-                </span>
-                <span className={styles.metricSub}>
-                  {primaryGoal ? `${formatEUR(primaryGoal.currentAmount)} ahorrados` : 'sin objetivo'}
-                </span>
+            <div className={styles.heroCenter}>
+              <span className={styles.heroKicker}>
+                Total en objetivos · {activeGoals.length} {activeGoals.length === 1 ? 'activo' : 'activos'}
+              </span>
+              <div className={styles.heroAmount}>{formatEUR(totalInGoals)}</div>
+              <div className={styles.heroPill}>
+                {primaryGoal ? `Principal: ${primaryTitle} · ${primaryPct}%` : 'Crea tu primer objetivo'}
               </div>
-
-              {/* Métrica 2: % de progreso del principal */}
-              <div className={styles.metricCard}>
-                <span className={styles.metricLabel}>Progreso</span>
-                <span className={styles.metricValue} style={{ color: primaryPct >= 100 ? '#4ade80' : primaryPct > 0 ? '#a78bfa' : 'rgba(255,255,255,0.40)' }}>
-                  {primaryPct}<span style={{ fontSize: 14, fontWeight: 500 }}>%</span>
-                </span>
-                <span className={styles.metricSub}>
-                  {primaryGoal ? `meta: ${formatEUR(primaryGoal.targetAmount)}` : 'crea un objetivo'}
-                </span>
-              </div>
-
-              {/* Métrica 3: Objetivos activos */}
-              <div className={styles.metricCard}>
-                <span className={styles.metricLabel}>Activos</span>
-                <span className={styles.metricValue}>{activeGoals.length}</span>
-                <span className={styles.metricSub}>
-                  {completedGoals.length > 0 ? `${completedGoals.length} completado${completedGoals.length > 1 ? 's' : ''}` : 'en curso'}
-                </span>
-              </div>
-
             </div>
 
+            <div className={styles.circleActions}>
+              <button type="button" className={styles.circleAction} onClick={() => setModalMode('create')}>
+                <span className={styles.circleBtn}><PlusIcon size={19} /></span>
+                <span className={styles.circleLbl}>Nuevo</span>
+              </button>
+              <button
+                type="button"
+                className={styles.circleAction}
+                onClick={() => hucha.balance > 0 ? setShowHuchaModal(true) : addToast('Tu Hucha aún no tiene saldo disponible', 'info')}
+              >
+                <span className={styles.circleBtn}><WalletIcon size={18} /></span>
+                <span className={styles.circleLbl}>Hucha {formatEUR(hucha.balance)}</span>
+              </button>
+              {archivedGoals.length > 0 && (
+                <button type="button" className={styles.circleAction} onClick={() => setShowArchived(v => !v)}>
+                  <span className={styles.circleBtn}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="4" width="18" height="4" rx="1" />
+                      <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8" />
+                      <path d="M10 12h4" />
+                    </svg>
+                  </span>
+                  <span className={styles.circleLbl}>Archivados ({archivedGoals.length})</span>
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* ══════════════════════════════════════════════════════════════════════
-          ZONA 2 — LISTA DE OBJETIVOS (protagonista)
-          ══════════════════════════════════════════════════════════════════════ */}
+      {/* ── Content ── */}
       <div className={styles.contentZone}>
         <div className={styles.zoneInner}>
-          <div className={styles.contentCol}>
-
-            {/* ─── Hucha badge ─── */}
-            <SavingsBadge
-              balance={hucha.balance}
-              hasActiveGoals={activeGoals.length > 0}
-              onClick={() => setShowHuchaModal(true)}
-            />
-
-            {/* ─── Lista de objetivos ─── */}
-            {activeGoals.length === 0 ? (
-              <EmptyState
-                icon="🎯"
-                title="Crea tu primer objetivo"
-                description="Define una meta sencilla y empieza a convertir pequeñas decisiones en progreso real."
-                action={{ label: 'Crear objetivo', onClick: () => setModalMode('create') }}
-              />
-            ) : (
-              <>
-                {/* Activos — lista flat, sin secciones colapsables */}
-                {inProgressGoals.length > 0 && (
-                  <>
-                    <span className={styles.sectionLabel}>En progreso · {inProgressGoals.length}</span>
-                    {inProgressGoals.map(g => (
-                      <GoalCard key={g.id} goal={g}
-                        onDetail={() => router.push(`/goals/${g.id}`)}
-                        onEdit={() => { setEditingGoal(g); setModalMode('edit'); }}
-                        onArchive={() => handleArchiveRequest(g.id)}
-                        onDelete={() => setDeletingGoal(g)}
-                        onSetPrimary={() => handleSetPrimary(g.id)}
-                      />
-                    ))}
-                  </>
-                )}
-
-                {/* Completados */}
-                {completedGoals.length > 0 && (
-                  <>
-                    <span className={styles.sectionLabel}>Completados · {completedGoals.length}</span>
-                    {completedGoals.map(g => (
-                      <GoalCard key={g.id} goal={g}
-                        onDetail={() => router.push(`/goals/${g.id}`)}
-                        onEdit={() => { setEditingGoal(g); setModalMode('edit'); }}
-                        onArchive={() => handleArchiveRequest(g.id)}
-                        onDelete={() => setDeletingGoal(g)}
-                        onSetPrimary={() => handleSetPrimary(g.id)}
-                      />
-                    ))}
-                  </>
-                )}
-              </>
-            )}
-
-            {/* ─── Archivados ─── */}
-            {archivedGoals.length > 0 && (
-              <div>
-                <button className={styles.archivedToggle} onClick={() => setShowArchived(v => !v)}>
-                  {showArchived ? '▲' : '▼'} Archivados ({archivedGoals.length})
-                </button>
-                {showArchived && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 12 }}>
-                    {archivedGoals.map(g => (
-                      <div key={g.id} className={styles.archivedCard}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                          <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(148,163,184,0.70)' }}>{g.title}</span>
-                          <span style={{ fontSize: 12, color: 'rgba(100,116,139,0.50)' }}>{pct(g)}%</span>
-                        </div>
-                        <p style={{ fontSize: 12, color: 'rgba(100,116,139,0.40)', margin: '0 0 10px' }}>{formatEUR(g.currentAmount)} / {formatEUR(g.targetAmount)}</p>
-                        <div style={{ display: 'flex', gap: 8 }}>
-                          <button className={`${styles.archivedBtn} ${styles.archivedBtnReactivate}`} onClick={() => handleReactivate(g.id)}>Reactivar</button>
-                          <button className={`${styles.archivedBtn} ${styles.archivedBtnDelete}`} onClick={() => setDeletingGoal(g)}>Eliminar</button>
-                        </div>
+          <div className={styles.layoutGrid}>
+            <div className={styles.mainCol}>
+              {activeGoals.length === 0 ? (
+                <EmptyState
+                  icon="🎯"
+                  title="Crea tu primer objetivo"
+                  description="Define una meta sencilla y empieza a convertir pequeñas decisiones en progreso real."
+                  action={{ label: 'Crear objetivo', onClick: () => setModalMode('create') }}
+                />
+              ) : (
+                <>
+                  {inProgressGoals.length > 0 && (
+                    <section className={styles.card}>
+                      <div className={styles.cardHead}>
+                        <h2 className={styles.cardTitle}>En progreso</h2>
+                        <span className={styles.countChip}>
+                          {inProgressGoals.length} {inProgressGoals.length === 1 ? 'meta' : 'metas'}
+                        </span>
                       </div>
+                      <div className={styles.rowsStack}>
+                        {inProgressGoals.map((g, idx) => (
+                          <GoalRow
+                            key={g.id}
+                            goal={g}
+                            index={idx}
+                            onDetail={() => router.push(`/goals/${g.id}`)}
+                            onEdit={() => { setEditingGoal(g); setModalMode('edit'); }}
+                            onArchive={() => handleArchiveRequest(g.id)}
+                            onDelete={() => setDeletingGoal(g)}
+                            onSetPrimary={() => handleSetPrimary(g.id)}
+                          />
+                        ))}
+                      </div>
+                    </section>
+                  )}
+                </>
+              )}
+            </div>
+
+            <div className={styles.sideCol}>
+              <SavingsBadge
+                balance={hucha.balance}
+                hasActiveGoals={activeGoals.length > 0}
+                onClick={() => setShowHuchaModal(true)}
+              />
+
+              {completedGoals.length > 0 && (
+                <section className={styles.card}>
+                  <div className={styles.cardHead}>
+                    <h2 className={styles.cardTitle}>Completados</h2>
+                    <span className={`${styles.countChip} ${styles.countChipGreen}`}>100%</span>
+                  </div>
+                  <div className={styles.rowsStack}>
+                    {completedGoals.map((g, idx) => (
+                      <GoalRow
+                        key={g.id}
+                        goal={g}
+                        index={idx}
+                        onDetail={() => router.push(`/goals/${g.id}`)}
+                        onEdit={() => { setEditingGoal(g); setModalMode('edit'); }}
+                        onArchive={() => handleArchiveRequest(g.id)}
+                        onDelete={() => setDeletingGoal(g)}
+                        onSetPrimary={() => handleSetPrimary(g.id)}
+                      />
                     ))}
                   </div>
-                )}
-              </div>
-            )}
+                </section>
+              )}
 
+              {archivedGoals.length > 0 && (
+                <div>
+                  <button type="button" className={styles.archivedToggle} onClick={() => setShowArchived(v => !v)}>
+                    <span>Archivados ({archivedGoals.length})</span>
+                    <span>{showArchived ? '▲' : '▼'}</span>
+                  </button>
+                  {showArchived && (
+                    <div className={styles.archivedList}>
+                      {archivedGoals.map(g => (
+                        <div key={g.id} className={styles.archivedCard}>
+                          <div className={styles.archivedTop}>
+                            <span className={styles.archivedName}>{g.title}</span>
+                            <span className={styles.goalPct}>{pct(g)}%</span>
+                          </div>
+                          <p className={styles.archivedMeta}>{formatEUR(g.currentAmount)} / {formatEUR(g.targetAmount)}</p>
+                          <div className={styles.archivedActions}>
+                            <button type="button" className={`${styles.archivedBtn} ${styles.archivedBtnReactivate}`} onClick={() => handleReactivate(g.id)}>Reactivar</button>
+                            <button type="button" className={`${styles.archivedBtn} ${styles.archivedBtnDelete}`} onClick={() => setDeletingGoal(g)}>Eliminar</button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
-
     </div>
   );
 }

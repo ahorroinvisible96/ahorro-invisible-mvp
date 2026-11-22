@@ -60,10 +60,10 @@
   /* ── Z-index scale ────────────────────────────────────── */
   --z-dropdown: 20;
   --z-sidebar: 50;
-  --z-modal-overlay: 100;
-  --z-modal: 101;
-  --z-daily-modal: 500;
   --z-bottomnav: 200;
+  --z-daily-modal: 500;
+  --z-modal-overlay: 600;
+  --z-modal: 610;
   --z-toast: 1000;
 }
 

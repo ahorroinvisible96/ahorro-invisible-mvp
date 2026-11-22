@@ -3,49 +3,49 @@
 @tailwind utilities;
 
 :root {
-  --background: #0A0517;
+  --background: #080910;
   --foreground: #ffffff;
 
-  /* ── Fondos ── */
-  --color-background-main: #0A0517;
-  --color-background-page: #0A0517;
-  --color-background-card: #16161f;
-  --color-background-badge: #0d2e1a;
-  --color-background-input: rgba(255, 255, 255, 0.06);
-  --color-background-hover: rgba(255,255,255,0.06);
-  --color-background-sidebar: #0A0517;
-  --color-background-bottomnav: #0A0517;
-  --color-background-modal: #16161f;
+  /* ── Fondos (Reference Dark / Liquid Glass V3) ── */
+  --color-background-main: #080910;
+  --color-background-page: #080910;
+  --color-background-card: #171822;
+  --color-background-badge: rgba(18, 196, 139, 0.14);
+  --color-background-input: #1f202d;
+  --color-background-hover: rgba(255, 255, 255, 0.05);
+  --color-background-sidebar: #0b0c14;
+  --color-background-bottomnav: #080910;
+  --color-background-modal: #171822;
   --color-background-header: transparent;
-  --color-background-overlay: rgba(2, 6, 23, 0.80);
+  --color-background-overlay: rgba(4, 5, 10, 0.72);
 
   /* ── Texto ── */
   --color-text-primary: #ffffff;
-  --color-text-secondary: rgba(255, 255, 255, 0.55);
-  --color-text-muted: rgba(255, 255, 255, 0.58);
-  --color-text-label: rgba(255, 255, 255, 0.55);
-  --color-text-inverted: #0A0517;
+  --color-text-secondary: #9a9fb2;
+  --color-text-muted: #6c7185;
+  --color-text-label: #9a9fb2;
+  --color-text-inverted: #080910;
   --color-text-success: #30d158;
   --color-text-danger: #ff453a;
   --color-text-page-title: #ffffff;
-  --color-text-page-sub: rgba(255, 255, 255, 0.55);
+  --color-text-page-sub: #9a9fb2;
   --color-text-nav: rgba(255, 255, 255, 0.55);
   --color-text-nav-active: #ffffff;
   --color-text-nav-label: rgba(255, 255, 255, 0.55);
   --color-text-user-name: #ffffff;
-  --color-text-user-role: rgba(255, 255, 255, 0.55);
+  --color-text-user-role: #9a9fb2;
   --color-text-greeting: #ffffff;
-  --color-text-sub: rgba(255, 255, 255, 0.55);
+  --color-text-sub: #9a9fb2;
 
   /* ── Bordes ── */
-  --color-border-subtle: rgba(255, 255, 255, 0.08);
-  --color-border-card: rgba(255, 255, 255, 0.07);
-  --color-border-sidebar: rgba(255, 255, 255, 0.06);
+  --color-border-subtle: rgba(255, 255, 255, 0.05);
+  --color-border-card: rgba(255, 255, 255, 0.045);
+  --color-border-sidebar: rgba(255, 255, 255, 0.05);
   --color-border-nav: rgba(255, 255, 255, 0.08);
-  --color-border-input: rgba(255, 255, 255, 0.1);
-  --color-border-btn: rgba(255, 255, 255, 0.08);
-  --color-border-light: rgba(255, 255, 255, 0.08);
-  --color-border-medium: rgba(255, 255, 255, 0.12);
+  --color-border-input: rgba(255, 255, 255, 0.06);
+  --color-border-btn: rgba(255, 255, 255, 0.07);
+  --color-border-light: rgba(255, 255, 255, 0.06);
+  --color-border-medium: rgba(255, 255, 255, 0.1);
 
   /* ── Nav ── */
   --nav-item-bg: transparent;
@@ -136,63 +136,63 @@
   --grad-primary: linear-gradient(90deg, #a855f7, #2563eb);
   --grad-primary-hover: linear-gradient(90deg, #9333ea, #1d4ed8);
 
-  /* ── Variables estructurales de widgets — dark navy glassmorphism ── */
-  --widget-bg: rgba(10, 8, 25, 0.55);
-  --widget-bg-alt: rgba(10, 8, 25, 0.45);
-  --widget-card-bg: rgba(10, 8, 25, 0.50);
-  --widget-border: rgba(255, 255, 255, 0.06);
-  --widget-border-hover: rgba(255, 255, 255, 0.12);
-  --widget-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
-  --widget-shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.18);
-  --widget-inner-bg: rgba(255, 255, 255, 0.03);
+  /* ── Variables estructurales de widgets — Reference Dark matte #171822 ── */
+  --widget-bg: #171822;
+  --widget-bg-alt: #171822;
+  --widget-card-bg: #171822;
+  --widget-border: rgba(255, 255, 255, 0.045);
+  --widget-border-hover: rgba(255, 255, 255, 0.09);
+  --widget-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+  --widget-shadow-sm: none;
+  --widget-inner-bg: #1f202d;
   --widget-inner-border: rgba(255, 255, 255, 0.05);
-  --widget-answer-bg: rgba(255, 255, 255, 0.04);
-  --widget-answer-border: rgba(255, 255, 255, 0.06);
-  --widget-answer-hover-bg: rgba(255, 255, 255, 0.08);
-  --widget-answer-hover-border: rgba(255, 255, 255, 0.12);
-  --widget-range-selector-bg: rgba(255, 255, 255, 0.04);
-  --widget-track-bg: rgba(255, 255, 255, 0.08);
-  --widget-track-bg-light: rgba(255, 255, 255, 0.06);
-  --widget-icon-bg: rgba(255, 255, 255, 0.06);
+  --widget-answer-bg: #1f202d;
+  --widget-answer-border: rgba(255, 255, 255, 0.05);
+  --widget-answer-hover-bg: #252736;
+  --widget-answer-hover-border: rgba(255, 255, 255, 0.10);
+  --widget-range-selector-bg: #1f202d;
+  --widget-track-bg: rgba(255, 255, 255, 0.09);
+  --widget-track-bg-light: rgba(255, 255, 255, 0.07);
+  --widget-icon-bg: rgba(255, 255, 255, 0.07);
   --widget-icon-border: transparent;
-  --widget-action-bg: rgba(255, 255, 255, 0.05);
+  --widget-action-bg: rgba(255, 255, 255, 0.075);
   --widget-action-border: rgba(255, 255, 255, 0.06);
-  --widget-cancel-bg: rgba(255, 255, 255, 0.05);
-  --widget-cancel-hover: rgba(255, 255, 255, 0.10);
-  --widget-input-bg: rgba(255, 255, 255, 0.05);
-  --widget-input-bg-alt: rgba(255, 255, 255, 0.04);
-  --widget-modal-bg: rgba(12, 8, 28, 0.96);
+  --widget-cancel-bg: rgba(255, 255, 255, 0.075);
+  --widget-cancel-hover: rgba(255, 255, 255, 0.12);
+  --widget-input-bg: #1f202d;
+  --widget-input-bg-alt: #1f202d;
+  --widget-modal-bg: #171822;
   --widget-list-item-bg: rgba(255, 255, 255, 0.03);
-  --widget-list-item-border: rgba(255, 255, 255, 0.05);
-  --widget-list-item-hover: rgba(255, 255, 255, 0.07);
+  --widget-list-item-border: rgba(255, 255, 255, 0.045);
+  --widget-list-item-hover: rgba(255, 255, 255, 0.06);
   --widget-divider: rgba(255, 255, 255, 0.05);
   --widget-divider-light: rgba(255, 255, 255, 0.04);
-  --widget-adjust-bg: rgba(255, 255, 255, 0.05);
+  --widget-adjust-bg: rgba(255, 255, 255, 0.06);
   --widget-adjust-border: rgba(255, 255, 255, 0.06);
-  --widget-adjust-hover: rgba(255, 255, 255, 0.10);
-  --widget-tooltip-bg: rgba(12, 8, 28, 0.96);
-  --widget-slider-track: rgba(255, 255, 255, 0.08);
-  --widget-edit-bg: rgba(255, 255, 255, 0.04);
+  --widget-adjust-hover: rgba(255, 255, 255, 0.11);
+  --widget-tooltip-bg: #1e1f2c;
+  --widget-slider-track: rgba(255, 255, 255, 0.09);
+  --widget-edit-bg: rgba(255, 255, 255, 0.06);
   --widget-edit-border: rgba(255, 255, 255, 0.06);
-  --widget-edit-hover: rgba(255, 255, 255, 0.08);
-  --widget-range-card-bg: rgba(255, 255, 255, 0.04);
-  --widget-range-card-border: rgba(255, 255, 255, 0.06);
-  --widget-logout-bg: rgba(255, 255, 255, 0.04);
+  --widget-edit-hover: rgba(255, 255, 255, 0.11);
+  --widget-range-card-bg: #1f202d;
+  --widget-range-card-border: rgba(255, 255, 255, 0.05);
+  --widget-logout-bg: rgba(255, 255, 255, 0.05);
 
-  /* ── Auth page tokens — dark navy ── */
-  --auth-card-bg: linear-gradient(135deg, rgba(12, 8, 28, 0.95) 0%, rgba(18, 12, 38, 0.95) 100%);
-  --auth-card-border: rgba(255, 255, 255, 0.08);
-  --auth-card-shadow: 0 25px 50px rgba(2, 6, 23, 0.8);
-  --auth-page-bg: linear-gradient(180deg, #2a0e5c 0%, #1e0a45 30%, #140830 60%, #0a0518 100%);
-  --auth-input-bg: rgba(10, 8, 25, 0.60);
-  --auth-input-border: rgba(255, 255, 255, 0.08);
-  --auth-input-focus: rgba(168, 85, 247, 0.5);
-  --auth-label-color: rgba(148, 163, 184, 0.6);
+  /* ── Auth page tokens — Reference Dark ── */
+  --auth-card-bg: #171822;
+  --auth-card-border: rgba(255, 255, 255, 0.05);
+  --auth-card-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+  --auth-page-bg: #080910;
+  --auth-input-bg: #1f202d;
+  --auth-input-border: rgba(255, 255, 255, 0.06);
+  --auth-input-focus: rgba(167, 139, 250, 0.55);
+  --auth-label-color: #9a9fb2;
   --auth-divider: rgba(255, 255, 255, 0.06);
-  --auth-secondary-btn-bg: rgba(255, 255, 255, 0.05);
-  --auth-secondary-btn-border: rgba(255, 255, 255, 0.06);
-  --auth-secondary-btn-color: rgba(203, 213, 225, 0.85);
-  --auth-link-color: #a78bfa;
+  --auth-secondary-btn-bg: rgba(255, 255, 255, 0.075);
+  --auth-secondary-btn-border: transparent;
+  --auth-secondary-btn-color: #ffffff;
+  --auth-link-color: #a5b4fc;
 }
 
 /* ── Fijar fondo en html para evitar el "overscroll bleed" en iOS ──

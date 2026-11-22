@@ -288,3 +288,19 @@ export const TrophyIcon = ({ size = 24, className, style }: IconProps) => (
     <line x1="4" y1="21" x2="20" y2="21"/>
   </svg>
 );
+
+/** Marca de verificación: completado */
+export const CheckIcon = ({ size = 24, className, style }: IconProps) => (
+  <svg {...base(size, style)} className={className}>
+    <polyline points="20 6 9 17 4 12"/>
+  </svg>
+);
+
+/** Cartera / hucha: ahorro disponible */
+export const WalletIcon = ({ size = 24, className, style }: IconProps) => (
+  <svg {...base(size, style)} className={className}>
+    <path d="M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/>
+    <path d="M16 12.5h5v3h-5a1.5 1.5 0 0 1 0-3z"/>
+    <path d="M6 5V4a1 1 0 0 1 1-1h9"/>
+  </svg>
+);

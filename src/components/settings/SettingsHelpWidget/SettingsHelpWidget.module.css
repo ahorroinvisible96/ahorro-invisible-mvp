@@ -1,43 +1,16 @@
-/* ── Container ── */
+/* SettingsHelpWidget — Unified Reference Dark Matte V2 */
 .wrapper {
   position: relative;
-  border-radius: var(--radius-widget);
+  border-radius: 24px;
+  background: #171822;
+  border: 1px solid rgba(255, 255, 255, 0.045);
   overflow: hidden;
 }
 
-.bgGradient {
-  position: absolute;
-  inset: 0;
-  background: var(--widget-bg);
-}
-
-.glowPurple {
-  position: absolute;
-  bottom: -20px;
-  left: -20px;
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  background: rgba(168, 85, 247, 0.1);
-  filter: blur(35px);
-  pointer-events: none;
-}
-
+.bgGradient,
+.glowPurple,
 .borderLayer {
-  position: absolute;
-  inset: 0;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--widget-border);
-  box-shadow: var(--widget-shadow-sm);
-  pointer-events: none;
-}
-
-/* ── Categoría: insight — acento info sutil ── */
-.wrapper[data-widget-cat="insight"] .borderLayer {
-  border-color: var(--widget-cat-insight-border);
-}
-.wrapper[data-widget-cat="insight"]:hover .borderLayer {
-  border-color: rgba(59, 130, 246, 0.18);
+  display: none;
 }
 
 .content {
@@ -45,50 +18,42 @@
   padding: 20px;
 }
 
-/* ── Header ── */
 .header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 16px;
+  gap: 12px;
+  margin-bottom: 14px;
 }
 
 .iconWrap {
-  width: 34px;
-  height: 34px;
-  border-radius: var(--radius-icon);
-  background: rgba(168, 85, 247, 0.12);
-  border: 1px solid rgba(168, 85, 247, 0.25);
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: #a855f7;
+  color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-brand-purple-light);
   flex-shrink: 0;
 }
 
 .title {
-  font-size: var(--widget-title-size, 15px);
-  font-weight: var(--widget-title-weight, 700);
-  color: var(--text-primary, #f1f5f9);
+  font-size: 15px;
+  font-weight: 650;
+  color: #ffffff;
   margin: 0;
 }
 
-/* ── FAQs ── */
 .faqList {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 6px;
 }
 
 .faqItem {
-  border-radius: var(--radius-icon);
+  border-radius: 15px;
+  background: #1f202d;
   overflow: hidden;
-  border: 1px solid var(--widget-divider-light);
-  transition: border-color var(--transition-fast);
-}
-
-.faqItem:hover {
-  border-color: rgba(168, 85, 247, 0.3);
 }
 
 .faqQuestion {
@@ -96,7 +61,7 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 12px 14px;
+  padding: 13px 15px;
   background: transparent;
   border: none;
   cursor: pointer;
@@ -106,55 +71,74 @@
 }
 
 .faqQuestionText {
-  font-size: var(--widget-body-size, 13px);
+  font-size: 13.5px;
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: #ffffff;
   line-height: 1.4;
 }
 
 .faqChevron {
-  color: rgba(100, 116, 139, 0.6);
+  color: #9a9fb2;
   flex-shrink: 0;
-  transition: transform 200ms ease, color 200ms ease;
+  transition: transform 200ms ease;
 }
 
 .faqChevronOpen {
   transform: rotate(180deg);
-  color: var(--color-brand-purple-light);
+  color: #ffffff;
 }
 
 .faqAnswer {
-  padding: 0 14px 12px;
-  font-size: var(--widget-body-size, 13px);
-  color: var(--color-text-secondary);
-  line-height: 1.6;
-  border-top: 1px solid var(--widget-divider-light);
-  padding-top: 10px;
+  padding: 0 15px 14px;
+  font-size: 13px;
+  color: #9a9fb2;
+  line-height: 1.55;
 }
 
-/* ── Versión ── */
 .versionRow {
   display: flex;
   align-items: center;
   justify-content: center;
   margin-top: 16px;
-  padding-top: 14px;
-  border-top: 1px solid var(--widget-divider-light);
-  gap: 6px;
+  gap: 8px;
 }
 
 .versionText {
-  font-size: 11px;
-  color: rgba(100, 116, 139, 0.5);
+  font-size: 12px;
+  color: #6c7185;
 }
 
 .versionBadge {
-  font-size: 11px;
-  font-weight: 700;
-  color: rgba(168, 85, 247, 0.6);
-  background: rgba(168, 85, 247, 0.08);
-  border: 1px solid rgba(168, 85, 247, 0.15);
-  padding: 2px 8px;
-  border-radius: var(--radius-xl);
+  font-size: 11.5px;
+  font-weight: 650;
+  color: #9a9fb2;
+  background: rgba(255, 255, 255, 0.075);
+  padding: 3px 9px;
+  border-radius: 999px;
 }
 
+:global([data-theme="light"]) .wrapper {
+  background: #ffffff;
+  border-color: rgba(11, 18, 32, 0.07);
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.05);
+}
+
+:global([data-theme="light"]) .title,
+:global([data-theme="light"]) .faqQuestionText {
+  color: #0b1220;
+}
+
+:global([data-theme="light"]) .faqItem {
+  background: #f1f4fa;
+}
+
+:global([data-theme="light"]) .faqAnswer,
+:global([data-theme="light"]) .faqChevron,
+:global([data-theme="light"]) .versionText {
+  color: #475569;
+}
+
+:global([data-theme="light"]) .versionBadge {
+  background: #eef1f7;
+  color: #334155;
+}
