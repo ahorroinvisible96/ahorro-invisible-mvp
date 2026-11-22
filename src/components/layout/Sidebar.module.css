@@ -1,241 +1,184 @@
-/* ── Sidebar principal ── */
+/* ═══════════════════════════════════════════════════════════════════
+   SIDEBAR — Reference Dark / Liquid Glass V3
+   Superficie mate sobria #0C0D16 con ítems redondeados en cápsula
+   ═══════════════════════════════════════════════════════════════════ */
+
 .sidebar {
   width: 220px;
   height: 100vh;
-  background: rgba(8, 5, 18, 0.60);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  background: #0c0d16;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
   display: flex;
   flex-direction: column;
   position: fixed;
   left: 0;
   top: 0;
   z-index: 50;
+  padding: 20px 12px 16px;
+  box-sizing: border-box;
 }
 
-/* Ocultar en móvil — se usa BottomNav */
+:global([data-theme="light"]) .sidebar {
+  background: #ffffff;
+  border-right-color: rgba(15, 23, 42, 0.08);
+}
+
 @media (max-width: 767px) {
   .sidebar {
     display: none;
   }
 }
 
-/* ── Logo ── */
 .logo {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 20px 16px 16px;
+  padding: 4px 10px 22px;
 }
 
 .logoMark {
   width: 32px;
   height: 32px;
-  border-radius: var(--radius-icon);
-  background: linear-gradient(135deg, #a855f7, #2563eb);
+  border-radius: 999px;
+  background: linear-gradient(135deg, #7c42ea, #505cf5);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: #ffffff;
   flex-shrink: 0;
-  box-shadow: 0 4px 14px rgba(168, 85, 247, 0.25);
-}
-
-.logoTexts {
-  display: flex;
-  flex-direction: column;
-  line-height: 1;
 }
 
 .logoName {
-  font-size: var(--type-body-size);
-  font-weight: 800;
-  color: var(--color-text-nav-active);
-  letter-spacing: -0.2px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.02em;
 }
 
-.logoSub {
-  font-size: 9px;
-  font-weight: var(--type-h2-weight);
-  color: rgba(168, 85, 247, 0.7);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  margin-top: 1px;
+:global([data-theme="light"]) .logoName {
+  color: #0f172a;
 }
 
-/* ── Separador ── */
-.divider {
-  height: 1px;
-  background: var(--color-border-sidebar);
-  margin: 0 16px;
-}
-
-/* ── Navegación ── */
 .nav {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 14px 10px 10px;
-  flex: 1;
+  gap: 4px;
 }
 
-.navLabel {
-  font-size: 9px;
-  font-weight: var(--type-h2-weight);
-  color: var(--color-text-nav-label);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  padding: 0 8px;
-  margin-bottom: 6px;
-}
-
-/* ── Item de navegación (link y button) ── */
 .navItem {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
-  border-radius: var(--radius-icon);
-  color: var(--color-text-nav);
-  font-size: var(--type-small-size);
-  font-weight: var(--type-nav-weight);
+  gap: 11px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  color: #9ba0b4;
+  font-size: 13.5px;
+  font-weight: 500;
   text-decoration: none;
-  transition: all var(--transition-fast);
-  position: relative;
-  cursor: pointer;
   border: none;
   background: transparent;
   width: 100%;
   text-align: left;
   font-family: inherit;
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease;
+  box-sizing: border-box;
+}
+
+:global([data-theme="light"]) .navItem {
+  color: #64748b;
 }
 
 .navItem:hover {
-  background: var(--nav-item-bg-hover);
-  color: var(--color-text-nav-active);
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
 }
 
-/* ── Item activo ── */
+:global([data-theme="light"]) .navItem:hover {
+  background: #f1f4fa;
+  color: #0f172a;
+}
+
 .navItemActive {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.12);
   color: #ffffff;
   font-weight: 600;
 }
 
-.navItemActive:hover {
-  background: rgba(255, 255, 255, 0.1);
+:global([data-theme="light"]) .navItemActive {
+  background: #eef2f8;
+  color: #0f172a;
 }
 
-/* ── Icono del item ── */
 .navIcon {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--nav-icon-bg);
-  color: var(--nav-icon-color);
-  flex-shrink: 0;
-  transition: all var(--transition-fast);
-}
-
-.navItem:hover .navIcon {
-  background: var(--nav-icon-bg);
-  filter: brightness(1.3);
-  color: #94a3b8;
-}
-
-.navIconActive {
-  background: rgba(255, 255, 255, 0.14);
-  color: #ffffff;
-}
-
-/* ── Pip activo (punto derecho) ── */
-.activePip {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: #a855f7;
-  margin-left: auto;
-  box-shadow: 0 0 6px rgba(168, 85, 247, 0.7);
+  width: 20px;
+  height: 20px;
   flex-shrink: 0;
 }
 
-/* ── Botón Decisión Diaria (especial) ── */
-.navItemDailyBtn {
-  background: var(--nav-item-daily-bg);
-  border: 1px solid var(--nav-item-daily-border);
-  color: var(--color-brand-purple-light);
-  font-weight: 600;
+.navText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.navItemDailyBtn:hover {
-  background: rgba(168, 85, 247, 0.16);
-  border-color: rgba(168, 85, 247, 0.35);
-  color: #d8b4fe;
-}
-
-.navIconDaily {
-  background: rgba(168, 85, 247, 0.2);
-  color: var(--color-brand-purple-light);
-}
-
-.navItemDailyBtn:hover .navIconDaily {
-  background: rgba(168, 85, 247, 0.3);
-  color: #d8b4fe;
-}
-
-/* ── Spacer ── */
 .spacer {
   flex: 1;
 }
 
-/* ── Footer usuario ── */
 .footer {
-  padding-bottom: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+:global([data-theme="light"]) .footer {
+  border-top-color: rgba(15, 23, 42, 0.08);
 }
 
 .themeRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 6px 12px 4px;
-  margin: 4px 8px 0;
+  padding: 0 8px;
 }
 
 .themeLabel {
-  font-size: var(--type-metric-label-size);
-  font-weight: var(--type-metric-label-weight);
-  color: var(--color-text-nav-label);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: 12px;
+  font-weight: 500;
+  color: #767b90;
 }
 
 .userRow {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  margin: 8px 8px 0;
-  border-radius: var(--radius-icon);
-  background: var(--nav-user-row-bg);
-  border: 1px solid var(--nav-user-row-border);
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: 14px;
 }
 
 .avatar {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #a855f7, #2563eb);
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: #232531;
+  color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: var(--type-caption-size);
-  font-weight: 800;
-  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
   flex-shrink: 0;
+}
+
+:global([data-theme="light"]) .avatar {
+  background: #e9edf5;
+  color: #0f172a;
 }
 
 .userTexts {
@@ -246,38 +189,46 @@
 }
 
 .userName {
-  font-size: var(--type-caption-size);
-  font-weight: var(--type-h2-weight);
-  color: var(--color-text-user-name);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #f5f6fa;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  line-height: 1.2;
+}
+
+:global([data-theme="light"]) .userName {
+  color: #0f172a;
 }
 
 .userRole {
-  font-size: var(--type-metric-label-size);
-  color: var(--color-text-user-role);
-  line-height: 1.2;
+  font-size: 11.5px;
+  color: #767b90;
 }
 
 .logoutBtn {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: #767b90;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  border: 1px solid var(--color-border-btn);
-  color: var(--color-text-muted);
   cursor: pointer;
-  transition: all var(--transition-fast);
   flex-shrink: 0;
+  transition: background 140ms ease, color 140ms ease;
 }
 
 .logoutBtn:hover {
-  background: var(--nav-logout-bg-hover);
-  border-color: var(--nav-logout-border-hover);
-  color: var(--color-error-light);
+  background: rgba(255, 255, 255, 0.08);
+  color: #f5f6fa;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .navItem,
+  .logoutBtn {
+    transition: none;
+  }
 }

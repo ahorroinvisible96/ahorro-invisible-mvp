@@ -3,13 +3,29 @@
 import React, { useState, useEffect } from 'react';
 import styles from './AIInsightWidget.module.css';
 
+function SparkleSvg() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+    </svg>
+  );
+}
+
+function RefreshSvg() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
+      <path d="M21 3v5h-5" />
+    </svg>
+  );
+}
+
 export function AIInsightWidget() {
   const [insight, setInsight] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
 
-  // Obtener userId y cargar caché al montar
   useEffect(() => {
     try {
       const id = localStorage.getItem('supabaseUserId');
@@ -50,7 +66,6 @@ export function AIInsightWidget() {
 
       setInsight(data.insight);
 
-      // Guardar en caché
       try {
         localStorage.setItem('ai_weekly_insight', data.insight);
         localStorage.setItem('ai_weekly_insight_date', new Date().toISOString());
@@ -68,59 +83,64 @@ export function AIInsightWidget() {
     }
   };
 
-  // Si no hay userId, no mostrar nada
   if (!userId) return null;
 
-  // Estado inicial: botón para solicitar
   if (!insight && !loading && !error) {
     return (
-      <button className={styles.actionBtn} onClick={fetchInsight}>
-        <span>✨</span>
-        <span>Obtener Consejo de la Semana</span>
+      <button type="button" className={styles.actionCard} onClick={fetchInsight}>
+        <div className={styles.iconCircle}>
+          <SparkleSvg />
+        </div>
+        <div className={styles.actionTexts}>
+          <span className={styles.title}>Insight de la semana</span>
+          <span className={styles.actionSub}>Obtener consejo personalizado</span>
+        </div>
+        <svg className={styles.chevron} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="9 18 15 12 9 6" />
+        </svg>
       </button>
     );
   }
 
   return (
-    <div className={styles.widget}>
-      <div className={styles.header}>
-        <span className={styles.icon}>✨</span>
-        <h3 className={styles.title}>Insight de la Semana</h3>
-        {insight && !loading && (
-          <button
-            onClick={fetchInsight}
-            style={{
-              marginLeft: 'auto',
-              background: 'none',
-              border: 'none',
-              color: 'rgba(148,163,184,0.4)',
-              fontSize: 14,
-              cursor: 'pointer',
-              padding: '2px 4px',
-            }}
-            aria-label="Generar nuevo insight"
-          >↻</button>
-        )}
-      </div>
+    <section className={styles.widget} aria-label="Insight de la semana">
+      <div className={styles.row}>
+        <div className={styles.iconCircle}>
+          <SparkleSvg />
+        </div>
 
-      {loading ? (
-        <div className={styles.loadingState}>
-          <div className={styles.skeletonLine} style={{ width: '100%' }}></div>
-          <div className={styles.skeletonLine} style={{ width: '85%' }}></div>
-          <div className={styles.skeletonLine} style={{ width: '60%' }}></div>
+        <div className={styles.body}>
+          <div className={styles.header}>
+            <h3 className={styles.title}>Insight de la semana</h3>
+            {insight && !loading && (
+              <button
+                type="button"
+                className={styles.refreshBtn}
+                onClick={fetchInsight}
+                aria-label="Generar nuevo insight"
+              >
+                <RefreshSvg />
+              </button>
+            )}
+          </div>
+
+          {loading ? (
+            <div className={styles.loadingState}>
+              <div className={styles.skeletonLine} style={{ width: '100%' }} />
+              <div className={styles.skeletonLine} style={{ width: '82%' }} />
+            </div>
+          ) : error ? (
+            <>
+              <div className={styles.error}>{error}</div>
+              <button type="button" className={styles.retryBtn} onClick={fetchInsight}>
+                Reintentar
+              </button>
+            </>
+          ) : (
+            <p className={styles.content}>{insight}</p>
+          )}
         </div>
-      ) : error ? (
-        <>
-          <div className={styles.error}>{error}</div>
-          <button className={styles.actionBtn} onClick={fetchInsight} style={{ marginTop: 8 }}>
-            Reintentar
-          </button>
-        </>
-      ) : (
-        <div className={styles.content}>
-          {insight}
-        </div>
-      )}
-    </div>
+      </div>
+    </section>
   );
 }

@@ -1,380 +1,264 @@
-/* ── Container principal ── */
+/* ═══════════════════════════════════════════════════════════════════
+   SAVINGS EVOLUTION WIDGET — Reference Dark / Liquid Glass V3
+   Tarjeta mate #1A1B24, Total ahorrado, switch compacto, rueda donut limpia
+   + filas aireadas estilo Patrimonio total + curva limpia estilo imagen 2.
+   ═══════════════════════════════════════════════════════════════════ */
+
 .wrapper {
   position: relative;
-  border-radius: var(--radius-widget);
-  overflow: hidden;
+  background: #1a1b24;
+  border: 1px solid rgba(255, 255, 255, 0.045);
+  border-radius: 22px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
-/* ── Layer 1: fondo gradiente ── */
-.bgGradient {
-  position: absolute;
-  inset: 0;
-  background: rgba(10, 8, 25, 0.50);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-}
-
-/* ── Layer 2: glow overlay ── */
-.glowOverlay {
-  position: absolute;
-  inset: 0;
-  opacity: 0.3;
-  pointer-events: none;
-}
-
-.glowPurple {
-  position: absolute;
-  top: 0;
-  right: -80px;
-  width: 256px;
-  height: 256px;
-  border-radius: 50%;
-  background: rgba(168, 85, 247, 0.10);
-  filter: blur(50px);
-}
-
-.glowBlue {
-  position: absolute;
-  bottom: -80px;
-  left: -80px;
-  width: 256px;
-  height: 256px;
-  border-radius: 50%;
-  background: rgba(59, 130, 246, 0.08);
-  filter: blur(50px);
-}
-
-/* ── Layer 3: borde ── */
-.borderLayer {
-  position: absolute;
-  inset: 0;
-  border-radius: var(--radius-2xl);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.20);
-  pointer-events: none;
-}
-
-/* ── Categoría: progress — acento verde-azul sutil ── */
-.wrapper[data-widget-cat="progress"] .borderLayer {
-  border-color: var(--widget-cat-progress-border);
-}
-.wrapper[data-widget-cat="progress"]:hover .borderLayer {
-  border-color: rgba(34, 197, 94, 0.22);
-}
-.wrapper[data-widget-cat="progress"] .glowPurple {
-  background: var(--widget-cat-progress-glow);
-}
-
-/* ── Layer 4: contenido ── */
-.content {
-  position: relative;
-  padding: var(--widget-padding, 20px);
+:global([data-theme="light"]) .wrapper {
+  background: #ffffff;
+  border-color: rgba(15, 23, 42, 0.08);
+  box-shadow: 0 8px 24px -10px rgba(15, 23, 42, 0.08);
 }
 
 /* ── Header ── */
 .header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  margin-bottom: 24px;
-  gap: 12px;
-  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .headerLeft {
   display: flex;
   align-items: center;
-  gap: 12px;
-}
-
-/* Icono sin caja — solo el trazo, alineado */
-.iconWrap {
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: rgba(148, 163, 184, 0.55);
-  flex-shrink: 0;
-}
-
-.title {
-  font-size: var(--widget-title-size, 15px);
-  font-weight: var(--widget-title-weight, 700);
-  color: var(--text-primary, #f1f5f9);
-}
-
-.headerRight {
-  display: flex;
-  align-items: center;
   gap: 8px;
+  min-width: 0;
+}
+
+.eyebrow {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #9ba0b4;
+}
+
+:global([data-theme="light"]) .eyebrow {
+  color: #64748b;
+}
+
+.demoBadge {
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(245, 158, 11, 0.14);
+  color: #fbbf24;
+}
+
+/* ── Switch compacto General / Progreso ── */
+.miniSwitch {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  background: #12131b;
   flex-shrink: 0;
 }
 
-/* ── Badge DEMO ── */
-.demoBadge {
-  padding: 4px 10px;
-  border-radius: var(--radius-sm);
-  background: rgba(234, 179, 8, 0.1);
-  border: 1px solid rgba(234, 179, 8, 0.3);
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--color-warning-light);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+:global([data-theme="light"]) .miniSwitch {
+  background: #f1f4fa;
 }
 
-/* ── Total acumulado ── */
-.totalSection {
-  margin-bottom: 24px;
+.miniTab {
+  border: none;
+  background: transparent;
+  color: #767b90;
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  min-height: 28px;
+  padding: 4px 11px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease;
 }
 
+.miniTabActive {
+  background: #292b39;
+  color: #ffffff;
+}
+
+:global([data-theme="light"]) .miniTabActive {
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+}
+
+/* ── Cifra total ── */
 .totalAmount {
-  font-size: 36px;
-  font-weight: 800;
-  color: var(--color-text-primary);
+  font-family: var(--font-display, inherit);
+  font-size: 28px;
+  font-weight: 700;
+  color: #ffffff;
   letter-spacing: -0.03em;
   line-height: 1.1;
-  margin-bottom: 4px;
-  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 50%, #cbd5e1 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-variant-numeric: tabular-nums;
+  margin-top: -6px;
 }
 
-.totalLabel {
-  font-size: 13px;
-  color: rgba(148, 163, 184, 0.6);
-  letter-spacing: 0.02em;
+:global([data-theme="light"]) .totalAmount {
+  color: #0f172a;
 }
 
-/* ── Tab bar ── */
-.tabBar {
-  display: flex;
-  gap: 4px;
-  padding: 4px;
-  border-radius: var(--radius-md);
-  background: var(--widget-range-selector-bg, rgba(10, 8, 25, 0.50));
-  border: 1px solid var(--widget-border);
-  margin-bottom: 24px;
-}
-
-.tabBtn {
-  flex: 1;
-  padding: 8px 12px;
-  border-radius: var(--radius-sm);
-  font-size: 12px;
-  font-weight: 500;
-  color: rgba(148, 163, 184, 0.70);
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  transition: all var(--transition-normal);
-  white-space: nowrap;
-}
-
-.tabBtn:hover {
-  color: rgba(203, 213, 225, 0.9);
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.tabBtnActive {
-  background: linear-gradient(90deg, #a855f7, #2563eb);
-  color: #fff;
-  font-weight: 600;
-  box-shadow: 0 2px 10px rgba(168, 85, 247, 0.30);
-}
-
-.tabBtnActive:hover {
-  color: #fff;
-  background: linear-gradient(90deg, #a855f7, #2563eb);
-}
-
-/* ═══════════════════════════════════════════════════════════════════════ */
-/* ── DONUT CHART — estilos premium ── */
-/* ═══════════════════════════════════════════════════════════════════════ */
-
+/* ── Rueda Donut + filas aireadas ── */
 .donutSection {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
 }
 
 .donutContainer {
-  position: relative;
-  width: 100%;
-  max-width: 220px;
-  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  padding: 4px 0 2px;
 }
 
 .donutSvg {
   display: block;
-  filter: drop-shadow(0 0 24px rgba(168, 85, 247, 0.10));
 }
 
-/* ── Detalle contextual al seleccionar ── */
-.donutDetail {
+.donutTrack {
+  stroke: rgba(255, 255, 255, 0.06);
+}
+
+:global([data-theme="light"]) .donutTrack {
+  stroke: rgba(15, 23, 42, 0.08);
+}
+
+.donutCenterLabel {
+  fill: #9ba0b4;
+  font-family: inherit;
+}
+
+.donutCenterValue {
+  fill: #ffffff;
+  font-family: var(--font-display, inherit);
+  font-variant-numeric: tabular-nums;
+}
+
+:global([data-theme="light"]) .donutCenterValue {
+  fill: #0f172a;
+}
+
+.goalRows {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.goalRow {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 14px 18px;
-  border-radius: var(--radius-md);
-  background: rgba(10, 8, 25, 0.70);
-  border: 1px solid rgba(168, 85, 247, 0.15);
-  backdrop-filter: blur(12px);
+  justify-content: space-between;
+  gap: 12px;
   width: 100%;
-  max-width: 280px;
-  animation: detailSlideIn 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  background: transparent;
+  border: none;
+  padding: 2px 0;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: opacity 160ms ease;
 }
 
-@keyframes detailSlideIn {
-  from { opacity: 0; transform: translateY(-8px) scale(0.96); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+.goalRowDimmed {
+  opacity: 0.42;
 }
 
-.donutDetailDot {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  flex-shrink: 0;
+.goalRowActive .goalRowTitle {
+  color: #ffffff;
+  font-weight: 600;
 }
 
-.donutDetailInfo {
-  flex: 1;
+.goalRowLeft {
+  display: flex;
+  align-items: center;
+  gap: 13px;
   min-width: 0;
 }
 
-.donutDetailTitle {
-  font-size: 13px;
-  font-weight: 600;
-  color: #e2e8f0;
-  display: block;
-  margin-bottom: 3px;
+.goalRowIcon {
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.goalRowTitle {
+  font-size: 15px;
+  font-weight: 500;
+  color: #f5f6fa;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.donutDetailRow {
+:global([data-theme="light"]) .goalRowTitle {
+  color: #0f172a;
+}
+
+.goalRowAmount {
+  font-size: 15px;
+  font-weight: 500;
+  color: #f5f6fa;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+:global([data-theme="light"]) .goalRowAmount {
+  color: #0f172a;
+}
+
+/* ── Pestaña Progreso (curva minimalista) ── */
+.progressTab {
   display: flex;
-  align-items: baseline;
+  flex-direction: column;
   gap: 10px;
 }
 
-.donutDetailAmount {
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-}
-
-.donutDetailPct {
-  font-size: 12px;
-  font-weight: 600;
-  color: rgba(148, 163, 184, 0.50);
-  background: rgba(148, 163, 184, 0.08);
-  padding: 2px 7px;
-  border-radius: var(--radius-sm);
-}
-
-/* ── Leyenda del donut (interactiva) ── */
-.donutLegend {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 6px;
-  width: 100%;
-}
-
-.donutLegendItem {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 12px 5px 8px;
-  border-radius: var(--radius-xl);
-  background: rgba(10, 8, 25, 0.40);
-  border: 1px solid rgba(51, 65, 85, 0.30);
-  cursor: pointer;
-  transition: all var(--transition-normal);
-  font-size: 0;
-}
-
-.donutLegendItem:hover {
-  background: rgba(10, 8, 25, 0.60);
-  border-color: rgba(148, 163, 184, 0.20);
-}
-
-.donutLegendItemActive {
-  background: rgba(168, 85, 247, 0.10);
-  border-color: rgba(168, 85, 247, 0.30);
-}
-
-.donutLegendDot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  transition: all var(--transition-normal);
-}
-
-.donutLegendLabel {
-  font-size: 11px;
-  font-weight: 500;
-  color: rgba(148, 163, 184, 0.70);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 120px;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════ */
-/* ── GOAL LINE CHART — estilos premium ── */
-/* ═══════════════════════════════════════════════════════════════════════ */
-
-.goalChart {
-  display: block;
-  overflow: visible;
-}
-
-/* Pulso sutil en el punto de progreso actual */
-.pulsingDot {
-  animation: pulseRing 2.5s ease-in-out infinite;
-}
-
-@keyframes pulseRing {
-  0%   { r: 7;  opacity: 0.20; }
-  50%  { r: 10; opacity: 0.08; }
-  100% { r: 7;  opacity: 0.20; }
-}
-
-/* ── Goal selector dropdown ── */
 .goalDropdownWrap {
   position: relative;
-  margin-bottom: 16px;
 }
 
 .goalDropdownTrigger {
+  width: 100%;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: none;
+  background: #232531;
+  color: #f5f6fa;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  width: 100%;
-  padding: 10px 14px;
-  border-radius: var(--radius-md);
-  background: rgba(10, 8, 25, 0.55);
-  border: 1px solid rgba(51, 65, 85, 0.50);
-  color: #f1f5f9;
-  font-size: 13px;
-  font-weight: 500;
   cursor: pointer;
-  transition: border-color var(--transition-normal), background 200ms ease, box-shadow 200ms ease;
-  text-align: left;
 }
 
-.goalDropdownTrigger:hover {
-  border-color: rgba(168, 85, 247, 0.35);
-  background: rgba(10, 8, 25, 0.75);
-  box-shadow: 0 0 16px rgba(168, 85, 247, 0.08);
+:global([data-theme="light"]) .goalDropdownTrigger {
+  background: #f1f4fa;
+  color: #0f172a;
 }
 
 .goalDropdownLabel {
@@ -388,185 +272,133 @@
   top: calc(100% + 6px);
   left: 0;
   right: 0;
-  background: rgba(10, 8, 25, 0.90);
+  padding: 6px;
+  border-radius: 14px;
+  background: #12131b;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: var(--radius-md);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.60);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.55);
   z-index: 20;
-  overflow: hidden;
   max-height: 180px;
   overflow-y: auto;
+}
+
+:global([data-theme="light"]) .goalDropdownList {
+  background: #ffffff;
+  border-color: rgba(15, 23, 42, 0.10);
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
 }
 
 .goalDropdownItem {
   display: block;
   width: 100%;
-  padding: 10px 14px;
-  font-size: 13px;
-  font-weight: 500;
-  color: rgba(148, 163, 184, 0.85);
-  background: transparent;
+  padding: 10px 12px;
   border: none;
-  cursor: pointer;
+  border-radius: 10px;
+  background: transparent;
+  color: #c7cbd9;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
   text-align: left;
-  transition: background 150ms ease, color 150ms ease;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  cursor: pointer;
 }
 
-.goalDropdownItem:hover {
-  background: rgba(168, 85, 247, 0.10);
-  color: #f1f5f9;
+:global([data-theme="light"]) .goalDropdownItem {
+  color: #334155;
 }
 
+.goalDropdownItem:hover,
 .goalDropdownItemActive {
-  color: #fff;
-  font-weight: 600;
-  background: rgba(168, 85, 247, 0.15);
+  background: #232531;
+  color: #ffffff;
 }
 
-/* ── Goal summary ── */
-.goalSummary {
+:global([data-theme="light"]) .goalDropdownItem:hover,
+:global([data-theme="light"]) .goalDropdownItemActive {
+  background: #eef2f8;
+  color: #0f172a;
+}
+
+.goalSummaryRow {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 14px;
-}
-
-.goalAmounts {
-  display: flex;
-  align-items: baseline;
-  gap: 4px;
-}
-
-.goalActual {
-  font-size: 24px;
-  font-weight: 800;
-  color: #ffffff;
-  letter-spacing: -0.02em;
-  line-height: 1;
-}
-
-.goalSep {
-  font-size: 16px;
-  color: rgba(148, 163, 184, 0.35);
-}
-
-.goalTarget {
-  font-size: 15px;
-  font-weight: 500;
-  color: rgba(148, 163, 184, 0.55);
-}
-
-.goalHorizon {
-  font-size: 12px;
-  color: rgba(148, 163, 184, 0.50);
-  white-space: nowrap;
-}
-
-/* ── Line chart wrapper ── */
-.lineChartWrap {
-  margin-bottom: 14px;
-  padding: 4px 0;
-}
-
-/* ── Legend — versión premium ── */
-.chartLegend {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  margin-top: 6px;
-  padding: 8px 12px;
-  border-radius: var(--radius-icon);
-  background: rgba(10, 8, 25, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.04);
-}
-
-.legendItem {
-  display: flex;
-  align-items: center;
   gap: 8px;
 }
 
-.legendLabel {
-  font-size: 11px;
+.goalSummaryTitle {
+  font-size: 13.5px;
   font-weight: 500;
-  color: rgba(148, 163, 184, 0.60);
-  letter-spacing: 0.02em;
+  color: #d8dce8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:global([data-theme="light"]) .goalSummaryTitle {
+  color: #334155;
+}
+
+.goalSummaryMeta {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #34d399;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+:global([data-theme="light"]) .goalSummaryMeta {
+  color: #059669;
+}
+
+.goalChart {
+  display: block;
+  overflow: visible;
+}
+
+.axisLabel {
+  fill: #767b90;
+  font-family: inherit;
+  font-variant-numeric: tabular-nums;
+}
+
+.axisBase {
+  stroke: rgba(255, 255, 255, 0.08);
+}
+
+:global([data-theme="light"]) .axisBase {
+  stroke: rgba(15, 23, 42, 0.10);
 }
 
 /* ── Estado vacío ── */
 .emptyState {
-  padding: 48px 0;
+  padding: 24px 0 8px;
   text-align: center;
 }
 
-.emptyIconWrap {
-  width: 64px;
-  height: 64px;
-  border-radius: var(--radius-lg);
-  background: var(--widget-icon-bg);
-  border: 1px solid var(--widget-icon-border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 16px;
-  color: rgba(71, 85, 105, 0.8);
-}
-
 .emptyText {
-  font-size: 14px;
-  color: rgba(148, 163, 184, 0.7);
-  margin-bottom: 24px;
+  font-size: 13.5px;
+  color: #9ba0b4;
+  margin: 0 0 14px;
 }
 
 .emptyBtn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: var(--btn-padding-y, 11px) 20px;
-  border-radius: var(--btn-radius, 10px);
-  background: var(--grad-primary, linear-gradient(90deg, #a855f7, #2563eb));
-  color: #fff;
-  font-size: var(--btn-font-size, 14px);
-  font-weight: var(--btn-font-weight, 600);
+  gap: 6px;
+  height: 42px;
+  padding: 0 20px;
   border: none;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #090a12;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(168, 85, 247, 0.3);
-  transition: all var(--transition-normal);
 }
 
-.emptyBtn:hover {
-  background: var(--grad-primary-hover, linear-gradient(90deg, #9333ea, #1d4ed8));
-  box-shadow: 0 6px 20px rgba(168, 85, 247, 0.45);
+:global([data-theme="light"]) .emptyBtn {
+  background: #0f172a;
+  color: #ffffff;
 }
-
-.emptyBtnArrow {
-  display: flex;
-  align-items: center;
-  transition: transform var(--transition-slow);
-}
-
-.emptyBtn:hover .emptyBtnArrow {
-  transform: translateX(4px);
-}
-
-/* ── Clases antiguas que se mantienen por compatibilidad ── */
-.rangeSelector { display: none; }
-.rangeBtn { display: none; }
-.rangeBtnActive { display: none; }
-.chartContainer { position: relative; }
-.barsRow { display: none; }
-.barWrapper { display: none; }
-.tooltip { display: none; }
-.tooltipInner { display: none; }
-.tooltipDate { display: none; }
-.tooltipValue { display: none; }
-.tooltipArrow { display: none; }
-.bar { display: none; }
-.barBase { display: none; }
-.barShine { display: none; }
-.axisLine { display: none; }

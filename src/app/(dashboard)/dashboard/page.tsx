@@ -936,7 +936,7 @@ export default function DashboardPage() {
         />
       )}
 
-      {/* ══ ZONA HEADER: degradado púrpura — perfil + objetivo principal ══ */}
+      {/* ══ ZONA HEADER: cielo atmosférico continuo — perfil + objetivo principal ══ */}
       <div className={styles.headerZone}>
         <div className={styles.zoneInner}>
           <div className={styles.headerProfile}>
@@ -956,6 +956,7 @@ export default function DashboardPage() {
               dailyCompleted={summary.daily.status === 'completed'}
               onCreateGoal={handleCreateGoal}
               onOpenGoal={(id) => router.push(`/goals/${id}`)}
+              onOpenGoals={() => router.push('/goals')}
               onGoToDailyDecision={() => {
                 const el = document.getElementById('daily-decision-widget');
                 el?.scrollIntoView({ behavior: 'smooth' });
@@ -971,7 +972,7 @@ export default function DashboardPage() {
                 for (let i = 0; i < onboardingPhases.length; i++) {
                   if (current < onboardingPhases[i].target) { idx = i; break; }
                 }
-                if (idx === -1) return `🏆 Meta alcanzada`;
+                if (idx === -1) return `Meta alcanzada`;
                 return `Fase ${idx + 1} de ${onboardingPhases.length} · ${onboardingPhases[idx].label}`;
               })()}
             />
@@ -979,188 +980,169 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* ══ ZONA CONTENIDO: fondo oscuro sólido — widgets funcionales ══ */}
+      {/* ══ ZONA CONTENIDO: lienzo oscuro uniforme — 1 col en móvil / 2 cols equilibradas en escritorio ══ */}
       <div className={styles.contentZone}>
         <div className={styles.zoneInner}>
-        <div className={styles.grid}>
-          {/* Columna izquierda */}
-          <div className={styles.mainCol}>
 
-            {/* Banner: evaluación adaptativa (ajuste de ritmo) */}
-            {showAdaptiveBanner && summary.adaptiveEvaluation && (
-              <div style={{ background: summary.adaptiveEvaluation.type === 'increase' ? 'rgba(34,197,94,0.08)' : 'rgba(251,191,36,0.08)', border: `1px solid ${summary.adaptiveEvaluation.type === 'increase' ? 'rgba(34,197,94,0.25)' : 'rgba(251,191,36,0.25)'}`, borderRadius: 14, padding: '14px 16px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
-                  <div style={{ flex: 1 }}>
-                    <p style={{ fontSize: 13, fontWeight: 700, color: summary.adaptiveEvaluation.type === 'increase' ? '#4ade80' : '#fbbf24', margin: '0 0 4px' }}>
-                      {summary.adaptiveEvaluation.type === 'increase' ? '📈 Propuesta de ajuste' : '🎯 Ajuste de objetivo'}
-                    </p>
-                    <p style={{ fontSize: 13, color: 'rgba(148,163,184,0.85)', margin: '0 0 12px', lineHeight: 1.5 }}>
-                      {summary.adaptiveEvaluation.message}
-                    </p>
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      <button
-                        onClick={() => { storeAcknowledgeAdaptiveEvaluation(summary.adaptiveEvaluation!.newPercent); setShowAdaptiveBanner(false); refresh(); }}
-                        style={{ padding: '8px 14px', border: 'none', borderRadius: 10, background: summary.adaptiveEvaluation.type === 'increase' ? '#16a34a' : '#d97706', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}
-                      >
-                        Aplicar ({summary.adaptiveEvaluation.newPercent}%)
-                      </button>
-                      <button
-                        onClick={() => { storeAcknowledgeAdaptiveEvaluation(); setShowAdaptiveBanner(false); }}
-                        style={{ padding: '8px 14px', border: '1px solid rgba(51,65,85,0.5)', borderRadius: 10, background: 'transparent', color: 'rgba(148,163,184,0.7)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
-                      >
-                        Ahora no
-                      </button>
+          {/* Banners condicionales a ancho completo si están activos */}
+          {(showAdaptiveBanner && summary.adaptiveEvaluation) || (summary.lowActivityAlert && !lowActivityDismissed) || streakAtRisk ? (
+            <div className={styles.bannersStack}>
+              {/* Banner: evaluación adaptativa (ajuste de ritmo) */}
+              {showAdaptiveBanner && summary.adaptiveEvaluation && (
+                <div style={{ background: summary.adaptiveEvaluation.type === 'increase' ? 'rgba(16,196,130,0.10)' : 'rgba(245,158,11,0.10)', border: `1px solid ${summary.adaptiveEvaluation.type === 'increase' ? 'rgba(16,196,130,0.24)' : 'rgba(245,158,11,0.24)'}`, borderRadius: 20, padding: '16px 18px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ fontSize: 14, fontWeight: 600, color: summary.adaptiveEvaluation.type === 'increase' ? '#34d399' : '#fbbf24', margin: '0 0 4px' }}>
+                        {summary.adaptiveEvaluation.type === 'increase' ? 'Propuesta de ajuste' : 'Ajuste de objetivo'}
+                      </p>
+                      <p style={{ fontSize: 13, color: '#9ba0b4', margin: '0 0 12px', lineHeight: 1.5 }}>
+                        {summary.adaptiveEvaluation.message}
+                      </p>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <button
+                          onClick={() => { storeAcknowledgeAdaptiveEvaluation(summary.adaptiveEvaluation!.newPercent); setShowAdaptiveBanner(false); refresh(); }}
+                          style={{ padding: '8px 16px', border: 'none', borderRadius: 999, background: '#ffffff', color: '#090a12', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
+                        >
+                          Aplicar ({summary.adaptiveEvaluation.newPercent}%)
+                        </button>
+                        <button
+                          onClick={() => { storeAcknowledgeAdaptiveEvaluation(); setShowAdaptiveBanner(false); }}
+                          style={{ padding: '8px 14px', border: 'none', borderRadius: 999, background: 'rgba(255,255,255,0.08)', color: '#d8dce8', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}
+                        >
+                          Ahora no
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Banner: anti-abandono */}
-            {summary.lowActivityAlert && !lowActivityDismissed && (
-              <div style={{
-                background: 'rgba(10,8,25,0.50)',
-                backdropFilter: 'blur(16px)',
-                WebkitBackdropFilter: 'blur(16px)',
-                border: '1px solid rgba(255,255,255,0.06)',
-                borderRadius: 20,
-                padding: '14px 16px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                boxShadow: '0 8px 32px rgba(0,0,0,0.20)',
-                minWidth: 0,
-              }}>
-                {/* Icono SVG — coherente con el Design System, sin emoji */}
+              {/* Banner: anti-abandono */}
+              {summary.lowActivityAlert && !lowActivityDismissed && (
                 <div style={{
-                  width: 36, height: 36, borderRadius: 10,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: 'rgba(165,180,252,0.70)', flexShrink: 0,
+                  background: '#1a1b24',
+                  border: '1px solid rgba(255,255,255,0.05)',
+                  borderRadius: 20,
+                  padding: '14px 16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  minWidth: 0,
                 }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
-                    <circle cx="12" cy="12" r="4"/>
-                  </svg>
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: 13, fontWeight: 700, color: '#a5b4fc', margin: '0 0 3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Llevas unos días sin registrar</p>
-                  <p style={{ fontSize: 11, color: 'rgba(148,163,184,0.75)', margin: 0, lineHeight: 1.5 }}>Solo necesitas una decisión hoy para retomar el hábito.</p>
-                </div>
-                <div style={{ display: 'flex', gap: 6, flexShrink: 0, alignItems: 'center' }}>
-                  <button
-                    onClick={() => router.push('/daily')}
-                    style={{ padding: '8px 12px', border: 'none', borderRadius: 12, background: 'linear-gradient(90deg,#6366f1,#8b5cf6)', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 14px rgba(99,102,241,0.35)', whiteSpace: 'nowrap' }}
-                  >Decidir →</button>
-                  <button
-                    onClick={() => setLowActivityDismissed(true)}
-                    style={{ width: 28, height: 28, flexShrink: 0, border: '1px solid rgba(51,65,85,0.5)', borderRadius: 8, background: 'transparent', color: 'rgba(148,163,184,0.6)', fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                  >✕</button>
-                </div>
-              </div>
-            )}
-
-            {/* Banner: racha en riesgo */}
-            {streakAtRisk && (
-              <div style={{
-                background: 'rgba(245,158,11,0.1)',
-                border: '1px solid rgba(245,158,11,0.35)',
-                borderRadius: 14,
-                padding: '12px 14px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: 10,
-                minWidth: 0,
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0 }}>
-                  <span style={{ fontSize: 20, flexShrink: 0 }}>⚡</span>
-                  <div style={{ minWidth: 0 }}>
-                    <p style={{ fontSize: 13, fontWeight: 700, color: '#fcd34d', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      Tu racha de {summary.streak} días está en riesgo
-                    </p>
-                    <p style={{ fontSize: 11, color: 'rgba(252,211,77,0.7)', margin: '2px 0 0' }}>
-                      Completa tu decisión antes de medianoche
-                    </p>
+                  <div style={{
+                    width: 36, height: 36, borderRadius: 999,
+                    background: 'rgba(90,99,246,0.18)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: '#a5b4fc', flexShrink: 0,
+                  }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                      <circle cx="12" cy="12" r="4"/>
+                    </svg>
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: 14, fontWeight: 600, color: '#f5f6fa', margin: '0 0 2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Llevas unos días sin registrar</p>
+                    <p style={{ fontSize: 12, color: '#9ba0b4', margin: 0, lineHeight: 1.45 }}>Solo necesitas una decisión hoy para retomar el hábito.</p>
+                  </div>
+                  <div style={{ display: 'flex', gap: 6, flexShrink: 0, alignItems: 'center' }}>
+                    <button
+                      onClick={() => router.push('/daily')}
+                      style={{ padding: '8px 14px', border: 'none', borderRadius: 999, background: '#ffffff', color: '#090a12', fontSize: 12.5, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                    >Decidir</button>
+                    <button
+                      onClick={() => setLowActivityDismissed(true)}
+                      aria-label="Cerrar aviso"
+                      style={{ width: 30, height: 30, flexShrink: 0, border: 'none', borderRadius: 999, background: 'rgba(255,255,255,0.06)', color: '#9ba0b4', fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    >✕</button>
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-                  <button
-                    onClick={() => router.push('/daily')}
-                    style={{ padding: '6px 10px', background: 'rgba(245,158,11,0.3)', border: '1px solid rgba(245,158,11,0.5)', borderRadius: 8, color: '#fcd34d', fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}
-                  >
-                    Decidir
-                  </button>
-                  <button
-                    onClick={() => { setStreakAtRisk(false); setStreakAlertDismissed(true); }}
-                    style={{ padding: '6px 8px', background: 'transparent', border: 'none', color: 'rgba(252,211,77,0.5)', fontSize: 16, cursor: 'pointer', flexShrink: 0 }}
-                    aria-label="Cerrar alerta"
-                  >
-                    ✕
-                  </button>
-                </div>
-              </div>
-            )}
+              )}
 
-            <div id="daily-decision-widget">
-              <DailyDecisionWidget
-                daily={summary.daily}
-                primaryGoal={summary.primaryGoal}
-                allGoals={activeGoals}
-                onSubmitDecision={submitDecision}
-                onGoToImpact={(id) => router.push(`/impact/${id}`)}
-                onCreateGoal={handleCreateGoal}
-                onResetDecision={resetDecision}
-                onAddExtraSaving={addExtraSaving}
-                onGoToHistory={() => router.push('/history')}
-              />
+              {/* Banner: racha en riesgo */}
+              {streakAtRisk && (
+                <div style={{
+                  background: '#1a1b24',
+                  border: '1px solid rgba(245,158,11,0.28)',
+                  borderRadius: 20,
+                  padding: '14px 16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 10,
+                  minWidth: 0,
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0 }}>
+                    <div style={{ minWidth: 0 }}>
+                      <p style={{ fontSize: 14, fontWeight: 600, color: '#fbbf24', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        Tu racha de {summary.streak} días está en riesgo
+                      </p>
+                      <p style={{ fontSize: 12, color: '#9ba0b4', margin: '2px 0 0' }}>
+                        Completa tu decisión antes de medianoche
+                      </p>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 6, flexShrink: 0, alignItems: 'center' }}>
+                    <button
+                      onClick={() => router.push('/daily')}
+                      style={{ padding: '7px 13px', background: '#ffffff', border: 'none', borderRadius: 999, color: '#090a12', fontSize: 12.5, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                    >
+                      Decidir
+                    </button>
+                    <button
+                      onClick={() => { setStreakAtRisk(false); setStreakAlertDismissed(true); }}
+                      style={{ width: 30, height: 30, background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: 999, color: '#9ba0b4', fontSize: 13, cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      aria-label="Cerrar alerta"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : null}
+
+          <div className={styles.grid}>
+            {/* Columna izquierda en escritorio (Decisión diaria + Insight) */}
+            <div className={styles.mainCol}>
+              <div id="daily-decision-widget" className={styles.orderDaily}>
+                <DailyDecisionWidget
+                  daily={summary.daily}
+                  primaryGoal={summary.primaryGoal}
+                  allGoals={activeGoals}
+                  onSubmitDecision={submitDecision}
+                  onGoToImpact={(id) => router.push(`/impact/${id}`)}
+                  onCreateGoal={handleCreateGoal}
+                  onResetDecision={resetDecision}
+                  onAddExtraSaving={addExtraSaving}
+                  onGoToHistory={() => router.push('/history')}
+                />
+              </div>
+
+              <div className={styles.orderInsight}>
+                <AIInsightWidget />
+              </div>
             </div>
 
-            <SavingsEvolutionWidget
-              evolution={summary.savingsEvolution}
-              onChangeRange={changeRange}
-              onGoToDailyQuestion={() => router.push('/daily')}
-              goals={activeGoals}
-            />
+            {/* Columna derecha en escritorio (Evolución + Hucha) */}
+            <div className={styles.sideCol}>
+              <div className={styles.orderEvolution}>
+                <SavingsEvolutionWidget
+                  evolution={summary.savingsEvolution}
+                  onChangeRange={changeRange}
+                  onGoToDailyQuestion={() => router.push('/daily')}
+                  goals={activeGoals}
+                />
+              </div>
 
-            {/* ── AI Insight Widget ── */}
-            <AIInsightWidget />
-
-            {/* ── Accesos rápidos a Objetivos ── */}
-            <div>
-              <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.09em', color: 'rgba(148,163,184,0.45)', margin: '0 0 10px 2px' }}>
-                Objetivos
-              </p>
-              <div style={{ display: 'flex', gap: 12 }}>
-              <button
-                onClick={() => router.push('/goals')}
-                style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px 16px', background: 'rgba(10,8,25,0.50)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, cursor: 'pointer', color: 'rgba(241,245,249,0.85)', fontSize: 14, fontWeight: 600, backdropFilter: 'blur(16px)', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.5"/>
-                </svg>
-                Ver objetivos
-              </button>
-              <button
-                onClick={() => router.push('/goals')}
-                style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px 16px', background: 'linear-gradient(135deg, rgba(168,85,247,0.18), rgba(37,99,235,0.18))', border: '1px solid rgba(168,85,247,0.15)', borderRadius: 16, cursor: 'pointer', color: '#c4b5fd', fontSize: 14, fontWeight: 600, backdropFilter: 'blur(16px)', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="12" y1="4" x2="12" y2="20"/><line x1="4" y1="12" x2="20" y2="12"/>
-                </svg>
-                Añadir objetivo
-              </button>
-              </div>{/* /buttons row */}
-            </div>{/* /section objetivos */}
-
-            <SavingsBadge
-              balance={summary.hucha.balance}
-              hasActiveGoals={activeGoals.length > 0}
-              onClick={() => setShowHuchaModal(true)}
-            />
-
-          </div>{/* /mainCol */}
-
-        </div>{/* /grid */}
+              <div className={styles.orderHucha}>
+                <SavingsBadge
+                  balance={summary.hucha.balance}
+                  hasActiveGoals={activeGoals.length > 0}
+                  onClick={() => setShowHuchaModal(true)}
+                />
+              </div>
+            </div>
+          </div>
         </div>{/* /zoneInner */}
       </div>{/* /contentZone */}
     </div>

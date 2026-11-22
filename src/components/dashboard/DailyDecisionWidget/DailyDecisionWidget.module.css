@@ -1,46 +1,31 @@
-﻿/* =============================================================
-   DECISION DIARIA — Sistema visual Figma
-   Paleta: #111122 / #17182E / #1E203F / #21223D / #3E4275
-           #4E65FF / #0DCE93 / #FFBE1A / #FF5E5E
-   ============================================================= */
+/* ═══════════════════════════════════════════════════════════════════
+   DAILY DECISION WIDGET — Reference Dark / Liquid Glass V3
+   Tarjeta mate #1A1B24, pregunta protagonista, tira compacta importe+meta,
+   CTA píldora blanca pura #FFFFFF.
+   ═══════════════════════════════════════════════════════════════════ */
 
-/* ---- Tokens locales ---- */
-.wrapper {
-  --dw-bg:         #111122;
-  --dw-surface:    #17182E;
-  --dw-raised:     #1E203F;
-  --dw-border:     #21223D;
-  --dw-border-act: #3E4275;
-  --dw-indigo:     #4E65FF;
-  --dw-indigo-t:   rgba(78, 101, 255, 0.14);
-  --dw-green:      #0DCE93;
-  --dw-green-t:    rgba(13, 206, 147, 0.10);
-  --dw-green-t2:   rgba(13, 206, 147, 0.17);
-  --dw-amber:      #FFBE1A;
-  --dw-amber-t:    rgba(255, 190, 26, 0.08);
-  --dw-red:        #FF5E5E;
-  --dw-red-t:      rgba(255, 94, 94, 0.08);
-  --dw-text1:      #FFFFFF;
-  --dw-text2:      #8E94B3;
-  --dw-text3:      #5F6585;
-  --dw-input-bg:   #090915;
-}
-
-/* ---- Contenedor principal ---- */
 .wrapper {
   position: relative;
-  background: var(--dw-bg);
-  border: 2px solid var(--dw-border);
-  border-radius: 28px;
-  padding: 32px;
+  background: #1a1b24;
+  border: 1px solid rgba(255, 255, 255, 0.045);
+  border-radius: 22px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
   min-width: 0;
   width: 100%;
   box-sizing: border-box;
-  transition: border-color 220ms ease;
 }
 
-.wrapperActive {
-  border-color: var(--dw-border-act);
+:global([data-theme="light"]) .wrapper {
+  background: #ffffff;
+  border-color: rgba(15, 23, 42, 0.08);
+  box-shadow: 0 8px 24px -10px rgba(15, 23, 42, 0.08);
+  --fill-blank-text: #0f172a;
+  --fill-blank-pill-bg: rgba(99, 102, 241, 0.12);
+  --fill-blank-pill-border: rgba(99, 102, 241, 0.42);
+  --fill-blank-pill-color: #4338ca;
 }
 
 .wrapperHeader {
@@ -50,879 +35,655 @@
   padding: 0;
 }
 
-.wrapperCollapsed {
-  background: var(--dw-surface);
-  border: 1px solid var(--dw-border);
-  border-radius: 16px;
-  padding: 16px;
-}
-
-/* ---- Blurs decorativos (eliminados en nuevo diseno) ---- */
-.blurBlue,
-.blurPurple {
-  display: none;
-}
-
-/* ---- Card interior ---- */
-.card {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  min-width: 0;
-}
-
-/* ---- Header ---- */
+/* ── Cabecera discreta ── */
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--dw-border);
-  margin-bottom: 24px;
-  gap: 12px;
-}
-
-.headerCollapsed {
-  padding-bottom: 0;
-  border-bottom: none;
-  margin-bottom: 0;
+  gap: 10px;
 }
 
 .headerLeft {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 9px;
   min-width: 0;
 }
 
-/* Icono circular */
-.iconBadge {
+.iconMini {
   width: 28px;
   height: 28px;
-  border-radius: 50%;
-  background: var(--dw-indigo-t);
+  border-radius: 999px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--dw-indigo);
+  color: #ffffff;
   flex-shrink: 0;
 }
 
-.iconBadgeCompleted {
-  background: var(--dw-green-t);
-  color: var(--dw-green);
-}
-
-/* Grupo de textos */
-.headerTextGroup {
+.iconCircleLg {
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
   display: flex;
-  flex-direction: column;
-  gap: 1px;
-  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  flex-shrink: 0;
 }
 
-.headerLabel {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--dw-text3);
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-  line-height: 1;
+.iconCircleIndigo {
+  background: #5a63f6;
 }
 
-.headerSubtitle {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--dw-text1);
+.iconCircleGreen {
+  background: #10c482;
+}
+
+.headerEyebrow {
+  font-size: 13px;
+  font-weight: 500;
+  color: #9ba0b4;
   line-height: 1.2;
 }
 
-/* Header lado derecho */
+:global([data-theme="light"]) .headerEyebrow {
+  color: #64748b;
+}
+
 .headerRight {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex-shrink: 0;
 }
 
-/* Badges de estado */
-.badgePending {
+.statusPill {
   display: inline-flex;
   align-items: center;
-  padding: 4px 10px;
-  background: var(--dw-amber-t);
-  border: 1px solid var(--dw-amber);
+  padding: 3px 9px;
   border-radius: 999px;
-  color: var(--dw-amber);
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 1;
-  white-space: nowrap;
-}
-
-.badgeCompleted {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 10px;
-  background: var(--dw-green-t);
-  border: 1px solid var(--dw-green);
-  border-radius: 999px;
-  color: var(--dw-green);
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 1;
-  white-space: nowrap;
-}
-
-/* Boton colapsar */
-.collapseBtn {
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--dw-surface);
-  border: 1px solid var(--dw-border);
-  border-radius: 6px;
-  color: var(--dw-text2);
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: background 150ms ease, border-color 150ms ease;
-}
-.collapseBtn:hover {
-  background: var(--dw-raised);
-  border-color: var(--dw-border-act);
-}
-.collapseBtn:focus-visible {
-  outline: 2px solid var(--dw-indigo);
-  outline-offset: 2px;
-}
-
-/* ---- Estado colapsado ---- */
-.collapsedRow2 {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  width: 100%;
-  padding: 0;
-  margin-top: 8px;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  text-align: left;
-  min-width: 0;
-}
-
-.collapsedText {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  color: var(--dw-text2);
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.collapsedDot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--dw-amber);
-  flex-shrink: 0;
-}
-
-.collapsedDotGreen {
-  background: var(--dw-green);
-}
-
-.collapsedGreen {
-  color: var(--dw-green);
-  font-weight: 600;
-}
-
-.collapsedChevron {
-  color: var(--dw-text3);
-  flex-shrink: 0;
-}
-
-/* ---- Bloque de pregunta ---- */
-.questionBlock {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  min-width: 0;
-}
-
-.questionLabel {
   font-size: 12px;
   font-weight: 600;
-  color: var(--dw-text2);
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
-.questionLabelActive {
-  color: var(--dw-indigo);
+.statusPillPending {
+  background: rgba(245, 158, 11, 0.12);
+  color: #fbbf24;
 }
 
-.questionBox {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: var(--dw-surface);
-  border: 1px solid var(--dw-border);
-  border-radius: 12px;
-  padding: 14px;
-  min-width: 0;
-  transition: border-color 200ms ease;
+:global([data-theme="light"]) .statusPillPending {
+  color: #b45309;
 }
 
-.questionBoxOpen {
-  border-color: var(--dw-indigo);
-  background: var(--dw-surface);
-  padding: 0;
-  border-radius: 16px;
-  overflow: hidden;
+.statusPillDone {
+  background: rgba(16, 196, 130, 0.14);
+  color: #34d399;
 }
 
-/* Boton de cambiar pregunta */
+:global([data-theme="light"]) .statusPillDone {
+  color: #059669;
+}
+
 .shuffleBtn {
   width: 32px;
   height: 32px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(255, 255, 255, 0.06);
+  color: #9ba0b4;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
-  border: 1px solid var(--dw-border);
-  border-radius: 8px;
-  color: var(--dw-text3);
   cursor: pointer;
   flex-shrink: 0;
-  transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
-}
-.shuffleBtn:hover {
-  background: var(--dw-raised);
-  border-color: var(--dw-border-act);
-  color: var(--dw-text2);
-}
-.shuffleBtn:focus-visible {
-  outline: 2px solid var(--dw-indigo);
-  outline-offset: 2px;
+  transition: background 150ms ease, color 150ms ease;
 }
 
-/* ---- Bloque de importe ---- */
-.amountBlock {
+:global([data-theme="light"]) .shuffleBtn {
+  background: #f1f4fa;
+  color: #475569;
+}
+
+.shuffleBtn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+:global([data-theme="light"]) .shuffleBtn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+/* ── Pregunta protagonista ── */
+.questionHero {
+  width: 100%;
+  min-width: 0;
+}
+
+/* ── Tira horizontal importe + objetivo destino ── */
+.inputSection {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  min-width: 0;
-  transition: opacity 200ms ease;
+  transition: opacity 180ms ease;
 }
 
 .sectionDimmed {
-  opacity: 0.38;
+  opacity: 0.36;
   pointer-events: none;
 }
 
-.amountLabel {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--dw-text2);
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-}
-
-.amountLabelActive {
-  color: var(--dw-green);
-}
-
-.amountInputBox {
+.inputStrip {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  height: 84px;
-  padding: 20px;
-  background: var(--dw-input-bg);
-  border: 1.5px solid var(--dw-border);
+  gap: 10px;
+  min-height: 54px;
+  padding: 6px 12px 6px 16px;
   border-radius: 16px;
-  box-sizing: border-box;
-  transition: border-color 200ms ease;
+  background: #12131b;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  transition: border-color 160ms ease;
 }
 
-.amountInputBoxActive {
-  border-color: var(--dw-green);
+:global([data-theme="light"]) .inputStrip {
+  background: #f4f6fb;
+  border-color: rgba(15, 23, 42, 0.08);
+}
+
+.inputStrip:focus-within {
+  border-color: rgba(90, 99, 246, 0.45);
+}
+
+.inputStripActive {
+  border-color: rgba(16, 196, 130, 0.35);
+}
+
+.amountGroup {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
 }
 
 .amountInput {
-  flex: 1;
+  width: 100%;
+  min-width: 0;
   background: transparent;
   border: none;
   outline: none;
-  font-size: 36px;
+  font-family: var(--font-display, inherit);
+  font-size: 24px;
   font-weight: 700;
-  color: var(--dw-text3);
-  font-family: inherit;
-  min-width: 0;
-  transition: color 200ms ease;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: #ffffff;
 }
 
-/* Input con valor positivo */
-.amountInputBoxActive .amountInput {
-  color: var(--dw-green);
+:global([data-theme="light"]) .amountInput {
+  color: #0f172a;
 }
 
 .amountInput::placeholder {
-  color: var(--dw-text3);
+  color: #6b7085;
 }
 
-.amountInput:disabled {
-  opacity: 0.5;
-}
-
-/* Ocultar flechas del input number */
 .amountInput::-webkit-inner-spin-button,
 .amountInput::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
-.amountInput[type=number] {
+
+.amountInput[type="number"] {
   -moz-appearance: textfield;
 }
 
 .amountUnit {
-  font-size: 28px;
+  font-size: 20px;
   font-weight: 700;
-  color: var(--dw-text3);
+  color: #6b7085;
   flex-shrink: 0;
-  transition: color 200ms ease;
 }
 
 .amountUnitActive {
-  color: var(--dw-green);
+  color: #ffffff;
 }
 
-.amountHint {
-  font-size: 12px;
-  color: var(--dw-text3);
-  line-height: 1.5;
-  margin: 0;
+:global([data-theme="light"]) .amountUnitActive {
+  color: #0f172a;
 }
 
-/* ---- Bloque de objetivos ---- */
-.goalsBlock {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  min-width: 0;
-  transition: opacity 200ms ease;
-}
-
-.goalsSectionLabel {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--dw-text3);
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-}
-
-.goalsSectionLabelActive {
-  color: var(--dw-text1);
-}
-
-/* Placeholder (importe = 0) */
-.goalsPlaceholder {
-  display: flex;
+/* Selector compacto de meta dentro de la tira */
+.goalChip {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  height: 48px;
-  padding: 14px;
-  background: var(--dw-surface);
-  border: 1px solid var(--dw-border);
-  border-radius: 12px;
-  font-size: 13px;
-  color: var(--dw-text3);
-  text-align: center;
-  box-sizing: border-box;
-}
-
-/* Sin objetivos */
-.noGoalsBox {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px;
-  background: var(--dw-surface);
-  border: 1px solid var(--dw-border);
-  border-radius: 12px;
-}
-
-.noGoalsIcon {
-  color: var(--dw-text3);
-  flex-shrink: 0;
-}
-
-.noGoalsText {
-  font-size: 13px;
-  color: var(--dw-text2);
-  margin: 0 0 4px;
-}
-
-.noGoalsBtn {
-  background: none;
+  gap: 6px;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
   border: none;
-  color: var(--dw-indigo);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 0;
+  background: #232531;
+  color: #e2e8f0;
   font-family: inherit;
-}
-.noGoalsBtn:hover { text-decoration: underline; }
-
-/* Lista de objetivos */
-.goalList {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-/* Card de objetivo */
-.goalCard {
-  width: 100%;
-  padding: 14px;
-  background: var(--dw-surface);
-  border: 1.5px solid var(--dw-border);
-  border-radius: 12px;
+  font-size: 12.5px;
+  font-weight: 500;
+  max-width: 175px;
+  flex-shrink: 0;
   cursor: pointer;
-  text-align: left;
-  font-family: inherit;
-  transition: background 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
-  box-sizing: border-box;
-  min-width: 0;
-}
-.goalCard:hover:not(:disabled) {
-  border-color: var(--dw-border-act);
-  background: rgba(30, 32, 63, 0.60);
-}
-.goalCard:focus-visible {
-  outline: 2px solid var(--dw-indigo);
-  outline-offset: 2px;
+  transition: background 150ms ease;
 }
 
-.goalCardSelected {
-  background: var(--dw-raised);
-  border-color: var(--dw-indigo);
-}
-.goalCardSelected:hover:not(:disabled) {
-  border-color: #6b83ff;
+:global([data-theme="light"]) .goalChip {
+  background: #e9edf5;
+  color: #1e293b;
 }
 
-.goalCardDisabled {
-  opacity: 0.55;
-  cursor: not-allowed;
+.goalChip:hover:not(:disabled) {
+  background: #2c2f3f;
 }
 
-/* Layout interno de la card */
-.goalCardTop {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 12px;
+:global([data-theme="light"]) .goalChip:hover:not(:disabled) {
+  background: #dde3ef;
 }
 
-.goalCardLeft {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
-}
-
-.goalCardTitle {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--dw-text1);
-  line-height: 1.2;
-  white-space: nowrap;
+.goalChipText {
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.goalCardSub {
-  font-size: 11px;
-  font-weight: 400;
-  color: var(--dw-text2);
-}
-
-.goalCardRight {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 3px;
-  flex-shrink: 0;
-}
-
-.goalCardAmounts {
-  font-size: 13px;
-  color: var(--dw-text2);
   white-space: nowrap;
 }
 
-.goalCardCurrent {
-  color: var(--dw-text1);
-  font-weight: 600;
-}
-
-.goalCardCurrentActive {
-  color: var(--dw-text1);
-}
-
-.goalCardOf {
-  font-size: 12px;
-  color: var(--dw-text3);
-}
-
-.goalCardPct {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--dw-green);
-}
-
-/* Barra de progreso */
-.goalCardTrack {
-  height: 6px;
-  background: var(--dw-input-bg);
-  border: 1px solid var(--dw-border);
+.goalChipEmpty {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 34px;
+  padding: 0 12px;
   border-radius: 999px;
+  border: none;
+  background: rgba(90, 99, 246, 0.18);
+  color: #c7d2fe;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+/* Desplegable de metas */
+.goalMenu {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px;
+  border-radius: 16px;
+  background: #12131b;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+:global([data-theme="light"]) .goalMenu {
+  background: #f8fafc;
+  border-color: rgba(15, 23, 42, 0.10);
+}
+
+.goalMenuItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 140ms ease;
+}
+
+.goalMenuItem:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.goalMenuItemActive {
+  background: #232531;
+}
+
+:global([data-theme="light"]) .goalMenuItemActive {
+  background: #e9edf5;
+}
+
+.goalMenuLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.goalMenuTitle {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #f5f6fa;
   overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.goalCardFill {
-  height: 100%;
-  background: var(--dw-green);
-  border-radius: 999px;
-  min-width: 4px;
-  transition: width 400ms ease;
+:global([data-theme="light"]) .goalMenuTitle {
+  color: #0f172a;
 }
 
-/* ---- CTA confirmar ---- */
+.goalMenuMeta {
+  font-size: 11.5px;
+  color: #8e92a4;
+  font-variant-numeric: tabular-nums;
+}
+
+.goalMenuPct {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #34d399;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+/* ── CTA principal píldora blanca ── */
 .ctaBtn {
   width: 100%;
-  height: 54px;
+  height: 48px;
+  border: none;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #090a12;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: var(--dw-indigo);
-  border: none;
-  border-radius: 14px;
-  color: #000000;
-  font-size: 15px;
-  font-weight: 700;
-  font-family: inherit;
   cursor: pointer;
-  white-space: nowrap;
-  transition: background 150ms ease, opacity 150ms ease, box-shadow 150ms ease;
-  box-sizing: border-box;
   position: relative;
+  transition: opacity 150ms ease, transform 150ms ease;
 }
-.ctaBtn:hover:not(:disabled):not(.ctaBtnZero) {
-  background: #3a52f5;
-  box-shadow: 0 4px 20px rgba(78, 101, 255, 0.35);
+
+:global([data-theme="light"]) .ctaBtn {
+  background: #0f172a;
+  color: #ffffff;
 }
+
+.ctaBtn:hover:not(:disabled) {
+  opacity: 0.93;
+}
+
 .ctaBtn:active:not(:disabled) {
   transform: scale(0.99);
 }
-.ctaBtn:focus-visible {
-  outline: 2px solid #818cf8;
-  outline-offset: 2px;
-}
 
-/* CTA cuando importe = 0 */
 .ctaBtnZero {
-  background: transparent;
-  border: 1px solid var(--dw-border);
-  color: var(--dw-text2);
-  font-weight: 600;
-}
-.ctaBtnZero:hover:not(:disabled) {
-  background: var(--dw-surface);
-  border-color: var(--dw-border-act);
-  color: var(--dw-text1);
-  box-shadow: none;
+  background: rgba(255, 255, 255, 0.08);
+  color: #d8dce8;
+  font-size: 14px;
 }
 
-/* CTA deshabilitado con importe */
+:global([data-theme="light"]) .ctaBtnZero {
+  background: #eef2f8;
+  color: #334155;
+}
+
+.ctaBtnZero:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.13);
+  color: #ffffff;
+}
+
+:global([data-theme="light"]) .ctaBtnZero:hover:not(:disabled) {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
 .ctaBtnDisabled {
   opacity: 0.45;
   cursor: not-allowed;
 }
 
-/* Spinner */
 .spinner {
-  position: absolute;
-  width: 20px;
-  height: 20px;
-  border: 2px solid rgba(0, 0, 0, 0.25);
-  border-top-color: #000;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(9, 10, 18, 0.25);
+  border-top-color: #090a12;
   border-radius: 50%;
   animation: ctaSpin 0.65s linear infinite;
 }
 
 @keyframes ctaSpin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .confirmedContent {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
 }
 
-/* ---- Estado Completed — tarjeta de celebracion ---- */
-.celebrationCard {
+/* ── Estado completado ── */
+.completedTop {
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
-  padding: 28px 24px;
-  background: var(--dw-green-t);
-  border: 1px solid var(--dw-green);
-  border-radius: 20px;
-  text-align: center;
 }
 
-.celebrationIconWrap {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: var(--dw-green-t2);
+.completedBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.completedTitleRow {
   display: flex;
   align-items: center;
-  justify-content: center;
-  color: var(--dw-green);
-  flex-shrink: 0;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
 }
 
-.celebrationTitle {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--dw-text1);
+.completedTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: #f5f6fa;
   margin: 0;
-  line-height: 1.2;
 }
 
-.celebrationSubtitle {
-  font-size: 14px;
-  color: var(--dw-text2);
+:global([data-theme="light"]) .completedTitle {
+  color: #0f172a;
+}
+
+.completedSubtitle {
+  font-size: 13.5px;
+  color: #9ba0b4;
   margin: 0;
   line-height: 1.5;
 }
 
-.celebrationLink {
+.historyLink {
+  margin-top: 6px;
+  padding: 0;
   background: none;
   border: none;
-  color: var(--dw-green);
+  color: #34d399;
+  font-family: inherit;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  font-family: inherit;
-  padding: 0;
-  transition: opacity 150ms ease;
-}
-.celebrationLink:hover { opacity: 0.80; }
-.celebrationLink:focus-visible {
-  outline: 2px solid var(--dw-green);
-  outline-offset: 2px;
-  border-radius: 4px;
 }
 
-/* ---- Acciones completed ---- */
+.historyLink:hover {
+  opacity: 0.85;
+}
+
 .completedActions {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: 10px;
 }
 
-.btnExtraSaving {
-  height: 45px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background: var(--dw-surface);
-  border: 1px solid var(--dw-border);
-  border-radius: 12px;
-  color: var(--dw-text1);
-  font-size: 14px;
-  font-weight: 600;
+.btnPrimaryPill {
+  height: 44px;
+  border: none;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #090a12;
   font-family: inherit;
-  cursor: pointer;
-  transition: background 150ms ease, border-color 150ms ease;
-}
-.btnExtraSaving:hover {
-  background: var(--dw-raised);
-  border-color: var(--dw-border-act);
-}
-.btnExtraSaving:focus-visible {
-  outline: 2px solid var(--dw-indigo);
-  outline-offset: 2px;
-}
-
-.btnReset {
-  height: 45px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background: transparent;
-  border: 1px solid var(--dw-border);
-  border-radius: 12px;
-  color: var(--dw-text2);
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 600;
-  font-family: inherit;
   cursor: pointer;
-  transition: border-color 150ms ease, color 150ms ease;
-}
-.btnReset:hover {
-  border-color: rgba(255, 94, 94, 0.35);
-  color: var(--dw-red);
-}
-.btnReset:focus-visible {
-  outline: 2px solid var(--dw-red);
-  outline-offset: 2px;
+  transition: opacity 140ms ease;
 }
 
-/* ---- Confirmacion destructiva inline ---- */
+:global([data-theme="light"]) .btnPrimaryPill {
+  background: #0f172a;
+  color: #ffffff;
+}
+
+.btnPrimaryPill:hover {
+  opacity: 0.92;
+}
+
+.btnSecondaryPill {
+  height: 44px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #d8dce8;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 140ms ease, color 140ms ease;
+}
+
+:global([data-theme="light"]) .btnSecondaryPill {
+  background: #eef2f8;
+  color: #334155;
+}
+
+.btnSecondaryPill:hover {
+  background: rgba(255, 255, 255, 0.13);
+  color: #ffffff;
+}
+
+:global([data-theme="light"]) .btnSecondaryPill:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+/* ── Confirmación inline de reinicio ── */
 .resetConfirmBox {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 20px;
-  background: var(--dw-red-t);
-  border: 1px solid var(--dw-red);
+  gap: 10px;
+  padding: 14px;
   border-radius: 16px;
-  animation: fadeIn 200ms ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.resetConfirmHeader {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  background: rgba(239, 68, 68, 0.10);
+  border: 1px solid rgba(239, 68, 68, 0.28);
 }
 
 .resetConfirmTitle {
   font-size: 14px;
-  font-weight: 700;
-  color: var(--dw-text1);
+  font-weight: 600;
+  color: #f5f6fa;
   margin: 0;
-  line-height: 1.3;
+}
+
+:global([data-theme="light"]) .resetConfirmTitle {
+  color: #991b1b;
 }
 
 .resetConfirmText {
-  font-size: 13px;
-  color: var(--dw-text2);
+  font-size: 12.5px;
+  color: #cbd5e1;
   margin: 0;
-  line-height: 1.5;
+  line-height: 1.45;
+}
+
+:global([data-theme="light"]) .resetConfirmText {
+  color: #475569;
 }
 
 .resetConfirmActions {
   display: flex;
-  gap: 10px;
+  gap: 8px;
 }
 
 .btnDanger {
-  height: 31px;
-  padding: 0 14px;
-  background: var(--dw-red);
+  height: 38px;
+  padding: 0 16px;
   border: none;
-  border-radius: 8px;
-  color: #000000;
-  font-size: 12px;
-  font-weight: 700;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #ffffff;
   font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
   cursor: pointer;
-  white-space: nowrap;
-  transition: opacity 150ms ease;
-}
-.btnDanger:hover { opacity: 0.88; }
-.btnDanger:focus-visible {
-  outline: 2px solid #fff;
-  outline-offset: 2px;
 }
 
 .btnCancelSmall {
-  height: 31px;
-  padding: 0 14px;
-  background: var(--dw-surface);
-  border: 1px solid var(--dw-border);
-  border-radius: 8px;
-  color: var(--dw-text2);
-  font-size: 12px;
-  font-weight: 600;
+  height: 38px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #d8dce8;
   font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
   cursor: pointer;
-  white-space: nowrap;
-  transition: background 150ms ease, border-color 150ms ease;
-}
-.btnCancelSmall:hover {
-  background: var(--dw-raised);
-  border-color: var(--dw-border-act);
-}
-.btnCancelSmall:focus-visible {
-  outline: 2px solid var(--dw-indigo);
-  outline-offset: 2px;
 }
 
-/* ---- Overlay del modal (position:fixed) ---- */
+:global([data-theme="light"]) .btnCancelSmall {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+/* ── Modal de ahorro extra ── */
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(2, 4, 20, 0.72);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background: rgba(2, 6, 23, 0.74);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 300;
-  padding: 24px;
-  animation: overlayIn 180ms ease;
+  padding: 20px;
 }
 
-@keyframes overlayIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-/* ---- Caja del modal ---- */
 .modalBox {
   width: 100%;
-  max-width: 480px;
-  background: var(--dw-raised);
-  border: 1.5px solid var(--dw-border-act);
-  border-radius: 20px;
-  padding: 28px;
+  max-width: 440px;
+  background: #1a1b24;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 22px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  box-shadow: 0 32px 64px rgba(0, 0, 0, 0.55);
-  animation: modalIn 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  gap: 16px;
+  box-shadow: 0 28px 60px rgba(0, 0, 0, 0.65);
   box-sizing: border-box;
 }
 
-@keyframes modalIn {
-  from { opacity: 0; transform: translateY(16px) scale(0.97); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+:global([data-theme="light"]) .modalBox {
+  background: #ffffff;
+  border-color: rgba(15, 23, 42, 0.08);
 }
 
 .modalHeader {
@@ -933,96 +694,93 @@
 }
 
 .modalTitle {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 700;
-  color: var(--dw-text1);
+  color: #f5f6fa;
   margin: 0;
 }
 
+:global([data-theme="light"]) .modalTitle {
+  color: #0f172a;
+}
+
 .modalClose {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(255, 255, 255, 0.06);
+  color: #9ba0b4;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
-  border: none;
-  color: var(--dw-text3);
   cursor: pointer;
-  border-radius: 6px;
-  flex-shrink: 0;
-  transition: color 150ms ease, background 150ms ease;
-}
-.modalClose:hover {
-  color: var(--dw-text2);
-  background: rgba(255,255,255,0.05);
-}
-.modalClose:focus-visible {
-  outline: 2px solid var(--dw-indigo);
-  outline-offset: 2px;
 }
 
 .modalError {
   font-size: 13px;
-  color: var(--dw-red);
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.10);
+  border-radius: 12px;
+  padding: 10px 12px;
   margin: 0;
-  padding: 10px 14px;
-  background: var(--dw-red-t);
-  border: 1px solid rgba(255,94,94,0.22);
-  border-radius: 8px;
 }
 
 .modalField {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .modalLabel {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--dw-text2);
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #9ba0b4;
 }
 
 .modalInput {
   width: 100%;
-  height: 43px;
+  height: 46px;
   padding: 0 14px;
-  background: var(--dw-input-bg);
-  border: 1px solid var(--dw-border);
-  border-radius: 8px;
-  color: var(--dw-text1);
-  font-size: 15px;
-  font-weight: 500;
+  background: #12131b;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  color: #f5f6fa;
   font-family: inherit;
+  font-size: 15px;
   outline: none;
   box-sizing: border-box;
-  transition: border-color 180ms ease;
-}
-.modalInput:focus {
-  border-color: var(--dw-indigo);
-  box-shadow: 0 0 0 3px rgba(78, 101, 255, 0.10);
-}
-.modalInput::placeholder {
-  color: var(--dw-text3);
-  font-weight: 400;
 }
 
-/* Fila de cantidad (input + unidad) */
+:global([data-theme="light"]) .modalInput {
+  background: #f4f6fb;
+  border-color: rgba(15, 23, 42, 0.10);
+  color: #0f172a;
+}
+
+.modalInput:focus-visible {
+  border-color: #818cf8;
+  box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.35);
+}
+
 .modalAmountRow {
   display: flex;
   align-items: center;
-  height: 43px;
-  background: var(--dw-input-bg);
-  border: 1px solid var(--dw-border);
-  border-radius: 8px;
+  height: 46px;
+  background: #12131b;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
   overflow: hidden;
-  transition: border-color 180ms ease;
 }
+
+:global([data-theme="light"]) .modalAmountRow {
+  background: #f4f6fb;
+  border-color: rgba(15, 23, 42, 0.12);
+}
+
 .modalAmountRow:focus-within {
-  border-color: var(--dw-indigo);
+  border-color: #818cf8;
+  box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.35);
 }
 
 .modalAmountInput {
@@ -1031,61 +789,74 @@
   padding: 0 14px;
   background: transparent;
   border: none;
-  color: var(--dw-text1);
+  color: #f5f6fa;
+  font-family: inherit;
   font-size: 15px;
   font-weight: 600;
-  font-family: inherit;
   outline: none;
   min-width: 0;
-  box-sizing: border-box;
 }
-.modalAmountInput::-webkit-inner-spin-button,
-.modalAmountInput::-webkit-outer-spin-button {
-  -webkit-appearance: none;
+
+:global([data-theme="light"]) .modalAmountInput {
+  color: #0f172a;
 }
 
 .modalAmountUnit {
   padding: 0 14px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
-  color: var(--dw-text3);
-  white-space: nowrap;
-  border-left: 1px solid var(--dw-border);
+  color: #767b90;
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
   height: 100%;
   display: flex;
   align-items: center;
 }
 
-/* Select de objetivo */
+:global([data-theme="light"]) .modalAmountUnit {
+  border-left-color: rgba(15, 23, 42, 0.08);
+  color: #475569;
+}
+
 .modalSelectWrap {
   position: relative;
-  height: 43px;
+  height: 46px;
 }
 
 .modalSelect {
   width: 100%;
   height: 100%;
-  padding: 0 40px 0 14px;
-  background: var(--dw-input-bg);
-  border: 1px solid var(--dw-border);
-  border-radius: 8px;
-  color: var(--dw-text1);
-  font-size: 14px;
-  font-weight: 600;
+  padding: 0 38px 0 14px;
+  background: #12131b;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  color: #f5f6fa;
   font-family: inherit;
-  outline: none;
-  -webkit-appearance: none;
+  font-size: 14px;
+  font-weight: 500;
   appearance: none;
+  outline: none;
   cursor: pointer;
-  box-sizing: border-box;
-  transition: border-color 180ms ease;
 }
-.modalSelect:focus {
-  border-color: var(--dw-indigo);
+
+:global([data-theme="light"]) .modalSelect {
+  background: #f4f6fb;
+  border-color: rgba(15, 23, 42, 0.12);
+  color: #0f172a;
 }
+
+.modalSelect:focus-visible {
+  border-color: #818cf8;
+  box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.35);
+}
+
 .modalSelect option {
-  background: var(--dw-raised);
-  color: var(--dw-text1);
+  background: #1a1b24;
+  color: #f5f6fa;
+}
+
+:global([data-theme="light"]) .modalSelect option {
+  background: #ffffff;
+  color: #0f172a;
 }
 
 .modalSelectChevron {
@@ -1093,131 +864,58 @@
   right: 12px;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--dw-text3);
+  color: #9ba0b4;
   pointer-events: none;
 }
 
-/* Footer del modal */
 .modalFooter {
   display: flex;
-  gap: 12px;
+  gap: 10px;
+  margin-top: 4px;
 }
 
 .btnCancel {
   flex: 1;
-  height: 41px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--dw-surface);
-  border: 1px solid var(--dw-border);
-  border-radius: 10px;
-  color: var(--dw-text2);
+  height: 46px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #d8dce8;
+  font-family: inherit;
   font-size: 14px;
   font-weight: 600;
-  font-family: inherit;
   cursor: pointer;
-  transition: background 150ms ease, border-color 150ms ease;
 }
-.btnCancel:hover {
-  background: var(--dw-raised);
-  border-color: var(--dw-border-act);
-}
-.btnCancel:focus-visible {
-  outline: 2px solid var(--dw-indigo);
-  outline-offset: 2px;
+
+:global([data-theme="light"]) .btnCancel {
+  background: #eef2f8;
+  color: #334155;
 }
 
 .btnSave {
   flex: 1;
-  height: 41px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--dw-green);
+  height: 46px;
   border: none;
-  border-radius: 10px;
-  color: #000000;
-  font-size: 14px;
-  font-weight: 700;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #090a12;
   font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
-  transition: opacity 150ms ease;
-}
-.btnSave:hover { opacity: 0.88; }
-.btnSave:focus-visible {
-  outline: 2px solid #fff;
-  outline-offset: 2px;
 }
 
-/* ---- Clases del diseno anterior que pueden ser referenciadas ---- */
-.title { display: none; }
-.subtitle { display: none; }
-.answers { display: none; }
-.amountSection { display: none; }
-.amountRow { display: none; }
-.amountHintIcon { display: none; }
-.goalSection { display: none; }
-.goalList2 { display: none; }
-.completedActions2 { display: none; }
-.motivBox { display: none; }
-.wrapperHeader { background: transparent; border: none; padding: 0; }
-.cardHeader { background: transparent; }
-
-/* ---- Responsive ---- */
-@media (max-width: 640px) {
-  .wrapper:not(.wrapperHeader):not(.wrapperCollapsed) {
-    padding: 20px;
-    border-radius: 20px;
-  }
-
-  .header {
-    gap: 8px;
-  }
-
-  .headerSubtitle {
-    font-size: 14px;
-  }
-
-  .amountInput {
-    font-size: 28px;
-  }
-
-  .amountUnit {
-    font-size: 22px;
-  }
-
-  .completedActions {
-    grid-template-columns: 1fr;
-  }
-
-  .resetConfirmActions {
-    flex-wrap: wrap;
-  }
-
-  .modalFooter {
-    flex-direction: column;
-  }
-
-  .modalBox {
-    padding: 20px;
-  }
+:global([data-theme="light"]) .btnSave {
+  background: #0f172a;
+  color: #ffffff;
 }
 
-/* ---- Reduced motion ---- */
 @media (prefers-reduced-motion: reduce) {
-  .wrapper,
-  .goalCardFill,
   .ctaBtn,
-  .resetConfirmBox {
+  .shuffleBtn,
+  .goalChip,
+  .spinner {
     transition: none;
     animation: none;
-  }
-  .overlay,
-  .modalBox {
-    animation: none;
-  }
-  .spinner {
-    animation: ctaSpin 1s linear infinite;
   }
 }

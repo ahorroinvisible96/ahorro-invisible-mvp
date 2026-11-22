@@ -1,6 +1,7 @@
-/* =============================================================
-   FILL BLANK INPUT — Diseno Figma inline
-   ============================================================= */
+/* ═══════════════════════════════════════════════════════════════════
+   FILL BLANK INPUT — Reference Dark / Liquid Glass V3
+   Pregunta editorial protagonista en blanco puro + cápsula índigo inline
+   ═══════════════════════════════════════════════════════════════════ */
 
 .wrapper {
   width: 100%;
@@ -8,71 +9,72 @@
   box-sizing: border-box;
 }
 
-/* ---- Frase con hueco ---- */
+/* ---- Frase protagonista ---- */
 .sentence {
-  font-size: 15px;
-  font-weight: 400;
-  color: #8E94B3;
-  line-height: 1.65;
+  font-family: var(--font-display, inherit);
+  font-size: 18.5px;
+  font-weight: 600;
+  color: var(--fill-blank-text, #ffffff);
+  line-height: 1.45;
+  letter-spacing: -0.02em;
   margin: 0;
   overflow-wrap: break-word;
   word-break: break-word;
 }
 
-/* Boton hueco inline */
+/* Cápsula interactiva inline */
 .blankButton {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  height: 25px;
-  padding: 0 10px;
-  background: rgba(78, 101, 255, 0.14);
-  border: 1px solid #4E65FF;
-  border-radius: 6px;
-  color: #FFFFFF;
-  font-size: 14px;
-  font-weight: 700;
+  min-height: 34px;
+  padding: 2px 12px;
+  background: var(--fill-blank-pill-bg, rgba(99, 102, 241, 0.24));
+  border: 1px solid var(--fill-blank-pill-border, rgba(129, 140, 248, 0.52));
+  border-radius: 999px;
+  color: var(--fill-blank-pill-color, #ffffff);
+  font-size: 15.5px;
+  font-weight: 600;
   font-family: inherit;
   cursor: pointer;
   vertical-align: middle;
-  margin: 0 3px;
+  margin: 2px 3px 0;
   transition: background 150ms ease, border-color 150ms ease;
   white-space: nowrap;
-  max-width: 200px;
+  max-width: 220px;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .blankButton:hover {
-  background: rgba(78, 101, 255, 0.22);
-  border-color: #6b83ff;
+  background: rgba(99, 102, 241, 0.34);
+  border-color: rgba(165, 180, 252, 0.72);
 }
 
 .blankButton:focus-visible {
-  outline: 2px solid #4E65FF;
+  outline: 2px solid #818cf8;
   outline-offset: 2px;
 }
 
 .blankFilled {
-  background: rgba(78, 101, 255, 0.20);
-  border-color: #4E65FF;
+  background: rgba(99, 102, 241, 0.28);
+  border-color: rgba(129, 140, 248, 0.62);
 }
 
 .blankOpen {
-  background: rgba(78, 101, 255, 0.28);
-  border-color: #6b83ff;
+  background: rgba(99, 102, 241, 0.36);
+  border-color: #818cf8;
 }
 
 .blankDisabled {
-  opacity: 0.40;
+  opacity: 0.45;
   cursor: not-allowed;
   pointer-events: none;
 }
 
 .blankChevron {
-  opacity: 0.70;
+  opacity: 0.85;
   flex-shrink: 0;
-  vertical-align: middle;
   transition: transform 180ms ease;
 }
 
@@ -80,21 +82,32 @@
   transform: rotate(180deg);
 }
 
-/* ---- Dropdown panel (debajo de la frase) ---- */
+/* ---- Dropdown panel ---- */
 .dropdown {
   width: 100%;
-  margin-top: 8px;
-  padding: 8px;
+  margin-top: 12px;
+  padding: 6px;
   box-sizing: border-box;
-  background: #13142A;
-  border: 1px solid #21223D;
-  border-radius: 12px;
-  animation: dropdownIn 160ms cubic-bezier(0.22, 1, 0.36, 1);
+  background: #12131b;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  animation: dropdownIn 150ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+:global([data-theme="light"]) .dropdown {
+  background: #f8fafc;
+  border-color: rgba(15, 23, 42, 0.10);
 }
 
 @keyframes dropdownIn {
-  from { opacity: 0; transform: translateY(-6px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .dropdownOption {
@@ -103,39 +116,44 @@
   justify-content: space-between;
   gap: 10px;
   width: 100%;
-  padding: 12px;
+  min-height: 44px;
+  padding: 10px 12px;
   background: transparent;
   border: none;
-  border-radius: 10px;
-  color: #8E94B3;
+  border-radius: 12px;
+  color: #c7cbd9;
   font-size: 14px;
-  font-weight: 400;
+  font-weight: 500;
   font-family: inherit;
   cursor: pointer;
   text-align: left;
-  transition: background 150ms ease, color 150ms ease;
+  transition: background 140ms ease, color 140ms ease;
   box-sizing: border-box;
 }
 
-.dropdownOption:hover {
-  background: rgba(78, 101, 255, 0.08);
-  color: #FFFFFF;
+:global([data-theme="light"]) .dropdownOption {
+  color: #334155;
 }
 
-.dropdownOption:focus-visible {
-  outline: 2px solid #4E65FF;
-  outline-offset: -2px;
-  border-radius: 10px;
+.dropdownOption:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+}
+
+:global([data-theme="light"]) .dropdownOption:hover {
+  background: #eef2f8;
+  color: #0f172a;
 }
 
 .dropdownOptionSelected {
-  background: #1E203F;
-  color: #FFFFFF;
+  background: #232531;
+  color: #ffffff;
   font-weight: 600;
 }
 
-.dropdownOptionSelected:hover {
-  background: rgba(30, 32, 63, 0.85);
+:global([data-theme="light"]) .dropdownOptionSelected {
+  background: #e2e8f0;
+  color: #0f172a;
 }
 
 .dropdownOptionLabel {
@@ -147,75 +165,73 @@
 }
 
 .dropdownCheck {
-  color: #4E65FF;
+  color: #818cf8;
   flex-shrink: 0;
-  animation: checkIn 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-@keyframes checkIn {
-  from { opacity: 0; transform: scale(0.5); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-/* Separador */
 .dropdownDivider {
   height: 1px;
-  background: #21223D;
-  margin: 4px 12px;
+  background: rgba(255, 255, 255, 0.06);
+  margin: 4px 10px;
 }
 
-/* Fila "Otro" */
 .dropdownOtherRow {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 12px;
+  padding: 6px 8px;
   box-sizing: border-box;
 }
 
 .dropdownOtherBtn {
   flex-shrink: 0;
-  height: 28px;
+  height: 32px;
   padding: 0 8px;
   background: transparent;
   border: none;
-  color: #4E65FF;
-  font-size: 14px;
+  color: #818cf8;
+  font-size: 13.5px;
+  font-weight: 600;
   font-family: inherit;
   cursor: pointer;
   white-space: nowrap;
-  border-radius: 6px;
-  transition: background 150ms ease;
-}
-.dropdownOtherBtn:hover {
-  background: rgba(78, 101, 255, 0.10);
+  border-radius: 8px;
 }
 
 .dropdownOtherInput {
   flex: 1;
-  height: 28px;
+  height: 34px;
   padding: 0 10px;
-  background: #090915;
-  border: 1px solid #21223D;
-  border-radius: 6px;
-  color: #FFFFFF;
-  font-size: 13px;
+  background: #1a1b24;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  color: #ffffff;
+  font-size: 13.5px;
   font-family: inherit;
   outline: none;
   min-width: 0;
   box-sizing: border-box;
-  transition: border-color 150ms ease;
-}
-.dropdownOtherInput:focus {
-  border-color: #4E65FF;
-}
-.dropdownOtherInput::placeholder {
-  color: #5F6585;
 }
 
-/* ---- Reduced motion ---- */
+:global([data-theme="light"]) .dropdownOtherInput {
+  background: #ffffff;
+  border-color: rgba(15, 23, 42, 0.12);
+  color: #0f172a;
+}
+
+.dropdownOtherInput:focus {
+  border-color: #818cf8;
+}
+
+.dropdownOtherInput::placeholder {
+  color: #767b90;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .blankButton,
-  .dropdownOption { transition: none; }
-  .dropdownCheck { animation: none; }
+  .dropdownOption,
+  .dropdown {
+    transition: none;
+    animation: none;
+  }
 }

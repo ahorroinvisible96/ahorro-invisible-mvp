@@ -1,173 +1,141 @@
-/* Dashboard CSS Module: estilos desacoplados para consistencia en producción */
+/* ══════════════════════════════════════════════════════════════════════
+   DASHBOARD PAGE — Reference Dark / Liquid Glass V3
+   Lienzo continuo fundido (#7D45EC -> #5B53F2 -> #090A12), Hero abierto
+   centrado y Bento equilibrado de 2 columnas en escritorio.
+   ══════════════════════════════════════════════════════════════════════ */
 
-/* ── Variable de espaciado ──────────────────────────────────────────── */
-:root {
-  --dashboard-section-gap: 16px;
-  --header-zone-padding-h: 20px;
-  --header-zone-padding-v: 24px;
-}
-
-/* ── Contenedor principal — ocupa el 100% del .container padre ─ */
-/* NOTA: el .container padre (MainContent) tiene padding: 0 (sin relleno lateral)
-   cuando aloja el dashboard. El padding lateral lo aplica exclusivamente .zoneInner
-   para garantizar consistencia en todos los widgets. */
 .page {
+  --dashboard-section-gap: 14px;
+  --header-zone-padding-v: 14px;
   width: 100%;
   min-height: 100vh;
   box-sizing: border-box;
-  background: #0A0517;
-}
-
-/* ══════════════════════════════════════════════════════════════════════
-   ZONA 1: HEADER — degradado púrpura oscuro → púrpura claro
-   Contiene: perfil de usuario + widget de objetivo diario
-   ══════════════════════════════════════════════════════════════════════ */
-.headerZone {
-  /* Degradado teal solo en el header */
-  background: linear-gradient(180deg, #391377 0%, #1A093E 100%);
-  padding: var(--header-zone-padding-v) 0 32px;
-  position: relative;
-  /* overflow-x: hidden contiene los orbes decorativos Y evita desbordamiento
-     lateral del PrimaryGoalHeroWidget en móvil (variant="header" usa overflow: visible) */
-  overflow: hidden;
+  background-color: #090a12;
+  background-image:
+    radial-gradient(ellipse 140% 390px at 72% -20px, rgba(145, 76, 250, 0.86) 0%, rgba(96, 86, 246, 0.52) 44%, rgba(9, 10, 18, 0) 78%),
+    linear-gradient(180deg, #7d45ec 0%, #5b53f2 175px, #35389c 310px, #161830 395px, #090a12 465px);
+  background-repeat: no-repeat;
   overflow-x: hidden;
 }
 
-/* Orbe decorativo superior-derecho — sutil, no dominante */
-.headerZone::before {
-  content: '';
-  position: absolute;
-  top: -100px;
-  right: -80px;
-  width: 350px;
-  height: 350px;
-  border-radius: 50%;
-  background: rgba(139, 92, 246, 0.12);
-  filter: blur(100px);
-  pointer-events: none;
+:global([data-theme="light"]) .page {
+  background-color: #f4f6fb;
+  background-image:
+    radial-gradient(ellipse 140% 370px at 72% -20px, rgba(125, 69, 236, 0.88) 0%, rgba(91, 83, 242, 0.62) 46%, rgba(244, 246, 251, 0) 80%),
+    linear-gradient(180deg, #7442ea 0%, #534cf0 175px, #3d42a6 300px, #989dd4 395px, #f4f6fb 465px);
 }
 
-/* Orbe decorativo inferior-izquierdo — sutil */
-.headerZone::after {
-  content: '';
-  position: absolute;
-  bottom: -80px;
-  left: -60px;
-  width: 300px;
-  height: 300px;
-  border-radius: 50%;
-  background: rgba(109, 40, 217, 0.10);
-  filter: blur(100px);
-  pointer-events: none;
+/* ── ZONA 1: HEADER (transparente — hereda el cielo fundido de .page) ── */
+.headerZone {
+  background: transparent;
+  padding: var(--header-zone-padding-v) 0 12px;
+  position: relative;
 }
 
-/* ── Perfil dentro del header ── */
 .headerProfile {
   position: relative;
-  z-index: 1;
-  margin-bottom: 24px;
+  z-index: 2;
+  margin-bottom: 4px;
 }
 
-/* ── Widget diario dentro del header ── */
 .headerDaily {
   position: relative;
   z-index: 1;
+  max-width: 480px;
+  margin: 0 auto;
 }
 
-/* ══════════════════════════════════════════════════════════════════════
-   ZONA 2: CONTENIDO — fondo sólido oscuro, más denso que el header
-   Contiene: widgets funcionales (objetivos, evolución, motivación…)
-   ══════════════════════════════════════════════════════════════════════ */
+/* ── ZONA 2: CONTENIDO (hereda el fondo oscuro sin corte) ── */
 .contentZone {
-  /* Transparent: hereda el gradiente de .page — sin corte de color */
   background: transparent;
-  padding: 24px 0;
-  /* padding-bottom extra garantiza espacio estable al final independiente
-     del estado de los widgets (daily-decision pending vs completed) */
-  padding-bottom: 32px;
+  padding: 6px 0 36px;
   min-height: 0;
   position: relative;
-  /* Evitar desbordamiento horizontal de widgets en móvil */
-  overflow-x: hidden;
 }
 
-/* Fade ya no necesario — el gradiente fluye naturalmente */
-.contentZone::before {
-  content: '';
-  position: absolute;
-  top: -40px;
-  left: 0;
-  right: 0;
-  height: 40px;
-  background: transparent;
-  pointer-events: none;
-  z-index: 2;
-}
-
-/* ── Wrapper interior: padding consistente igual al container ── */
 .zoneInner {
   width: 100%;
-  max-width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
   padding: 0 16px;
   box-sizing: border-box;
-  /* Evitar que hijos con overflow: visible sobrepasen el ancho del contenedor */
-  overflow-x: hidden;
 }
 
-@media (min-width: 768px) {
-  .zoneInner {
-    padding: 0 24px;
-  }
+.bannersStack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 14px;
 }
 
-/* ── Grid dentro del contenido ── */
+/* ── Grid móvil: 1 columna con orden exacto aprobado ── */
 .grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--dashboard-section-gap);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
   width: 100%;
-  /* min-width: 0 evita que el grid se expanda más allá de su contenedor */
   min-width: 0;
   box-sizing: border-box;
+}
+
+.mainCol,
+.sideCol {
+  display: contents;
+}
+
+.orderDaily     { order: 1; min-width: 0; }
+.orderEvolution { order: 2; min-width: 0; }
+.orderInsight   { order: 3; min-width: 0; }
+.orderHucha     { order: 4; min-width: 0; }
+
+/* ── Escritorio (>= 1024px): degradado centrado + 2 columnas equilibradas ── */
+@media (min-width: 768px) {
+  .zoneInner {
+    padding: 0 28px;
+  }
+
+  .headerZone {
+    padding: 18px 0 16px;
+  }
 }
 
 @media (min-width: 1024px) {
+  .page {
+    background-image:
+      radial-gradient(ellipse 85% 330px at 56% -30px, rgba(145, 76, 250, 0.72) 0%, rgba(92, 86, 246, 0.40) 48%, rgba(9, 10, 18, 0) 80%),
+      linear-gradient(180deg, #7442ea 0%, #4e4ce4 140px, #1b1d45 270px, #090a12 360px);
+  }
+
+  :global([data-theme="light"]) .page {
+    background-image:
+      radial-gradient(ellipse 85% 330px at 56% -30px, rgba(125, 69, 236, 0.78) 0%, rgba(91, 83, 242, 0.48) 48%, rgba(244, 246, 251, 0) 80%),
+      linear-gradient(180deg, #7442ea 0%, #4e4ce4 140px, #585cb8 260px, #f4f6fb 360px);
+  }
+
   .grid {
-    grid-template-columns: 1fr 320px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.04fr) minmax(0, 0.96fr);
+    gap: 18px;
+    align-items: start;
+  }
+
+  .mainCol,
+  .sideCol {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+  }
+
+  .orderDaily,
+  .orderEvolution,
+  .orderInsight,
+  .orderHucha {
+    order: 0;
   }
 }
 
-.mainCol {
-  display: flex;
-  flex-direction: column;
-  gap: var(--dashboard-section-gap);
-  /* min-width: 0 es el fix canónico para que un grid/flex item no desborde
-     más allá de su celda cuando su contenido es más ancho que el viewport.
-     Sin esto, el grid item toma min-width: auto (tamaño natural del contenido)
-     y empuja el layout hacia la derecha en móvil. */
-  min-width: 0;
-  width: 100%;
-  overflow-x: hidden;
-}
-
-
-/* Nota: El margen negativo condicional (:has + #daily-decision-widget) fue eliminado
-   porque causaba desalineación en los widgets del Inicio cuando la Decisión Diaria
-   estaba pendiente. El gap uniforme de --dashboard-section-gap es suficiente. */
-
-.sideCol {
-  display: flex;
-  flex-direction: column;
-  gap: var(--dashboard-section-gap);
-}
-
-@media (min-width: 768px) {
-  :root {
-    --header-zone-padding-h: 28px;
-    --header-zone-padding-v: 28px;
-  }
-}
-
+/* ── Modales compartidos del Dashboard ── */
 .goalsList {
   display: flex;
   flex-direction: column;
@@ -183,7 +151,7 @@
 .emptyGoalsLink {
   background: none;
   border: none;
-  color: var(--color-primary-600, #2563eb);
+  color: var(--color-primary-600, #5a63f6);
   font-size: var(--type-small-size);
   font-weight: var(--type-body-strong-weight);
   cursor: pointer;
@@ -194,12 +162,11 @@
   text-decoration: underline;
 }
 
-/* ── Modal de creación de objetivo ─────────────────────────────────── */
 .modalOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(2, 6, 23, 0.75);
-  backdrop-filter: blur(6px);
+  background: rgba(2, 6, 23, 0.76);
+  backdrop-filter: blur(8px);
   z-index: var(--z-toast);
   display: flex;
   align-items: center;
@@ -208,16 +175,21 @@
 }
 
 .modalBox {
-  background: var(--color-background-modal);
-  border: 1px solid var(--color-border-subtle);
-  border-radius: 20px;
+  background: #1a1b24;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 22px;
   padding: 24px;
   width: 100%;
   max-width: 420px;
-  box-shadow: 0 25px 50px -12px rgba(2, 6, 23, 0.9);
+  box-shadow: 0 28px 60px rgba(0, 0, 0, 0.65);
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+
+:global([data-theme="light"]) .modalBox {
+  background: #ffffff;
+  border-color: rgba(15, 23, 42, 0.08);
 }
 
 .modalHeader {
@@ -228,7 +200,7 @@
 
 .modalTitle {
   font-size: var(--type-h2-size);
-  font-weight: var(--type-h2-weight);
+  font-weight: 700;
   color: var(--color-text-primary);
 }
 
@@ -238,27 +210,27 @@
   justify-content: center;
   width: 32px;
   height: 32px;
-  border-radius: 8px;
-  background: var(--modal-close-bg);
-  border: 1px solid var(--color-border-subtle);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: none;
   color: var(--color-text-secondary);
   cursor: pointer;
   font-size: 14px;
-  transition: all 200ms ease;
+  transition: background 150ms ease, color 150ms ease;
   line-height: 1;
 }
 
 .modalClose:hover {
-  background: var(--modal-close-bg-hover);
+  background: rgba(255, 255, 255, 0.12);
   color: var(--color-text-primary);
 }
 
 .modalError {
   font-size: var(--type-small-size);
   color: #f87171;
-  background: rgba(239, 68, 68, 0.1);
+  background: rgba(239, 68, 68, 0.10);
   border: 1px solid rgba(239, 68, 68, 0.25);
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 10px 12px;
 }
 
@@ -269,39 +241,41 @@
 }
 
 .modalLabel {
-  font-size: var(--type-label-size);
-  font-weight: var(--type-label-weight);
-  color: var(--color-text-label);
-  text-transform: uppercase;
-  letter-spacing: var(--type-label-ls);
+  font-size: 12px;
+  font-weight: 600;
+  color: #9ba0b4;
 }
 
 .modalInput {
   width: 100%;
-  background: var(--modal-input-bg);
-  border: 1px solid var(--color-border-input);
-  border-radius: 12px;
-  padding: 11px 14px;
+  background: #12131b;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 12px 14px;
   font-size: var(--type-body-size);
-  color: var(--color-text-primary);
+  color: #f5f6fa;
   outline: none;
-  transition: border-color 200ms ease, box-shadow 200ms ease;
+  transition: border-color 180ms ease;
   box-sizing: border-box;
 }
 
+:global([data-theme="light"]) .modalInput {
+  background: #f4f6fb;
+  border-color: rgba(15, 23, 42, 0.10);
+  color: #0f172a;
+}
+
 .modalInput::placeholder {
-  color: rgba(100, 116, 139, 0.5);
+  color: #767b90;
 }
 
 .modalInput:focus {
-  border-color: rgba(168, 85, 247, 0.5);
-  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.12);
+  border-color: rgba(90, 99, 246, 0.55);
 }
 
-/* select específico */
 .modalInput option {
-  background: #0c0820;
-  color: #f1f5f9;
+  background: #1a1b24;
+  color: #f5f6fa;
 }
 
 .modalActions {
@@ -312,40 +286,56 @@
 
 .modalCancelBtn {
   flex: 1;
-  padding: 11px 18px;
-  border: 1px solid var(--color-border-subtle);
-  border-radius: 12px;
-  background: var(--modal-cancel-bg);
-  color: var(--color-text-secondary);
-  font-size: var(--type-btn-size);
-  font-weight: var(--type-btn-weight);
+  height: 46px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #d8dce8;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 200ms ease;
+  transition: background 150ms ease;
 }
 
 .modalCancelBtn:hover {
-  background: var(--modal-cancel-bg-hover);
-  color: var(--color-text-primary);
+  background: rgba(255, 255, 255, 0.14);
+}
+
+:global([data-theme="light"]) .modalCancelBtn {
+  background: #eef2f8;
+  color: #334155;
+}
+
+:global([data-theme="light"]) .modalCancelBtn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
 }
 
 .modalSaveBtn {
   flex: 1;
-  padding: 11px 20px;
+  height: 46px;
   border: none;
-  border-radius: 12px;
-  background: linear-gradient(90deg, #a855f7, #2563eb);
-  color: #fff;
-  font-size: var(--type-btn-size);
-  font-weight: var(--type-btn-weight);
+  border-radius: 999px;
+  background: #ffffff;
+  color: #090a12;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(168, 85, 247, 0.35);
-  transition: all 200ms ease;
+  transition: opacity 150ms ease;
+}
+
+:global([data-theme="light"]) .modalSaveBtn {
+  background: #0f172a;
+  color: #ffffff;
+}
+
+:global([data-theme="light"]) .modalClose {
+  background: #f1f4fa;
+  color: #475569;
 }
 
 .modalSaveBtn:hover {
-  background: linear-gradient(90deg, #9333ea, #1d4ed8);
-  box-shadow: 0 6px 20px rgba(168, 85, 247, 0.5);
-  transform: scale(1.02);
+  opacity: 0.92;
 }
 
 .loadingScreen {
@@ -354,12 +344,12 @@
   justify-content: center;
   min-height: 100vh;
   padding: 24px;
+  background: #090a12;
 }
 
 .loadingText {
   font-size: var(--type-small-size);
   color: var(--color-text-secondary);
-  animation: pulse 1.5s ease-in-out infinite;
 }
 
 .errorText {
@@ -367,36 +357,3 @@
   color: #ef4444;
   font-weight: 500;
 }
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
-}
-
-/* ── Staggered widget entrance animations ── */
-@keyframes widgetEnter {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.mainCol > *:nth-child(1) { animation: widgetEnter 0.4s ease-out 0.05s both; }
-.mainCol > *:nth-child(2) { animation: widgetEnter 0.4s ease-out 0.15s both; }
-.mainCol > *:nth-child(3) { animation: widgetEnter 0.4s ease-out 0.25s both; }
-.mainCol > *:nth-child(4) { animation: widgetEnter 0.4s ease-out 0.35s both; }
-.mainCol > *:nth-child(5) { animation: widgetEnter 0.4s ease-out 0.45s both; }
-
-.sideCol > *:nth-child(1) { animation: widgetEnter 0.4s ease-out 0.20s both; }
-.sideCol > *:nth-child(2) { animation: widgetEnter 0.4s ease-out 0.30s both; }
-.sideCol > *:nth-child(3) { animation: widgetEnter 0.4s ease-out 0.40s both; }
-
-/* ── Header zone entrance ── */
-.headerZone {
-  animation: widgetEnter 0.35s ease-out 0s both;
-}
-

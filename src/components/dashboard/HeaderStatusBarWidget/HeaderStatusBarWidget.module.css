@@ -1,187 +1,98 @@
-/* ── Wrapper principal ── */
+/* ═══════════════════════════════════════════════════════════════════
+   HEADER STATUS BAR — Reference Dark / Liquid Glass V3
+   Una sola fila aireada con avatar glass, saludo y píldoras racha/nivel
+   ═══════════════════════════════════════════════════════════════════ */
+
 .header {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 0;
-  padding: 0 0 4px;
-  overflow: hidden;
+  gap: 10px;
+  padding: 6px 0 0;
+  min-width: 0;
 }
 
-/* ── Left: avatar + info ── */
 .leftGroup {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 10px;
   flex: 1;
   min-width: 0;
 }
 
-/* ── Avatar ── */
-.avatarWrap {
-  position: relative;
+/* ── Avatar circular cristal translúcido ── */
+.avatarBtn {
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
   flex-shrink: 0;
-  cursor: pointer;
-}
-
-/* Badge de racha: llama + número sobre el avatar — más grande y visible */
-.avatarStreakBadge {
-  position: absolute;
-  bottom: -5px;
-  right: -7px;
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  background: rgba(12, 6, 2, 0.92);
-  border: 2px solid rgba(251, 146, 60, 0.75);
-  border-radius: var(--radius-full);
-  padding: 3px 6px 3px 5px;
-  box-shadow: 0 0 10px rgba(251, 146, 60, 0.45), 0 2px 6px rgba(0,0,0,0.5);
-  z-index: 2;
-  min-height: 20px;
-}
-
-.avatarStreakNum {
-  font-size: 11px;
-  font-weight: 800;
-  color: #fb923c;
-  line-height: 1;
-  letter-spacing: -0.02em;
-}
-
-.avatarRing {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  padding: 2px;
-  background: linear-gradient(135deg, #a855f7, #2563eb, #a855f7);
-  background-size: 200% 200%;
-  animation: gradientShift 3s ease infinite;
-  transition: filter var(--transition-normal);
-}
-
-.avatarWrap:hover .avatarRing {
-  filter: blur(1px) brightness(1.2);
-}
-
-.avatarInner {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background: var(--header-avatar-inner);
+  background: rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.20);
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  padding: 0;
   overflow: hidden;
-  font-size: var(--header-avatar-font-size);
-  font-weight: 800;
-  color: var(--color-text-primary);
+  transition: background 150ms ease;
+}
+
+.avatarBtn:hover {
+  background: rgba(255, 255, 255, 0.30);
 }
 
 .avatarImg {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 50%;
+  border-radius: 999px;
 }
 
-.onlineDot {
-  position: absolute;
-  bottom: 3px;
-  right: 3px;
-  width: 13px;
-  height: 13px;
-  border-radius: 50%;
-  background: #22c55e;
-  border: 2.5px solid var(--header-online-border);
-  animation: pulse 1.8s ease-in-out infinite;
-}
-
-/* ── Info texto ── */
-.infoGroup {
-  min-width: 0;
+/* ── Saludo en píldora glass en móvil, texto limpio en desktop ── */
+.greetingPill {
   flex: 1;
-}
-
-.greeting {
+  max-width: 200px;
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.94);
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 20px;
-  font-weight: 800;
-  color: var(--color-text-greeting);
-  line-height: 1.1;
-  margin: 0 0 3px;
-  white-space: nowrap;
+  min-width: 0;
+  cursor: pointer;
+  text-align: left;
+  transition: background 150ms ease;
+}
+
+.greetingPill:hover {
+  background: rgba(255, 255, 255, 0.20);
+}
+
+.greetingText {
+  margin: 0;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: 1.2;
   overflow: hidden;
   text-overflow: ellipsis;
-  letter-spacing: -0.3px;
+  white-space: nowrap;
 }
 
-/* SVG onda — sin animación de emoji, solo alineado */
-.waveEmoji {
-  display: inline-flex;
-  align-items: center;
-  vertical-align: middle;
-  opacity: 0.55;
-}
-
-.sub {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 13px;
-  color: var(--color-text-sub);
-  margin: 0 0 8px;
-}
-
-.sparkle {
-  font-size: 12px;
-  flex-shrink: 0;
-}
-
-/* ── Streak badge ── */
-.streakBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: var(--radius-full);
-  background: rgba(251,146,60,0.12);
-  border: 1px solid rgba(251,146,60,0.25);
-}
-
-.streakFlame {
-  font-size: 13px;
-}
-
-.streakText {
-  font-size: 11px;
-  font-weight: 700;
-  color: #fb923c;
-  letter-spacing: 0.04em;
-}
-
-.streakZero {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: var(--radius-full);
-  background: rgba(51,65,85,0.4);
-  border: 1px solid rgba(51,65,85,0.5);
-}
-
-.streakZeroText {
-  font-size: 11px;
-  font-weight: 600;
-  color: rgba(148,163,184,0.55);
-  letter-spacing: 0.04em;
-}
-
-/* ── Right: actions ── */
+/* ── Derecha: píldoras glass racha y nivel ── */
 .actions {
   display: flex;
   align-items: center;
@@ -189,212 +100,81 @@
   flex-shrink: 0;
 }
 
-/* Badge sistema activo */
-.systemPill {
+.glassPill {
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 10px;
-  border-radius: var(--radius-full);
-  background: rgba(34,197,94,0.1);
-  border: 1px solid rgba(34,197,94,0.25);
-  color: var(--color-success-light);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  justify-content: center;
+  gap: 5px;
+  cursor: pointer;
   white-space: nowrap;
+  transition: background 150ms ease;
 }
 
-.systemDot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #22c55e;
-  animation: pulse 1.8s ease-in-out infinite;
-  flex-shrink: 0;
+.glassPill:hover {
+  background: rgba(255, 255, 255, 0.24);
 }
 
-.systemPillInactive {
-  background: rgba(51,65,85,0.3);
-  border-color: rgba(51,65,85,0.5);
-  color: rgba(148,163,184,0.5);
-}
-
-.systemDotInactive {
-  background: #475569;
-  animation: none;
-}
-
-/* Botón icon genérico */
-.iconBtn {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--header-iconbtn-bg);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  transition: all var(--transition-normal);
-  flex-shrink: 0;
-}
-
-.iconBtn:hover {
-  background: var(--header-iconbtn-bg-hover);
-  border-color: rgba(99,102,241,0.4);
-  color: var(--color-text-primary);
-}
-
-.settingsIcon {
-  transition: transform var(--transition-slow);
-}
-
-.iconBtn:hover .settingsIcon {
-  transform: rotate(90deg);
-}
-
-/* ── Botón medalla (píldora adaptable) ─ sobreescribe .iconBtn para este caso ─ */
-.medalBtn {
-  height: 40px;
-  width: auto;
-  min-width: 40px;
-  padding: 0 12px;
-  border-radius: var(--radius-full);
-  background: var(--header-iconbtn-bg);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  transition: all var(--transition-normal);
-  flex-shrink: 0;
-  gap: 6px;
-}
-
-.medalBtn:hover {
-  background: var(--header-iconbtn-bg-hover);
-  border-color: rgba(99,102,241,0.4);
-}
-
-/* ── Contenido medalla + racha (fila) ── */
-.streakWrap {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  background: rgba(251,146,60,0.1);
-  padding: 2px 6px;
-  border-radius: var(--radius-full);
-  border: 1px solid rgba(251,146,60,0.2);
+.glassPill:focus-visible,
+.avatarBtn:focus-visible,
+.greetingPill:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.8);
+  outline-offset: 2px;
 }
 
 .flameIcon {
-  color: #fb923c;
-  filter: drop-shadow(0 0 4px rgba(251,146,60,0.3));
+  color: #fde68a;
+  flex-shrink: 0;
 }
 
-.streakCount {
-  font-size: 11px;
-  font-weight: 800;
-  color: #fb923c;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
+.pillNum {
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
 }
 
 .medalIconWrap {
   display: flex;
   align-items: center;
   justify-content: center;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
-}
-
-
-/* Botón avatar (solo mobile) */
-.profileBtn {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--header-iconbtn-bg);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--color-text-primary);
-  cursor: pointer;
-  transition: all var(--transition-normal);
+  color: #ffffff;
   flex-shrink: 0;
 }
 
-.profileBtn:hover {
-  background: rgba(255,255,255,0.1);
-  border-color: rgba(168,85,247,0.4);
+.pillLabel {
+  line-height: 1;
 }
 
-/* ── Responsive móvil ── */
-@media (max-width: 480px) {
-  .header {
-    padding: 12px 0 6px;
-    gap: 10px;
-    flex-wrap: nowrap;
-    align-items: flex-start;
+/* ── Desktop: saludo limpio sin píldora redundante (el avatar ya está en Sidebar) ── */
+@media (min-width: 768px) {
+  .avatarBtn {
+    display: none;
   }
 
-  .leftGroup {
-    gap: 10px;
-    min-width: 0;
-    flex: 1;
+  .greetingPill {
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: none;
+    padding: 0;
+    height: auto;
+    max-width: none;
+    font-size: 17px;
+    font-weight: 600;
+    color: #ffffff;
   }
 
-  .infoGroup {
-    min-width: 0;
+  .greetingPill:hover {
+    background: transparent;
+    opacity: 0.9;
   }
-
-  .actions {
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 6px;
-    flex-shrink: 0;
-  }
-
-  .systemPill {
-    font-size: 9px;
-    padding: 4px 8px;
-    letter-spacing: 0.04em;
-  }
-
-  .greeting {
-    font-size: 16px;
-  }
-
-  .sub {
-    font-size: 11px;
-  }
-}
-
-/* ── Animaciones ── */
-@keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.85); }
-}
-
-@keyframes wave {
-  0%   { transform: rotate(0deg); }
-  10%  { transform: rotate(18deg); }
-  20%  { transform: rotate(-8deg); }
-  30%  { transform: rotate(18deg); }
-  40%  { transform: rotate(-4deg); }
-  50%  { transform: rotate(10deg); }
-  60%  { transform: rotate(0deg); }
-  100% { transform: rotate(0deg); }
-}
-
-@keyframes gradientShift {
-  0%   { background-position: 0% 50%; }
-  50%  { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
 }

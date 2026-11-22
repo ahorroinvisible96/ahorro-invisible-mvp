@@ -7,6 +7,7 @@ export type PrimaryGoalHeroProps = {
   dailyCompleted: boolean;
   onCreateGoal: () => void;
   onOpenGoal: (goalId: string) => void;
+  onOpenGoals?: () => void;
   onGoToDailyDecision: () => void;
   onAddExtraSaving: () => void;
   onGoToHistory: () => void;

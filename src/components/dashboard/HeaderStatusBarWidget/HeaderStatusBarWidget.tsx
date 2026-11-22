@@ -4,13 +4,13 @@ import React, { useEffect } from 'react';
 import { analytics } from '@/services/analytics';
 import type { HeaderStatusBarProps } from './HeaderStatusBarWidget.types';
 import styles from './HeaderStatusBarWidget.module.css';
-import { 
-  FlameIcon, 
-  SproutIcon, 
-  MedalIcon, 
-  DiamondIcon, 
-  CrownIcon, 
-  TrophyIcon 
+import {
+  FlameIcon,
+  SproutIcon,
+  MedalIcon,
+  DiamondIcon,
+  CrownIcon,
+  TrophyIcon,
 } from '@/components/ui/AppIcons';
 
 // ── Niveles de medalla (sincronizados con dashboard/page.tsx) ─────────────────
@@ -24,8 +24,8 @@ const MEDAL_TIERS = [
 ];
 
 function getMedalConfig(totalSaved: number) {
-  const tier = MEDAL_TIERS.find(t => totalSaved >= t.amount);
-  return tier ?? { amount: 0, Icon: SproutIcon, color: '#22c55e', label: 'Semilla' };
+  const tier = MEDAL_TIERS.find((t) => totalSaved >= t.amount);
+  return tier ?? { amount: 0, Icon: SproutIcon, color: '#34d399', label: 'Semilla' };
 }
 
 export function HeaderStatusBarWidget({
@@ -40,72 +40,63 @@ export function HeaderStatusBarWidget({
     analytics.setScreen('dashboard');
   }, []);
 
-  const initials = userName.trim().charAt(0).toUpperCase();
-  const firstName = userName.trim().split(' ')[0];
+  const initials = (userName.trim().charAt(0) || 'U').toUpperCase();
+  const firstName = userName.trim().split(' ')[0] || 'Usuario';
   const medal = getMedalConfig(totalSaved);
 
   return (
-    <div className={styles.header} data-widget-cat="summary">
-
-      {/* ── Left: avatar + saludo ── */}
+    <header className={styles.header} data-widget-cat="summary">
+      {/* ── Izquierda: avatar glass + píldora saludo ── */}
       <div className={styles.leftGroup}>
-
-        {/* Avatar con badge de racha encima */}
-        <div className={styles.avatarWrap} onClick={onOpenProfile} role="button" aria-label="Ver perfil">
-          <div className={styles.avatarRing}>
-            <div className={styles.avatarInner}>
-              {userAvatar
-                ? <img src={userAvatar} alt={userName} className={styles.avatarImg} />
-                : initials
-              }
-            </div>
-          </div>
-          {/* Badge de racha sobre el avatar */}
-          {streak > 0 && (
-            <div className={styles.avatarStreakBadge} title={`${streak} días de racha`}>
-              <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor" style={{ color: '#fb923c' }}>
-                <path d="M12 2C8.5 6 7 9 8 12c-2-1.5-2.5-4-2-6C3 8 1 12 1 14c0 5 4.9 8 11 8s11-3 11-8c0-4-3-7-5-8 1 2.5.5 5-1 6.5.5-2.5-.5-6-5-8z"/>
-              </svg>
-              <span className={styles.avatarStreakNum}>{streak}</span>
-            </div>
-          )}
-        </div>
-
-        {/* Texto: solo saludo, sin racha */}
-        <div className={styles.infoGroup}>
-          <h1 className={styles.greeting}>
-            Hola, {firstName}
-            {/* SVG onda — misma familia visual que AppIcons */}
-            <svg aria-hidden width="20" height="20" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"
-              style={{ color: 'rgba(255,255,255,0.55)', flexShrink: 0, marginLeft: 2 }}>
-              <path d="M5 12c0-2 1.5-3 3-2s3 3 5 3 3-1 3-3"/>
-              <path d="M5 17c0-2 1.5-3 3-2s3 3 5 3 3-1 3-3"/>
-            </svg>
-          </h1>
-        </div>
-      </div>
-
-      {/* ── Right: medalla + racha ── */}
-      <div className={styles.actions}>
         <button
-          className={styles.medalBtn}
-          onClick={onOpenMedalDetail}
+          type="button"
+          className={styles.avatarBtn}
+          onClick={onOpenProfile}
+          aria-label="Ver perfil"
         >
-          <span className={styles.medalStreakContent}>
-            <span className={styles.medalIconWrap} style={{ color: medal.color }}>
-              <medal.Icon size={18} />
-            </span>
-            {streak > 0 && (
-              <span className={styles.streakWrap}>
-                <FlameIcon size={14} className={styles.flameIcon} />
-                <span className={styles.streakCount}>{streak}</span>
-              </span>
-            )}
-          </span>
+          {userAvatar ? (
+            <img src={userAvatar} alt={userName} className={styles.avatarImg} />
+          ) : (
+            initials
+          )}
+        </button>
+
+        <button
+          type="button"
+          className={styles.greetingPill}
+          onClick={onOpenProfile}
+        >
+          <h1 className={styles.greetingText}>Hola, {firstName}</h1>
         </button>
       </div>
-    </div>
+
+      {/* ── Derecha: píldoras glass de racha y nivel (sin duplicidad en avatar) ── */}
+      <div className={styles.actions}>
+        {streak > 0 && (
+          <button
+            type="button"
+            className={styles.glassPill}
+            onClick={onOpenMedalDetail}
+            aria-label={`${streak} días de racha`}
+          >
+            <FlameIcon size={14} className={styles.flameIcon} />
+            <span className={styles.pillNum}>{streak}</span>
+          </button>
+        )}
+
+        <button
+          type="button"
+          className={styles.glassPill}
+          onClick={onOpenMedalDetail}
+          aria-label={`Nivel ${medal.label}`}
+        >
+          <span className={styles.medalIconWrap}>
+            <medal.Icon size={14} />
+          </span>
+          <span className={styles.pillLabel}>{medal.label}</span>
+        </button>
+      </div>
+    </header>
   );
 }
 
