@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Wallet, Coins, TrendingUp, Plus, X, AlertCircle } from 'lucide-react';
 import type { Goal } from '@/types/Dashboard';
+import { ModalPortal } from '@/components/ui/ModalPortal/ModalPortal';
 import s from './SavingsModal.module.css';
 
 interface SavingsModalProps {
@@ -47,7 +48,8 @@ export function SavingsModal({
   }
 
   return (
-    <div className={s.overlay} onClick={onClose}>
+    <ModalPortal>
+      <div className={s.overlay} onClick={onClose}>
       <div className={s.box} onClick={e => e.stopPropagation()}>
         <div className={s.grabber} />
 
@@ -197,5 +199,6 @@ export function SavingsModal({
         </div>
       </div>
     </div>
+    </ModalPortal>
   );
 }

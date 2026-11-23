@@ -236,6 +236,7 @@
 
 .goalDropdownWrap {
   position: relative;
+  z-index: 30;
 }
 
 .goalDropdownTrigger {

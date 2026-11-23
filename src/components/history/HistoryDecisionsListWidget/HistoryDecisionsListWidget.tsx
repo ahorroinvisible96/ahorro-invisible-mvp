@@ -5,6 +5,7 @@ import type { HistoryDecisionItem } from '@/hooks/useHistorySummary';
 import type { HistoryDecisionsListWidgetProps } from './HistoryDecisionsListWidget.types';
 import styles from './HistoryDecisionsListWidget.module.css';
 import { CloseIcon, EditIcon, TrashIcon, BoltIcon, PlusIcon } from '@/components/ui/AppIcons';
+import { ModalPortal } from '@/components/ui/ModalPortal/ModalPortal';
 
 function formatDate(dateString: string): string {
   return new Intl.DateTimeFormat('es-ES', {
@@ -34,6 +35,7 @@ function DeleteModal({
   onClose: () => void;
 }) {
   return (
+    <ModalPortal>
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
         <div className={styles.grabber} />
@@ -53,6 +55,7 @@ function DeleteModal({
         </div>
       </div>
     </div>
+    </ModalPortal>
   );
 }
 
@@ -79,6 +82,7 @@ function EditModal({
   }
 
   return (
+    <ModalPortal>
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
         <div className={styles.grabber} />
@@ -118,6 +122,7 @@ function EditModal({
         </div>
       </div>
     </div>
+    </ModalPortal>
   );
 }
 

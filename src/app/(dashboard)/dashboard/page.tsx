@@ -23,12 +23,13 @@ import { DailyDecisionWidget } from '@/components/dashboard/DailyDecisionWidget'
 import { SavingsEvolutionWidget } from '@/components/dashboard/SavingsEvolutionWidget';
 import { PrimaryGoalHeroWidget } from '@/components/dashboard/PrimaryGoalHeroWidget';
 import { AIInsightWidget } from '@/components/dashboard/AIInsightWidget/AIInsightWidget';
+import { ModalPortal } from '@/components/ui/ModalPortal/ModalPortal';
 import styles from './Dashboard.module.css';
 
 // ── Estilos dark glassmorphism compartidos ────────────────────────────────────
 const DS = {
-  overlay: { position: 'fixed' as const, inset: 0, background: 'rgba(2,6,23,0.78)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: 16 },
-  box: { background: 'linear-gradient(135deg,#0f172a 0%,#1e293b 60%,#0f172a 100%)', border: '1px solid rgba(51,65,85,0.5)', borderRadius: 20, padding: 24, width: '100%', maxWidth: 440, boxShadow: '0 25px 50px -12px rgba(2,6,23,0.9)', display: 'flex', flexDirection: 'column' as const, gap: 16 },
+  overlay: { position: 'fixed' as const, inset: 0, background: 'rgba(4,5,10,0.78)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 600, padding: 'max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom))', boxSizing: 'border-box' as const },
+  box: { background: '#171822', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 26, padding: 24, width: '100%', maxWidth: 440, maxHeight: 'calc(100dvh - 32px)', overflowY: 'auto' as const, boxSizing: 'border-box' as const, boxShadow: '0 28px 70px rgba(0,0,0,0.78)', display: 'flex', flexDirection: 'column' as const, gap: 16 },
   label: { fontSize: 11, fontWeight: 700, color: 'rgba(148,163,184,0.7)', textTransform: 'uppercase' as const, letterSpacing: '0.08em', display: 'block', marginBottom: 6 },
   select: { width: '100%', background: 'rgba(15,23,42,0.8)', border: '1px solid rgba(51,65,85,0.6)', borderRadius: 12, padding: '11px 14px', fontSize: 14, color: '#f1f5f9', outline: 'none', boxSizing: 'border-box' as const },
   btnCancel: { flex: 1, padding: '11px 0', border: '1px solid rgba(51,65,85,0.5)', borderRadius: 12, background: 'rgba(30,41,59,0.5)', color: 'rgba(203,213,225,0.8)', fontSize: 14, fontWeight: 600, cursor: 'pointer' as const },
@@ -56,6 +57,7 @@ function ArchiveModal({
   const hasBalance = goal.currentAmount > 0;
 
   return (
+    <ModalPortal>
     <div style={DS.overlay} onClick={onClose}>
       <div style={DS.box} onClick={e => e.stopPropagation()}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -112,6 +114,7 @@ function ArchiveModal({
         </div>
       </div>
     </div>
+    </ModalPortal>
   );
 }
 
@@ -140,6 +143,7 @@ function EditGoalModal({
   }
 
   return (
+    <ModalPortal>
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
         <div className={styles.modalHeader}>
@@ -170,6 +174,7 @@ function EditGoalModal({
         </div>
       </div>
     </div>
+    </ModalPortal>
   );
 }
 
@@ -199,6 +204,7 @@ function ExtraSavingDashboardModal({
   }
 
   return (
+    <ModalPortal>
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
         <div className={styles.modalHeader}>
@@ -254,6 +260,7 @@ function ExtraSavingDashboardModal({
         </div>
       </div>
     </div>
+    </ModalPortal>
   );
 }
 
@@ -270,6 +277,7 @@ function GoalPercentMilestoneModal({
 }: { goalTitle: string; percent: 25 | 50 | 75 | 100; onClose: () => void }): React.ReactElement {
   const d = GOAL_PCT_DATA[percent];
   return (
+    <ModalPortal>
     <div style={DS.overlay} onClick={onClose}>
       <div style={{ ...DS.box, textAlign: 'center', alignItems: 'center' }} onClick={(e) => e.stopPropagation()}>
         <div style={{ fontSize: 64, lineHeight: 1, marginBottom: 4 }}>{d.emoji}</div>
@@ -286,6 +294,7 @@ function GoalPercentMilestoneModal({
         </button>
       </div>
     </div>
+    </ModalPortal>
   );
 }
 
@@ -301,6 +310,7 @@ const MILESTONE_TIERS: Record<number, { name: string; emoji: string; color: stri
 function MilestoneModal({ milestone, onClose }: { milestone: number; onClose: () => void }): React.ReactElement {
   const tier = MILESTONE_TIERS[milestone] ?? { name: 'Logro', emoji: '🎉', color: '#4ade80', bg: 'rgba(74,222,128,0.1)', border: 'rgba(74,222,128,0.3)', msg: '¡Increíble progreso! Sigue así.' };
   return (
+    <ModalPortal>
     <div style={DS.overlay} onClick={onClose}>
       <div style={{ ...DS.box, textAlign: 'center', alignItems: 'center' }} onClick={e => e.stopPropagation()}>
         {/* Badge de nivel */}
@@ -321,11 +331,13 @@ function MilestoneModal({ milestone, onClose }: { milestone: number; onClose: ()
         </button>
       </div>
     </div>
+    </ModalPortal>
   );
 }
 
 function StreakRecoveryModal({ lastStreak, onUseGrace, onDismiss }: { lastStreak: number; onUseGrace: () => void; onDismiss: () => void }): React.ReactElement {
   return (
+    <ModalPortal>
     <div style={DS.overlay} onClick={onDismiss}>
       <div style={{ ...DS.box, alignItems: 'stretch' }} onClick={e => e.stopPropagation()}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -351,6 +363,7 @@ function StreakRecoveryModal({ lastStreak, onUseGrace, onDismiss }: { lastStreak
         </div>
       </div>
     </div>
+    </ModalPortal>
   );
 }
 
@@ -439,6 +452,7 @@ function CreateGoalModal({
   // ── ROADMAP SCREEN ──────────────────────────────────────────────────────────
   if (modalStep === 'roadmap') {
     return (
+      <ModalPortal>
       <div className={styles.modalOverlay} onClick={onClose}>
         <div className={styles.modalBox} onClick={(e) => e.stopPropagation()} style={{ maxHeight: '90vh', overflowY: 'auto' }}>
           {/* Header */}
@@ -512,12 +526,14 @@ function CreateGoalModal({
           </button>
         </div>
       </div>
+      </ModalPortal>
     );
   }
 
   // ── STEP 1: nombre + horizonte ──────────────────────────────────────────────
   // ── STEP 2: cantidad + recomendación ───────────────────────────────────────
   return (
+    <ModalPortal>
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalBox} onClick={(e) => e.stopPropagation()} style={{ maxHeight: '90vh', overflowY: 'auto' }}>
         <div className={styles.modalHeader}>
@@ -628,8 +644,8 @@ function CreateGoalModal({
                         background: 'transparent', border: 'none', outline: 'none',
                         color: '#f1f5f9', fontWeight: 800, fontSize: 26, letterSpacing: '-0.5px',
                         fontFamily: 'inherit', textAlign: 'right',
-                        width: `${Math.max(3, String(goalInputValue).length)}ch`,
-                        minWidth: '3ch', maxWidth: '10ch',
+                        width: `${Math.max(4, String(goalInputValue).length + 1)}ch`,
+                        minWidth: '4ch', maxWidth: '10ch',
                       } as React.CSSProperties}
                     />
                     <span style={{ fontSize: 16, fontWeight: 700, color: 'rgba(241,245,249,0.5)', flexShrink: 0 }}>€</span>
@@ -711,6 +727,7 @@ function CreateGoalModal({
         </div>
       </div>
     </div>
+    </ModalPortal>
   );
 }
 

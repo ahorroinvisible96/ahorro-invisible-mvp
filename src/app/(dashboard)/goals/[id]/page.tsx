@@ -14,6 +14,7 @@ import { QUESTIONS_BANK } from '@/services/dailyQuestionsBank';
 import { syncGoalToSupabase } from '@/services/syncService';
 import type { Goal, DailyDecision } from '@/types/Dashboard';
 import { PlusIcon, EditIcon, StarIcon, BoltIcon } from '@/components/ui/AppIcons';
+import { ModalPortal } from '@/components/ui/ModalPortal/ModalPortal';
 import styles from './GoalDetail.module.css';
 
 function formatEUR(n: number) {
@@ -303,6 +304,7 @@ export default function GoalDetailPage() {
       </div>
 
       {showArchiveModal && (
+        <ModalPortal>
         <div className={styles.modalOverlay} onClick={() => setShowArchiveModal(false)}>
           <div className={styles.modalSheet} onClick={e => e.stopPropagation()}>
             <div className={styles.grabber} />
@@ -341,6 +343,7 @@ export default function GoalDetailPage() {
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
     </div>
   );

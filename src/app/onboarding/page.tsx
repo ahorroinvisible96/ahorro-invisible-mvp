@@ -652,7 +652,7 @@ export default function OnboardingPage() {
                         onChange={e => setGoalInputValue(e.target.value)}
                         onBlur={handleGoalInputBlur}
                         className={s.stepperInput}
-                        style={{ width: `${Math.max(3, String(goalInputValue).length)}ch` }}
+                        style={{ width: `${Math.max(4, String(goalInputValue).length + 1)}ch` }}
                         aria-label="Cantidad del objetivo en euros"
                       />
                       <span className={s.stepperCurrency}>€</span>

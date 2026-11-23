@@ -165,23 +165,35 @@
 .modalOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(2, 6, 23, 0.76);
+  background: rgba(4, 5, 10, 0.76);
   backdrop-filter: blur(8px);
-  z-index: var(--z-toast);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: var(--z-modal-overlay, 600);
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
-  padding: 16px;
+  padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+
+@media (min-width: 640px) {
+  .modalOverlay {
+    align-items: center;
+  }
 }
 
 .modalBox {
-  background: #1a1b24;
+  background: #171822;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 22px;
-  padding: 24px;
+  border-radius: 26px;
+  padding: 22px 22px 24px;
   width: 100%;
-  max-width: 420px;
-  box-shadow: 0 28px 60px rgba(0, 0, 0, 0.65);
+  max-width: 430px;
+  max-height: calc(100dvh - 32px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.75);
   display: flex;
   flex-direction: column;
   gap: 16px;

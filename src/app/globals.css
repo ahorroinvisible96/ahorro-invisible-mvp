@@ -232,3 +232,14 @@ body {
   background-color: #f1f5f9;
   color: #0f172a;
 }
+
+/* Ocultar flechas nativas blancas en inputs numéricos en toda la app */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}

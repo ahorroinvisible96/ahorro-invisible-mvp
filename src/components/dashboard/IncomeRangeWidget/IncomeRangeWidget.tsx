@@ -7,6 +7,7 @@ import styles from './IncomeRangeWidget.module.css';
 import { useWidgetCollapse } from '@/hooks/useWidgetCollapse';
 import { CollapseChevron } from '@/components/dashboard/CollapsibleWidget/CollapsibleWidget';
 import { TrendingUpIcon, EditIcon, ChevronRightIcon, CloseIcon } from '@/components/ui/AppIcons';
+import { ModalPortal } from '@/components/ui/ModalPortal/ModalPortal';
 
 const SLIDER_MAX = 10000;
 const SLIDER_STEP = 100;
@@ -216,6 +217,7 @@ export function IncomeRangeWidget({
 
       {/* ── Modal de configuración ── */}
       {isDialogOpen && (
+        <ModalPortal>
         <div className={styles.overlay} onClick={() => setIsDialogOpen(false)}>
           <div className={styles.dialog} onClick={(e) => e.stopPropagation()}>
 
@@ -272,6 +274,7 @@ export function IncomeRangeWidget({
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
     </>
   );

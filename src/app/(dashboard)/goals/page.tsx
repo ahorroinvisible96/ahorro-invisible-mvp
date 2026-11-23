@@ -25,6 +25,7 @@ import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { useToast } from '@/components/ui/Toast/Toast';
 import { computeGoalPhases, fmtEUR as goalFmt, SAVINGS_PCT, type SavingsHabit as SavingsHabitType } from '@/app/onboarding/page';
 import { STORE_UPDATED_EVENT } from '@/services/v2/runtime';
+import { ModalPortal } from '@/components/ui/ModalPortal/ModalPortal';
 import styles from './Goals.module.css';
 
 function formatEUR(n: number) {
@@ -118,6 +119,7 @@ function GoalModal({
       onSave({ title: title.trim(), targetAmount: a, horizonMonths: m, applyHucha: false });
     }
     return (
+      <ModalPortal>
       <div className={styles.modalOverlay} onClick={onClose}>
         <div className={styles.modalSheet} onClick={e => e.stopPropagation()}>
           <div className={styles.modalGrabber} />
@@ -135,6 +137,7 @@ function GoalModal({
           </div>
         </div>
       </div>
+      </ModalPortal>
     );
   }
 
@@ -155,6 +158,7 @@ function GoalModal({
 
   if (createStep === 'roadmap') {
     return (
+      <ModalPortal>
       <div className={styles.modalOverlay} onClick={onClose}>
         <div className={styles.modalSheet} onClick={e => e.stopPropagation()}>
           <div className={styles.modalGrabber} />
@@ -193,10 +197,12 @@ function GoalModal({
           <button onClick={onClose} className={styles.btnWhite} style={{ width: '100%', flex: 'none' }}>Comenzar</button>
         </div>
       </div>
+      </ModalPortal>
     );
   }
 
   return (
+    <ModalPortal>
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalSheet} onClick={e => e.stopPropagation()}>
         <div className={styles.modalGrabber} />
@@ -259,7 +265,7 @@ function GoalModal({
                     onChange={e => setGoalInputValue(e.target.value)}
                     onBlur={handleGoalInputBlur}
                     className={styles.stepperInput}
-                    style={{ width: `${Math.max(3, String(goalInputValue).length)}ch` }}
+                    style={{ width: `${Math.max(4, String(goalInputValue).length + 1)}ch` }}
                   />
                   <span className={styles.stepperUnit}>€</span>
                 </div>
@@ -315,6 +321,7 @@ function GoalModal({
         </div>
       </div>
     </div>
+    </ModalPortal>
   );
 }
 
@@ -336,6 +343,7 @@ function ArchiveModal({
   const hasBalance = goal.currentAmount > 0;
 
   return (
+    <ModalPortal>
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalSheet} onClick={e => e.stopPropagation()}>
         <div className={styles.modalGrabber} />
@@ -384,6 +392,7 @@ function ArchiveModal({
         </div>
       </div>
     </div>
+    </ModalPortal>
   );
 }
 
@@ -404,6 +413,7 @@ function DeleteArchivedModal({
   const [destination, setDestination] = useState<string>(hasOthers ? filteredActive[0].id : 'hucha');
 
   return (
+    <ModalPortal>
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalSheet} onClick={e => e.stopPropagation()}>
         <div className={styles.modalGrabber} />
@@ -434,6 +444,7 @@ function DeleteArchivedModal({
         </div>
       </div>
     </div>
+    </ModalPortal>
   );
 }
 
@@ -457,6 +468,7 @@ function GoalRow({
   const p = pct(goal);
   const isCompleted = goal.currentAmount >= goal.targetAmount;
   const [menuOpen, setMenuOpen] = useState(false);
+  const [menuUp, setMenuUp] = useState(false);
   const menuRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
@@ -468,11 +480,19 @@ function GoalRow({
     return () => document.removeEventListener('mousedown', close);
   }, [menuOpen]);
 
+  const toggleMenu = () => {
+    if (!menuOpen && menuRef.current && typeof window !== 'undefined') {
+      const rect = menuRef.current.getBoundingClientRect();
+      setMenuUp(window.innerHeight - rect.bottom < 240);
+    }
+    setMenuOpen(v => !v);
+  };
+
   const medallionCls = isCompleted ? styles.mEmerald : MEDALLION_CLASSES[index % MEDALLION_CLASSES.length];
   const barColor = isCompleted ? '#12C48B' : BAR_COLORS[index % BAR_COLORS.length];
 
   return (
-    <div className={styles.goalRowWrap}>
+    <div className={`${styles.goalRowWrap} ${menuOpen ? styles.goalRowWrapMenuOpen : ''}`}>
       <button type="button" className={styles.goalRowMain} onClick={onDetail}>
         <div className={`${styles.medallion} ${medallionCls}`}>
           {isCompleted ? <CheckIcon size={18} /> : <TargetIcon size={18} />}
@@ -504,13 +524,13 @@ function GoalRow({
         <button
           type="button"
           className={styles.moreBtn}
-          onClick={() => setMenuOpen(v => !v)}
+          onClick={toggleMenu}
           aria-label={`Opciones de ${goal.title}`}
         >
           ⋯
         </button>
         {menuOpen && (
-          <div className={styles.moreMenu}>
+          <div className={`${styles.moreMenu} ${menuUp ? styles.moreMenuUp : ''}`}>
             <button type="button" className={styles.moreMenuItem} onClick={() => { onEdit(); setMenuOpen(false); }}>
               Editar
             </button>
@@ -591,6 +611,7 @@ export default function GoalsPage() {
     const userId = localStorage.getItem('supabaseUserId');
     if (userId) pushLocalDataToSupabase(userId).catch(() => null);
     refresh();
+    addToast('Objetivo creado correctamente', 'success');
   };
 
   const handleEdit = (data: { title: string; targetAmount: number; horizonMonths: number; applyHucha: boolean }) => {
@@ -655,6 +676,7 @@ export default function GoalsPage() {
     storeTransferFromHucha(goalId, amount);
     setShowHuchaModal(false);
     refresh();
+    addToast('Saldo transferido al objetivo', 'success');
   };
 
   if (loading || !summary) {
@@ -682,7 +704,7 @@ export default function GoalsPage() {
           mode={modalMode}
           initial={modalMode === 'edit' ? editingGoal ?? undefined : undefined}
           onSave={modalMode === 'create' ? handleCreate : handleEdit}
-          onClose={() => { setModalMode(null); setEditingGoal(null); if (modalMode === 'create') addToast('Objetivo creado correctamente', 'success'); }}
+          onClose={() => { setModalMode(null); setEditingGoal(null); }}
           hucha={hucha}
           incomeRange={summary?.incomeRange}
         />

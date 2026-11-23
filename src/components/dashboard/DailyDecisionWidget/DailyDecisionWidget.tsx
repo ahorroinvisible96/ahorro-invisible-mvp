@@ -8,6 +8,7 @@ import styles from './DailyDecisionWidget.module.css';
 import { BoltIcon, AlertIcon } from '@/components/ui/AppIcons';
 import { useToast } from '@/components/ui/Toast/Toast';
 import { FillBlankInput } from '@/components/daily/FillBlankInput/FillBlankInput';
+import { ModalPortal } from '@/components/ui/ModalPortal/ModalPortal';
 
 /* ---- Iconos inline ---- */
 function CheckSvg({ size = 16 }: { size?: number }) {
@@ -71,13 +72,7 @@ function ExtraSavingModal({
       setAmount('');
       setError('');
       setGoalId(primaryGoal?.id ?? allGoals[0]?.id ?? '');
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
     }
-    return () => {
-      document.body.style.overflow = '';
-    };
   }, [isOpen, primaryGoal?.id, allGoals]);
 
   function handleSave() {
@@ -101,6 +96,7 @@ function ExtraSavingModal({
   if (!isOpen) return null;
 
   return (
+    <ModalPortal>
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
         <div className={styles.modalHeader}>
@@ -163,6 +159,7 @@ function ExtraSavingModal({
         </div>
       </div>
     </div>
+    </ModalPortal>
   );
 }
 

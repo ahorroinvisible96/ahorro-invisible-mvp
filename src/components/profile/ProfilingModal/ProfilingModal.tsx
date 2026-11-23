@@ -7,6 +7,7 @@ import {
   saveProfilingResult,
   type ProfilingAnswer,
 } from '@/services/profilingService';
+import { ModalPortal } from '@/components/ui/ModalPortal/ModalPortal';
 import styles from './ProfilingModal.module.css';
 
 type ModalPhase = 'intro' | 'questions' | 'done';
@@ -62,6 +63,7 @@ export function ProfilingModal({ onClose, onCompleted }: ProfilingModalProps) {
 
   // ── Overlay + contenido ────────────────────────────────────────────────────
   return (
+    <ModalPortal>
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
 
@@ -151,6 +153,7 @@ export function ProfilingModal({ onClose, onCompleted }: ProfilingModalProps) {
 
       </div>
     </div>
+    </ModalPortal>
   );
 }
 

@@ -122,11 +122,13 @@
   inset: 0;
   background: rgba(4, 5, 10, 0.72);
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  z-index: 220;
-  padding: 16px;
+  z-index: var(--z-modal-overlay, 600);
+  padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+  box-sizing: border-box;
 }
 
 @media (min-width: 640px) {
@@ -138,6 +140,10 @@
 .modalBox {
   width: 100%;
   max-width: 410px;
+  max-height: calc(100dvh - 32px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
   background: #171822;
   border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: 28px;

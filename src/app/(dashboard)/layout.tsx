@@ -7,6 +7,7 @@ import { DailyDecisionWidget } from '@/components/dashboard/DailyDecisionWidget'
 import { useDashboardSummary } from '@/hooks/useDashboardSummary';
 import layoutStyles from './DashboardLayout.module.css';
 import { CloseIcon } from '@/components/ui/AppIcons';
+import { ModalPortal } from '@/components/ui/ModalPortal/ModalPortal';
 
 function DailyDecisionModalWrapper({ onClose }: { onClose: () => void }) {
   const router = useRouter();
@@ -17,6 +18,7 @@ function DailyDecisionModalWrapper({ onClose }: { onClose: () => void }) {
   const activeGoals = summary.goals.filter((g) => !g.archived);
 
   return (
+    <ModalPortal>
     <div className={layoutStyles.overlay} onClick={onClose}>
       <div className={layoutStyles.modalContainer} onClick={(e) => e.stopPropagation()}>
         <button className={layoutStyles.closeBtn} onClick={onClose} aria-label="Cerrar">
@@ -37,6 +39,7 @@ function DailyDecisionModalWrapper({ onClose }: { onClose: () => void }) {
         />
       </div>
     </div>
+    </ModalPortal>
   );
 }
 

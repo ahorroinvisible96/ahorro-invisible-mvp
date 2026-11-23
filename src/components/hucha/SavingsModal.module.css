@@ -11,8 +11,9 @@
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  z-index: var(--z-modal-overlay, 220);
-  padding: 16px;
+  z-index: var(--z-modal-overlay, 600);
+  padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+  box-sizing: border-box;
 }
 
 @media (min-width: 640px) {
@@ -28,8 +29,11 @@
   padding: 12px 20px 22px;
   width: 100%;
   max-width: 440px;
+  max-height: calc(100dvh - 32px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
   box-shadow: 0 28px 70px rgba(0, 0, 0, 0.78);
-  overflow: hidden;
   color: #ffffff;
 }
 
