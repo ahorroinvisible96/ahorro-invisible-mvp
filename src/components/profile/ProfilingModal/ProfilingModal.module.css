@@ -10,16 +10,10 @@
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
   padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
   box-sizing: border-box;
-}
-
-@media (min-width: 640px) {
-  .overlay {
-    align-items: center;
-  }
 }
 
 .modal {
