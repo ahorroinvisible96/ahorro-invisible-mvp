@@ -7,18 +7,24 @@
   width: 100%;
   min-height: 100vh;
   box-sizing: border-box;
-  background: #080910;
+  background-color: #090a12;
+  background-image:
+    radial-gradient(ellipse 140% 390px at 72% -20px, rgba(145, 76, 250, 0.86) 0%, rgba(96, 86, 246, 0.52) 44%, rgba(9, 10, 18, 0) 78%),
+    linear-gradient(180deg, #7d45ec 0%, #5b53f2 175px, #35389c 310px, #161830 395px, #090a12 465px);
+  background-repeat: no-repeat;
   color: #ffffff;
 }
 
+@media (min-width: 1024px) {
+  .page {
+    background-image:
+      radial-gradient(ellipse 85% 330px at 56% -30px, rgba(145, 76, 250, 0.72) 0%, rgba(92, 86, 246, 0.40) 48%, rgba(9, 10, 18, 0) 80%),
+      linear-gradient(180deg, #7442ea 0%, #4e4ce4 140px, #1b1d45 270px, #090a12 360px);
+  }
+}
+
 .headerZone {
-  background: radial-gradient(
-    120% 95% at 50% -18%,
-    #8244f7 0%,
-    #5d54f6 36%,
-    #31318c 64%,
-    rgba(8, 9, 16, 0) 96%
-  );
+  background: transparent;
   padding: 20px 0 24px;
 }
 
@@ -153,6 +159,8 @@
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.16);
   backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   color: #ffffff;
   display: flex;
   align-items: center;
@@ -167,7 +175,7 @@
 .circleLbl {
   font-size: 12px;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.88);
+  color: rgba(255, 255, 255, 0.92);
   font-variant-numeric: tabular-nums;
   text-align: center;
   white-space: nowrap;
@@ -668,27 +676,24 @@
 
 /* ── Light Mode ── */
 :global([data-theme="light"]) .page {
-  background: #f3f5fa;
+  background-color: #f4f6fb;
+  background-image:
+    radial-gradient(ellipse 140% 370px at 72% -20px, rgba(125, 69, 236, 0.88) 0%, rgba(91, 83, 242, 0.62) 46%, rgba(244, 246, 251, 0) 80%),
+    linear-gradient(180deg, #7442ea 0%, #534cf0 175px, #3d42a6 300px, #989dd4 395px, #f4f6fb 465px);
+  background-repeat: no-repeat;
   color: #0b1220;
+}
+
+@media (min-width: 1024px) {
+  :global([data-theme="light"]) .page {
+    background-image:
+      radial-gradient(ellipse 85% 330px at 56% -30px, rgba(125, 69, 236, 0.78) 0%, rgba(91, 83, 242, 0.48) 48%, rgba(244, 246, 251, 0) 80%),
+      linear-gradient(180deg, #7442ea 0%, #4e4ce4 140px, #585cb8 260px, #f4f6fb 360px);
+  }
 }
 
 :global([data-theme="light"]) .headerZone {
-  background: linear-gradient(180deg, #6d3ee6 0%, #5b54f0 68%, rgba(243, 245, 250, 0) 100%);
-}
-
-:global([data-theme="light"]) .circleBtn {
-  background: rgba(255, 255, 255, 0.94);
-  color: #0b1220;
-  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.1);
-}
-
-:global([data-theme="light"]) .circleAction:hover .circleBtn {
-  background: #ffffff;
-}
-
-:global([data-theme="light"]) .circleLbl {
-  color: #1e293b;
-  font-weight: 600;
+  background: transparent;
 }
 
 :global([data-theme="light"]) .card {

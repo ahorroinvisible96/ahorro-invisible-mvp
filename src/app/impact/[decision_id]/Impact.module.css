@@ -4,29 +4,31 @@
 
 .page {
   min-height: 100vh;
-  background: #080910;
+  background-color: #090a12;
+  background-image:
+    radial-gradient(ellipse 140% 390px at 72% -20px, rgba(145, 76, 250, 0.86) 0%, rgba(96, 86, 246, 0.52) 44%, rgba(9, 10, 18, 0) 78%),
+    linear-gradient(180deg, #7d45ec 0%, #5b53f2 175px, #35389c 310px, #161830 395px, #090a12 465px);
+  background-repeat: no-repeat;
   color: #ffffff;
   display: flex;
   flex-direction: column;
 }
 
+@media (min-width: 1024px) {
+  .page {
+    background-image:
+      radial-gradient(ellipse 85% 330px at 56% -30px, rgba(145, 76, 250, 0.72) 0%, rgba(92, 86, 246, 0.40) 48%, rgba(9, 10, 18, 0) 80%),
+      linear-gradient(180deg, #7442ea 0%, #4e4ce4 140px, #1b1d45 270px, #090a12 360px);
+  }
+}
+
 .sky {
-  background: radial-gradient(
-    115% 95% at 50% -20%,
-    rgba(18, 196, 139, 0.62) 0%,
-    rgba(83, 84, 242, 0.36) 52%,
-    rgba(8, 9, 16, 0) 95%
-  );
+  background: transparent;
   padding: 20px 16px 28px;
 }
 
 .skyNeutral {
-  background: radial-gradient(
-    115% 95% at 50% -20%,
-    rgba(126, 66, 245, 0.72) 0%,
-    rgba(83, 84, 242, 0.36) 52%,
-    rgba(8, 9, 16, 0) 95%
-  );
+  background: transparent;
 }
 
 .inner {
@@ -277,18 +279,31 @@
 }
 
 /* ── Light Mode ── */
-:global([data-theme="light"]) .page,
-:global([data-theme="light"]) .centerState {
-  background: #f3f5fa;
+:global([data-theme="light"]) .page {
+  background-color: #f4f6fb;
+  background-image:
+    radial-gradient(ellipse 140% 370px at 72% -20px, rgba(125, 69, 236, 0.88) 0%, rgba(91, 83, 242, 0.62) 46%, rgba(244, 246, 251, 0) 80%),
+    linear-gradient(180deg, #7442ea 0%, #534cf0 175px, #3d42a6 300px, #989dd4 395px, #f4f6fb 465px);
+  background-repeat: no-repeat;
   color: #0b1220;
 }
 
-:global([data-theme="light"]) .sky {
-  background: linear-gradient(180deg, #10b981 0%, #5b54f0 70%, rgba(243, 245, 250, 0) 100%);
+@media (min-width: 1024px) {
+  :global([data-theme="light"]) .page {
+    background-image:
+      radial-gradient(ellipse 85% 330px at 56% -30px, rgba(125, 69, 236, 0.78) 0%, rgba(91, 83, 242, 0.48) 48%, rgba(244, 246, 251, 0) 80%),
+      linear-gradient(180deg, #7442ea 0%, #4e4ce4 140px, #585cb8 260px, #f4f6fb 360px);
+  }
 }
 
+:global([data-theme="light"]) .centerState {
+  background: #f4f6fb;
+  color: #0b1220;
+}
+
+:global([data-theme="light"]) .sky,
 :global([data-theme="light"]) .skyNeutral {
-  background: linear-gradient(180deg, #6d3ee6 0%, #5b54f0 70%, rgba(243, 245, 250, 0) 100%);
+  background: transparent;
 }
 
 :global([data-theme="light"]) .card {
