@@ -51,22 +51,70 @@ function GoalDonutChart({ goals }: { goals: Goal[] }) {
   const R = 64;
   const STROKE = 14;
   const CI = 2 * Math.PI * R;
-  const GAP = 10;
 
   const goalsWithSavings = activeGoals.filter((g) => g.currentAmount > 0);
+  const segCount = goalsWithSavings.length;
 
-  let rotOffset = -90;
+  // Asignación geométrica sin solapes:
+  // Con strokeLinecap="round", cada arco sobresale STROKE/2 por ambos extremos.
+  // Reservamos un slot mínimo (STROKE + VISUAL_GAP + MIN_DASH) mediante water-filling
+  // proporcional para que incluso objetivos pequeños (<1%) se vean nítidos y separados.
+  const VISUAL_GAP = segCount > 6 ? 3 : 5;
+  const useRoundCaps = segCount === 1 || segCount * (STROKE + VISUAL_GAP + 1) <= CI;
+  const capAllowance = useRoundCaps ? STROKE : 0;
+  const inset = segCount > 1 ? (capAllowance + VISUAL_GAP) / 2 : 0;
+  const minSlot = segCount > 1 ? Math.min(capAllowance + VISUAL_GAP + 1, CI / segCount) : CI;
+
+  const slots = new Array<number>(segCount).fill(0);
+  if (segCount === 1) {
+    slots[0] = CI;
+  } else if (segCount > 1) {
+    const locked = new Array<boolean>(segCount).fill(false);
+    let changed = true;
+    while (changed) {
+      changed = false;
+      let lockedSum = 0;
+      let unlockedAmount = 0;
+      for (let i = 0; i < segCount; i++) {
+        if (locked[i]) lockedSum += minSlot;
+        else unlockedAmount += goalsWithSavings[i].currentAmount;
+      }
+      const remCI = Math.max(0, CI - lockedSum);
+      for (let i = 0; i < segCount; i++) {
+        if (locked[i]) {
+          slots[i] = minSlot;
+        } else {
+          const share = unlockedAmount > 0
+            ? (goalsWithSavings[i].currentAmount / unlockedAmount) * remCI
+            : remCI / Math.max(1, segCount - locked.filter(Boolean).length);
+          if (share < minSlot) {
+            locked[i] = true;
+            slots[i] = minSlot;
+            changed = true;
+          } else {
+            slots[i] = share;
+          }
+        }
+      }
+    }
+  }
+
+  let cursorLen = 0;
   const segments = goalsWithSavings.map((g, i) => {
     const pct = g.currentAmount / totalSaved;
-    const rawLen = pct * CI;
-    const dashLen = goalsWithSavings.length > 1 ? Math.max(4, rawLen - GAP) : rawLen;
-    const startRot = rotOffset;
-    rotOffset += pct * 360;
+    const slotLen = slots[i];
+    const dashStart = cursorLen + inset;
+    const dashLen = segCount > 1 ? Math.max(0.5, slotLen - 2 * inset) : CI;
+    const startRot = -90 + (dashStart / CI) * 360;
+    cursorLen += slotLen;
     return {
       goal: g,
       pct,
+      slotLen,
       dashLen,
       startRot,
+      visualStartLen: dashStart - capAllowance / 2,
+      visualEndLen: dashStart + dashLen + capAllowance / 2,
       color: DONUT_COLORS[i % DONUT_COLORS.length],
       originalIdx: activeGoals.indexOf(g),
     };
@@ -80,6 +128,10 @@ function GoalDonutChart({ goals }: { goals: Goal[] }) {
     selectedIdx !== null
       ? segments.find((s) => s.originalIdx === selectedIdx) ?? null
       : null;
+
+  const selectedPctLabel = selectedSeg
+    ? (selectedSeg.pct > 0 && selectedSeg.pct < 0.005 ? '< 1%' : `${Math.round(selectedSeg.pct * 100)}%`)
+    : '';
 
   return (
     <div className={styles.donutSection}>
@@ -95,11 +147,14 @@ function GoalDonutChart({ goals }: { goals: Goal[] }) {
             strokeWidth={STROKE}
           />
 
-          {segments.map((seg, i) => {
+          {segments.map((seg) => {
             const isSelected = selectedIdx === seg.originalIdx;
             return (
               <circle
                 key={seg.goal.id}
+                data-donut-goal={seg.goal.id}
+                data-visual-start={seg.visualStartLen.toFixed(2)}
+                data-visual-end={seg.visualEndLen.toFixed(2)}
                 cx={CX}
                 cy={CY}
                 r={R}
@@ -107,7 +162,7 @@ function GoalDonutChart({ goals }: { goals: Goal[] }) {
                 stroke={seg.color}
                 strokeWidth={isSelected ? STROKE + 3 : STROKE}
                 strokeDasharray={`${seg.dashLen} ${CI}`}
-                strokeLinecap="round"
+                strokeLinecap={useRoundCaps ? 'round' : 'butt'}
                 transform={`rotate(${seg.startRot} ${CX} ${CY})`}
                 style={{
                   cursor: 'pointer',
@@ -130,7 +185,7 @@ function GoalDonutChart({ goals }: { goals: Goal[] }) {
                 className={styles.donutCenterLabel}
               >
                 {selectedSeg
-                  ? `${Math.round(selectedSeg.pct * 100)}%`
+                  ? selectedPctLabel
                   : `${goalsWithSavings.length} ${goalsWithSavings.length === 1 ? 'objetivo' : 'objetivos'}`}
               </text>
               <text
