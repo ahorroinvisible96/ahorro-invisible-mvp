@@ -85,8 +85,7 @@
 
 .orderDaily     { order: 1; min-width: 0; }
 .orderEvolution { order: 2; min-width: 0; }
-.orderInsight   { order: 3; min-width: 0; }
-.orderHucha     { order: 4; min-width: 0; }
+.orderHucha     { order: 3; min-width: 0; }
 
 /* ── Escritorio (>= 1024px): degradado centrado + 2 columnas equilibradas ── */
 @media (min-width: 768px) {
@@ -129,7 +128,6 @@
 
   .orderDaily,
   .orderEvolution,
-  .orderInsight,
   .orderHucha {
     order: 0;
   }

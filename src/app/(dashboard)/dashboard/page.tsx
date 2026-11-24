@@ -22,7 +22,6 @@ import { HeaderStatusBarWidget } from '@/components/dashboard/HeaderStatusBarWid
 import { DailyDecisionWidget } from '@/components/dashboard/DailyDecisionWidget';
 import { SavingsEvolutionWidget } from '@/components/dashboard/SavingsEvolutionWidget';
 import { PrimaryGoalHeroWidget } from '@/components/dashboard/PrimaryGoalHeroWidget';
-import { AIInsightWidget } from '@/components/dashboard/AIInsightWidget/AIInsightWidget';
 import { ModalPortal } from '@/components/ui/ModalPortal/ModalPortal';
 import styles from './Dashboard.module.css';
 
@@ -1119,7 +1118,7 @@ export default function DashboardPage() {
           ) : null}
 
           <div className={styles.grid}>
-            {/* Columna izquierda en escritorio (Decisión diaria + Insight) */}
+            {/* Columna izquierda en escritorio (Decisión diaria + Hucha) */}
             <div className={styles.mainCol}>
               <div id="daily-decision-widget" className={styles.orderDaily}>
                 <DailyDecisionWidget
@@ -1135,12 +1134,16 @@ export default function DashboardPage() {
                 />
               </div>
 
-              <div className={styles.orderInsight}>
-                <AIInsightWidget />
+              <div className={styles.orderHucha}>
+                <SavingsBadge
+                  balance={summary.hucha.balance}
+                  hasActiveGoals={activeGoals.length > 0}
+                  onClick={() => setShowHuchaModal(true)}
+                />
               </div>
             </div>
 
-            {/* Columna derecha en escritorio (Evolución + Hucha) */}
+            {/* Columna derecha en escritorio (Evolución) */}
             <div className={styles.sideCol}>
               <div className={styles.orderEvolution}>
                 <SavingsEvolutionWidget
@@ -1148,14 +1151,6 @@ export default function DashboardPage() {
                   onChangeRange={changeRange}
                   onGoToDailyQuestion={() => router.push('/daily')}
                   goals={activeGoals}
-                />
-              </div>
-
-              <div className={styles.orderHucha}>
-                <SavingsBadge
-                  balance={summary.hucha.balance}
-                  hasActiveGoals={activeGoals.length > 0}
-                  onClick={() => setShowHuchaModal(true)}
                 />
               </div>
             </div>

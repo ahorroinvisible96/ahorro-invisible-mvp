@@ -133,12 +133,14 @@
   white-space: nowrap;
 }
 
-/* ── Circular glass action strip ── */
+/* ── Circular glass action strip (equal-width columns for exact symmetry) ── */
 .circleActions {
-  display: flex;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: clamp(94px, 27vw, 110px);
   justify-content: center;
-  gap: 28px;
-  margin-top: 22px;
+  gap: 6px;
+  margin: 22px auto 0;
 }
 
 .circleAction {
@@ -146,6 +148,7 @@
   flex-direction: column;
   align-items: center;
   gap: 7px;
+  width: 100%;
   background: transparent;
   border: none;
   padding: 0;
@@ -177,6 +180,8 @@
   font-weight: 500;
   color: rgba(255, 255, 255, 0.88);
   font-variant-numeric: tabular-nums;
+  text-align: center;
+  white-space: nowrap;
 }
 
 /* ── Content zone ── */
