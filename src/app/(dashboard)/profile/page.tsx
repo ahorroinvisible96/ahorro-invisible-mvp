@@ -3,10 +3,11 @@
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { analytics } from '@/services/analytics';
-import { buildSummary, storeUpdateUserName, storeUpdateIncome } from '@/services/dashboardStore';
+import { buildSummary, storeUpdateUserName, storeUpdateIncome, incomeBandFromRange } from '@/services/dashboardStore';
 import { authSignOut } from '@/services/authService';
 import { hasCompletedProfiling } from '@/services/profilingService';
 import { ProfilingModal } from '@/components/profile/ProfilingModal/ProfilingModal';
+import { ModalPortal } from '@/components/ui/ModalPortal/ModalPortal';
 import type { IncomeRange } from '@/types/Dashboard';
 import styles from './Profile.module.css';
 import { getTheme, applyTheme, Theme } from '@/styles/themes';
@@ -19,6 +20,9 @@ import {
   ChevronRightIcon,
   ChevronDownIcon,
   UserIcon,
+  WalletIcon,
+  CloseIcon,
+  CheckIcon,
   FlameIcon,
   SproutIcon,
   MedalIcon,
@@ -59,12 +63,25 @@ function getMedal(totalSaved: number) {
     ?? { amount: 0, Icon: SproutIcon, color: '#22c55e', label: 'Semilla' };
 }
 
-function formatIncome(range: IncomeRange | null): string {
-  if (!range) return '—';
-  const v = range.min ?? 0;
-  return new Intl.NumberFormat('es-ES', {
-    style: 'currency', currency: 'EUR', maximumFractionDigits: 0,
-  }).format(v);
+const INCOME_BAND_OPTIONS: {
+  band: string;
+  label: string;
+  shortLabel: string;
+  min: number;
+  max: number;
+}[] = [
+  { band: 'lt_1000',   label: 'Menos de 1.000 €', shortLabel: '< 1.000 €',    min: 0,    max: 1000 },
+  { band: '1000_1500', label: '1.000 – 1.500 €',  shortLabel: '1.000–1.500 €', min: 1000, max: 1500 },
+  { band: '1500_2000', label: '1.500 – 2.000 €',  shortLabel: '1.500–2.000 €', min: 1500, max: 2000 },
+  { band: '2000_2500', label: '2.000 – 2.500 €',  shortLabel: '2.000–2.500 €', min: 2000, max: 2500 },
+  { band: '2500_3000', label: '2.500 – 3.000 €',  shortLabel: '2.500–3.000 €', min: 2500, max: 3000 },
+  { band: 'gt_3000',   label: 'Más de 3.000 €',   shortLabel: '> 3.000 €',    min: 3000, max: 10000 },
+];
+
+function getIncomeBandOption(range: IncomeRange | null) {
+  if (!range) return null;
+  const code = incomeBandFromRange(range);
+  return INCOME_BAND_OPTIONS.find(o => o.band === code) ?? INCOME_BAND_OPTIONS[0];
 }
 
 function formatEUR(n: number): string {
@@ -102,6 +119,8 @@ export default function ProfilePage() {
   const [editingName, setEditingName] = useState('');
   const [nameSaved, setNameSaved] = useState(false);
   const [incomeVisible, setIncomeVisible] = useState(true);
+  const [incomeModalOpen, setIncomeModalOpen] = useState(false);
+  const [draftBand, setDraftBand] = useState<string>('1500_2000');
   const [profilingOpen, setProfilingOpen] = useState(false);
   const [profilingDone, setProfilingDone] = useState(false);
   const { addToast } = useToast();
@@ -139,11 +158,24 @@ export default function ProfilePage() {
     setLoading(false);
   }, [router]);
 
-  const handleSaveIncome = useCallback((range: IncomeRange) => {
-    storeUpdateIncome(range);
-    setIncomeRange(range);
-  }, []);
-  void handleSaveIncome;
+  const openIncomeModal = useCallback(() => {
+    const currentOpt = getIncomeBandOption(incomeRange);
+    setDraftBand(currentOpt?.band ?? '1500_2000');
+    analytics.incomeEditOpened();
+    setIncomeModalOpen(true);
+  }, [incomeRange]);
+
+  const handleSaveIncome = useCallback(() => {
+    const opt = INCOME_BAND_OPTIONS.find(o => o.band === draftBand);
+    if (!opt) return;
+    const nextRange: IncomeRange = { min: opt.min, max: opt.max, currency: 'EUR' };
+    storeUpdateIncome(nextRange, '30d', { source: 'profile' });
+    setIncomeRange(nextRange);
+    analytics.incomeUpdateSubmitted();
+    analytics.profileUpdated(['incomeRange']);
+    setIncomeModalOpen(false);
+    addToast('Ingresos mensuales actualizados', 'success');
+  }, [draftBand, addToast]);
 
   const handleSaveName = useCallback(() => {
     if (!editingName.trim()) return;
@@ -180,8 +212,11 @@ export default function ProfilePage() {
   const initials = getInitials(userName, email);
   const firstName = userName.trim().split(' ')[0] || 'Usuario';
   const medal = getMedal(totalSaved);
-  const incomeStr = formatIncome(incomeRange);
-  const incomeDisplay = incomeVisible ? `${incomeStr}/m` : '••••';
+  const incomeOption = getIncomeBandOption(incomeRange);
+  const incomeDisplay = incomeOption ? (incomeVisible ? incomeOption.shortLabel : '••••') : 'Ingresos';
+  const incomeRowSub = incomeOption
+    ? (incomeVisible ? `${incomeOption.label}/mes` : '••••••')
+    : 'Sin configurar · pulsa para elegir';
 
   return (
     <div className={styles.page}>
@@ -226,11 +261,11 @@ export default function ProfilePage() {
               <button
                 type="button"
                 className={styles.circleAction}
-                onClick={toggleIncomeVisibility}
-                aria-label={incomeVisible ? 'Ocultar ingresos' : 'Mostrar ingresos'}
+                onClick={incomeOption ? toggleIncomeVisibility : openIncomeModal}
+                aria-label={incomeOption ? (incomeVisible ? 'Ocultar ingresos' : 'Mostrar ingresos') : 'Configurar ingresos mensuales'}
               >
                 <span className={styles.circleBtn}><EyeIcon open={incomeVisible} size={18} /></span>
-                <span className={`${styles.circleLbl} ${!incomeVisible ? styles.incomeBlur : ''}`}>{incomeDisplay}</span>
+                <span className={`${styles.circleLbl} ${incomeOption && !incomeVisible ? styles.incomeBlur : ''}`}>{incomeDisplay}</span>
               </button>
 
               <button type="button" className={styles.circleAction} onClick={toggleThemeQuick}>
@@ -277,6 +312,17 @@ export default function ProfilePage() {
                     <ChevronRightIcon size={16} className={styles.rowChevron} />
                   </button>
 
+                  <button type="button" className={styles.listRow} onClick={openIncomeModal}>
+                    <span className={`${styles.medallion} ${styles.mEmerald}`}><WalletIcon size={18} /></span>
+                    <span className={styles.rowMid}>
+                      <span className={styles.rowTitle}>Ingresos mensuales</span>
+                      <span className={`${styles.rowSub} ${incomeOption && !incomeVisible ? styles.incomeBlur : ''}`}>
+                        {incomeRowSub}
+                      </span>
+                    </span>
+                    <ChevronRightIcon size={16} className={styles.rowChevron} />
+                  </button>
+
                   <button type="button" className={styles.listRow} onClick={() => router.push('/goals')}>
                     <span className={`${styles.medallion} ${styles.mCobalt}`}><TargetIcon size={18} /></span>
                     <span className={styles.rowMid}>
@@ -296,7 +342,7 @@ export default function ProfilePage() {
                   </button>
 
                   <div className={`${styles.listRow} ${styles.listRowStatic}`}>
-                    <span className={`${styles.medallion} ${styles.mEmerald}`}><medal.Icon size={18} /></span>
+                    <span className={`${styles.medallion} ${styles.mAmber}`}><medal.Icon size={18} /></span>
                     <span className={styles.rowMid}>
                       <span className={styles.rowTitle}>Nivel {medal.label}</span>
                       <span className={styles.rowSub}>
@@ -378,6 +424,17 @@ export default function ProfilePage() {
                         placeholder="Tu nombre"
                       />
                     </div>
+                    <div className={styles.fieldGroup}>
+                      <span className={styles.infoLabel}>Ingresos mensuales</span>
+                      <div className={styles.infoInlineRow}>
+                        <span className={`${styles.infoStaticFlex} ${incomeOption && !incomeVisible ? styles.incomeBlur : ''}`}>
+                          {incomeOption ? `${incomeOption.label}/mes` : 'Sin configurar'}
+                        </span>
+                        <button type="button" className={styles.infoEditChip} onClick={openIncomeModal}>
+                          Cambiar
+                        </button>
+                      </div>
+                    </div>
                     {email && (
                       <div className={styles.fieldGroup}>
                         <span className={styles.infoLabel}>Email</span>
@@ -398,6 +455,75 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {incomeModalOpen && (
+        <ModalPortal>
+          <div className={styles.modalOverlay} onClick={() => setIncomeModalOpen(false)}>
+            <div
+              className={styles.modalCard}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="income-modal-title"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className={styles.modalHeader}>
+                <div>
+                  <h2 id="income-modal-title" className={styles.modalTitle}>Ingresos mensuales</h2>
+                  <p className={styles.modalSubtitle}>
+                    Elige tu tramo neto orientativo para adaptar las metas recomendadas.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className={styles.modalCloseBtn}
+                  onClick={() => setIncomeModalOpen(false)}
+                  aria-label="Cerrar"
+                >
+                  <CloseIcon size={16} />
+                </button>
+              </div>
+
+              <div className={styles.bandList} role="radiogroup" aria-label="Tramo de ingresos mensuales">
+                {INCOME_BAND_OPTIONS.map((opt) => {
+                  const selected = draftBand === opt.band;
+                  return (
+                    <button
+                      key={opt.band}
+                      type="button"
+                      role="radio"
+                      aria-checked={selected}
+                      className={`${styles.bandOption} ${selected ? styles.bandOptionActive : ''}`}
+                      onClick={() => setDraftBand(opt.band)}
+                    >
+                      <span className={styles.bandLabel}>{opt.label}</span>
+                      <span className={`${styles.bandCheck} ${selected ? styles.bandCheckActive : ''}`}>
+                        {selected && <CheckIcon size={13} />}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className={styles.modalFooter}>
+                <button
+                  type="button"
+                  className={styles.modalCancelBtn}
+                  onClick={() => setIncomeModalOpen(false)}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  className={styles.modalSaveBtn}
+                  onClick={handleSaveIncome}
+                >
+                  Guardar
+                </button>
+              </div>
+            </div>
+          </div>
+        </ModalPortal>
+      )}
 
       {profilingOpen && (
         <ProfilingModal
