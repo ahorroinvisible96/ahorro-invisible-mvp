@@ -19,7 +19,7 @@ import {
 } from '@/services/dashboardStore';
 import { pushLocalDataToSupabase, syncGoalToSupabase, deleteGoalFromSupabase } from '@/services/syncService';
 import type { Goal, Hucha, DashboardSummary } from '@/types/Dashboard';
-import { TargetIcon, PlusIcon, WalletIcon, CheckIcon } from '@/components/ui/AppIcons';
+import { TargetIcon, PlusIcon, WalletIcon, CheckIcon, EditIcon, StarIcon, CloseIcon } from '@/components/ui/AppIcons';
 import { WidgetSkeleton } from '@/components/ui/Skeleton/Skeleton';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { useToast } from '@/components/ui/Toast/Toast';
@@ -565,6 +565,7 @@ export default function GoalsPage() {
   const [pendingArchiveAfterCreate, setPendingArchiveAfterCreate] = useState<Goal | null>(null);
   const [deletingGoal, setDeletingGoal] = useState<Goal | null>(null);
   const [showHuchaModal, setShowHuchaModal] = useState(false);
+  const [showSwitchPrimaryModal, setShowSwitchPrimaryModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const { addToast } = useToast();
 
@@ -654,7 +655,9 @@ export default function GoalsPage() {
 
   const handleSetPrimary = (goalId: string) => {
     storeSetPrimaryGoal(goalId);
+    setShowSwitchPrimaryModal(false);
     refresh();
+    addToast('Objetivo principal actualizado', 'success');
   };
 
   const handleReactivate = (goalId: string) => {
@@ -691,9 +694,14 @@ export default function GoalsPage() {
   }
 
   const primaryGoal = summary.primaryGoal;
-  const primaryPct = primaryGoal ? Math.min(100, Math.round((primaryGoal.currentAmount / primaryGoal.targetAmount) * 100)) : 0;
-  const primaryTitle = primaryGoal ? (primaryGoal.title.length > 20 ? primaryGoal.title.slice(0, 19) + '…' : primaryGoal.title) : 'Sin objetivo';
-  const totalInGoals = activeGoals.reduce((acc, g) => acc + g.currentAmount, 0);
+  const primaryPct = primaryGoal && primaryGoal.targetAmount > 0
+    ? Math.min(100, Math.round((primaryGoal.currentAmount / primaryGoal.targetAmount) * 100))
+    : 0;
+  const primaryRemaining = primaryGoal ? Math.max(0, primaryGoal.targetAmount - primaryGoal.currentAmount) : 0;
+  const primaryCompleted = Boolean(primaryGoal && primaryGoal.currentAmount >= primaryGoal.targetAmount);
+  const primaryMonthlyPace = primaryGoal && primaryRemaining > 0
+    ? Math.ceil(primaryRemaining / Math.max(1, primaryGoal.horizonMonths))
+    : 0;
   const inProgressGoals = activeGoals.filter(g => g.currentAmount < g.targetAmount);
   const completedGoals = activeGoals.filter(g => g.currentAmount >= g.targetAmount);
 
@@ -730,6 +738,69 @@ export default function GoalsPage() {
           onClose={() => setDeletingGoal(null)}
         />
       )}
+      {showSwitchPrimaryModal && (
+        <ModalPortal>
+          <div className={styles.modalOverlay} onClick={() => setShowSwitchPrimaryModal(false)}>
+            <div
+              className={styles.modalSheet}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="switch-primary-title"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className={styles.modalHead}>
+                <h2 id="switch-primary-title" className={styles.modalTitle}>Cambiar objetivo principal</h2>
+                <button
+                  type="button"
+                  className={styles.modalCloseBtn}
+                  onClick={() => setShowSwitchPrimaryModal(false)}
+                  aria-label="Cerrar"
+                >
+                  <CloseIcon size={15} />
+                </button>
+              </div>
+              <p className={styles.switchSubtitle}>
+                Elige en qué meta quieres centrar tu seguimiento principal.
+              </p>
+              <div className={styles.switchList}>
+                {activeGoals.map((g, i) => {
+                  const gPct = pct(g);
+                  const isCur = g.id === primaryGoal?.id;
+                  return (
+                    <button
+                      key={g.id}
+                      type="button"
+                      className={`${styles.switchOption} ${isCur ? styles.switchOptionActive : ''}`}
+                      onClick={() => isCur ? setShowSwitchPrimaryModal(false) : handleSetPrimary(g.id)}
+                    >
+                      <span className={`${styles.medallion} ${MEDALLION_CLASSES[i % MEDALLION_CLASSES.length]}`}>
+                        <TargetIcon size={16} />
+                      </span>
+                      <span className={styles.switchOptionBody}>
+                        <span className={styles.switchOptionTitle}>{g.title}</span>
+                        <span className={styles.switchOptionSub}>
+                          {formatEUR(g.currentAmount)} de {formatEUR(g.targetAmount)} · {gPct}%
+                        </span>
+                      </span>
+                      <span className={`${styles.switchCheck} ${isCur ? styles.switchCheckActive : ''}`}>
+                        {isCur && <CheckIcon size={13} />}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              <button
+                type="button"
+                className={styles.btnGhost}
+                style={{ width: '100%' }}
+                onClick={() => setShowSwitchPrimaryModal(false)}
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </ModalPortal>
+      )}
       <SavingsModal
         isOpen={showHuchaModal && hucha.balance > 0}
         onClose={() => setShowHuchaModal(false)}
@@ -739,7 +810,7 @@ export default function GoalsPage() {
         onCreateGoal={() => { setShowHuchaModal(false); setModalMode('create'); }}
       />
 
-      {/* ── Open atmospheric sky hero ── */}
+      {/* ── Open atmospheric sky hero (Expanded Primary Goal) ── */}
       <div className={styles.headerZone}>
         <div className={styles.zoneInner}>
           <div className={styles.headerContent}>
@@ -755,15 +826,75 @@ export default function GoalsPage() {
               </button>
             </div>
 
-            <div className={styles.heroCenter}>
-              <span className={styles.heroKicker}>
-                Total en objetivos · {activeGoals.length} {activeGoals.length === 1 ? 'activo' : 'activos'}
-              </span>
-              <div className={styles.heroAmount}>{formatEUR(totalInGoals)}</div>
-              <div className={styles.heroPill}>
-                {primaryGoal ? `Principal: ${primaryTitle} · ${primaryPct}%` : 'Crea tu primer objetivo'}
+            {primaryGoal ? (
+              <div className={styles.heroCenter}>
+                <button
+                  type="button"
+                  className={styles.heroPrimaryTag}
+                  onClick={() => router.push(`/goals/${primaryGoal.id}`)}
+                >
+                  <StarIcon size={12} />
+                  <span>Principal</span>
+                  <span className={styles.heroTagDot} aria-hidden="true">·</span>
+                  <span className={styles.heroTagName}>{primaryGoal.title}</span>
+                </button>
+
+                <button
+                  type="button"
+                  className={styles.heroAmountBtn}
+                  onClick={() => router.push(`/goals/${primaryGoal.id}`)}
+                  aria-label={`Ver detalle de ${primaryGoal.title}`}
+                >
+                  <span className={styles.heroAmount}>{formatEUR(primaryGoal.currentAmount)}</span>
+                  <span className={styles.heroTargetLine}>
+                    de {formatEUR(primaryGoal.targetAmount)} · {primaryGoal.horizonMonths} {primaryGoal.horizonMonths === 1 ? 'mes' : 'meses'}
+                  </span>
+                </button>
+
+                <div
+                  className={styles.heroProgressTrack}
+                  role="progressbar"
+                  aria-valuenow={primaryPct}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-label={`Progreso de ${primaryGoal.title}`}
+                >
+                  <div
+                    className={`${styles.heroProgressFill} ${primaryCompleted ? styles.heroProgressFillDone : ''}`}
+                    style={{ width: `${primaryPct}%` }}
+                  />
+                </div>
+
+                <div className={styles.heroStatsBar}>
+                  <div className={styles.heroStatCell}>
+                    <span className={styles.heroStatLabel}>Progreso</span>
+                    <span className={styles.heroStatValue}>{primaryPct}%</span>
+                  </div>
+                  <span className={styles.heroStatDivider} aria-hidden="true" />
+                  <div className={styles.heroStatCell}>
+                    <span className={styles.heroStatLabel}>{primaryCompleted ? 'Estado' : 'Te faltan'}</span>
+                    <span className={styles.heroStatValue}>
+                      {primaryCompleted ? '¡Lograda!' : formatEUR(primaryRemaining)}
+                    </span>
+                  </div>
+                  <span className={styles.heroStatDivider} aria-hidden="true" />
+                  <div className={styles.heroStatCell}>
+                    <span className={styles.heroStatLabel}>{primaryCompleted ? 'Plazo' : 'Ritmo ideal'}</span>
+                    <span className={styles.heroStatValue}>
+                      {primaryCompleted
+                        ? `${primaryGoal.horizonMonths}m`
+                        : `${formatEUR(primaryMonthlyPace)}/m`}
+                    </span>
+                  </div>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className={styles.heroCenter}>
+                <span className={styles.heroKicker}>Objetivo principal</span>
+                <div className={styles.heroAmount}>0 €</div>
+                <div className={styles.heroPill}>Crea tu primer objetivo</div>
+              </div>
+            )}
 
             <div className={styles.circleActions}>
               <button type="button" className={styles.circleAction} onClick={() => setModalMode('create')}>
@@ -775,19 +906,38 @@ export default function GoalsPage() {
                 className={styles.circleAction}
                 onClick={() => hucha.balance > 0 ? setShowHuchaModal(true) : addToast('Tu Hucha aún no tiene saldo disponible', 'info')}
               >
-                <span className={styles.circleBtn}><WalletIcon size={18} /></span>
-                <span className={styles.circleLbl}>Hucha {formatEUR(hucha.balance)}</span>
+                <span className={styles.circleBtn}>
+                  <WalletIcon size={18} />
+                  {hucha.balance > 0 && <span className={styles.circleDot} aria-hidden="true" />}
+                </span>
+                <span className={styles.circleLbl}>Hucha</span>
               </button>
-              {archivedGoals.length > 0 && (
-                <button type="button" className={styles.circleAction} onClick={() => setShowArchived(v => !v)}>
+              {primaryGoal && (
+                <button
+                  type="button"
+                  className={styles.circleAction}
+                  onClick={() => { setEditingGoal(primaryGoal); setModalMode('edit'); }}
+                >
+                  <span className={styles.circleBtn}><EditIcon size={17} /></span>
+                  <span className={styles.circleLbl}>Editar</span>
+                </button>
+              )}
+              {primaryGoal && activeGoals.length > 1 && (
+                <button
+                  type="button"
+                  className={styles.circleAction}
+                  onClick={() => setShowSwitchPrimaryModal(true)}
+                >
                   <span className={styles.circleBtn}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="3" y="4" width="18" height="4" rx="1" />
-                      <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8" />
-                      <path d="M10 12h4" />
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="16 3 21 3 21 8" />
+                      <line x1="4" y1="20" x2="21" y2="3" />
+                      <polyline points="21 16 21 21 16 21" />
+                      <line x1="15" y1="15" x2="21" y2="21" />
+                      <line x1="4" y1="4" x2="9" y2="9" />
                     </svg>
                   </span>
-                  <span className={styles.circleLbl}>Archivados ({archivedGoals.length})</span>
+                  <span className={styles.circleLbl}>Cambiar</span>
                 </button>
               )}
             </div>
