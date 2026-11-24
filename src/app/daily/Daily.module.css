@@ -67,6 +67,12 @@
 
 .heroQuestion {
   padding: 4px 4px 0;
+  --fill-blank-text: #ffffff;
+  --fill-blank-pill-bg: rgba(255, 255, 255, 0.2);
+  --fill-blank-pill-color: #ffffff;
+  --fill-blank-filled-color: #f3e8ff;
+  --fill-blank-underline: rgba(255, 255, 255, 0.72);
+  --fill-blank-hover-bg: rgba(255, 255, 255, 0.16);
 }
 
 .questionTitle {
@@ -359,6 +365,10 @@
 :global([data-theme="light"]) .amountInput,
 :global([data-theme="light"]) .statusTitle {
   color: #0b1220;
+}
+
+:global([data-theme="light"]) .amountInput::placeholder {
+  color: #94a3b8;
 }
 
 :global([data-theme="light"]) .goalSelect {

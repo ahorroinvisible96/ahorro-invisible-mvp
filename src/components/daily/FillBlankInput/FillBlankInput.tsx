@@ -84,11 +84,14 @@ export function FillBlankInput({
           className={`${styles.blankButton} ${displayValue ? styles.blankFilled : ''} ${disabled ? styles.blankDisabled : ''} ${isOpen ? styles.blankOpen : ''}`}
           onClick={() => !disabled && setIsOpen(o => !o)}
           disabled={disabled}
+          aria-expanded={isOpen}
+          aria-haspopup="listbox"
         >
-          {displayValue || '...'}
+          <span>{displayValue || '···'}</span>
           <svg
             className={`${styles.blankChevron} ${isOpen ? styles.blankChevronUp : ''}`}
-            width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+            width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"
+            aria-hidden="true"
           >
             <polyline points="6 9 12 15 18 9"/>
           </svg>

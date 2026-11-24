@@ -23,9 +23,11 @@
   border-color: rgba(15, 23, 42, 0.08);
   box-shadow: 0 8px 24px -10px rgba(15, 23, 42, 0.08);
   --fill-blank-text: #0f172a;
-  --fill-blank-pill-bg: rgba(99, 102, 241, 0.12);
-  --fill-blank-pill-border: rgba(99, 102, 241, 0.42);
-  --fill-blank-pill-color: #4338ca;
+  --fill-blank-pill-bg: rgba(109, 62, 230, 0.09);
+  --fill-blank-pill-color: #6d3ee6;
+  --fill-blank-filled-color: #6d3ee6;
+  --fill-blank-underline: rgba(109, 62, 230, 0.36);
+  --fill-blank-hover-bg: rgba(109, 62, 230, 0.09);
 }
 
 .wrapperHeader {
