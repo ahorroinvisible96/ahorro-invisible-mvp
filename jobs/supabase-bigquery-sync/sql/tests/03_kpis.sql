@@ -25,8 +25,9 @@ SELECT 'kpi_active_le_registered', 'critical',
   )),
   STRING_AGG(IF(NOT (
     dau <= wau AND wau <= mau AND mau <= registered_users
-    AND financial_dau <= dau AND financial_wau <= financial_mau AND financial_mau <= mau
+    AND financial_dau <= dau AND financial_dau <= financial_wau AND financial_wau <= financial_mau AND financial_mau <= mau
     AND habit_users_4w <= mfeu_30d AND mfeu_30d <= savers_30d AND savers_30d <= financial_mau
+    AND savers <= registered_users
   ), CAST(date AS STRING), NULL) LIMIT 5)
 FROM `{{project}}.{{an}}.mart_kpi_daily`
 UNION ALL

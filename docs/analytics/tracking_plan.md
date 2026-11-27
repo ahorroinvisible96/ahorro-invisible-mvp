@@ -61,7 +61,7 @@ Eventos `*_confirmed` añaden: `command_id`, `command_type`, `surface`, `occurre
 
 > Tolerancia PostHog ↔ ledger: si la respuesta de la RPC se pierde, el reintento recibe
 > `already_present` y no se reemite el evento (evita duplicados). Además, bloqueadores de anuncios
-> pueden impedir el envío a PostHog. El test `posthog_confirmed_vs_ledger` admite 10 % o 2 asientos.
+> pueden impedir el envío a PostHog. El test `posthog_confirmed_vs_ledger` admite 15 % o 2 asientos.
 > **El ledger de Supabase/BigQuery es siempre la fuente de verdad de importes.**
 
 ## Intenciones

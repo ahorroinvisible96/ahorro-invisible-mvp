@@ -340,7 +340,10 @@ export function recordPromptImpressionShown(
     timeSlot: normalizeTimeSlotV2(question.timeSlot),
     reason,
     surface,
-    replacesQuestionId: replacesQuestionId && getQuestionById(replacesQuestionId) ? replacesQuestionId : null,
+    replacesQuestionId:
+      replacesQuestionId && replacesQuestionId !== question.questionId && getQuestionById(replacesQuestionId)
+        ? replacesQuestionId
+        : null,
   });
 }
 

@@ -245,14 +245,16 @@ async function execute(uid: string, c: Command): Promise<{ rpcName: string; res:
         p_impression_id: impressionId, p_surface: p.surface, p_legacy_id: legacy(p.decision),
       };
       let res = await rpc('record_daily_decision', args);
-      // Si la impresión previa no existiese aún en servidor, nunca bloquear un ahorro real.
+      // 1) Etiqueta fuera del catálogo publicado (la RPC valida invalid_option antes que p_impression_id).
+      if (res.error?.message?.startsWith('invalid_option')) {
+        args.p_selected_option_key = '__unspecified__';
+        args.p_custom_text = null;
+        res = await rpc('record_daily_decision', args);
+      }
+      // 2) Si la impresión previa no existiese aún en servidor, nunca bloquear un ahorro real.
       if (res.error?.message?.startsWith('not_found') && args.p_impression_id !== null) {
         args.p_impression_id = null;
         res = await rpc('record_daily_decision', args);
-      }
-      // Etiqueta fuera del catálogo publicado: el importe se registra igual, sin inventar una opción.
-      if (res.error?.message?.startsWith('invalid_option')) {
-        res = await rpc('record_daily_decision', { ...args, p_selected_option_key: '__unspecified__', p_custom_text: null });
       }
       return { rpcName: 'record_daily_decision', res };
     }
@@ -444,7 +446,7 @@ function classify(c: Command, res: RpcResult): Verdict {
   const code = res.error.code || '';
   if (code === 'P0001') {
     const k = msg.split(':')[0].trim();
-    if (c.type === 'prompt.impression' && ['invalid_question', 'invalid_argument', 'not_found'].includes(k)) return 'resolved';
+    if (c.type === 'prompt.impression' && ['invalid_question', 'invalid_argument', 'not_found', 'idempotency_conflict'].includes(k)) return 'resolved';
     if (c.type === 'daily.void' && ['not_found', 'decision_not_active', 'transaction_not_active'].includes(k)) return 'resolved';
     if (c.type === 'onboarding.complete' && k === 'onboarding_already_completed') return 'resolved';
     if (c.type === 'grace.use' && k === 'grace_already_used') return 'resolved';
