@@ -1,4 +1,4 @@
--- T01 · Integridad de claves y relaciones (raw V2 + modelos).
+-- T01 · Integridad de claves y relaciones (raw V2 + modelos + PostHog deduplicado).
 -- Contrato de cada test: (test_name, severity, failures, details). failures = 0 → OK.
 SELECT 'pk_unique_dim_user' AS test_name, 'critical' AS severity,
   COUNT(*) - COUNT(DISTINCT user_id) AS failures, CAST(NULL AS STRING) AS details
@@ -9,6 +9,12 @@ FROM `{{project}}.{{an}}.fct_ledger`
 UNION ALL
 SELECT 'pk_unique_fct_decision', 'critical', COUNT(*) - COUNT(DISTINCT decision_id), NULL
 FROM `{{project}}.{{an}}.fct_decision`
+UNION ALL
+SELECT 'pk_unique_fct_prompt_impression', 'critical', COUNT(*) - COUNT(DISTINCT impression_id), NULL
+FROM `{{project}}.{{an}}.fct_prompt_impression`
+UNION ALL
+SELECT 'pk_unique_stg_events', 'critical', COUNT(*) - COUNT(DISTINCT event_id), NULL
+FROM `{{project}}.{{an}}.stg_events`
 UNION ALL
 SELECT 'pk_unique_fct_user_day', 'critical', COUNT(*) - COUNT(DISTINCT CONCAT(user_id, '|', CAST(date AS STRING))), NULL
 FROM `{{project}}.{{an}}.fct_user_day`
@@ -39,11 +45,14 @@ FROM (
   GROUP BY user_id, local_date HAVING COUNT(*) > 1
 )
 UNION ALL
--- Cada modelo tiene que existir y no estar vacío si hay usuarios reales.
+-- Cada modelo clave debe existir y no estar vacío si hay usuarios reales.
 SELECT 'models_not_empty', 'critical',
   IF((SELECT COUNT(*) FROM `{{project}}.{{an}}.dim_user` WHERE NOT is_excluded) = 0, 0,
      IF((SELECT COUNT(*) FROM `{{project}}.{{an}}.mart_kpi_daily`) = 0, 1, 0)
      + IF((SELECT COUNT(*) FROM `{{project}}.{{an}}.mart_user_savings`) = 0, 1, 0)
      + IF((SELECT COUNT(*) FROM `{{project}}.{{an}}.mart_funnel`) = 0, 1, 0)
-     + IF((SELECT COUNT(*) FROM `{{project}}.{{an}}.mart_bank_segments`) = 0, 1, 0)),
+     + IF((SELECT COUNT(*) FROM `{{project}}.{{an}}.mart_bank_segments`) = 0, 1, 0)
+     + IF((SELECT COUNT(*) FROM `{{project}}.{{an}}.mart_bank_behavioral_segments`) = 0, 1, 0)
+     + IF((SELECT COUNT(*) FROM `{{project}}.{{bank}}.mart_bank_segments`) = 0, 1, 0)
+     + IF((SELECT COUNT(*) FROM `{{project}}.{{bank}}.bank_governance_metadata`) = 0, 1, 0)),
   NULL;

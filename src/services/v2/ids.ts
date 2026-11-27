@@ -20,11 +20,16 @@ function hex(buf: ArrayBuffer): string {
   return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
-export async function v1Uuid(userId: string, kind: LegacyKind | 'avatar', legacy: string): Promise<string> {
+export async function v1Uuid(userId: string, kind: LegacyKind | 'avatar' | 'imp', legacy: string): Promise<string> {
   const data = new TextEncoder().encode(`ai:v1:${userId}:${kind}:${legacy}`);
   const h = hex(await globalThis.crypto.subtle.digest('SHA-256', data));
   const s = h.slice(0, 12) + '8' + h.slice(13, 16) + '89ab'[parseInt(h.slice(16, 18), 16) % 4] + h.slice(17, 32);
   return `${s.slice(0, 8)}-${s.slice(8, 12)}-${s.slice(12, 16)}-${s.slice(16, 20)}-${s.slice(20, 32)}`;
+}
+
+/** UUID determinista para una impresión (usuario, fecha local, pregunta): evita carreras entre pestañas. */
+export async function promptImpressionUuid(userId: string, localDate: string, questionId: string): Promise<string> {
+  return v1Uuid(userId.toLowerCase(), 'imp', `${localDate}:${questionId}`);
 }
 
 export function newUuid(): string {

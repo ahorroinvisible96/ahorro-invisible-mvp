@@ -42,6 +42,17 @@ FROM (SELECT IFNULL(SUM(amount), 0) AS total FROM `{{project}}.{{an}}.fct_ledger
      (SELECT IFNULL(SUM(goal_balance), 0) AS goal, IFNULL(SUM(hucha_balance), 0) AS hucha,
              IFNULL(SUM(current_balance), 0) AS cur FROM `{{project}}.{{an}}.mart_user_savings`) s
 UNION ALL
+-- Resolución recursiva de saving_kind: daily_saved + extra_saved = net_saved en fct_user_day (cero fuga en correcciones encadenadas).
+SELECT 'ledger_saving_kind_reconciles', 'critical',
+  IF(ABS((d.daily_s + d.extra_s) - d.net_s) > 0.005, 1, 0),
+  FORMAT('daily=%s extra=%s net=%s', CAST(d.daily_s AS STRING), CAST(d.extra_s AS STRING), CAST(d.net_s AS STRING))
+FROM (
+  SELECT IFNULL(SUM(daily_saved), 0) AS daily_s,
+         IFNULL(SUM(extra_saved), 0) AS extra_s,
+         IFNULL(SUM(net_saved), 0)   AS net_s
+  FROM `{{project}}.{{an}}.fct_user_day`
+) d
+UNION ALL
 -- Saldo de objetivos en mart_goals cuadra con el ledger (objetivos no borrados).
 SELECT 'mart_goals_balance_matches_ledger', 'critical',
   IF(ABS(g.bal - l.bal) > 0.005, 1, 0),

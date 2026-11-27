@@ -1,13 +1,15 @@
 """
-Supabase → BigQuery sync job (Analytics V2, Fase 5C).
+Supabase → BigQuery sync job (Analytics V2 · Bank-Grade Governance).
 
 Pipeline (una ejecución diaria, Cloud Run Job):
   1. EXTRACT  tablas V2 de Supabase (REST, service role, allowlist de columnas)
               + auth users (solo id/fechas/flags internos, nunca email)
   2. LOAD     a BigQuery `raw_supabase_v2` con full refresh seguro (staging → validación → swap)
-  3. MODEL    ejecuta sql/models/*.sql en orden → dataset `analytics_v2` (tablas para Looker Studio)
-  4. TEST     ejecuta sql/tests/*.sql (calidad de datos) + reconciliación Supabase↔BigQuery
-              → resultados en `analytics_v2.dq_results`; exit 1 si falla un test crítico
+  3. MODEL    ejecuta sql/models/*.sql en orden → dataset interno `analytics_v2`
+              + dataset bancario aislado k-anónimo `analytics_bank_v2` (cero user_id / PII)
+  4. TEST     ejecuta sql/tests/*.sql (calidad de datos, privacidad, reconciliación por ID)
+              + reconciliación Supabase↔BigQuery → resultados en `analytics_v2.dq_results`;
+              exit 1 si falla un test crítico
 
 Authentication:
   - BigQuery:  Application Default Credentials (Cloud Run service account)
@@ -19,16 +21,17 @@ Environment variables:
   BQ_PROJECT_ID         – GCP project id
   BQ_DATASET            – dataset V1 legado (default: raw_supabase) — solo si EXPORT_V1=true
   BQ_DATASET_V2         – dataset raw V2 (default: raw_supabase_v2)
-  BQ_ANALYTICS_DATASET  – dataset modelado (default: analytics_v2)
+  BQ_ANALYTICS_DATASET  – dataset modelado interno (default: analytics_v2)
+  BQ_BANK_DATASET       – dataset aislado k-anónimo para bancos (default: analytics_bank_v2)
   BQ_POSTHOG_DATASET    – dataset del batch export de PostHog (default: raw_posthog)
-  BQ_LOCATION           – ubicación de los datasets nuevos (default: la del dataset V1 o EU)
+  BQ_LOCATION           – ubicación de los datasets nuevos (default: la de raw_supabase_v2 o EU)
   EXPORT_V1             – "true" para volver a exportar las tablas V1 (congeladas tras el cutover)
   MODE                  – full (default) | models | tests
   INTERNAL_EMAIL_REGEX  – regex de cuentas internas/test (se evalúa aquí; el email NO se exporta)
   SUSPECT_EMAIL_REGEX   – regex de dominios sospechosos (solo cuenta si el email no está confirmado)
 
 Privacy: no se exportan nombres, emails, ingresos exactos, textos libres (user_free_text), títulos de
-objetivos V2 ni tablas private.*. user_id es un UUID seudónimo.
+objetivos V2 ni tablas private.*. user_id es un UUID seudónimo y nunca llega a `analytics_bank_v2`.
 Deletes: full refresh → las bajas de usuario desaparecen también de BigQuery.
 """
 
@@ -307,6 +310,20 @@ def ensure_dataset(bq_client, project: str, dataset: str, location: str) -> None
     bq_client.create_dataset(ds, exists_ok=True)
 
 
+def resolve_bq_location(bq_client, project: str, ds_v2: str, ds_an: str, env_location: str | None) -> str:
+    """Detecta la región BigQuery desde BQ_LOCATION o los datasets V2 activos (default: EU)."""
+    if env_location:
+        return env_location
+    for ds_name in (ds_v2, ds_an):
+        try:
+            loc = bq_client.get_dataset(f"{project}.{ds_name}").location
+            if loc:
+                return loc
+        except Exception:
+            continue
+    return "EU"
+
+
 def scalar(bq_client, sql: str):
     return next(iter(bq_client.query(sql).result()))[0]
 
@@ -393,20 +410,17 @@ def main() -> None:
     ds_v1 = os.environ.get("BQ_DATASET", "raw_supabase")
     ds_v2 = os.environ.get("BQ_DATASET_V2", "raw_supabase_v2")
     ds_an = os.environ.get("BQ_ANALYTICS_DATASET", "analytics_v2")
+    ds_bank = os.environ.get("BQ_BANK_DATASET", "analytics_bank_v2")
     ds_ph = os.environ.get("BQ_POSTHOG_DATASET", "raw_posthog")
     export_v1 = os.environ.get("EXPORT_V1", "false").lower() == "true"
 
     bq_client = bigquery.Client(project=bq_project)
-    location = os.environ.get("BQ_LOCATION")
-    if not location:
-        try:
-            location = bq_client.get_dataset(f"{bq_project}.{ds_v1}").location
-        except Exception:
-            location = "EU"
-    for ds in (ds_v2, ds_an):
+    location = resolve_bq_location(bq_client, bq_project, ds_v2, ds_an, os.environ.get("BQ_LOCATION"))
+    datasets_to_ensure = [ds_v2, ds_an, ds_bank] + ([ds_v1] if export_v1 else [])
+    for ds in datasets_to_ensure:
         ensure_dataset(bq_client, bq_project, ds, location)
 
-    ctx = {"project": bq_project, "raw": ds_v2, "an": ds_an, "ph": ds_ph, "v1": ds_v1}
+    ctx = {"project": bq_project, "raw": ds_v2, "an": ds_an, "bank": ds_bank, "ph": ds_ph, "v1": ds_v1}
     recon: list = []
     any_error = False
 

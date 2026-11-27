@@ -9,7 +9,9 @@ import {
   storeGetDailyForDate,
   storeListActiveGoals,
   getCurrentTimeWindow,
+  recordPromptImpressionShown,
 } from "@/services/dashboardStore";
+import { localDateStr } from "@/lib/dates";
 import { pushLocalDataToSupabase, syncDecisionToSupabase, syncGoalToSupabase } from "@/services/syncService";
 import type { Goal } from "@/types/Dashboard";
 import { FillBlankInput } from "@/components/daily/FillBlankInput/FillBlankInput";
@@ -35,7 +37,7 @@ export default function DailyPage() {
   const [customText, setCustomText] = useState<string>('');
   const [amountTouched, setAmountTouched] = useState<boolean>(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const today = new Date().toISOString().split('T')[0];
+  const today = localDateStr();
 
   useEffect(() => {
     analytics.setScreen('daily_question');
@@ -60,9 +62,11 @@ export default function DailyPage() {
       setCompletedDecisionId(todayStatus.decisionId);
       setPhase('completed');
       analytics.dailyQuestionViewed(today, q.questionId, 'completed');
+      recordPromptImpressionShown(q, 'daily_page', 'answered_fallback');
     } else {
       setPhase('pending');
       analytics.dailyQuestionViewed(today, q.questionId, 'pending');
+      recordPromptImpressionShown(q, 'daily_page', 'initial');
     }
   }, [router, today]);
 
@@ -72,14 +76,16 @@ export default function DailyPage() {
       const newWindow = getCurrentTimeWindow();
       if (newWindow !== currentTimeWindow) {
         setCurrentTimeWindow(newWindow);
+        const prevQuestionId = question?.questionId ?? null;
         const q = getTodayQuestion();
         setQuestion(q);
         analytics.dailyQuestionViewed(today, q.questionId, 'pending');
+        recordPromptImpressionShown(q, 'daily_page', 'slot_change', prevQuestionId);
         setSavedAmount('');
       }
     }, 60_000);
     return () => clearInterval(interval);
-  }, [phase, currentTimeWindow, today]);
+  }, [phase, currentTimeWindow, today, question?.questionId]);
 
   useEffect(() => {
     if (phase === 'pending' && inputRef.current) {

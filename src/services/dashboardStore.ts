@@ -20,7 +20,7 @@ import type { AvatarKey } from './dailyQuestionsBank';
 import { getQuestionById } from './dailyQuestionsBank';
 import { STORAGE_KEY } from '@/lib/constants';
 import { localDateStr, localDateDaysAgo, localMonthStr, addDaysStr } from '@/lib/dates';
-import { enqueue, pendingCount, type Surface } from './v2/outbox';
+import { enqueue, pendingCount, currentUid, type Surface } from './v2/outbox';
 import { v2ReadsOn, v1RuntimeOn } from './v2/flags';
 import { deleteDecisionFromSupabase } from './syncService';
 
@@ -301,6 +301,48 @@ export function getAlternativeQuestion(currentQuestionId: string): DailyQuestion
  * pueda detectar cambios de franja y refrescar la pregunta).
  */
 export { getCurrentTimeWindow } from './questionSelectionEngine';
+
+function normalizeTimeSlotV2(slot: string | null | undefined): 'manana' | 'tarde' | 'noche' {
+  const s = (slot ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  if (s === 'tarde') return 'tarde';
+  if (s === 'noche') return 'noche';
+  return 'manana';
+}
+
+/**
+ * Registra en V2 (`daily_prompt_impressions` vía outbox durable) que una pregunta
+ * del catálogo `qb_v1` fue mostrada al usuario. Deduplica localmente por (usuario, día, pregunta).
+ */
+export function recordPromptImpressionShown(
+  question: DailyQuestion | null | undefined,
+  surface: 'dashboard_widget' | 'daily_page',
+  reason: 'initial' | 'slot_change' | 'shuffle' | 'answered_fallback',
+  replacesQuestionId?: string | null,
+): void {
+  if (typeof window === 'undefined' || !question?.questionId) return;
+  if (!getQuestionById(question.questionId)) return; // solo catálogo qb_v1 válido
+  const uid = currentUid();
+  if (!uid) return;
+  const today = localDateStr();
+  const dedupKey = `ai_v2_imp_sent:${uid}:${today}`;
+  try {
+    const raw = localStorage.getItem(dedupKey);
+    const seen: string[] = raw ? (JSON.parse(raw) as string[]) : [];
+    if (seen.includes(question.questionId)) return;
+    seen.push(question.questionId);
+    localStorage.setItem(dedupKey, JSON.stringify(seen.slice(-30)));
+  } catch { /* modo privado: continúa sin bloquear */ }
+
+  enqueue('prompt.impression', {
+    localDate: today,
+    questionId: question.questionId,
+    avatarUsed: resolveAvatar(question.avatar),
+    timeSlot: normalizeTimeSlotV2(question.timeSlot),
+    reason,
+    surface,
+    replacesQuestionId: replacesQuestionId && getQuestionById(replacesQuestionId) ? replacesQuestionId : null,
+  });
+}
 
 // ─── Forma interna del store ────────────────────────────────────────────
 type StoreState = {
@@ -1346,6 +1388,7 @@ export function storeSubmitDecision(
   enqueue('daily.record', {
     decision: id, questionId, optionKey, customText, amount: savedAmount,
     goal: goal ? goalId : null, surface: opts?.surface ?? 'daily_page',
+    impressionLocalDate: today,
   });
 
   return buildSummary(currentRange);

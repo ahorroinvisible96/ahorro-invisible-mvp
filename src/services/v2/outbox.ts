@@ -13,7 +13,7 @@
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { userTimezone } from '@/lib/dates';
 import { getFlags, v2WritesOn, v2WriteAuthority } from './flags';
-import { newUuid, v1Uuid, isUuid, type LegacyKind } from './ids';
+import { newUuid, v1Uuid, promptImpressionUuid, isUuid, type LegacyKind } from './ids';
 import { analytics } from '@/services/analytics';
 
 export const APP_VERSION = '1.2.0-v2';
@@ -35,9 +35,17 @@ export type CommandPayloads = {
   'goal.reactivate': { goal: string; surface?: Surface };
   'goal.delete': { goal: string; dest: 'hucha' | string; surface?: Surface };
   'hucha.transfer': { toGoal: string; amount: number; surface?: Surface };
+  'prompt.impression': {
+    localDate: string; questionId: string;
+    avatarUsed: 'comodo' | 'social' | 'impulsivo';
+    timeSlot: 'manana' | 'tarde' | 'noche';
+    reason: 'initial' | 'slot_change' | 'shuffle' | 'answered_fallback';
+    surface: 'dashboard_widget' | 'daily_page';
+    replacesQuestionId?: string | null;
+  };
   'daily.record': {
     decision: string; questionId: string; optionKey: string; customText?: string | null;
-    amount: number; goal: string | null; surface: Surface;
+    amount: number; goal: string | null; surface: Surface; impressionLocalDate?: string | null;
   };
   'daily.void': { entity: 'daily' | 'extra' | 'grace'; id: string; reason: 'user_reset_today' | 'user_deleted_in_history'; surface: Surface };
   'daily.amend': { entity: 'daily' | 'extra'; id: string; newAmount: number; surface: Surface };
@@ -198,18 +206,50 @@ async function execute(uid: string, c: Command): Promise<{ rpcName: string; res:
         p_surface: p.surface ?? 'goals_page',
       }) };
     }
+    case 'prompt.impression': {
+      const p = c.payload as CommandPayloads['prompt.impression'];
+      const impId = await promptImpressionUuid(uid, p.localDate, p.questionId);
+      const replacesId = p.replacesQuestionId
+        ? await promptImpressionUuid(uid, p.localDate, p.replacesQuestionId)
+        : null;
+      const args = {
+        p_impression_id: impId,
+        p_shown_at: c.occurredAt,
+        p_timezone: c.tz,
+        p_question_bank_version: 'qb_v1',
+        p_question_id: p.questionId,
+        p_avatar_used: p.avatarUsed,
+        p_time_slot: p.timeSlot,
+        p_selection_reason: p.reason,
+        p_first_surface: p.surface,
+        p_replaces_impression_id: replacesId,
+      };
+      let res = await rpc('record_prompt_impression', args);
+      if (res.error?.message?.startsWith('not_found') && replacesId) {
+        res = await rpc('record_prompt_impression', { ...args, p_replaces_impression_id: null });
+      }
+      return { rpcName: 'record_prompt_impression', res };
+    }
     case 'daily.record': {
       const p = c.payload as CommandPayloads['daily.record'];
       const saved = p.amount > 0;
+      const impressionId = p.impressionLocalDate
+        ? await promptImpressionUuid(uid, p.impressionLocalDate, p.questionId)
+        : null;
       const args = {
         p_decision_id: await id2(uid, 'dec', p.decision), ...base, p_outcome: saved ? 'saved' : 'zero',
         p_question_bank_version: 'qb_v1', p_question_id: p.questionId, p_selected_option_key: p.optionKey,
         p_declared_amount: saved ? money(p.amount) : 0,
         p_custom_text: p.optionKey === '__custom__' ? (p.customText ?? null) : null,
         p_goal_id: p.goal ? await id2(uid, 'goal', p.goal) : null,
-        p_impression_id: null, p_surface: p.surface, p_legacy_id: legacy(p.decision),
+        p_impression_id: impressionId, p_surface: p.surface, p_legacy_id: legacy(p.decision),
       };
       let res = await rpc('record_daily_decision', args);
+      // Si la impresión previa no existiese aún en servidor, nunca bloquear un ahorro real.
+      if (res.error?.message?.startsWith('not_found') && args.p_impression_id !== null) {
+        args.p_impression_id = null;
+        res = await rpc('record_daily_decision', args);
+      }
       // Etiqueta fuera del catálogo publicado: el importe se registra igual, sin inventar una opción.
       if (res.error?.message?.startsWith('invalid_option')) {
         res = await rpc('record_daily_decision', { ...args, p_selected_option_key: '__unspecified__', p_custom_text: null });
@@ -404,6 +444,7 @@ function classify(c: Command, res: RpcResult): Verdict {
   const code = res.error.code || '';
   if (code === 'P0001') {
     const k = msg.split(':')[0].trim();
+    if (c.type === 'prompt.impression' && ['invalid_question', 'invalid_argument', 'not_found'].includes(k)) return 'resolved';
     if (c.type === 'daily.void' && ['not_found', 'decision_not_active', 'transaction_not_active'].includes(k)) return 'resolved';
     if (c.type === 'onboarding.complete' && k === 'onboarding_already_completed') return 'resolved';
     if (c.type === 'grace.use' && k === 'grace_already_used') return 'resolved';

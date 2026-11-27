@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { analytics } from '@/services/analytics';
-import { getTodayQuestion, getAlternativeQuestion } from '@/services/dashboardStore';
+import { getTodayQuestion, getAlternativeQuestion, recordPromptImpressionShown } from '@/services/dashboardStore';
 import type { DailyDecisionWidgetProps, ExtraSaving } from './DailyDecisionWidget.types';
 import styles from './DailyDecisionWidget.module.css';
 import { BoltIcon, AlertIcon } from '@/components/ui/AppIcons';
@@ -214,6 +214,12 @@ export function DailyDecisionWidget({
   }, [daily.status]);
 
   useEffect(() => {
+    if (daily.status === 'pending' && todayQuestion?.questionId) {
+      recordPromptImpressionShown(todayQuestion, 'dashboard_widget', 'initial');
+    }
+  }, [daily.status, todayQuestion]);
+
+  useEffect(() => {
     const preferred = primaryGoal?.id ?? activeGoals[0]?.id ?? '';
     setSelectedGoalId(preferred);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -401,8 +407,10 @@ export function DailyDecisionWidget({
                 title="Cambiar pregunta"
                 aria-label="Cambiar pregunta"
                 onClick={() => {
-                  const alt = getAlternativeQuestion(todayQuestion.questionId);
+                  const prevId = todayQuestion.questionId;
+                  const alt = getAlternativeQuestion(prevId);
                   if (alt) {
+                    recordPromptImpressionShown(alt, 'dashboard_widget', 'shuffle', prevId);
                     setCurrentQuestion(alt);
                     setCustomAmount('');
                     setSelectedAnswer(null);
