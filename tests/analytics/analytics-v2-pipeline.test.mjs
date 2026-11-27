@@ -127,10 +127,12 @@ test('correcciones P0/P1/P2 verificadas en el SQL de modelos y tests DQ', () => 
   assert.match(m09, /AS\s+is_currently_at_target/);
   assert.match(m09, /CREATE OR REPLACE TABLE `\{\{project\}\}\.\{\{an\}\}\.mart_goals_summary`/);
 
-  // 10_mart_bank: supresión complementaria, SAFE_OFFSET (nunca OFFSET), cero est_ltv, dataset {{bank}}
+  // 10_mart_bank: supresión complementaria, SAFE_OFFSET (nunca OFFSET), cero est_ltv, dataset {{bank}}, sin subquery escalar en UNNEST/JOIN ON
   const m10 = readM('10_mart_bank.sql');
   assert.match(m10, /SAFE_OFFSET/);
   assert.doesNotMatch(m10, /\[OFFSET\(/);
+  assert.doesNotMatch(m10, /UNNEST\([^;\n]*\(SELECT/i);
+  assert.doesNotMatch(m10, /\bON\b[^;]*?<=?\s*\(SELECT/i);
   assert.doesNotMatch(m10, /\best_ltv\b/);
   assert.match(m10, /indicative_3y_deposit_margin_organic_eur/);
   assert.match(m10, /\{\{bank\}\}\.mart_bank_segments/);

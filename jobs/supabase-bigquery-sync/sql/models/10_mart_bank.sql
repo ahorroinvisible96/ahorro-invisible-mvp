@@ -146,26 +146,28 @@ CROSS JOIN p;
 -- 10.2 · Curva de ahorro orgánico acumulado por meses efectivos desde el alta (P25 / Mediana / P75 + media)
 CREATE OR REPLACE TABLE `{{project}}.{{an}}.mart_bank_savings_curve` AS
 WITH p AS (SELECT * FROM `{{project}}.{{an}}.params`),
-ref_day AS (SELECT DATE_SUB(CURRENT_DATE('Europe/Madrid'), INTERVAL 1 DAY) AS d),
 u AS (
-  SELECT user_id, cohort_date
+  SELECT
+    user_id,
+    cohort_date,
+    DATE_SUB(CURRENT_DATE('Europe/Madrid'), INTERVAL 1 DAY) AS ref_d
   FROM `{{project}}.{{an}}.dim_user`
-  WHERE NOT is_excluded AND cohort_date <= (SELECT d FROM ref_day)
+  WHERE NOT is_excluded
+    AND cohort_date <= DATE_SUB(CURRENT_DATE('Europe/Madrid'), INTERVAL 1 DAY)
 ),
 m AS (
-  SELECT u.user_id, n AS month_n
-  FROM u, UNNEST(GENERATE_ARRAY(0, GREATEST(0, DATE_DIFF((SELECT d FROM ref_day), u.cohort_date, MONTH)))) n
+  SELECT u.user_id, u.cohort_date, u.ref_d, n AS month_n
+  FROM u, UNNEST(GENERATE_ARRAY(0, GREATEST(0, DATE_DIFF(u.ref_d, u.cohort_date, MONTH)))) n
   -- Solo meses efectivamente iniciados tras el alta real (evita salto de mes calendario el día 1 tras alta el día 31)
-  WHERE DATE_ADD(u.cohort_date, INTERVAL n MONTH) <= (SELECT d FROM ref_day)
+  WHERE DATE_ADD(u.cohort_date, INTERVAL n MONTH) <= u.ref_d
 ),
 cum AS (
   SELECT m.user_id, m.month_n, IFNULL(SUM(d.net_saved), 0) AS cumulative_net_saved
   FROM m
-  JOIN u USING (user_id)
   LEFT JOIN `{{project}}.{{an}}.fct_user_day` d
     ON d.user_id = m.user_id
-   AND d.date <= (SELECT d FROM ref_day)
-   AND d.date < DATE_ADD(u.cohort_date, INTERVAL m.month_n + 1 MONTH)
+   AND d.date <= m.ref_d
+   AND d.date < DATE_ADD(m.cohort_date, INTERVAL m.month_n + 1 MONTH)
   GROUP BY 1, 2
 )
 SELECT
